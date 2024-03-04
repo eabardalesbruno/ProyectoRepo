@@ -18,11 +18,8 @@ public class BookingEntity {
     private String services;
     private String image;
 
-    // Constructor vacío
     public BookingEntity() {
     }
-
-    // Getters y Setters
 
     public Integer getBookingId() {
         return bookingId;
