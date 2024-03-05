@@ -22,6 +22,10 @@ public class UserEntity {
     private String password;
     private String googleAuth;
 
+    private String googleId;
+    private String googleEmail;
+    private String googleName;
+
     public UserEntity() {
     }
 
@@ -167,5 +171,29 @@ public class UserEntity {
 
     public void setGoogleAuth(String googleAuth) {
         this.googleAuth = googleAuth;
+    }
+
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
+    }
+
+    public String getGoogleEmail() {
+        return googleEmail;
+    }
+
+    public void setGoogleEmail(String googleEmail) {
+        this.googleEmail = googleEmail;
+    }
+
+    public String getGoogleName() {
+        return googleName;
+    }
+
+    public void setGoogleName(String googleName) {
+        this.googleName = googleName;
     }
 }

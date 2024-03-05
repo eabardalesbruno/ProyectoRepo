@@ -20,5 +20,7 @@ public class UserRepository {
         jdbcTemplate.update(sql, user.getFirstName(), user.getLastName(), user.getEmail());
     }
 
-    // Otros métodos para consultar, actualizar o eliminar usuarios
+    public void save(UserEntity userEntity) {
+        insert(userEntity);
+    }
 }
