@@ -19,7 +19,7 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("/simple")
+    @PostMapping("/insertsimple")
     public void createUser(@RequestBody UserEntity user) {
         userRepository.insert(user);
     }

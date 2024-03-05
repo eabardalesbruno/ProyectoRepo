@@ -31,7 +31,6 @@ public class OAuth2LoginController {
     @Autowired
     private UserRepository userRepository;
 
-
     private static final String CLIENT_ID = "your-client-id";
     private static final String CLIENT_SECRET = "your-client-secret";
     private static final String REDIRECT_URI = "http://localhost:8777/login/google/callback";
