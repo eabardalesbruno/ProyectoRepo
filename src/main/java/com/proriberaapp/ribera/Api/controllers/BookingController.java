@@ -9,12 +9,5 @@ import java.util.Map;
 @RestController
 public class BookingController {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
-    @GetMapping("/bookings")
-    public List<Map<String, Object>> getAllBookings() {
-        String query = "SELECT * FROM public.booking";
-        return jdbcTemplate.queryForList(query);
-    }
 }
