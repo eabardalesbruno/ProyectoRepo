@@ -1,11 +1,15 @@
 package com.proriberaapp.ribera.Infraestructure.services.admin.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
+import com.proriberaapp.ribera.Api.controllers.admin.exception.CustomException;
 import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
 import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
+import com.proriberaapp.ribera.Domain.enums.States;
 import com.proriberaapp.ribera.Infraestructure.repository.UserAdminRepository;
 import com.proriberaapp.ribera.Infraestructure.services.admin.UserAdminService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -13,6 +17,7 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserAdminServiceImpl implements UserAdminService {
 
     private final UserAdminRepository userAdminRepository;
@@ -22,15 +27,20 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     public Mono<TokenDto> login(LoginRequest loginRequest) {
         return userAdminRepository.findByUsernameOrEmail(loginRequest.username(), loginRequest.email())
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NO_CONTENT, "user not found")))
+                .filter(user -> user.getStatus() == States.ACTIVE)
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "user is not active")))
                 .filter(user -> passwordEncoder.matches(loginRequest.password(), user.getPassword()))
-                .map(user -> new TokenDto(jwtTokenProvider.generateToken(user.getUsername())))
-                .switchIfEmpty(Mono.error(new RuntimeException("bad credentials")));
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "bad credentials")))
+                .map(user -> new TokenDto(jwtTokenProvider.generateTokenAdmin(user)))
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "error generating token")));
     }
 
     @Override
     public Mono<UserAdminResponse> register(RegisterRequest userAdminEntity) {
-        //todo: implementar roles
-        UserAdminEntity user = RegisterRequest.from(userAdminEntity);
+
+        String password = passwordEncoder.encode(userAdminEntity.password());
+        UserAdminEntity user = RegisterRequest.from(userAdminEntity, password);
         Mono<Boolean> userExists = userAdminRepository.findByUsernameOrEmail(user.getUsername(), user.getEmail()).hasElement();
         return userExists
                 .flatMap(exists -> exists ?

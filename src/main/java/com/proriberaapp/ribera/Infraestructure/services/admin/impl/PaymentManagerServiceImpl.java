@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.services.admin.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentResponse;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentStateRepository;
 import com.proriberaapp.ribera.Infraestructure.services.admin.PaymentManagerService;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class PaymentManagerServiceImpl implements PaymentManagerService {
     }
 
     @Override
-    public Flux<String> listPayments() {
+    public Flux<PaymentResponse> listPayments() {
         return null;
     }
 
