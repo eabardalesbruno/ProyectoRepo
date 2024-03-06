@@ -1,0 +1,11 @@
+package com.proriberaapp.ribera.Infraestructure.services.admin;
+
+import com.proriberaapp.ribera.Domain.entities.UserEntity;
+import reactor.core.publisher.Mono;
+
+public interface UserService {
+    Mono<UserEntity> registerUser(UserEntity user);
+    Mono<String> login(String email, String password);
+    Mono<UserEntity> registerWithGoogle(String googleId, String email, String name);
+    Mono<String> loginWithGoogle(String googleId);
+}

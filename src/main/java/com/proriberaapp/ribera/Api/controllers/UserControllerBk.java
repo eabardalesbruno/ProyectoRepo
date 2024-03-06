@@ -1,13 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers;
 
-import com.proriberaapp.ribera.Domain.entities.UserEntity;
-import com.proriberaapp.ribera.Infraestructure.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/users")

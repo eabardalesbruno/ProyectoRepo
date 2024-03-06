@@ -1,13 +1,8 @@
 package com.proriberaapp.ribera.Api.controllers;
 import com.proriberaapp.ribera.Domain.entities.UserEntity;
-import com.proriberaapp.ribera.Infraestructure.services.UserService;
+import com.proriberaapp.ribera.Infraestructure.services.admin.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -17,28 +12,23 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @GetMapping
-    public Flux<UserEntity> getAllUsers() {
-        return userService.getAllUsers();
+    @PostMapping("/register")
+    public Mono<UserEntity> registerUser(@RequestBody UserEntity user) {
+        return userService.registerUser(user);
     }
 
-    @GetMapping("/{id}")
-    public Mono<UserEntity> getUserById(@PathVariable Integer id) {
-        return userService.getUserById(id);
+    @PostMapping("/login")
+    public Mono<String> login(@RequestParam String email, @RequestParam String password) {
+        return userService.login(email, password);
     }
 
-    @PostMapping
-    public Mono<UserEntity> createUser(@RequestBody UserEntity user) {
-        return userService.createUser(user);
+    @PostMapping("/register/google")
+    public Mono<UserEntity> registerWithGoogle(@RequestParam String googleId, @RequestParam String email, @RequestParam String name) {
+        return userService.registerWithGoogle(googleId, email, name);
     }
 
-    @DeleteMapping("/{id}")
-    public Mono<Void> deleteUser(@PathVariable Integer id) {
-        return userService.deleteUser(id);
-    }
-
-    @PutMapping("/{id}")
-    public Mono<UserEntity> updateUser(@PathVariable Integer id, @RequestBody UserEntity user) {
-        return userService.updateUser(id, user);
+    @PostMapping("/login/google")
+    public Mono<String> loginWithGoogle(@RequestParam String googleId) {
+        return userService.loginWithGoogle(googleId);
     }
 }
