@@ -2,21 +2,17 @@ package com.proriberaapp.ribera.Api.controllers.admin;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Infraestructure.services.admin.UserAdminService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/user/admin")
+@RequestMapping("/api/v1/user/admin/manager")
 @RequiredArgsConstructor
-public class UserAdminController {
+public class UserAdminManagerController {
 
     private final UserAdminService userAdminService;
-
-    @PostMapping("/login")
-    public Mono<TokenDto> login(@RequestBody LoginRequest loginRequest) {
-        return userAdminService.login(loginRequest);
-    }
 
     @PostMapping("/register")
     public Mono<UserAdminResponse> register(@RequestBody RegisterRequest registerRequest) {
@@ -57,5 +53,4 @@ public class UserAdminController {
     public Flux<UserAdminResponse> findAll() {
         return userAdminService.findAll();
     }
-
 }
