@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class UserService {
+
     @Autowired
     private UserRepository userRepository;
 
@@ -16,19 +17,22 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public Mono<UserEntity> getUserById(Integer userId) {
-        return userRepository.findById(userId);
+    public Mono<UserEntity> getUserById(Integer id) {
+        return userRepository.findById(id);
     }
 
     public Mono<UserEntity> createUser(UserEntity user) {
         return userRepository.save(user);
     }
 
-    public Mono<Void> deleteUser(Integer userId) {
-        return userRepository.deleteById(userId);
+    public Mono<Void> deleteUser(Integer id) {
+        return userRepository.deleteById(id);
     }
 
-    public Mono<UserEntity> saveUser(UserEntity user) {
-        return userRepository.save(user);
+    public Mono<UserEntity> updateUser(Integer id, UserEntity user) {
+        return userRepository.findById(id)
+                .flatMap(existingUser -> {
+                    return userRepository.save(existingUser);
+                });
     }
 }

@@ -1,8 +1,16 @@
 package com.proriberaapp.ribera.Domain.entities;
 
+import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+
 import java.sql.Timestamp;
 
+
+@Data
+@Table("public.user")
 public class UserEntity {
+    @Id
     private Integer userId;
     private Integer registerTypeId;
     private Integer userLevelId;
