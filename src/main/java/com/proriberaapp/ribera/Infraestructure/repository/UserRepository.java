@@ -19,4 +19,5 @@ public interface UserRepository extends ReactiveCrudRepository<UserEntity, Integ
 
     @Query("SELECT * FROM public.user WHERE google_id = :googleId")
     Mono<UserEntity> findByGoogleId(String googleId);
+
 }

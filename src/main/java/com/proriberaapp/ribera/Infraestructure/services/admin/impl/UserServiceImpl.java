@@ -29,6 +29,10 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
+    public Mono<UserEntity> saveUser(UserEntity user) {
+        return userRepository.save(user);
+    }
+
     @Override
     public Mono<String> login(String email, String password) {
         return userRepository.findByEmail(email)
