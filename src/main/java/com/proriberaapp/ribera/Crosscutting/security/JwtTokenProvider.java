@@ -1,11 +1,16 @@
 package com.proriberaapp.ribera.Crosscutting.security;
 
+import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
+import com.proriberaapp.ribera.Domain.entities.UserEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 
 @Component
@@ -17,35 +22,61 @@ public class JwtTokenProvider {
     @Value("${jwt.expiration}")
     private long jwtExpirationMs;
 
-    public String generateToken(String username) {
+    public String generateTokenAdmin(UserAdminEntity userDetails) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
-        Key key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
-
         return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date())
+                .setSubject(userDetails.getUsername())
+                .claim("roles", userDetails.getAuthorities())
+                .claim("permissions", userDetails.getPermission())
+                .claim("id", userDetails.getUserAdminId())
+                .claim("state", userDetails.getStatus())
+                .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(key)
+                .signWith(getKey(jwtSecret))
+                .compact();
+    }
+
+
+    public String generateToken(UserEntity subject) {
+        return Jwts.builder()
+                .setSubject(subject.getUsername())
+                .claim("roles", subject.getAuthorities())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
+                .signWith(getKey(jwtSecret))
                 .compact();
     }
 
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes()))
+                .setSigningKey(getKey(jwtSecret))
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
     }
 
+    public Claims getClaimsFromToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getKey(jwtSecret))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes())).build().parseClaimsJws(authToken);
+            Jwts.parserBuilder().setSigningKey(getKey(jwtSecret)).build().parseClaimsJws(authToken);
             return true;
         } catch (Exception ex) {
             return false;
         }
+    }
+
+    private Key getKey(String secret) {
+        byte[] keyBytes = Decoders.BASE64URL.decode(secret);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

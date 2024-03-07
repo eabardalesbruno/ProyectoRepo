@@ -1,62 +1,80 @@
 package com.proriberaapp.ribera.Domain.entities;
 
-public class UserAdminEntity {
+import com.proriberaapp.ribera.Domain.enums.Permission;
+import com.proriberaapp.ribera.Domain.enums.Role;
+import com.proriberaapp.ribera.Domain.enums.States;
+import com.proriberaapp.ribera.Domain.enums.TypeDocument;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+
+@Getter
+@Setter
+@Builder
+@Table("useradmin")
+public class UserAdminEntity implements UserDetails {
+    @Id
+    @Column("useradminid")
     private Integer userAdminId;
     private String email;
     private String password;
+    @Column("username")
     private String username;
+    @Column("firstname")
     private String firstName;
+    @Column("lastname")
     private String lastName;
+    private String phone;
+    private String address;
+    @Column("typedocument")
+    private TypeDocument typeDocument;
+    private String document;
+    private Role role;
+    private States status;
+    private List<Permission> permission;
+    @Column("createdat")
+    private Timestamp createdAt;
+    @Column("createdid")
+    private String createdId;
+    @Column("updatedat")
+    private Timestamp updatedAt;
+    @Column("updatedid")
+    private String updatedId;
 
-    public UserAdminEntity() {
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority((role.name())));
     }
 
-    public Integer getUserAdminId() {
-        return userAdminId;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
-    public void setUserAdminId(Integer userAdminId) {
-        this.userAdminId = userAdminId;
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
     }
 
-    public String getEmail() {
-        return email;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }
 
