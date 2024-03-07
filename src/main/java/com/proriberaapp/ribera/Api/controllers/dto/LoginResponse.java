@@ -1,2 +1,5 @@
-package com.proriberaapp.ribera.Api.controllers.dto;public record LoginResponse() {
-}
+package com.proriberaapp.ribera.Api.controllers.dto;
+
+public record LoginResponse(
+        String token
+) {}
