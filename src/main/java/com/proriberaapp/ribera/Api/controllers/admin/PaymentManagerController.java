@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 @RestController
-@RequestMapping("/api/v1/user/admin/manager/payment")
+@RequestMapping("/api/v1/admin/payment/manager")
 @RequiredArgsConstructor
 public class PaymentManagerController {
     private final PaymentManagerService paymentManagerService;

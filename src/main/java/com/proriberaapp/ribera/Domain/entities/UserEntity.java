@@ -1,8 +1,26 @@
 package com.proriberaapp.ribera.Domain.entities;
 
-import java.sql.Timestamp;
+import com.proriberaapp.ribera.Domain.enums.Role;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-public class UserEntity {
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+
+@Getter
+@Setter
+@Builder
+@Table("public.user")
+public class UserEntity implements UserDetails {
+    @Id
     private Integer userId;
     private Integer registerTypeId;
     private Integer userLevelId;
@@ -14,6 +32,9 @@ public class UserEntity {
     private String documentNumber;
     private Timestamp birthDate;
     private String sex;
+
+    private Role role;
+
     private String civilStatus;
     private String city;
     private String address;
@@ -26,174 +47,34 @@ public class UserEntity {
     private String googleEmail;
     private String googleName;
 
-    public UserEntity() {
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority((role.name())));
     }
 
-    public Integer getUserId() {
-        return userId;
+    @Override
+    public String getUsername() {
+        return null;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    @Override
+    public boolean isAccountNonExpired() {
+        return false;
     }
 
-    public Integer getRegisterTypeId() {
-        return registerTypeId;
+    @Override
+    public boolean isAccountNonLocked() {
+        return false;
     }
 
-    public void setRegisterTypeId(Integer registerTypeId) {
-        this.registerTypeId = registerTypeId;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return false;
     }
 
-    public Integer getUserLevelId() {
-        return userLevelId;
+    @Override
+    public boolean isEnabled() {
+        return false;
     }
 
-    public void setUserLevelId(Integer userLevelId) {
-        this.userLevelId = userLevelId;
-    }
-
-    public Integer getCodeUser() {
-        return codeUser;
-    }
-
-    public void setCodeUser(Integer codeUser) {
-        this.codeUser = codeUser;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getNationality() {
-        return nationality;
-    }
-
-    public void setNationality(String nationality) {
-        this.nationality = nationality;
-    }
-
-    public String getDocumentType() {
-        return documentType;
-    }
-
-    public void setDocumentType(String documentType) {
-        this.documentType = documentType;
-    }
-
-    public String getDocumentNumber() {
-        return documentNumber;
-    }
-
-    public void setDocumentNumber(String documentNumber) {
-        this.documentNumber = documentNumber;
-    }
-
-    public Timestamp getBirthDate() {
-        return birthDate;
-    }
-
-    public void setBirthDate(Timestamp birthDate) {
-        this.birthDate = birthDate;
-    }
-
-    public String getSex() {
-        return sex;
-    }
-
-    public void setSex(String sex) {
-        this.sex = sex;
-    }
-
-    public String getCivilStatus() {
-        return civilStatus;
-    }
-
-    public void setCivilStatus(String civilStatus) {
-        this.civilStatus = civilStatus;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getCellNumber() {
-        return cellNumber;
-    }
-
-    public void setCellNumber(String cellNumber) {
-        this.cellNumber = cellNumber;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getGoogleAuth() {
-        return googleAuth;
-    }
-
-    public void setGoogleAuth(String googleAuth) {
-        this.googleAuth = googleAuth;
-    }
-
-    public String getGoogleId() {
-        return googleId;
-    }
-
-    public void setGoogleId(String googleId) {
-        this.googleId = googleId;
-    }
-
-    public String getGoogleEmail() {
-        return googleEmail;
-    }
-
-    public void setGoogleEmail(String googleEmail) {
-        this.googleEmail = googleEmail;
-    }
-
-    public String getGoogleName() {
-        return googleName;
-    }
-
-    public void setGoogleName(String googleName) {
-        this.googleName = googleName;
-    }
 }
