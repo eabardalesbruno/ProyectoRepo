@@ -17,11 +17,12 @@ public class UserController {
 
     @PostMapping("/register")
     public Mono<ResponseEntity<RegisterResponse>> registerUser(@RequestBody RegisterRequest request) {
-        UserEntity user = new UserEntity();
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setEmail(request.email());
-        user.setPassword(request.password());
+        UserEntity user = UserEntity.builder()
+                .email(request.email())
+                .password(request.password())
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .build();
 
         return userService.registerUser(user)
                 .map(savedUser -> new ResponseEntity<>(
