@@ -7,7 +7,6 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 
 @EnableWebFlux
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.proriberaapp.ribera.Infraestructure.repository"})
 public class RiberaApplication {
 
 	public static void main(String[] args) {
