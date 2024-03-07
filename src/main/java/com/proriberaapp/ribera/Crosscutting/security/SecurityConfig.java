@@ -23,7 +23,7 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, JwtFilter jwtFilter) {
         return http.authorizeExchange(
                         auth -> auth
-                                .pathMatchers("/api/v1/user/admin/login").permitAll()
+                                .pathMatchers("/api/v1/user/admin/login", "/api/users/**").permitAll()
 
                                 .pathMatchers("/api/v1/user/admin/manager/**").hasRole("SUPER_ADMIN")
 

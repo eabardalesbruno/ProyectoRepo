@@ -1,4 +1,4 @@
-package com.proriberaapp.ribera.Infraestructure.services.admin;
+package com.proriberaapp.ribera.Infraestructure.services;
 
 import com.proriberaapp.ribera.Domain.entities.UserEntity;
 import reactor.core.publisher.Mono;

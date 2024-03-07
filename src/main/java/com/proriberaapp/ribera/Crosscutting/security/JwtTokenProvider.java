@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Crosscutting.security;
 
 import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
+import com.proriberaapp.ribera.Domain.entities.UserEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -33,6 +34,17 @@ public class JwtTokenProvider {
                 .claim("state", userDetails.getStatus())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
+                .signWith(getKey(jwtSecret))
+                .compact();
+    }
+
+
+    public String generateToken(UserEntity subject) {
+        return Jwts.builder()
+                .setSubject(subject.getUsername())
+                .claim("roles", subject.getAuthorities())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
                 .signWith(getKey(jwtSecret))
                 .compact();
     }

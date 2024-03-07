@@ -1,6 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers;
 import com.proriberaapp.ribera.Domain.entities.UserEntity;
-import com.proriberaapp.ribera.Infraestructure.services.admin.UserService;
+import com.proriberaapp.ribera.Infraestructure.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
