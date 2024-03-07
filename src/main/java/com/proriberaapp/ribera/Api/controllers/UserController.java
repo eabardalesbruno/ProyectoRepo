@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers;
 import com.proriberaapp.ribera.Api.controllers.dto.*;
 import com.proriberaapp.ribera.Domain.entities.UserEntity;
+import com.proriberaapp.ribera.Infraestructure.services.TokenBoService;
 import com.proriberaapp.ribera.Infraestructure.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,14 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TokenBoService tokenService;
+
+    @PostMapping("/registerbo")
+    public TokenResponse registerUser(@RequestBody TokenRequest request) {
+        return tokenService.getToken(request);
+    }
 
     @PostMapping("/register")
     public Mono<ResponseEntity<RegisterResponse>> registerUser(@RequestBody RegisterRequest request) {
