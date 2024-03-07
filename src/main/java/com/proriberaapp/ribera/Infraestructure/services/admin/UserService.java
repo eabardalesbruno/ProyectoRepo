@@ -8,6 +8,5 @@ public interface UserService {
     Mono<String> login(String email, String password);
     Mono<UserEntity> registerWithGoogle(String googleId, String email, String name);
     Mono<String> loginWithGoogle(String googleId);
-    Mono<UserEntity> saveUser(UserEntity user); // Nuevo método para guardar un usuario sin codificar la contraseña
-
+    Mono<UserEntity> saveUser(UserEntity user);
 }

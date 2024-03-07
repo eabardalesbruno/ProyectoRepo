@@ -1,4 +1,5 @@
 package com.proriberaapp.ribera.Api.controllers;
+import com.proriberaapp.ribera.Api.controllers.dto.*;
 import com.proriberaapp.ribera.Domain.entities.UserEntity;
 import com.proriberaapp.ribera.Infraestructure.services.admin.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,33 +16,40 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public Mono<ResponseEntity<UserEntity>> registerUser(@RequestBody UserEntity user) {
+    public Mono<ResponseEntity<RegisterResponse>> registerUser(@RequestBody RegisterRequest request) {
+        UserEntity user = new UserEntity();
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setEmail(request.email());
+        user.setPassword(request.password());
+
         return userService.registerUser(user)
-                .map(savedUser -> new ResponseEntity<>(savedUser, HttpStatus.CREATED))
+                .map(savedUser -> new ResponseEntity<>(
+                        new RegisterResponse(savedUser.getUserId(), savedUser.getFirstName(), savedUser.getLastName()),
+                        HttpStatus.CREATED))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
     }
 
     @PostMapping("/register/google")
-    public Mono<ResponseEntity<UserEntity>> registerWithGoogle(@RequestParam String googleId,
-                                                               @RequestParam String email,
-                                                               @RequestParam String name) {
-        return userService.registerWithGoogle(googleId, email, name)
-                .map(savedUser -> new ResponseEntity<>(savedUser, HttpStatus.CREATED))
+    public Mono<ResponseEntity<GoogleRegisterResponse>> registerWithGoogle(@RequestBody GoogleRegisterRequest request) {
+        return userService.registerWithGoogle(request.googleId(), request.email(), request.name())
+                .map(savedUser -> new ResponseEntity<>(
+                        new GoogleRegisterResponse(savedUser.getUserId(), savedUser.getEmail()),
+                        HttpStatus.CREATED))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
     }
 
     @PostMapping("/login")
-    public Mono<ResponseEntity<String>> loginUser(@RequestParam String email,
-                                                  @RequestParam String password) {
-        return userService.login(email, password)
-                .map(token -> new ResponseEntity<>(token, HttpStatus.OK))
+    public Mono<ResponseEntity<LoginResponse>> loginUser(@RequestBody LoginRequest request) {
+        return userService.login(request.email(), request.password())
+                .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
 
     @PostMapping("/login/google")
-    public Mono<ResponseEntity<String>> loginWithGoogle(@RequestParam String googleId) {
-        return userService.loginWithGoogle(googleId)
-                .map(token -> new ResponseEntity<>(token, HttpStatus.OK))
+    public Mono<ResponseEntity<GoogleLoginResponse>> loginWithGoogle(@RequestBody GoogleLoginRequest request) {
+        return userService.loginWithGoogle(request.googleId())
+                .map(token -> new ResponseEntity<>(new GoogleLoginResponse(token), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
 }
