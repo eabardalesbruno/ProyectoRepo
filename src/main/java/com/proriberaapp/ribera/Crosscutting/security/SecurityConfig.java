@@ -28,13 +28,11 @@ public class SecurityConfig {
 
         return http.authorizeExchange(
                         auth -> auth
-                                .pathMatchers("/api/v1/admin/user/login", "/api/users/**").permitAll()
+                                .pathMatchers("/api/v1/admin/login", "/api/users/**").permitAll()
 
-                                .pathMatchers("/api/v1/admin/user/manager/**").hasRole("SUPER_ADMIN")
+                                .pathMatchers("/api/v1/admin/manager/**").hasRole("SUPER_ADMIN")
 
-                                .pathMatchers("/api/v1/admin/user/manager/payment/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
-                                .pathMatchers(GET, "/api/v1/admin/user/manager/payment/**").hasAnyAuthority("READ")
-                                .pathMatchers(POST, "/api/v1/admin/user/manager/payment/**").hasAnyAuthority("WRITE")
+                                .pathMatchers("/api/v1/admin/manager/payment/**").hasAnyRole("ADMIN")
 
                                 .anyExchange().authenticated()
                 )

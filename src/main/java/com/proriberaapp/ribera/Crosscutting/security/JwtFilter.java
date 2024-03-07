@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Crosscutting.security;
 
 import com.proriberaapp.ribera.Api.controllers.admin.exception.CustomException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -15,9 +16,9 @@ public class JwtFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
-        if (path.contains("/api/v1/admin/user/login") || path.contains("/api/users/login"))
+        if (path.contains("/api/v1/admin/login") || path.contains("/api/users/login"))
             return chain.filter(exchange);
-        String auth = request.getHeaders().getFirst("Authorization");
+        String auth = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (auth == null)
             return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Missing token"));
         if(!auth.startsWith("Bearer "))

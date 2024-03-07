@@ -46,11 +46,11 @@ public class UserAdminEntity implements UserDetails {
     @Column("createdat")
     private Timestamp createdAt;
     @Column("createdid")
-    private String createdId;
+    private Integer createdId;
     @Column("updatedat")
     private Timestamp updatedAt;
     @Column("updatedid")
-    private String updatedId;
+    private Integer updatedId;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

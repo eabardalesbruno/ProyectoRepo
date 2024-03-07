@@ -58,6 +58,15 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
+    public Integer getIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getKey(jwtSecret))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("id", Integer.class);
+    }
+
     public Claims getClaimsFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getKey(jwtSecret))
