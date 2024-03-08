@@ -20,7 +20,6 @@ public record RegisterResponse(
         String address,
         String cellNumber,
         String email,
-        String password,
         String googleAuth,
         String googleId,
         String googleEmail,

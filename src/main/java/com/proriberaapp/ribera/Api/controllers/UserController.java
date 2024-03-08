@@ -75,7 +75,6 @@ public class UserController {
                                 savedUser.getAddress(),
                                 savedUser.getCellNumber(),
                                 savedUser.getEmail(),
-                                savedUser.getPassword(),
                                 savedUser.getGoogleAuth(),
                                 savedUser.getGoogleId(),
                                 savedUser.getGoogleEmail(),
