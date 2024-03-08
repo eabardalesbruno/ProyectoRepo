@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,30 +22,47 @@ import java.util.List;
 @Table("public.user")
 public class UserEntity implements UserDetails {
     @Id
+    @Column("userid")
     private Integer userId;
+    @Column("registertypeid")
     private Integer registerTypeId;
+    @Column("userlevelid")
     private Integer userLevelId;
+    @Column("codeuser")
     private Integer codeUser;
+    @Column("firstname")
     private String firstName;
+    @Column("lastname")
     private String lastName;
+    @Column("nationality")
     private String nationality;
+    @Column("documenttype")
     private String documentType;
+    @Column("documentnumber")
     private String documentNumber;
+    @Column("birthdate")
     private Timestamp birthDate;
+    @Column("sex")
     private String sex;
 
     private Role role;
-
+    @Column("civilstatus")
     private String civilStatus;
+    @Column("city")
     private String city;
+    @Column("address")
     private String address;
+    @Column("cellnumber")
     private String cellNumber;
     private String email;
     private String password;
+    @Column("googleauth")
     private String googleAuth;
-
+    @Column("googleid")
     private String googleId;
+    @Column("googleemail")
     private String googleEmail;
+    @Column("googlename")
     private String googleName;
 
     @Override
