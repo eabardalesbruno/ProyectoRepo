@@ -57,15 +57,30 @@ public class UserAdminServiceImpl implements UserAdminService {
     }
 
     @Override
-    public Mono<UserAdminResponse> update(Integer idUserAdmin, Integer idUserAdminUpdate, UpdateUserAdminRequest updateUserAdminRequest) {
+    public Mono<UserAdminResponse> update(
+            Integer idUserAdmin,
+            Integer idUserAdminUpdate,
+            UpdateUserAdminRequest updateUserAdminRequest
+    ) {
         return userAdminRepository.findById(idUserAdminUpdate)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NO_CONTENT, "user not found")))
                 .filter(user -> user.getStatus() == States.ACTIVE)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "user is not active")))
                 .map(user -> {
-                    user.setUsername(updateUserAdminRequest.username());
-                    user.setFirstName(updateUserAdminRequest.firstName());
-                    user.setLastName(updateUserAdminRequest.lastName());
+                    String username = updateUserAdminRequest.firstName().toUpperCase() + " " + updateUserAdminRequest.lastName().toUpperCase();
+                    user.setEmail(user.getEmail().equals(updateUserAdminRequest.email()) ? user.getEmail() : updateUserAdminRequest.email());
+                    user.setPassword(user.getPassword());
+                    user.setUsername(user.getUsername().equals(username) ? user.getUsername() : username);
+                    user.setFirstName(updateUserAdminRequest.firstName().toUpperCase());
+                    user.setLastName(updateUserAdminRequest.lastName().toUpperCase());
+                    user.setPhone(updateUserAdminRequest.phone());
+                    user.setAddress(updateUserAdminRequest.address().toUpperCase());
+                    user.setTypeDocument(updateUserAdminRequest.typeDocument());
+                    user.setDocument(updateUserAdminRequest.document());
+                    user.setRole(updateUserAdminRequest.role());
+                    user.setStatus(user.getStatus());
+                    user.setPermission(updateUserAdminRequest.permission());
+
                     user.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
                     user.setUpdatedId(idUserAdmin);
                     return user;
@@ -101,7 +116,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     }
 
     @Override
-    public Mono<UserAdminResponse> disable(Integer id) {
+    public Mono<UserAdminResponse> disable(Integer id, Integer idUserAdminUpdateStatus) {
         return userAdminRepository.findById(id)
                 .map(user -> {
                     user.setStatus(States.INACTIVE);
@@ -112,7 +127,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     }
 
     @Override
-    public Mono<UserAdminResponse> enable(Integer id) {
+    public Mono<UserAdminResponse> enable(Integer id, Integer idUserAdminUpdateStatus) {
         return userAdminRepository.findById(id)
                 .map(user -> {
                     user.setStatus(States.ACTIVE);

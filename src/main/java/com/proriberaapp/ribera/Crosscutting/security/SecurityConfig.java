@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.Crosscutting.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import org.springframework.security.config.Customizer;
@@ -33,6 +34,9 @@ public class SecurityConfig {
                                 .pathMatchers("/api/v1/admin/manager/**").hasRole("SUPER_ADMIN")
 
                                 .pathMatchers("/api/v1/admin/manager/payment/**").hasAnyRole("ADMIN")
+                                .pathMatchers(GET, "/api/v1/admin/manager/payment/**").hasAnyAuthority("READ", "WRITE")
+                                .pathMatchers(POST, "/api/v1/admin/manager/payment/**").hasAnyAuthority("READ", "WRITE")
+
 
                                 .anyExchange().authenticated()
                 )

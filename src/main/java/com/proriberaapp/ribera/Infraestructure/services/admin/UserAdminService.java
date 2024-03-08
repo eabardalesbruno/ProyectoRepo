@@ -11,9 +11,8 @@ public interface UserAdminService {
     Mono<UserAdminResponse> updatePassword(Integer id, Integer idUserAdminUpdatePassword, String newPassword);
     Mono<Void> delete(Integer id, Integer idUserAdminDelete);
     Mono<UserAdminResponse> findByEmail(String email);
-
-    Mono<UserAdminResponse> disable(Integer id); //TODO: Implementar
-    Mono<UserAdminResponse> enable(Integer id);   //TODO: Implementar
+    Mono<UserAdminResponse> disable(Integer id, Integer idUserAdminUpdateStatus);
+    Mono<UserAdminResponse> enable(Integer id, Integer idUserAdminUpdateStatus);
     Mono<UserAdminResponse> findById(Integer id);
     Flux<UserAdminResponse> findAll(Integer idUserAdmin);
 }

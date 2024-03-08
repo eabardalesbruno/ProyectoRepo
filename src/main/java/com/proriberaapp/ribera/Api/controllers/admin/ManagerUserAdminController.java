@@ -26,12 +26,6 @@ public class ManagerUserAdminController {
         log.info("idUserAdmin: " + idUserAdmin);
         return userAdminService.register(idUserAdmin, registerRequest);
     }
-    @PostMapping("/register2")
-    public Mono<Integer> register2() {
-        Integer idUserAdmin = 12; //jwtTokenProvider.getIdFromToken(token.substring(7));
-        log.info("idUserAdmin: " + idUserAdmin);
-        return Mono.just(idUserAdmin);
-    }
 
     @PatchMapping("/update/password")
     public Mono<UserAdminResponse> updatePassword(
@@ -58,7 +52,7 @@ public class ManagerUserAdminController {
         return userAdminService.delete(idUserAdmin, idUserAdminDelete);
     }
 
-    @GetMapping("/find")
+    @GetMapping("/find/id")
     public Mono<UserAdminResponse> findById(@RequestParam Integer idUserAdmin) {
         return userAdminService.findById(idUserAdmin);
     }
@@ -73,4 +67,21 @@ public class ManagerUserAdminController {
         Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
         return userAdminService.findAll(idUserAdmin);
     }
+
+    @PatchMapping("/update/status/enable")
+    public Mono<UserAdminResponse> updateStatusEnable(
+            @RequestParam Integer idUserAdminUpdateStatus,
+            @RequestHeader("Authorization") String token) {
+        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
+        return userAdminService.enable(idUserAdmin, idUserAdminUpdateStatus);
+    }
+
+    @PatchMapping("/update/status/disable")
+    public Mono<UserAdminResponse> updateStatusDisable(
+            @RequestParam Integer idUserAdminUpdateStatus,
+            @RequestHeader("Authorization") String token) {
+        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
+        return userAdminService.disable(idUserAdmin, idUserAdminUpdateStatus);
+    }
+
 }

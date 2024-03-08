@@ -19,7 +19,7 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration}")
+    @Value("${jwt.expiration.admin}")
     private long jwtExpirationMs;
 
     public String generateTokenAdmin(UserAdminEntity userDetails) {
