@@ -13,7 +13,6 @@ import java.util.Optional;
 public interface UserAdminRepository extends R2dbcRepository<UserAdminEntity, Integer> {
     Mono<UserAdminEntity> findByUsernameOrEmail(String username, String email);
     Mono<UserAdminEntity> findByUsernameOrEmailOrDocument(String username, String email, String document);
-    Mono<UserAdminEntity> findByIdOrEmailOrDocument(Integer id, String email, String document);
-    Mono<UserAdminEntity> findByDocument(String document);
     Mono<UserAdminEntity> findByEmail(String email);
+    Mono<UserAdminEntity> findByEmailAndDocument(String email, String document);
 }

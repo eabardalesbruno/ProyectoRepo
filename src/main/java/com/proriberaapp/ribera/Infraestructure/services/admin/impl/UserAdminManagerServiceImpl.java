@@ -6,7 +6,7 @@ import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
 import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
 import com.proriberaapp.ribera.Domain.enums.States;
 import com.proriberaapp.ribera.Infraestructure.repository.UserAdminRepository;
-import com.proriberaapp.ribera.Infraestructure.services.admin.UserAdminService;
+import com.proriberaapp.ribera.Infraestructure.services.admin.UserAdminManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ import java.sql.Timestamp;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserAdminServiceImpl implements UserAdminService {
+public class UserAdminManagerServiceImpl implements UserAdminManagerService {
 
     private final UserAdminRepository userAdminRepository;
     private final PasswordEncoder passwordEncoder;
@@ -75,8 +75,8 @@ public class UserAdminServiceImpl implements UserAdminService {
                     user.setLastName(updateUserAdminRequest.lastName().toUpperCase());
                     user.setPhone(updateUserAdminRequest.phone());
                     user.setAddress(updateUserAdminRequest.address().toUpperCase());
-                    user.setTypeDocument(updateUserAdminRequest.typeDocument());
-                    user.setDocument(updateUserAdminRequest.document());
+                    user.setTypeDocument(updateUserAdminRequest.typeDocument());//TODO: revisar
+                    user.setDocument(updateUserAdminRequest.document());//TODO: revisar
                     user.setRole(updateUserAdminRequest.role());
                     user.setStatus(user.getStatus());
                     user.setPermission(updateUserAdminRequest.permission());
@@ -90,13 +90,16 @@ public class UserAdminServiceImpl implements UserAdminService {
     }
 
     @Override
-    public Mono<UserAdminResponse> updatePassword(Integer id, Integer idUserAdminUpdatePassword, String newPassword) {
-        return userAdminRepository.findById(id)
+    public Mono<UserAdminResponse> updatePassword(Integer idUserAdmin, Integer idUserAdminUpdatePassword, String newPassword) {
+        return userAdminRepository.findById(idUserAdminUpdatePassword)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NO_CONTENT, "user not found")))
                 .filter(user -> user.getStatus() == States.ACTIVE)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "user is not active")))
                 .map(user -> {
                     user.setPassword(passwordEncoder.encode(newPassword));
+
+                    user.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+                    user.setUpdatedId(idUserAdmin);
                     return user;
                 })
                 .flatMap(userAdminRepository::save)
@@ -104,36 +107,48 @@ public class UserAdminServiceImpl implements UserAdminService {
     }
 
     @Override
-    public Mono<Void> delete(Integer id, Integer idUserAdminDelete) {
-        return userAdminRepository.findById(id)
-                .flatMap(userAdminRepository::delete);
+    public Mono<UserAdminResponse> updatePasswordBySolicitude(Integer idUserAdmin, Integer idUserAdminUpdatePassword, String newPassword, String oldPassword) {
+        return userAdminRepository.findById(idUserAdminUpdatePassword)
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NO_CONTENT, "user not found")))
+                .filter(user -> user.getStatus() == States.ACTIVE)
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "user is not active")))
+                .filter(user -> passwordEncoder.matches(oldPassword, user.getPassword()))
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "bad credentials")))
+                .map(user -> {
+                    user.setPassword(passwordEncoder.encode(newPassword));
+
+                    user.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+                    user.setUpdatedId(idUserAdmin);
+                    return user;
+                })
+                .flatMap(userAdminRepository::save)
+                .map(UserAdminResponse::toResponse);
+    }
+
+    @Override
+    public Mono<UserAdminResponse> updatePasswordByVerificationCode(String verificationCode, String newPassword) {
+        return null;
+    }
+
+    @Override
+    public Mono<UserAdminResponse> updatePasswordByVerificationCode(Integer idUserAdmin, String verificationCode, String newPassword) {
+        return null;
+    }
+
+    @Override
+    public Mono<UserAdminResponse> requestUpdatePassword(RequestUpdateUserAdminRequest requestUpdateRequest) {
+        return userAdminRepository.findByEmailAndDocument(requestUpdateRequest.email(), requestUpdateRequest.document())
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NO_CONTENT, "user not found")))
+                .filter(user -> user.getStatus() == States.ACTIVE)
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "user is not active")))
+
+                .flatMap(userAdminRepository::save)
+                .map(UserAdminResponse::toResponse);
     }
 
     @Override
     public Mono<UserAdminResponse> findByEmail(String email) {
         return userAdminRepository.findByEmail(email)
-                .map(UserAdminResponse::toResponse);
-    }
-
-    @Override
-    public Mono<UserAdminResponse> disable(Integer id, Integer idUserAdminUpdateStatus) {
-        return userAdminRepository.findById(id)
-                .map(user -> {
-                    user.setStatus(States.INACTIVE);
-                    return user;
-                })
-                .flatMap(userAdminRepository::save)
-                .map(UserAdminResponse::toResponse);
-    }
-
-    @Override
-    public Mono<UserAdminResponse> enable(Integer id, Integer idUserAdminUpdateStatus) {
-        return userAdminRepository.findById(id)
-                .map(user -> {
-                    user.setStatus(States.ACTIVE);
-                    return user;
-                })
-                .flatMap(userAdminRepository::save)
                 .map(UserAdminResponse::toResponse);
     }
 
@@ -144,9 +159,50 @@ public class UserAdminServiceImpl implements UserAdminService {
     }
 
     @Override
-    public Flux<UserAdminResponse> findAll(Integer idUserAdmin) {
-        log.info("idUserAdmin: {}", idUserAdmin);
+    public Flux<UserAdminResponse> findAll() {
         return userAdminRepository.findAll()
+                .map(UserAdminResponse::toResponse);
+    }
+
+    @Override
+    public Mono<UserAdminResponse> disable(Integer idUserAdmin, Integer idUserAdminUpdateStatus) {
+        return userAdminRepository.findById(idUserAdminUpdateStatus)
+                .map(user -> {
+                    user.setStatus(States.INACTIVE);
+
+                    user.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+                    user.setUpdatedId(idUserAdmin);
+                    return user;
+                })
+                .flatMap(userAdminRepository::save)
+                .map(UserAdminResponse::toResponse);
+    }
+
+    @Override
+    public Mono<UserAdminResponse> enable(Integer idUserAdmin, Integer idUserAdminUpdateStatus) {
+        return userAdminRepository.findById(idUserAdminUpdateStatus)
+                .map(user -> {
+                    user.setStatus(States.ACTIVE);
+
+                    user.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+                    user.setUpdatedId(idUserAdmin);
+                    return user;
+                })
+                .flatMap(userAdminRepository::save)
+                .map(UserAdminResponse::toResponse);
+    }
+
+    @Override
+    public Mono<UserAdminResponse> delete(Integer id, Integer idUserAdminDelete) {
+        return userAdminRepository.findById(id)
+                .map(user -> {
+                    user.setStatus(States.DELETED);
+
+                    user.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+                    user.setUpdatedId(idUserAdminDelete);
+                    return user;
+                })
+                .flatMap(userAdminRepository::save)
                 .map(UserAdminResponse::toResponse);
     }
 }

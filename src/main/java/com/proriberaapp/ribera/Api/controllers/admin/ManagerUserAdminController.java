@@ -1,21 +1,20 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
-import com.proriberaapp.ribera.Infraestructure.services.admin.UserAdminService;
+import com.proriberaapp.ribera.Infraestructure.services.admin.UserAdminManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v1/admin/manager/user")
+@RequestMapping("/api/v1/admin/manager/userAdmin")
 @RequiredArgsConstructor
 @Slf4j
 public class ManagerUserAdminController {
 
-    private final UserAdminService userAdminService;
+    private final UserAdminManagerService userAdminManagerService;
     private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/register")
@@ -24,16 +23,7 @@ public class ManagerUserAdminController {
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
         log.info("idUserAdmin: " + idUserAdmin);
-        return userAdminService.register(idUserAdmin, registerRequest);
-    }
-
-    @PatchMapping("/update/password")
-    public Mono<UserAdminResponse> updatePassword(
-            @RequestParam Integer idUserAdminUpdatePassword,
-            @RequestParam String newPassword,
-            @RequestHeader("Authorization") String token) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
-        return userAdminService.updatePassword(idUserAdmin,idUserAdminUpdatePassword, newPassword);
+        return userAdminManagerService.register(idUserAdmin, registerRequest);
     }
 
     @PatchMapping("/update")
@@ -42,30 +32,16 @@ public class ManagerUserAdminController {
             @RequestBody UpdateUserAdminRequest updateRequest,
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
-        return userAdminService.update(idUserAdmin, idUserAdminUpdate, updateRequest);
+        return userAdminManagerService.update(idUserAdmin, idUserAdminUpdate, updateRequest);
     }
 
-    @DeleteMapping("/delete")
-    public Mono<Void> delete(@RequestParam Integer idUserAdminDelete,
-                             @RequestHeader("Authorization") String token) {
+    @PatchMapping("/update/password")
+    public Mono<UserAdminResponse> updatePassword(
+            @RequestParam Integer idUserAdminUpdatePassword,
+            @RequestParam String newPassword,
+            @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
-        return userAdminService.delete(idUserAdmin, idUserAdminDelete);
-    }
-
-    @GetMapping("/find/id")
-    public Mono<UserAdminResponse> findById(@RequestParam Integer idUserAdmin) {
-        return userAdminService.findById(idUserAdmin);
-    }
-
-    @GetMapping("/find/email")
-    public Mono<UserAdminResponse> findByEmail(@RequestParam String email) {
-        return userAdminService.findByEmail(email);
-    }
-
-    @GetMapping("/find/all")
-    public Flux<UserAdminResponse> findAll(@RequestHeader("Authorization") String token) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
-        return userAdminService.findAll(idUserAdmin);
+        return userAdminManagerService.updatePassword(idUserAdmin, idUserAdminUpdatePassword, newPassword);
     }
 
     @PatchMapping("/update/status/enable")
@@ -73,7 +49,7 @@ public class ManagerUserAdminController {
             @RequestParam Integer idUserAdminUpdateStatus,
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
-        return userAdminService.enable(idUserAdmin, idUserAdminUpdateStatus);
+        return userAdminManagerService.enable(idUserAdmin, idUserAdminUpdateStatus);
     }
 
     @PatchMapping("/update/status/disable")
@@ -81,7 +57,30 @@ public class ManagerUserAdminController {
             @RequestParam Integer idUserAdminUpdateStatus,
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
-        return userAdminService.disable(idUserAdmin, idUserAdminUpdateStatus);
+        return userAdminManagerService.disable(idUserAdmin, idUserAdminUpdateStatus);
+    }
+
+    @GetMapping("/find/id")
+    public Mono<UserAdminResponse> findById(@RequestParam Integer idUserAdmin) {
+        return userAdminManagerService.findById(idUserAdmin);
+    }
+
+    @GetMapping("/find/email")
+    public Mono<UserAdminResponse> findByEmail(@RequestParam String email) {
+        return userAdminManagerService.findByEmail(email);
+    }
+
+    @GetMapping("/find/all")
+    public Flux<UserAdminResponse> findAll() {
+        return userAdminManagerService.findAll();
+    }
+
+    @DeleteMapping("/delete")
+    public Mono<UserAdminResponse> delete(
+            @RequestParam Integer idUserAdminDelete,
+            @RequestHeader("Authorization") String token) {
+        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
+        return userAdminManagerService.delete(idUserAdmin, idUserAdminDelete);
     }
 
 }

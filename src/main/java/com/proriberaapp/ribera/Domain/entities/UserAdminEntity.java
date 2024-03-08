@@ -5,7 +5,6 @@ import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.Domain.enums.States;
 import com.proriberaapp.ribera.Domain.enums.TypeDocument;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
