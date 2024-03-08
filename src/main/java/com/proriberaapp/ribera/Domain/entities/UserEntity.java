@@ -62,8 +62,7 @@ public class UserEntity implements UserDetails {
     private String googleId;
     @Column("googleemail")
     private String googleEmail;
-    @Column("googlename")
-    private String googleName;
+    private String username;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

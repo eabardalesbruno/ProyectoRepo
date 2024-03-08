@@ -23,5 +23,5 @@ public record RegisterResponse(
         String googleAuth,
         String googleId,
         String googleEmail,
-        String googleName
+        String username
 ) {}

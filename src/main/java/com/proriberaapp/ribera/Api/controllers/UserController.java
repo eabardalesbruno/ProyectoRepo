@@ -19,7 +19,7 @@ public class UserController {
     @Autowired
     private TokenBoService tokenService;
 
-    @PostMapping("/registerbo")
+    @PostMapping("/loginbo")
     public TokenResponse registerUser(@RequestBody TokenRequest request) {
         return tokenService.getToken(request);
     }
@@ -53,7 +53,7 @@ public class UserController {
         user.setGoogleAuth(request.googleAuth());
         user.setGoogleId(request.googleId());
         user.setGoogleEmail(request.googleEmail());
-        user.setGoogleName(request.googleName());
+        user.setUsername(request.username());
 
         return userService.registerUser(user)
                 .map(savedUser -> new ResponseEntity<>(
@@ -78,17 +78,8 @@ public class UserController {
                                 savedUser.getGoogleAuth(),
                                 savedUser.getGoogleId(),
                                 savedUser.getGoogleEmail(),
-                                savedUser.getGoogleName()
+                                savedUser.getUsername()
                         ),
-                        HttpStatus.CREATED))
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
-    }
-
-    @PostMapping("/register/google")
-    public Mono<ResponseEntity<GoogleRegisterResponse>> registerWithGoogle(@RequestBody GoogleRegisterRequest request) {
-        return userService.registerWithGoogle(request.googleId(), request.email(), request.name())
-                .map(savedUser -> new ResponseEntity<>(
-                        new GoogleRegisterResponse(savedUser.getUserId(), savedUser.getEmail()),
                         HttpStatus.CREATED))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
     }
@@ -97,13 +88,6 @@ public class UserController {
     public Mono<ResponseEntity<LoginResponse>> loginUser(@RequestBody LoginRequest request) {
         return userService.login(request.email(), request.password())
                 .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
-    }
-
-    @PostMapping("/login/google")
-    public Mono<ResponseEntity<GoogleLoginResponse>> loginWithGoogle(@RequestBody GoogleLoginRequest request) {
-        return userService.loginWithGoogle(request.googleId())
-                .map(token -> new ResponseEntity<>(new GoogleLoginResponse(token), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
 }
