@@ -26,16 +26,61 @@ public class UserController {
 
     @PostMapping("/register")
     public Mono<ResponseEntity<RegisterResponse>> registerUser(@RequestBody RegisterRequest request) {
-        UserEntity user = UserEntity.builder()
-                .email(request.email())
-                .password(request.password())
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .build();
+
+        if (request.email() == null || request.password() == null ||
+                request.firstName() == null || request.lastName() == null) {
+            return Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+        }
+
+        UserEntity user = UserEntity.builder().build();
+        user.setEmail(request.email());
+        user.setPassword(request.password());
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setRegisterTypeId(request.registerTypeId());
+        user.setUserLevelId(request.userLevelId());
+        user.setCodeUser(request.codeUser());
+        user.setNationality(request.nationality());
+        user.setDocumentType(request.documentType());
+        user.setDocumentNumber(request.documentNumber());
+        user.setBirthDate(request.birthDate());
+        user.setSex(request.sex());
+        user.setRole(request.role());
+        user.setCivilStatus(request.civilStatus());
+        user.setCity(request.city());
+        user.setAddress(request.address());
+        user.setCellNumber(request.cellNumber());
+        user.setGoogleAuth(request.googleAuth());
+        user.setGoogleId(request.googleId());
+        user.setGoogleEmail(request.googleEmail());
+        user.setGoogleName(request.googleName());
 
         return userService.registerUser(user)
                 .map(savedUser -> new ResponseEntity<>(
-                        new RegisterResponse(savedUser.getUserId(), savedUser.getFirstName(), savedUser.getLastName()),
+                        new RegisterResponse(
+                                savedUser.getUserId(),
+                                savedUser.getFirstName(),
+                                savedUser.getLastName(),
+                                savedUser.getRegisterTypeId(),
+                                savedUser.getUserLevelId(),
+                                savedUser.getCodeUser(),
+                                savedUser.getNationality(),
+                                savedUser.getDocumentType(),
+                                savedUser.getDocumentNumber(),
+                                savedUser.getBirthDate(),
+                                savedUser.getSex(),
+                                savedUser.getRole(),
+                                savedUser.getCivilStatus(),
+                                savedUser.getCity(),
+                                savedUser.getAddress(),
+                                savedUser.getCellNumber(),
+                                savedUser.getEmail(),
+                                savedUser.getPassword(),
+                                savedUser.getGoogleAuth(),
+                                savedUser.getGoogleId(),
+                                savedUser.getGoogleEmail(),
+                                savedUser.getGoogleName()
+                        ),
                         HttpStatus.CREATED))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
     }

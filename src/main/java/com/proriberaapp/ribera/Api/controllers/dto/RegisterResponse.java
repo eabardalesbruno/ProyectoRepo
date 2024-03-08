@@ -1,7 +1,28 @@
 package com.proriberaapp.ribera.Api.controllers.dto;
 
+import java.sql.Timestamp;
+
 public record RegisterResponse(
         Integer userId,
         String firstName,
-        String lastName
+        String lastName,
+        Integer registerTypeId,
+        Integer userLevelId,
+        Integer codeUser,
+        String nationality,
+        String documentType,
+        String documentNumber,
+        Timestamp birthDate,
+        String sex,
+        Integer role,
+        String civilStatus,
+        String city,
+        String address,
+        String cellNumber,
+        String email,
+        String password,
+        String googleAuth,
+        String googleId,
+        String googleEmail,
+        String googleName
 ) {}
