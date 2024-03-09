@@ -30,17 +30,14 @@ public class UserServiceImpl implements UserService {
                     validatePassword(user.getPassword());
                     return userRepository.findByDocumentNumber(user.getDocumentNumber())
                             .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
-                            .then(Mono.just(user)); // Devuelve el usuario después de la validación
+                            .then(Mono.just(user));
                 }))
                 .map(userToSave -> {
                     userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword())); // Cifra la contraseña
                     return userToSave;
                 })
-                .flatMap(userRepository::save); // Guarda el usuario cifrado en la base de datos
+                .flatMap(userRepository::save);
     }
-    //validacion por email que no exista.
-    //validacion de contraseña que tenga numeros y letras.
-    //validacion que no se repita el dni.
     private void validatePassword(String password) {
         if (!password.matches("^(?=.*[0-9])(?=.*[a-zA-Z]).{8,}$")) {
             throw new RuntimeException("La contraseña debe contener al menos una letra y un número, y tener una longitud mínima de 8 caracteres");
@@ -54,13 +51,13 @@ public class UserServiceImpl implements UserService {
                     validatePassword(user.getPassword());
                     return userRepository.findByDocumentNumber(user.getDocumentNumber())
                             .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
-                            .then(Mono.just(user)); // Devuelve el usuario después de la validación
+                            .then(Mono.just(user));
                 }))
                 .map(userToSave -> {
                     userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword())); // Cifra la contraseña
                     return userToSave;
                 })
-                .flatMap(userRepository::save); // Guarda el usuario cifrado en la base de datos
+                .flatMap(userRepository::save);
     }
 
     @Override
