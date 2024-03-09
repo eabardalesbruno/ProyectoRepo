@@ -2,10 +2,12 @@ package com.proriberaapp.ribera.Api.controllers;
 import com.proriberaapp.ribera.Api.controllers.dto.*;
 import com.proriberaapp.ribera.Domain.entities.UserEntity;
 import com.proriberaapp.ribera.Infraestructure.services.TokenBoService;
+import com.proriberaapp.ribera.Infraestructure.services.UserApiClient;
 import com.proriberaapp.ribera.Infraestructure.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.token.TokenService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -15,6 +17,12 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TokenService tokenService;
+
+    @Autowired
+    private UserApiClient userApiClient;
 
     @PostMapping("/register")
     public Mono<ResponseEntity<RegisterResponse>> registerUser(@RequestBody RegisterRequest request) {
@@ -81,32 +89,5 @@ public class UserController {
         return userService.login(request.email(), request.password())
                 .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
-    }
-
-    @GetMapping("/search/{username}")
-    public ResponseEntity<UserDataDTO> searchUser(@PathVariable String username) {
-        UserDataDTO userDataDTO = userService.searchUser(username);
-        if (userDataDTO != null) {
-            return ResponseEntity.ok(userDataDTO);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @PostMapping("/api/users/registerbo")
-    public Mono<ResponseEntity<UserEntity>> registerUser(@RequestBody UserEntity user) {
-        return userService.registerUser(user)
-                .map(savedUser -> new ResponseEntity<>(savedUser, HttpStatus.CREATED))
-                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
-    }
-
-    @PostMapping("/loginbo")
-    public ResponseEntity<TokenResponseDTO> loginUser(@RequestBody LoginRequestDTO loginRequestDTO) {
-        String token = userService.loginUser(loginRequestDTO.getUsername(), loginRequestDTO.getPassword());
-        if (token != null) {
-            return null;
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
     }
 }
