@@ -3,6 +3,7 @@ import com.proriberaapp.ribera.Api.controllers.dto.*;
 import com.proriberaapp.ribera.Domain.entities.UserEntity;
 import com.proriberaapp.ribera.Infraestructure.services.TokenBoService;
 import com.proriberaapp.ribera.Infraestructure.services.UserApiClient;
+import com.proriberaapp.ribera.Infraestructure.services.UserRegistrationService;
 import com.proriberaapp.ribera.Infraestructure.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,10 +20,13 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private TokenService tokenService;
+    private UserApiClient userApiClient;
+    private final UserRegistrationService userRegistrationService;
 
     @Autowired
-    private UserApiClient userApiClient;
+    public UserController(UserRegistrationService userRegistrationService) {
+        this.userRegistrationService = userRegistrationService;
+    }
 
     @PostMapping("/register")
     public Mono<ResponseEntity<RegisterResponse>> registerUser(@RequestBody RegisterRequest request) {
@@ -89,5 +93,12 @@ public class UserController {
         return userService.login(request.email(), request.password())
                 .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
+    }
+
+    @PostMapping("/registerAndLogin")
+    public Mono<ResponseEntity<String>> registerAndLoginUser(@RequestBody RegisterAndLoginRequest request) {
+        return userRegistrationService.loginAndRegisterUser(request.username(), request.password())
+                .thenReturn(ResponseEntity.ok("Usuario registrado y logueado exitosamente"))
+                .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(e.getMessage())));
     }
 }

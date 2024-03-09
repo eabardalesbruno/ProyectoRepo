@@ -77,8 +77,13 @@
 			<version>0.11.2</version>
 			<scope>runtime</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.bitbucket.b_c</groupId>
+            <artifactId>jose4j</artifactId>
+            <version>0.7.0</version>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>
