@@ -16,14 +16,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private TokenBoService tokenService;
-
-    @PostMapping("/loginbo")
-    public TokenResponse registerUser(@RequestBody TokenRequest request) {
-        return tokenService.getToken(request);
-    }
-
     @PostMapping("/register")
     public Mono<ResponseEntity<RegisterResponse>> registerUser(@RequestBody RegisterRequest request) {
 

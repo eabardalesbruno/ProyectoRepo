@@ -1,5 +1,7 @@
 package com.proriberaapp.ribera.Infraestructure.services;
 
+import com.proriberaapp.ribera.Api.controllers.dto.LoginRequest;
+import com.proriberaapp.ribera.Api.controllers.dto.RegisterRequest;
 import com.proriberaapp.ribera.Domain.entities.UserEntity;
 import reactor.core.publisher.Mono;
 
