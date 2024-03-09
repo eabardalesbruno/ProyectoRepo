@@ -103,7 +103,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String loginUser(String username, String password) {
-        // Llamar al cliente API para hacer login y obtener el token
         return userApiClient.loginUser(username, password);
     }
 }

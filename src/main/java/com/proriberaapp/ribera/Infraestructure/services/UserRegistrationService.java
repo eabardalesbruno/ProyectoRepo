@@ -32,7 +32,7 @@ public class UserRegistrationService {
             UserDataDTO userDataDTO = userApiClient.searchUser(username);
             if (userDataDTO != null) {
                 UserApiEntity userApiEntity = new UserApiEntity();
-                userApiEntity.setUsername(userDataDTO.getUsername());
+                userApiEntity.setUsername(username);
                 userApiEntity.setDocumentNumber(userDataDTO.getDocumentNumber());
                 userApiEntity.setCivilStatus(userDataDTO.getCivilStatus());
                 userApiEntity.setEmail(userDataDTO.getEmail());

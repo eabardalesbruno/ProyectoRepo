@@ -19,16 +19,18 @@ public class UserApiClient {
     }
 
     public UserDataDTO searchUser(String username) {
-        UserDataDTO userDataDTO = restTemplate.getForObject(SEARCH_USER_URL + username, UserDataDTO.class);
+        String urlWithUsername = SEARCH_USER_URL + "?value=" + username;
+
+        UserDataDTO userDataDTO = restTemplate.getForObject(urlWithUsername, UserDataDTO.class);
+
         if (userDataDTO != null) {
             return userDataDTO;
         } else {
-            throw new RuntimeException("No se pudieron obtener los datos del usuario desde la API");
+            throw new RuntimeException("Failed to retrieve user data from the API");
         }
     }
 
     public String loginUser(String username, String password) {
-        // Preparar el cuerpo de la solicitud
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         JSONObject request = new JSONObject();
@@ -36,10 +38,8 @@ public class UserApiClient {
         request.put("password", password);
         HttpEntity<String> entity = new HttpEntity<>(request.toString(), headers);
 
-        // Realizar la solicitud POST para iniciar sesión
         ResponseEntity<String> response = restTemplate.exchange(LOGIN_USER_URL, HttpMethod.POST, entity, String.class);
 
-        // Verificar si la solicitud fue exitosa y devolver el token
         if (response.getStatusCode().is2xxSuccessful()) {
             return response.getBody();
         } else {

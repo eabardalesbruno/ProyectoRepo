@@ -98,7 +98,15 @@ public class UserController {
     @PostMapping("/registerAndLogin")
     public Mono<ResponseEntity<String>> registerAndLoginUser(@RequestBody RegisterAndLoginRequest request) {
         return userRegistrationService.loginAndRegisterUser(request.username(), request.password())
-                .thenReturn(ResponseEntity.ok("Usuario registrado y logueado exitosamente"))
+                .flatMap(token -> {
+                    UserEntity newUser = UserEntity.builder()
+                            .email(request.email())
+                            .password(request.password())
+                            .username(request.username())
+                            .build();
+                    return userService.saveUser(newUser)
+                            .thenReturn(ResponseEntity.ok("Usuario registrado y logueado exitosamente"));
+                })
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(e.getMessage())));
     }
 }
