@@ -82,4 +82,31 @@ public class UserController {
                 .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
+
+    @GetMapping("/search/{username}")
+    public ResponseEntity<UserDataDTO> searchUser(@PathVariable String username) {
+        UserDataDTO userDataDTO = userService.searchUser(username);
+        if (userDataDTO != null) {
+            return ResponseEntity.ok(userDataDTO);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/api/users/registerbo")
+    public Mono<ResponseEntity<UserEntity>> registerUser(@RequestBody UserEntity user) {
+        return userService.registerUser(user)
+                .map(savedUser -> new ResponseEntity<>(savedUser, HttpStatus.CREATED))
+                .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+    }
+
+    @PostMapping("/loginbo")
+    public ResponseEntity<TokenResponseDTO> loginUser(@RequestBody LoginRequestDTO loginRequestDTO) {
+        String token = userService.loginUser(loginRequestDTO.getUsername(), loginRequestDTO.getPassword());
+        if (token != null) {
+            return null;
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
 }

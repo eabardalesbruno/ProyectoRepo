@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
+import com.proriberaapp.ribera.Api.controllers.dto.UserDataDTO;
 import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
 import com.proriberaapp.ribera.Domain.entities.UserEntity;
 import org.springframework.data.r2dbc.repository.Query;
@@ -12,5 +13,7 @@ public interface UserRepository extends R2dbcRepository<UserEntity, Integer> {
     Mono<UserEntity> findByEmail(String email);
     Mono<UserEntity> findByGoogleId(String googleId);
     Mono<UserEntity> findByDocumentNumber(String documentNumber);
+    UserDataDTO save(UserDataDTO userDataDTO);
+
 
 }

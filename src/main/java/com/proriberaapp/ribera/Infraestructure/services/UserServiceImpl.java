@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.services;
 
+import com.proriberaapp.ribera.Api.controllers.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
 import com.proriberaapp.ribera.Domain.entities.UserEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserRepository;
@@ -18,6 +19,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtUtil;
+    @Autowired
+    private UserApiClient userApiClient;
 
     @Override
     public Mono<UserEntity> registerUser(UserEntity user) {
@@ -87,5 +90,23 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByGoogleId(googleId)
                 .map(user -> jwtUtil.generateToken(user))
                 .switchIfEmpty(Mono.error(new RuntimeException("Usuario no encontrado")));
+    }
+
+    @Override
+    public UserDataDTO searchUser(String username) {
+        // Llamar al cliente API para buscar el usuario por username
+        return userApiClient.searchUser(username);
+    }
+
+    @Override
+    public UserDataDTO registerUser(UserDataDTO userDataDTO) {
+        // Registrar el usuario en la base de datos
+        return userRepository.save(userDataDTO);
+    }
+
+    @Override
+    public String loginUser(String username, String password) {
+        // Llamar al cliente API para hacer login y obtener el token
+        return userApiClient.loginUser(username, password);
     }
 }
