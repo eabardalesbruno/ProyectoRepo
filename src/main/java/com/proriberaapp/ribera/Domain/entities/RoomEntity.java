@@ -3,6 +3,8 @@ package com.proriberaapp.ribera.Domain.entities;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
@@ -12,14 +14,19 @@ import java.sql.Timestamp;
 @Builder
 @Table("room")
 public class RoomEntity {
+    @Id
+    @Column("roomid")
     private Integer roomId;
+    @Column("roomname")
     private String roomName;
     private String image;
     private String occupation;
     private String terms;
     private String wifi;
     private String beds;
+    @Column("checkin")
     private Timestamp checkIn;
+    @Column("checkout")
     private Timestamp checkOut;
     private BigDecimal price;
     private Integer points;
