@@ -1,4 +1,4 @@
-package com.proriberaapp.ribera.Infraestructure.services;
+package com.proriberaapp.ribera.Infraestructure.services.impl;
 
 import com.proriberaapp.ribera.Api.controllers.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;

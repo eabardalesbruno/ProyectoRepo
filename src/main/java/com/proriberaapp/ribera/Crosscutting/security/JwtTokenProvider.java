@@ -19,7 +19,7 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration}")
+    @Value("${jwt.expiration.admin}")
     private long jwtExpirationMs;
 
     public String generateTokenAdmin(UserAdminEntity userDetails) {
@@ -56,6 +56,15 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
+    }
+
+    public Integer getIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(getKey(jwtSecret))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("id", Integer.class);
     }
 
     public Claims getClaimsFromToken(String token) {

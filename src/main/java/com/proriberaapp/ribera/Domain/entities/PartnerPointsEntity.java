@@ -1,34 +1,16 @@
 package com.proriberaapp.ribera.Domain.entities;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.relational.core.mapping.Table;
+
+@Getter
+@Setter
+@Builder
+@Table("partnerpoints")
 public class PartnerPointsEntity {
     private Integer partnerPointId;
     private Integer userId;
     private Integer partnerPoints;
-
-    public PartnerPointsEntity() {
-    }
-
-    public Integer getPartnerPointId() {
-        return partnerPointId;
-    }
-
-    public void setPartnerPointId(Integer partnerPointId) {
-        this.partnerPointId = partnerPointId;
-    }
-
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    public Integer getPartnerPoints() {
-        return partnerPoints;
-    }
-
-    public void setPartnerPoints(Integer partnerPoints) {
-        this.partnerPoints = partnerPoints;
-    }
 }

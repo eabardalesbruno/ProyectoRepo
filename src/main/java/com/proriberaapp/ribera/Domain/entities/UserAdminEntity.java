@@ -5,7 +5,6 @@ import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.Domain.enums.States;
 import com.proriberaapp.ribera.Domain.enums.TypeDocument;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -46,11 +45,11 @@ public class UserAdminEntity implements UserDetails {
     @Column("createdat")
     private Timestamp createdAt;
     @Column("createdid")
-    private String createdId;
+    private Integer createdId;
     @Column("updatedat")
     private Timestamp updatedAt;
     @Column("updatedid")
-    private String updatedId;
+    private Integer updatedId;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

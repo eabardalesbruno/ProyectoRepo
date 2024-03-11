@@ -1,25 +1,15 @@
 package com.proriberaapp.ribera.Domain.entities;
 
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.relational.core.mapping.Table;
+
+@Getter
+@Setter
+@Builder
+@Table("bookingstate")
 public class BookingStateEntity {
     private Integer bookingStateId;
     private String bookingStateName;
-
-    public BookingStateEntity() {
-    }
-
-    public Integer getBookingStateId() {
-        return bookingStateId;
-    }
-
-    public void setBookingStateId(Integer bookingStateId) {
-        this.bookingStateId = bookingStateId;
-    }
-
-    public String getBookingStateName() {
-        return bookingStateName;
-    }
-
-    public void setBookingStateName(String bookingStateName) {
-        this.bookingStateName = bookingStateName;
-    }
 }
