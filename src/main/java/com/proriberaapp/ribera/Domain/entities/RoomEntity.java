@@ -24,4 +24,21 @@ public class RoomEntity {
     private BigDecimal price;
     private Integer points;
     private String info;
+
+    public static RoomEntity from(RoomEntity room) {
+        return RoomEntity.builder()
+                .roomId(room.getRoomId())
+                .roomName(room.getRoomName())
+                .image(room.getImage())
+                .occupation(room.getOccupation())
+                .terms(room.getTerms())
+                .wifi(room.getWifi())
+                .beds(room.getBeds())
+                .checkIn(room.getCheckIn())
+                .checkOut(room.getCheckOut())
+                .price(room.getPrice())
+                .points(room.getPoints())
+                .info(room.getInfo())
+                .build();
+    }
 }

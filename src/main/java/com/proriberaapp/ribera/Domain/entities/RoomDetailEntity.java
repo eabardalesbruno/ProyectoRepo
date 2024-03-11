@@ -13,5 +13,13 @@ public class RoomDetailEntity {
     private Integer roomDetailId;
     private Integer roomId;
     private String information;
+
+    public static RoomDetailEntity from(RoomDetailEntity roomDetailEntity) {
+        return RoomDetailEntity.builder()
+                .roomDetailId(roomDetailEntity.getRoomDetailId())
+                .roomId(roomDetailEntity.getRoomId())
+                .information(roomDetailEntity.getInformation())
+                .build();
+    }
 }
 

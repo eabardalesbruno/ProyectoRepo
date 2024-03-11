@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Infraestructure.services.impl;
 
 import com.proriberaapp.ribera.Domain.entities.BookingDetailEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.BookingDetailRepository;
 import com.proriberaapp.ribera.Infraestructure.services.BookingDetailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,33 +13,53 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Slf4j
 public class BookingDetailServiceImpl implements BookingDetailService {
+    private final BookingDetailRepository bookingDetailRepository;
     @Override
     public Mono<BookingDetailEntity> save(BookingDetailEntity bookingDetailEntity) {
-        return null;
+        Integer roomId = bookingDetailEntity.getRoomId();
+        Integer bookingId = bookingDetailEntity.getBookingId();
+        Integer paymentStateId = bookingDetailEntity.getPaymentStateId();
+        return bookingDetailRepository.findByRoomIdAndBookingIdAndPaymentStateId(
+                        roomId, bookingId, paymentStateId
+                ).hasElement()
+                .flatMap(exists -> exists
+                        ? Mono.error(new IllegalArgumentException("Booking detail already exists"))
+                        : Mono.just(bookingDetailEntity))
+                .switchIfEmpty(bookingDetailRepository.save(bookingDetailEntity));
     }
 
     @Override
     public Flux<BookingDetailEntity> saveAll(Flux<BookingDetailEntity> bookingDetailEntity) {
-        return null;
+        Flux<Integer> roomIds = bookingDetailEntity.map(BookingDetailEntity::getRoomId);
+        Flux<Integer> bookingIds = bookingDetailEntity.map(BookingDetailEntity::getBookingId);
+        Flux<Integer> paymentStateIds = bookingDetailEntity.map(BookingDetailEntity::getPaymentStateId);
+        return bookingDetailRepository.findByRoomIdAndBookingIdAndPaymentStateId(
+                roomIds, bookingIds, paymentStateIds
+                )
+                .collectList()
+                .flatMapMany(bookingDetailEntities -> bookingDetailRepository.saveAll(
+                        bookingDetailEntity.filter(
+                                bookingDetailEntity1 -> !bookingDetailEntities.contains(bookingDetailEntity1))
+                ));
     }
 
     @Override
     public Mono<BookingDetailEntity> findById(String id) {
-        return null;
+        return bookingDetailRepository.findById(Integer.parseInt(id));
     }
 
     @Override
     public Flux<BookingDetailEntity> findAll() {
-        return null;
+        return bookingDetailRepository.findAll();
     }
 
     @Override
     public Mono<Void> deleteById(String id) {
-        return null;
+        return bookingDetailRepository.deleteById(Integer.parseInt(id));
     }
 
     @Override
     public Mono<BookingDetailEntity> update(BookingDetailEntity bookingDetailEntity) {
-        return null;
+        return bookingDetailRepository.save(bookingDetailEntity);
     }
 }

@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Infraestructure.services.impl;
 
 import com.proriberaapp.ribera.Domain.entities.PaymentStateEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.PaymentStateRepository;
 import com.proriberaapp.ribera.Infraestructure.services.PaymentStateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,33 +13,43 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Slf4j
 public class PaymentStateServiceImpl implements PaymentStateService {
+    private final PaymentStateRepository paymentStateRepository;
     @Override
     public Mono<PaymentStateEntity> save(PaymentStateEntity paymentStateEntity) {
-        return null;
+        return paymentStateRepository.findByPaymentStateName(paymentStateEntity.getPaymentStateName()).hasElement()
+                .flatMap(exists -> exists
+                        ? Mono.error(new IllegalArgumentException("Payment state already exists"))
+                        : Mono.just(paymentStateEntity))
+                .switchIfEmpty(paymentStateRepository.save(paymentStateEntity));
     }
 
     @Override
     public Flux<PaymentStateEntity> saveAll(Flux<PaymentStateEntity> paymentStateEntity) {
-        return null;
+        return paymentStateRepository.findByPaymentStateName(paymentStateEntity)
+                .collectList()
+                .flatMapMany(paymentStateEntities -> paymentStateRepository.saveAll(
+                        paymentStateEntity.filter(
+                                paymentStateEntity1 -> !paymentStateEntities.contains(paymentStateEntity1))
+                ));
     }
 
     @Override
     public Mono<PaymentStateEntity> findById(String id) {
-        return null;
+        return paymentStateRepository.findById(Integer.valueOf(id));
     }
 
     @Override
     public Flux<PaymentStateEntity> findAll() {
-        return null;
+        return paymentStateRepository.findAll();
     }
 
     @Override
     public Mono<Void> deleteById(String id) {
-        return null;
+        return paymentStateRepository.deleteById(Integer.valueOf(id));
     }
 
     @Override
     public Mono<PaymentStateEntity> update(PaymentStateEntity paymentStateEntity) {
-        return null;
+        return paymentStateRepository.save(paymentStateEntity);
     }
 }

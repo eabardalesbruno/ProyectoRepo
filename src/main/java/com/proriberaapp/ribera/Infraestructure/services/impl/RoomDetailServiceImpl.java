@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Infraestructure.services.impl;
 
 import com.proriberaapp.ribera.Domain.entities.RoomDetailEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.RoomDetailRepository;
 import com.proriberaapp.ribera.Infraestructure.services.RoomDetailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,33 +13,34 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Slf4j
 public class RoomDetailServiceImpl implements RoomDetailService {
+    private final RoomDetailRepository roomDetailRepository;
     @Override
     public Mono<RoomDetailEntity> save(RoomDetailEntity roomDetailEntity) {
-        return null;
+        return roomDetailRepository.save(roomDetailEntity);
     }
 
     @Override
     public Flux<RoomDetailEntity> saveAll(Flux<RoomDetailEntity> roomDetailEntity) {
-        return null;
+        return roomDetailRepository.saveAll(roomDetailEntity);
     }
 
     @Override
     public Mono<RoomDetailEntity> findById(String id) {
-        return null;
+        return roomDetailRepository.findById(Integer.valueOf(id));
     }
 
     @Override
     public Flux<RoomDetailEntity> findAll() {
-        return null;
+        return roomDetailRepository.findAll();
     }
 
     @Override
     public Mono<Void> deleteById(String id) {
-        return null;
+        return roomDetailRepository.deleteById(Integer.valueOf(id));
     }
 
     @Override
     public Mono<RoomDetailEntity> update(RoomDetailEntity roomDetailEntity) {
-        return null;
+        return roomDetailRepository.save(roomDetailEntity);
     }
 }
