@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -24,12 +26,13 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public Flux<RoomEntity> saveAll(Flux<RoomEntity> roomEntity) {
-        return roomRepository.findByRoomName(roomEntity)
+    public Flux<RoomEntity> saveAll(List<RoomEntity> roomEntity) {
+        return roomRepository.findAllByRoomNameIn(roomEntity)
                 .collectList()
                 .flatMapMany(roomEntities -> roomRepository.saveAll(
-                        roomEntity.filter(
-                                roomEntity1 -> !roomEntities.contains(roomEntity1))
+                        roomEntity.stream()
+                                .filter(roomEntity1 -> !roomEntities.contains(roomEntity1))
+                                .toList()
                 ));
     }
 

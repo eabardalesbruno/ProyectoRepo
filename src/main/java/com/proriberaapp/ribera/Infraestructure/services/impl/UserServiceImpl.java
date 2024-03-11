@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
 import com.proriberaapp.ribera.Domain.entities.UserEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserRepository;
+import com.proriberaapp.ribera.Infraestructure.services.UserApiClient;
 import com.proriberaapp.ribera.Infraestructure.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -14,27 +14,11 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class RoomController {
     private final RoomService roomService;
-    @PostMapping("/register")
-    public Mono<RoomEntity> registerRoom(@RequestBody RoomEntity roomEntity) {
-        return roomService.save(roomEntity);
-    }
-    @PostMapping("/register/all")
-    public Flux<RoomEntity> registerAllRooms(@RequestBody Flux<RoomEntity> roomEntity) {
-        return roomService.saveAll(roomEntity);
-    }
-    @PostMapping("/update")
-    public Mono<RoomEntity> updateRoom(@RequestBody RoomEntity roomEntity) {
-        return roomService.update(roomEntity);
-    }
-    @PostMapping("/delete")
-    public Mono<Void> deleteRoom(@RequestParam String id) {
-        return roomService.deleteById(id);
-    }
-    @PostMapping("/find")
+    @GetMapping("/find")
     public Mono<RoomEntity> findRoom(@RequestParam String id) {
         return roomService.findById(id);
     }
-    @PostMapping("/find/all")
+    @GetMapping("/find/all")
     public Flux<RoomEntity> findAllRooms() {
         return roomService.findAll();
     }

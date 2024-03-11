@@ -16,7 +16,7 @@ public class PartnerPointsServiceImpl implements PartnerPointsService {
     private final PartnerPointsRepository partnerPointsRepository;
     @Override
     public Mono<PartnerPointsEntity> save(PartnerPointsEntity partnerPointsEntity) {
-        return partnerPointsRepository.findByPartnerIdAndUserId(partnerPointsEntity.getPartnerPointId(), partnerPointsEntity.getUserId()).hasElement()
+        return partnerPointsRepository.findByPartnerPointIdAndUserId(partnerPointsEntity.getPartnerPointId(), partnerPointsEntity.getUserId()).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Partner points already exists"))
                         : Mono.just(partnerPointsEntity))
@@ -27,7 +27,7 @@ public class PartnerPointsServiceImpl implements PartnerPointsService {
     public Flux<PartnerPointsEntity> saveAll(Flux<PartnerPointsEntity> partnerPointsEntity) {
         Flux<Integer> partnerPointsIds = partnerPointsEntity.map(PartnerPointsEntity::getPartnerPointId);
         Flux<Integer> userIds = partnerPointsEntity.map(PartnerPointsEntity::getUserId);
-        return partnerPointsRepository.findByPartnerIdAndUserId(partnerPointsIds, userIds)
+        return partnerPointsRepository.findByPartnerPointIdAndUserId(partnerPointsIds, userIds)
                 .collectList()
                 .flatMapMany(partnerPointsEntities -> partnerPointsRepository.saveAll(
                         partnerPointsEntity.filter(

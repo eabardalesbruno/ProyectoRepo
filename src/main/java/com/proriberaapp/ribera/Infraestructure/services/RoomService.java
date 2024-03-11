@@ -4,9 +4,11 @@ import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface RoomService {
     Mono<RoomEntity> save(RoomEntity roomEntity);
-    Flux<RoomEntity> saveAll(Flux<RoomEntity> roomEntity);
+    Flux<RoomEntity> saveAll(List<RoomEntity> roomEntity);
     Mono<RoomEntity> findById(String id);
     Flux<RoomEntity> findAll();
     Mono<Void> deleteById(String id);

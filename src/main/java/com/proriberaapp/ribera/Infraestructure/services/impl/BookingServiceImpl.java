@@ -19,7 +19,7 @@ public class BookingServiceImpl implements BookingService {
         Integer userId = bookingEntity.getBookingId();
         Integer paymentMethodId = bookingEntity.getPaymentMethodId();
         Integer bookingStateId = bookingEntity.getBookingStateId();
-        return bookingRepository.findByUserIDAndPaymentMethodIdAndBookingStateId(
+        return bookingRepository.findByUserIdAndPaymentMethodIdAndBookingStateId(
                 userId, paymentMethodId, bookingStateId
                 ).hasElement()
                 .flatMap(exists -> exists
@@ -33,7 +33,7 @@ public class BookingServiceImpl implements BookingService {
         Flux<Integer> userIds = bookingEntity.map(BookingEntity::getBookingId);
         Flux<Integer> paymentMethodIds = bookingEntity.map(BookingEntity::getPaymentMethodId);
         Flux<Integer> bookingStateIds = bookingEntity.map(BookingEntity::getBookingStateId);
-        return bookingRepository.findByUserIDAndPaymentMethodIdAndBookingStateId(
+        return bookingRepository.findByUserIdAndPaymentMethodIdAndBookingStateId(
                 userIds, paymentMethodIds, bookingStateIds
                 )
                 .collectList()
