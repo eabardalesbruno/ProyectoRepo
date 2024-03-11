@@ -12,7 +12,6 @@ public interface UserAdminManagerService {
     Mono<UserAdminResponse> updatePasswordBySolicitude(Integer idUserAdmin, Integer idUserAdminUpdatePassword, String newPassword, String oldPassword);
     Mono<UserAdminResponse> updatePasswordByVerificationCode(String verificationCode, String newPassword);
     Mono<UserAdminResponse> updatePasswordByVerificationCode(Integer idUserAdmin, String verificationCode, String newPassword);
-
     Mono<UserAdminResponse> requestUpdatePassword(RequestUpdateUserAdminRequest requestUpdateRequest);
     Mono<UserAdminResponse> findByEmail(String email);
     Mono<UserAdminResponse> findById(Integer id);

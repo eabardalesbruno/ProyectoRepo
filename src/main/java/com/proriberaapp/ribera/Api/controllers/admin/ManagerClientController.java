@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1/admin/manager/user")
 @RequiredArgsConstructor
 @Slf4j
-public class ManagerUserController {
+public class ManagerClientController {
 
     private final UserAdminManagerService userAdminManagerService;
     private final JwtTokenProvider jwtTokenProvider;

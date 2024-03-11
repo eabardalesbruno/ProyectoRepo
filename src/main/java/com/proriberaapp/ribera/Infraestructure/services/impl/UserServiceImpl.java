@@ -1,4 +1,4 @@
-package com.proriberaapp.ribera.Infraestructure.services;
+package com.proriberaapp.ribera.Infraestructure.services.impl;
 
 import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
 import com.proriberaapp.ribera.Domain.entities.UserEntity;
