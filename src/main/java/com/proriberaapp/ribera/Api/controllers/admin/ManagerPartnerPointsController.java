@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/admin/manager/partner-points")
 @RequiredArgsConstructor
@@ -18,13 +20,6 @@ public class ManagerPartnerPointsController {
             @RequestBody PartnerPointsEntity partnerPointsEntity
     ) {
         return partnerPointsService.save(partnerPointsEntity);
-    }
-
-    @PostMapping("/register/all")
-    public Flux<PartnerPointsEntity> registerAllPartnerPoints(
-            @RequestBody Flux<PartnerPointsEntity> partnerPointsEntity
-    ) {
-        return partnerPointsService.saveAll(partnerPointsEntity);
     }
 
     @PatchMapping("/update")
