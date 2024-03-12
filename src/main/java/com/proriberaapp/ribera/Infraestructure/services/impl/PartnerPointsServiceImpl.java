@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -20,18 +22,6 @@ public class PartnerPointsServiceImpl implements PartnerPointsService {
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Partner points already exists"))
                         : partnerPointsRepository.save(partnerPointsEntity));
-    }
-
-    @Override
-    public Flux<PartnerPointsEntity> saveAll(Flux<PartnerPointsEntity> partnerPointsEntity) {
-        Flux<Integer> partnerPointsIds = partnerPointsEntity.map(PartnerPointsEntity::getPartnerPointId);
-        Flux<Integer> userIds = partnerPointsEntity.map(PartnerPointsEntity::getUserId);
-        return partnerPointsRepository.findByPartnerPointIdAndUserId(partnerPointsIds, userIds)
-                .collectList()
-                .flatMapMany(partnerPointsEntities -> partnerPointsRepository.saveAll(
-                        partnerPointsEntity.filter(
-                                partnerPointsEntity1 -> !partnerPointsEntities.contains(partnerPointsEntity1))
-                ));
     }
 
     @Override
