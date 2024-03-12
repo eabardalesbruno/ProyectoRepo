@@ -108,12 +108,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserEntity findByEmail(String email) {
-        return null;
+    public Mono<UserEntity> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Override
     public void updatePassword(UserEntity user, String newPassword) {
-
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user).block();
     }
 }

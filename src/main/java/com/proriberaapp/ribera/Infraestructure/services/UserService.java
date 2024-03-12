@@ -15,7 +15,7 @@ public interface UserService {
     UserDataDTO searchUser(String username);
     UserDataDTO registerUser(UserDataDTO userDataDTO);
     String loginUser(String username, String password);
-    UserEntity findByEmail(String email);
+    Mono<UserEntity> findByEmail(String email);
 
     void updatePassword(UserEntity user, String newPassword);
 }
