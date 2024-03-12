@@ -106,4 +106,14 @@ public class UserServiceImpl implements UserService {
     public String loginUser(String username, String password) {
         return userApiClient.loginUser(username, password);
     }
+
+    @Override
+    public UserEntity findByEmail(String email) {
+        return null;
+    }
+
+    @Override
+    public void updatePassword(UserEntity user, String newPassword) {
+
+    }
 }
