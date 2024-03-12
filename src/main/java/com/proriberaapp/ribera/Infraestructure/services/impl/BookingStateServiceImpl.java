@@ -19,8 +19,7 @@ public class BookingStateServiceImpl implements BookingStateService {
         return bookingStateRepository.findByBookingStateName(bookingStateEntity.getBookingStateName()).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Booking state already exists"))
-                        : Mono.just(bookingStateEntity))
-                .switchIfEmpty(bookingStateRepository.save(bookingStateEntity));
+                        : bookingStateRepository.save(bookingStateEntity));
     }
 
     @Override

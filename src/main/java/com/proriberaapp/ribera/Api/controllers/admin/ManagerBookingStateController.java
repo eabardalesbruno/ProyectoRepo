@@ -8,7 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v1/admin/manager/partner-points")
+@RequestMapping("/api/v1/admin/manager/booking-state")
 @RequiredArgsConstructor
 public class ManagerBookingStateController {
     private final BookingStateService bookingStateService;

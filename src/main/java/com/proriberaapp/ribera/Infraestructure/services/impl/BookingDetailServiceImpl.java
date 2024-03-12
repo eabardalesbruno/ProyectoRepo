@@ -24,8 +24,7 @@ public class BookingDetailServiceImpl implements BookingDetailService {
                 ).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Booking detail already exists"))
-                        : Mono.just(bookingDetailEntity))
-                .switchIfEmpty(bookingDetailRepository.save(bookingDetailEntity));
+                        : bookingDetailRepository.save(bookingDetailEntity));
     }
 
     @Override

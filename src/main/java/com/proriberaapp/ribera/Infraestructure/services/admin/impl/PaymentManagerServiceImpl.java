@@ -34,6 +34,11 @@ public class PaymentManagerServiceImpl implements PaymentManagerService {
     }
 
     @Override
+    public Mono<PaymentResponse> findPayment(String paymentId) {
+        return null;
+    }
+
+    @Override
     public Mono<String> confirmPayment(Integer adminId, String paymentId) {
         return null;
     }

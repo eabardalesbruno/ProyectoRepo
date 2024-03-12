@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.RegisterTypeRequest;
 import com.proriberaapp.ribera.Domain.entities.RegisterTypeEntity;
 import com.proriberaapp.ribera.Infraestructure.services.RegisterTypeService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ public class ManagerRegisterTypeController {
 
     @PostMapping("/register")
     public Mono<RegisterTypeEntity> registerRegisterType(
-            @RequestBody RegisterTypeEntity registerTypeEntity) {
+            @RequestBody RegisterTypeRequest registerTypeEntity) {
         return registerTypeService.save(registerTypeEntity);
     }
 

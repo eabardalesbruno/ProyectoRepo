@@ -21,8 +21,7 @@ public class RoomServiceImpl implements RoomService {
         return roomRepository.findByRoomName(roomEntity.getRoomName()).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Room already exists"))
-                        : Mono.just(roomEntity))
-                .switchIfEmpty(roomRepository.save(roomEntity));
+                        : roomRepository.save(roomEntity));
     }
 
     @Override

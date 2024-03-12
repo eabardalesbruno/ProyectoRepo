@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.services.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.RegisterTypeRequest;
 import com.proriberaapp.ribera.Domain.entities.RegisterTypeEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RegisterTypeRepository;
 import com.proriberaapp.ribera.Infraestructure.services.RegisterTypeService;
@@ -15,12 +16,11 @@ import reactor.core.publisher.Mono;
 public class RegisterTypeServiceImpl implements RegisterTypeService {
     private final RegisterTypeRepository registerTypeRepository;
     @Override
-    public Mono<RegisterTypeEntity> save(RegisterTypeEntity registerTypeEntity) {
-        return registerTypeRepository.findByRegisterTypeName(registerTypeEntity.getRegisterTypeName()).hasElement()
+    public Mono<RegisterTypeEntity> save(RegisterTypeRequest registerTypeRequest) {
+        return registerTypeRepository.findByRegisterTypeName(registerTypeRequest.registerTypeName()).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Register type already exists"))
-                        : Mono.just(registerTypeEntity))
-                .switchIfEmpty(registerTypeRepository.save(registerTypeEntity));
+                        : registerTypeRepository.save(registerTypeRequest.toEntity()));
     }
 
     @Override

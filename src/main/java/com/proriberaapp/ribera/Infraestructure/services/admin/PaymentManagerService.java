@@ -10,6 +10,7 @@ public interface PaymentManagerService {
     Flux<String> listConfirmedPayments();
     Flux<String> listRejectedPayments();
     Flux<PaymentResponse> listPayments();
+    Mono<PaymentResponse> findPayment(String paymentId);
 
     Mono<String> confirmPayment(Integer adminId, String paymentId);
     Mono<String> rejectPayment(Integer adminId, String paymentId);

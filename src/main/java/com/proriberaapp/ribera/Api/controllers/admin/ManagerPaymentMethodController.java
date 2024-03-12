@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentMethodRequest;
 import com.proriberaapp.ribera.Domain.entities.PaymentMethodEntity;
 import com.proriberaapp.ribera.Infraestructure.services.PaymentMethodService;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +28,14 @@ public class ManagerPaymentMethodController {
 
     @PostMapping("/register")
     public Mono<PaymentMethodEntity> registerPaymentMethod(
-            @RequestBody PaymentMethodEntity paymentMethodEntity
+            @RequestBody PaymentMethodRequest paymentMethodEntity
     ) {
         return paymentMethodService.save(paymentMethodEntity);
     }
 
     @PostMapping("/register/all")
     public Flux<PaymentMethodEntity> registerAllPaymentMethods(
-            @RequestBody Flux<PaymentMethodEntity> paymentMethodEntity
+            @RequestBody Flux<PaymentMethodRequest> paymentMethodEntity
     ) {
         return paymentMethodService.saveAll(paymentMethodEntity);
     }

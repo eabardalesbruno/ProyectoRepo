@@ -19,8 +19,7 @@ public class PaymentStateServiceImpl implements PaymentStateService {
         return paymentStateRepository.findByPaymentStateName(paymentStateEntity.getPaymentStateName()).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Payment state already exists"))
-                        : Mono.just(paymentStateEntity))
-                .switchIfEmpty(paymentStateRepository.save(paymentStateEntity));
+                        : paymentStateRepository.save(paymentStateEntity));
     }
 
     @Override

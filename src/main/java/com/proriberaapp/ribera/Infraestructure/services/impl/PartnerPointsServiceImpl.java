@@ -19,8 +19,7 @@ public class PartnerPointsServiceImpl implements PartnerPointsService {
         return partnerPointsRepository.findByPartnerPointIdAndUserId(partnerPointsEntity.getPartnerPointId(), partnerPointsEntity.getUserId()).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Partner points already exists"))
-                        : Mono.just(partnerPointsEntity))
-                .switchIfEmpty(partnerPointsRepository.save(partnerPointsEntity));
+                        : partnerPointsRepository.save(partnerPointsEntity));
     }
 
     @Override

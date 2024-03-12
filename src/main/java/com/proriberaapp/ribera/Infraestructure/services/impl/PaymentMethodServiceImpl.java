@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.services.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentMethodRequest;
 import com.proriberaapp.ribera.Domain.entities.PaymentMethodEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentMethodRepository;
 import com.proriberaapp.ribera.Infraestructure.services.PaymentMethodService;
@@ -15,21 +16,21 @@ import reactor.core.publisher.Mono;
 public class PaymentMethodServiceImpl implements PaymentMethodService {
     private final PaymentMethodRepository paymentMethodRepository;
     @Override
-    public Mono<PaymentMethodEntity> save(PaymentMethodEntity paymentMethodEntity) {
-        return paymentMethodRepository.findByDescription(paymentMethodEntity.getDescription()).hasElement()
+    public Mono<PaymentMethodEntity> save(PaymentMethodRequest paymentMethodRequest) {
+        return paymentMethodRepository.findByDescription(paymentMethodRequest.description()).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Payment method already exists"))
-                        : Mono.just(paymentMethodEntity))
-                .switchIfEmpty(paymentMethodRepository.save(paymentMethodEntity));
+                        : paymentMethodRepository.save(paymentMethodRequest.toEntity()));
     }
 
     @Override
-    public Flux<PaymentMethodEntity> saveAll(Flux<PaymentMethodEntity> paymentMethodEntity) {
-        return paymentMethodRepository.findByDescription(paymentMethodEntity)
+    public Flux<PaymentMethodEntity> saveAll(Flux<PaymentMethodRequest> paymentMethodRequest) {
+        return paymentMethodRepository.findByDescription(paymentMethodRequest)
                 .collectList()
                 .flatMapMany(paymentMethodEntities -> paymentMethodRepository.saveAll(
-                        paymentMethodEntity.filter(
-                                paymentMethodEntity1 -> !paymentMethodEntities.contains(paymentMethodEntity1))
+                        paymentMethodRequest.filter(
+                                paymentMethodEntity1 -> !paymentMethodEntities.contains(paymentMethodEntity1.toEntity()))
+                                .map(PaymentMethodRequest::toEntity)
                 ));
     }
 
