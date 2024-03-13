@@ -16,9 +16,9 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
     private final Map<Long, PasswordResetTokenEntity> tokenMap = new HashMap<>();
 
     @Override
-    public PasswordResetTokenEntity findByUserAndToken(Integer user, String token) {
+    public PasswordResetTokenEntity findByUserIdAndToken(Integer userId, String token) {
         for (PasswordResetTokenEntity resetToken : tokenMap.values()) {
-            if (resetToken.getUserid().equals(user) && resetToken.getToken().equals(token)) {
+            if (resetToken.getUserid().equals(userId) && resetToken.getToken().equals(token)) {
                 return resetToken;
             }
         }
@@ -27,16 +27,13 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
 
     @Override
     public <S extends PasswordResetTokenEntity> S save(S entity) {
-        tokenMap.put(entity.getId(), entity);
+        tokenMap.put(Long.valueOf(entity.getUserid()), entity);
         return entity;
     }
 
     @Override
     public <S extends PasswordResetTokenEntity> Iterable<S> saveAll(Iterable<S> entities) {
-        for (S entity : entities) {
-            tokenMap.put(entity.getId(), entity);
-        }
-        return entities;
+        return null;
     }
 
     @Override
@@ -72,7 +69,7 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
 
     @Override
     public void delete(PasswordResetTokenEntity entity) {
-        tokenMap.remove(entity.getId());
+        tokenMap.remove(entity.getUserid());
     }
 
     @Override
@@ -85,7 +82,7 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
     @Override
     public void deleteAll(Iterable<? extends PasswordResetTokenEntity> entities) {
         for (PasswordResetTokenEntity entity : entities) {
-            tokenMap.remove(entity.getId());
+            tokenMap.remove(entity.getUserid());
         }
     }
 

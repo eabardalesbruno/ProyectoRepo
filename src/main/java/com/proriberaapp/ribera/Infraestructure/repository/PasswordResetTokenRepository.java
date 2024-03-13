@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PasswordResetTokenRepository extends CrudRepository<PasswordResetTokenEntity, Long> {
-
-    PasswordResetTokenEntity findByUserAndToken(Integer user, String token);
+    PasswordResetTokenEntity findByUserIdAndToken(Integer userId, String token);
 }
