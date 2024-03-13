@@ -2,30 +2,25 @@ package com.proriberaapp.ribera.Domain.entities;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
-import org.springframework.security.core.userdetails.UserDetails;
 
-import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 
 @Data
 @Builder
 @Table("passwordresettoken")
 public class PasswordResetTokenEntity {
     @Id
-    @Column("userid")
-    private Integer userId;
+    @Column("userclientid")
+    private Integer userClientId;
 
     @Column("token")
     private String token;
 
     @Column("passwordstate")
-    private Integer passwordstate;
+    private Integer passwordState;
 
     @Column("expirydate")
     private Timestamp expiryDate;
@@ -34,10 +29,10 @@ public class PasswordResetTokenEntity {
     public PasswordResetTokenEntity() {}
 
     // Constructor con los argumentos requeridos
-    public PasswordResetTokenEntity(Integer userid, String token, Integer passwordstate, Timestamp expiryDate) {
-        this.userId = userid;
+    public PasswordResetTokenEntity(Integer userClientId, String token, Integer passwordState, Timestamp expiryDate) {
+        this.userClientId = userClientId;
         this.token = token;
-        this.passwordstate = passwordstate;
+        this.passwordState = passwordState;
         this.expiryDate = expiryDate;
     }
 }

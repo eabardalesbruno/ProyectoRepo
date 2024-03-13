@@ -3,7 +3,7 @@ import com.proriberaapp.ribera.Api.controllers.dto.*;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.services.UserApiClient;
 import com.proriberaapp.ribera.Infraestructure.services.UserRegistrationService;
-import com.proriberaapp.ribera.Infraestructure.services.UserService;
+import com.proriberaapp.ribera.Infraestructure.services.UserClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 public class UserController {
 
     @Autowired
-    private UserService userService;
+    private UserClientService userClientService;
 
     @Autowired
     private UserApiClient userApiClient;
@@ -57,7 +57,7 @@ public class UserController {
         user.setGoogleEmail(request.googleEmail());
         user.setUsername(request.username());
 
-        return userService.registerUser(user)
+        return userClientService.registerUser(user)
                 .map(savedUser -> new ResponseEntity<>(
                         new RegisterResponse(
                                 savedUser.getUserClientId(),
@@ -88,7 +88,7 @@ public class UserController {
 
     @PostMapping("/login")
     public Mono<ResponseEntity<LoginResponse>> loginUser(@RequestBody LoginRequest request) {
-        return userService.login(request.email(), request.password())
+        return userClientService.login(request.email(), request.password())
                 .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
@@ -102,7 +102,7 @@ public class UserController {
                             .password(request.password())
                             .username(request.username())
                             .build();
-                    return userService.saveUser(newUser)
+                    return userClientService.saveUser(newUser)
                             .thenReturn(ResponseEntity.ok("Usuario registrado y logueado exitosamente"));
                 })
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(e.getMessage())));
