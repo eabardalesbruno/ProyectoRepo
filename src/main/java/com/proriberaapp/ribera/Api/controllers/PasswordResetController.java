@@ -1,9 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers;
 
-import com.proriberaapp.ribera.Domain.entities.PasswordResetTokenEntity;
-import com.proriberaapp.ribera.Domain.entities.UserEntity;
 import com.proriberaapp.ribera.Infraestructure.services.PasswordResetTokenService;
-import com.proriberaapp.ribera.Infraestructure.services.UserService;
+import com.proriberaapp.ribera.Infraestructure.services.UserClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -23,12 +19,12 @@ import java.util.Random;
 @RequestMapping("/api/v1/password-reset")
 public class PasswordResetController {
 
-    private final UserService userService;
+    private final UserClientService userClientService;
     private final PasswordResetTokenService passwordResetTokenService;
 
     @Autowired
-    public PasswordResetController(UserService userService, PasswordResetTokenService passwordResetTokenService) {
-        this.userService = userService;
+    public PasswordResetController(UserClientService userClientService, PasswordResetTokenService passwordResetTokenService) {
+        this.userClientService = userClientService;
         this.passwordResetTokenService = passwordResetTokenService;
     }
 
@@ -76,12 +72,12 @@ public class PasswordResetController {
 
     @PostMapping("/request")
     public Mono<ResponseEntity<Map<String, Object>>> requestPasswordReset(@RequestParam String email) {
-        return userService.findByEmail(email)
-                .flatMap(user -> passwordResetTokenService.generateTokenAndSave(user.getUserId())
+        return userClientService.findByEmail(email)
+                .flatMap(user -> passwordResetTokenService.generateTokenAndSave(user.getUserClientId())
                         .map(resetToken -> {
                             Map<String, Object> responseMap = new HashMap<>();
                             responseMap.put("token", resetToken.getToken());
-                            responseMap.put("userId", resetToken.getUserId());
+                            responseMap.put("userId", resetToken.getUserClientId());
                             return ResponseEntity.ok(responseMap);
                         }))
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Usuario no encontrado"))));
@@ -97,7 +93,7 @@ public class PasswordResetController {
 
     @PostMapping("/verify")
     public Mono<ResponseEntity<String>> verifyPasswordReset(@RequestParam String email, @RequestParam String code) {
-        return userService.findByEmail(email)
+        return userClientService.findByEmail(email)
                 .flatMap(user -> {
                     boolean isValid = passwordResetTokenService.verifyToken(user, code);
                     if (isValid) {
@@ -111,12 +107,12 @@ public class PasswordResetController {
 
     @PostMapping("/confirm")
     public Mono<ResponseEntity<String>> confirmPasswordReset(@RequestParam String email, @RequestParam String code, @RequestParam String newPassword) {
-        return userService.findByEmail(email)
+        return userClientService.findByEmail(email)
                 .flatMap(user -> {
                     boolean isValid = passwordResetTokenService.verifyToken(user, code);
                     if (isValid) {
-                        userService.updatePassword(user, newPassword);
-                        passwordResetTokenService.markTokenAsUsed(user.getUserId());
+                        userClientService.updatePassword(user, newPassword);
+                        passwordResetTokenService.markTokenAsUsed(user.getUserClientId());
                         return Mono.just(ResponseEntity.ok("Su nueva contraseña ha sido generada exitosamente"));
                     } else {
                         return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El código no es válido"));

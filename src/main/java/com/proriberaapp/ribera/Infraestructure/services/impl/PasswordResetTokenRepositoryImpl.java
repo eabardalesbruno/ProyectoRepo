@@ -17,7 +17,7 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
     @Override
     public PasswordResetTokenEntity findByUserIdAndToken(Integer userId, String token) {
         for (PasswordResetTokenEntity resetToken : tokenMap.values()) {
-            if (resetToken.getUserId().equals(userId) && resetToken.getToken().equals(token)) {
+            if (resetToken.getUserClientId().equals(userId) && resetToken.getToken().equals(token)) {
                 return resetToken;
             }
         }
@@ -27,7 +27,7 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
     @Override
     public PasswordResetTokenEntity findByUserId(Integer userId) {
         for (PasswordResetTokenEntity resetToken : tokenMap.values()) {
-            if (resetToken.getUserId().equals(userId)) {
+            if (resetToken.getUserClientId().equals(userId)) {
                 return resetToken;
             }
         }
@@ -37,16 +37,16 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
     @Override
     public void insertResetToken(Integer userId, String token, Timestamp expiryDate) {
         PasswordResetTokenEntity resetToken = new PasswordResetTokenEntity();
-        resetToken.setUserId(userId);
+        resetToken.setUserClientId(userId);
         resetToken.setToken(token);
         resetToken.setExpiryDate(expiryDate);
-        resetToken.setPasswordstate(0);
+        resetToken.setPasswordState(0);
         save(resetToken);
     }
 
     @Override
     public <S extends PasswordResetTokenEntity> S save(S entity) {
-        tokenMap.put(Long.valueOf(entity.getUserId()), entity);
+        tokenMap.put(Long.valueOf(entity.getUserClientId()), entity);
         return entity;
     }
 
@@ -88,7 +88,7 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
 
     @Override
     public void delete(PasswordResetTokenEntity entity) {
-        tokenMap.remove(entity.getUserId());
+        tokenMap.remove(entity.getUserClientId());
     }
 
     @Override
@@ -101,7 +101,7 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
     @Override
     public void deleteAll(Iterable<? extends PasswordResetTokenEntity> entities) {
         for (PasswordResetTokenEntity entity : entities) {
-            tokenMap.remove(entity.getUserId());
+            tokenMap.remove(entity.getUserClientId());
         }
     }
 

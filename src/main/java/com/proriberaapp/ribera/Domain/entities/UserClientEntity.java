@@ -1,6 +1,5 @@
 package com.proriberaapp.ribera.Domain.entities;
 
-import com.proriberaapp.ribera.Domain.enums.StatesUser;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -62,8 +61,6 @@ public class UserClientEntity implements UserDetails {
     @Column("googleemail")
     private String googleEmail;
     private String username;
-
-    private StatesUser status;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

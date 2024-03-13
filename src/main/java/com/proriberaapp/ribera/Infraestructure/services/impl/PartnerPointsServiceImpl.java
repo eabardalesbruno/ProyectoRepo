@@ -23,6 +23,18 @@ public class PartnerPointsServiceImpl implements PartnerPointsService {
     }
 
     @Override
+    public Flux<PartnerPointsEntity> saveAll(Flux<PartnerPointsEntity> partnerPointsEntity) {
+        Flux<Integer> partnerPointsIds = partnerPointsEntity.map(PartnerPointsEntity::getPartnerPointId);
+        Flux<Integer> userIds = partnerPointsEntity.map(PartnerPointsEntity::getUserClientId);
+        return partnerPointsRepository.findByPartnerPointIdAndUserClientId(partnerPointsIds, userIds)
+                .collectList()
+                .flatMapMany(partnerPointsEntities -> partnerPointsRepository.saveAll(
+                        partnerPointsEntity.filter(
+                                partnerPointsEntity1 -> !partnerPointsEntities.contains(partnerPointsEntity1))
+                ));
+    }
+
+    @Override
     public Mono<PartnerPointsEntity> findById(String id) {
         return partnerPointsRepository.findById(Integer.valueOf(id));
     }

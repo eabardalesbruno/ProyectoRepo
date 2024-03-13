@@ -13,6 +13,6 @@ public interface PasswordResetTokenRepository extends CrudRepository<PasswordRes
     PasswordResetTokenEntity findByUserIdAndToken(Integer userId, String token);
     PasswordResetTokenEntity findByUserId(Integer userId);
 
-    @Query(value = "INSERT INTO passwordresettoken (userid, token, passwordstate, expirydate) VALUES (:userId, :token, 0, :expiryDate)", nativeQuery = true)
-    void insertResetToken(@Param("userId") Integer userId, @Param("token") String token, @Param("expiryDate") Timestamp expiryDate);
+    @Query(value = "INSERT INTO passwordresettoken (userclientid, token, passwordstate, expirydate) VALUES (:userId, :token, 0, :expiryDate)", nativeQuery = true)
+    void insertResetToken(@Param("userClientId") Integer userClientId, @Param("token") String token, @Param("expiryDate") Timestamp expiryDate);
 }

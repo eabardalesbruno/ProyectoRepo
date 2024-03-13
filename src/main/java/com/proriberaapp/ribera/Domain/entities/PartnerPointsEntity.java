@@ -17,6 +17,6 @@ public class PartnerPointsEntity {
     private Integer partnerPointId;
     @Column("userclientid")
     private Integer userClientId;
-    @Column("points")
-    private Integer points;
+    @Column("partnerid")
+    private Integer partnerPoints;
 }
