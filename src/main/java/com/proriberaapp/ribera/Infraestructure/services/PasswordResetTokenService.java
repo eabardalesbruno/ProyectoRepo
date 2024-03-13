@@ -57,16 +57,28 @@ public class PasswordResetTokenService {
     }
 
     private void executeInsertQuery(Integer userId, String token, Timestamp expiryDate) {
-        String insertQuery = "INSERT INTO passwordresettoken (userid, token, passwordstate, expirydate) VALUES (?, ?, ?, ?)";
+        String insertQuery = "INSERT INTO passwordresettoken (userid, token, passwordstate, expirydate) VALUES ("
+                + userId + ", '" + token + "', 0, '" + expiryDate + "')";
+
         connectionFactory.create()
                 .flatMapMany(connection -> connection.createStatement(insertQuery)
-                        .bind("$1", userId)
-                        .bind("$2", token)
-                        .bind("$3", 0)
-                        .bind("$4", expiryDate)
                         .execute()
-                        .flatMap(result -> Mono.just(result))
-                ).subscribe();
+                        .flatMap(result -> result.map((row, rowMetadata) -> row.get(0, Integer.class)))
+                )
+                .flatMap(rowsUpdated -> {
+                    if (rowsUpdated == 1) {
+                        return Mono.empty(); // Consulta de inserción exitosa
+                    } else {
+                        return Mono.error(new RuntimeException("Error al insertar en la tabla passwordresettoken"));
+                    }
+                })
+                .subscribe(
+                        success -> logger.info("Inserción en la tabla passwordresettoken exitosa"),
+                        error -> {
+                            logger.error("Error al insertar en la tabla passwordresettoken: " + error.getMessage());
+                            error.printStackTrace(); // Imprimir la traza de la excepción
+                        }
+                );
     }
 
     public void markTokenAsUsed(Integer userId) {
@@ -77,9 +89,17 @@ public class PasswordResetTokenService {
         }
     }
 
-    public boolean verifyToken(UserClientEntity user, String token) {
-        PasswordResetTokenEntity resetToken = tokenRepository.findByUserIdAndToken(user.getUserClientId(), token);
-        return resetToken != null && resetToken.getExpiryDate().after(Timestamp.valueOf(LocalDateTime.now()));
+    public Mono<Boolean> verifyToken(Integer userId, String token) {
+        String selectQuery = "SELECT COUNT(*) FROM passwordresettoken WHERE userid = " + userId +
+                " AND token = '" + token + "' AND expirydate > '" + Timestamp.valueOf(LocalDateTime.now()) + "'";
+
+        return connectionFactory.create()
+                .flatMapMany(connection -> connection.createStatement(selectQuery)
+                        .execute()
+                        .flatMap(result -> result.map((row, rowMetadata) -> row.get(0, Integer.class)))
+                        .map(count -> count == 1) // Convertir el resultado en un booleano
+                )
+                .next(); // Convertir Flux<Boolean> a Mono<Boolean>
     }
 
     private String generateRandomToken() {

@@ -62,7 +62,6 @@ public class PasswordResetController {
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Usuario no encontrado"))));
     }
 
-    // Method to generate a random 6-digit token
     private String generateRandomToken() {
         Random random = new Random();
         int token = 100000 + random.nextInt(900000);
@@ -73,21 +72,23 @@ public class PasswordResetController {
     public Mono<ResponseEntity<String>> verifyPasswordReset(@RequestParam String email, @RequestParam String code) {
         return userClientService.findByEmail(email)
                 .flatMap(user -> {
-                    boolean isValid = passwordResetTokenService.verifyToken(user, code);
-                    if (isValid) {
-                        return Mono.just(ResponseEntity.ok("El código es válido"));
-                    } else {
-                        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El código no es válido"));
-                    }
+                    return passwordResetTokenService.verifyToken(user.getUserClientId(), code)
+                            .flatMap(isValid -> {
+                                if (isValid) {
+                                    return Mono.just(ResponseEntity.ok("El código es válido"));
+                                } else {
+                                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El código no es válido"));
+                                }
+                            });
                 })
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")));
     }
-
+/*
     @PostMapping("/confirm")
     public Mono<ResponseEntity<String>> confirmPasswordReset(@RequestParam String email, @RequestParam String code, @RequestParam String newPassword) {
         return userClientService.findByEmail(email)
                 .flatMap(user -> {
-                    boolean isValid = passwordResetTokenService.verifyToken(user, code);
+                    boolean isValid = passwordResetTokenService.verifyToken(user.getUserClientId(), code);
                     if (isValid) {
                         userClientService.updatePassword(user, newPassword);
                         passwordResetTokenService.markTokenAsUsed(user.getUserClientId());
@@ -98,4 +99,6 @@ public class PasswordResetController {
                 })
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")));
     }
+
+ */
 }
