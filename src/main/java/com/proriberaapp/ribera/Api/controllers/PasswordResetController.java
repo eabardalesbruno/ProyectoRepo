@@ -23,13 +23,28 @@ public class PasswordResetController {
     @Autowired
     private PasswordResetTokenService passwordResetTokenService;
 
+    /*
     @PostMapping("/request")
     public Mono<ResponseEntity<String>> requestPasswordReset(@RequestParam String email) {
         return userService.findByEmail(email)
-                .flatMap(user -> {
-                    PasswordResetTokenEntity token = passwordResetTokenService.generateToken(user);
-                    return Mono.just(ResponseEntity.ok("Enviamos a su correo el código"));
-                })
+                .flatMap(user -> passwordResetTokenService.generateToken(user)
+                        .map(token -> {
+                            return ResponseEntity.ok("Enviamos a su correo el código");
+                        })
+                        .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No se pudo generar el token"))))
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")));
+    }
+     */
+    public PasswordResetController(UserService userService, PasswordResetTokenService passwordResetTokenService) {
+        this.userService = userService;
+        this.passwordResetTokenService = passwordResetTokenService;
+    }
+    @PostMapping("/request")
+    public Mono<ResponseEntity<String>> requestPasswordReset(@RequestParam String email) {
+        return userService.findByEmail(email)
+                .flatMap(user -> passwordResetTokenService.generateToken(user)
+                        .map(token -> ResponseEntity.ok("Enviamos a su correo el código"))
+                        .defaultIfEmpty(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No se pudo generar el token")))
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")));
     }
 

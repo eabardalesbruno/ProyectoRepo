@@ -57,7 +57,6 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
 
     @Override
     public Iterable<PasswordResetTokenEntity> findAllById(Iterable<Long> ids) {
-        // Implementación no necesaria para este ejemplo
         return null;
     }
 
