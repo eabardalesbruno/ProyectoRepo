@@ -8,11 +8,8 @@ import io.r2dbc.postgresql.PostgresqlConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-<<<<<<< HEAD
-=======
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory; // Importar la clase LoggerFactory
->>>>>>> jose-dev
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -33,15 +30,15 @@ public class PasswordResetTokenService {
         this.connectionFactory = connectionFactory;
     }
 
-<<<<<<< HEAD
-    public Mono<PasswordResetTokenEntity> generateToken(UserEntity user) {
+    public Mono<PasswordResetTokenEntity> generateToken(UserClientEntity user) {
         String token = generateRandomToken();
         PasswordResetTokenEntity resetToken = new PasswordResetTokenEntity();
-        resetToken.setUserid(user.getUserId().longValue());
+        resetToken.setUserClientId(user.getUserClientId());
         resetToken.setToken(token);
         resetToken.setExpiryDate(Timestamp.valueOf(LocalDateTime.now().plusMinutes(3))); // Token válido por 3 minutos
         return Mono.just(tokenRepository.save(resetToken));
-=======
+    }
+
     public Mono<PasswordResetTokenEntity> generateToken(Integer userId, String token, Timestamp expiryDate) {
         PasswordResetTokenEntity resetToken = new PasswordResetTokenEntity();
         resetToken.setUserClientId(userId);
@@ -87,7 +84,6 @@ public class PasswordResetTokenService {
             resetToken.setPasswordState(1); // Marcar el token como usado
             tokenRepository.save(resetToken);
         }
->>>>>>> jose-dev
     }
 
     public boolean verifyToken(UserClientEntity user, String token) {
@@ -97,6 +93,7 @@ public class PasswordResetTokenService {
     public PasswordResetTokenEntity saveToken(PasswordResetTokenEntity tokenEntity) {
         return tokenRepository.save(tokenEntity);
     }
+
     private String generateRandomToken() {
         Random random = new Random();
         int token = 100000 + random.nextInt(900000);

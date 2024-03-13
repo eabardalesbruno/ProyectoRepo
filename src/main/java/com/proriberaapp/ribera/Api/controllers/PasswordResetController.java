@@ -32,27 +32,6 @@ public class PasswordResetController {
     @PostMapping("/request")
     public Mono<ResponseEntity<Map<String, Object>>> requestPasswordReset(@RequestParam String email) {
         return userService.findByEmail(email)
-<<<<<<< HEAD
-                .flatMap(user -> passwordResetTokenService.generateToken(user)
-                        .map(token -> {
-                            return ResponseEntity.ok("Enviamos a su correo el código");
-                        })
-                        .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No se pudo generar el token"))))
-                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")));
-    }
-     */
-    public PasswordResetController(UserService userService, PasswordResetTokenService passwordResetTokenService) {
-        this.userService = userService;
-        this.passwordResetTokenService = passwordResetTokenService;
-    }
-    @PostMapping("/request")
-    public Mono<ResponseEntity<String>> requestPasswordReset(@RequestParam String email) {
-        return userService.findByEmail(email)
-                .flatMap(user -> passwordResetTokenService.generateToken(user)
-                        .map(token -> ResponseEntity.ok("Enviamos a su correo el código"))
-                        .defaultIfEmpty(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No se pudo generar el token")))
-                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")));
-=======
                 .flatMap(user -> {
                     String token = generateRandomToken();
                     Timestamp expiryDate = Timestamp.valueOf(LocalDateTime.now().plusMinutes(3)); // Ajustar según sea necesario
@@ -88,7 +67,6 @@ public class PasswordResetController {
         Random random = new Random();
         int token = 100000 + random.nextInt(900000);
         return String.valueOf(token);
->>>>>>> jose-dev
     }
 
     @PostMapping("/verify")

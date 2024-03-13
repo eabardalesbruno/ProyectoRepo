@@ -19,10 +19,10 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-@Table("public.user")
+@Table("userclient")
 public class UserApiEntity implements UserDetails {
     @Id
-    @Column("userid")
+    @Column("userclientid")
     private Integer userId;
     @Column("registertypeid")
     private Integer registerTypeId;
