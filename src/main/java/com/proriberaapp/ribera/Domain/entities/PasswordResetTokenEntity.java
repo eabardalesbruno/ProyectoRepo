@@ -13,28 +13,31 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 
-@Getter
-@Setter
+@Data
 @Builder
 @Table("passwordresettoken")
 public class PasswordResetTokenEntity {
     @Id
     @Column("userid")
-    private Integer userid;
+    private Integer userId;
 
     @Column("token")
     private String token;
 
+    @Column("passwordstate")
+    private Integer passwordstate;
+
     @Column("expirydate")
     private Timestamp expiryDate;
 
-    // Constructor with three arguments
-    public PasswordResetTokenEntity(Integer userid, String token, Timestamp expiryDate) {
-        this.userid = userid;
-        this.token = token;
-        this.expiryDate = expiryDate;
-    }
+    // Constructor sin argumentos
+    public PasswordResetTokenEntity() {}
 
-    public PasswordResetTokenEntity() { userid = this.getUserid(); token=this.getToken();expiryDate=this.getExpiryDate();
+    // Constructor con los argumentos requeridos
+    public PasswordResetTokenEntity(Integer userid, String token, Integer passwordstate, Timestamp expiryDate) {
+        this.userId = userid;
+        this.token = token;
+        this.passwordstate = passwordstate;
+        this.expiryDate = expiryDate;
     }
 }
