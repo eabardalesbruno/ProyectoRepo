@@ -18,7 +18,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-@Table("public.user")
+@Table("userclient")
 public class UserClientEntity implements UserDetails {
     @Id
     @Column("userclientid")
