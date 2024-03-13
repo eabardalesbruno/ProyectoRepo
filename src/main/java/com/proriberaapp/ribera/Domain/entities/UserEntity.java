@@ -71,7 +71,7 @@ public class UserEntity implements UserDetails {
 
     @Override
     public String getUsername() {
-        return null;
+        return username;
     }
 
     @Override
