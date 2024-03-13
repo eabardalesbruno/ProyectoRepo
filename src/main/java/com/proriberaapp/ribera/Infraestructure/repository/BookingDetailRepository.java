@@ -6,6 +6,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface BookingDetailRepository extends R2dbcRepository<BookingDetailEntity, Integer> {
-    Mono<BookingDetailEntity> findByRoomIdAndBookingIdAndPaymentStateId(Integer roomId, Integer bookingId, Integer paymentStateId);
-    Flux<BookingDetailEntity> findByRoomIdAndBookingIdAndPaymentStateId(Flux<Integer> roomId, Flux<Integer> bookingId, Flux<Integer> paymentStateId);
+    Mono<BookingDetailEntity> findByBookingIdAndPaymentStateId(Integer bookingId, Integer paymentStateId);
+    Flux<BookingDetailEntity> findByBookingIdAndPaymentStateId(Flux<Integer> bookingId, Flux<Integer> paymentStateId);
 }

@@ -1,6 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.services.admin.impl;
 
-import com.proriberaapp.ribera.Domain.entities.UserEntity;
+import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.services.admin.UserManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,47 +13,47 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class UserManagerServiceImpl implements UserManagerService {
     @Override
-    public Mono<UserEntity> updatePassword(Integer id, String newPassword) {
+    public Mono<UserClientEntity> updatePassword(Integer id, String newPassword) {
         return null;
     }
 
     @Override
-    public Mono<UserEntity> updatePassword(Integer id, String newPassword, String oldPassword) {
+    public Mono<UserClientEntity> updatePassword(Integer id, String newPassword, String oldPassword) {
         return null;
     }
 
     @Override
-    public Mono<UserEntity> requestUpdatePassword(String email) {
+    public Mono<UserClientEntity> requestUpdatePassword(String email) {
         return null;
     }
 
     @Override
-    public Mono<UserEntity> findByEmail(String email) {
+    public Mono<UserClientEntity> findByEmail(String email) {
         return null;
     }
 
     @Override
-    public Mono<UserEntity> findById(Integer id) {
+    public Mono<UserClientEntity> findById(Integer id) {
         return null;
     }
 
     @Override
-    public Flux<UserEntity> findAll() {
+    public Flux<UserClientEntity> findAll() {
         return null;
     }
 
     @Override
-    public Mono<UserEntity> disable(Integer id) {
+    public Mono<UserClientEntity> disable(Integer id) {
         return null;
     }
 
     @Override
-    public Mono<UserEntity> enable(Integer id) {
+    public Mono<UserClientEntity> enable(Integer id) {
         return null;
     }
 
     @Override
-    public Mono<UserEntity> delete(Integer id) {
+    public Mono<UserClientEntity> delete(Integer id) {
         return null;
     }
 }

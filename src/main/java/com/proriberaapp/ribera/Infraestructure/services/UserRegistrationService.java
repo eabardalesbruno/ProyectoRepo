@@ -2,13 +2,10 @@ package com.proriberaapp.ribera.Infraestructure.services;
 
 import com.proriberaapp.ribera.Api.controllers.dto.UserDataDTO;
 import com.proriberaapp.ribera.Domain.entities.UserApiEntity;
-import com.proriberaapp.ribera.Domain.entities.UserEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserApiRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 @Service

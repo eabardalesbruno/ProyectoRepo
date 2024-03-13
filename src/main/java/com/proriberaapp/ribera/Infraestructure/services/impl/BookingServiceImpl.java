@@ -16,11 +16,9 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     @Override
     public Mono<BookingEntity> save(BookingEntity bookingEntity) {
-        Integer userId = bookingEntity.getBookingId();
-        Integer paymentMethodId = bookingEntity.getPaymentMethodId();
+        Integer bookingId = bookingEntity.getBookingId();
         Integer bookingStateId = bookingEntity.getBookingStateId();
-        return bookingRepository.findByUserIdAndPaymentMethodIdAndBookingStateId(
-                userId, paymentMethodId, bookingStateId
+        return bookingRepository.findByBookingStateId(bookingStateId
                 ).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Booking already exists"))
@@ -29,12 +27,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Flux<BookingEntity> saveAll(Flux<BookingEntity> bookingEntity) {
-        Flux<Integer> userIds = bookingEntity.map(BookingEntity::getBookingId);
-        Flux<Integer> paymentMethodIds = bookingEntity.map(BookingEntity::getPaymentMethodId);
+        Flux<Integer> bookingId = bookingEntity.map(BookingEntity::getBookingId);
         Flux<Integer> bookingStateIds = bookingEntity.map(BookingEntity::getBookingStateId);
-        return bookingRepository.findByUserIdAndPaymentMethodIdAndBookingStateId(
-                userIds, paymentMethodIds, bookingStateIds
-                )
+        return bookingRepository.findByBookingStateId(bookingStateIds)
                 .collectList()
                 .flatMapMany(bookingEntities -> bookingRepository.saveAll(
                         bookingEntity.filter(

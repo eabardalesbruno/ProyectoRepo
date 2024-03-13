@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.Infraestructure.services.impl;
 
 import com.proriberaapp.ribera.Api.controllers.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
-import com.proriberaapp.ribera.Domain.entities.UserEntity;
+import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserRepository;
 import com.proriberaapp.ribera.Infraestructure.services.UserApiClient;
 import com.proriberaapp.ribera.Infraestructure.services.UserService;
@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -24,7 +23,7 @@ public class UserServiceImpl implements UserService {
     private UserApiClient userApiClient;
 
     @Override
-    public Mono<UserEntity> registerUser(UserEntity user) {
+    public Mono<UserClientEntity> registerUser(UserClientEntity user) {
         return userRepository.findByEmail(user.getEmail())
                 .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .then(Mono.defer(() -> {
@@ -45,7 +44,7 @@ public class UserServiceImpl implements UserService {
         }
     }
     @Override
-    public Mono<UserEntity> saveUser(UserEntity user) {
+    public Mono<UserClientEntity> saveUser(UserClientEntity user) {
         return userRepository.findByEmail(user.getEmail())
                 .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .then(Mono.defer(() -> {
@@ -74,8 +73,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<UserEntity> registerWithGoogle(String googleId, String email, String name) {
-        UserEntity user = UserEntity.builder()
+    public Mono<UserClientEntity> registerWithGoogle(String googleId, String email, String name) {
+        UserClientEntity user = UserClientEntity.builder()
                 .googleId(googleId)
                 .email(email)
                 .firstName(name)

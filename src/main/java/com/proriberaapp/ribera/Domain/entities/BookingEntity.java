@@ -16,24 +16,17 @@ public class BookingEntity {
     @Id
     @Column("bookingid")
     private Integer bookingId;
-    @Column("userid")
-    private Integer userId;
-    @Column("paymentmethodid")
-    private Integer paymentMethodId;
+    @Column("roomid")
+    private Integer roomId;
     @Column("paymentstateid")
     private Integer bookingStateId;
-    @Column("roomtype")
-    private String roomType;
-    @Column("roomname")
-    private String roomName;
-    private Integer capacity;
-    private BigDecimal cost;
+    private BigDecimal costRelative;
     @Column("riberapoints")
     private Integer riberaPoints;
     @Column("inresortspoints")
     private Integer inResortsPoints;
+    private Integer points;
     private String detail;
     private String amenities;
     private String services;
-    private String image;
 }

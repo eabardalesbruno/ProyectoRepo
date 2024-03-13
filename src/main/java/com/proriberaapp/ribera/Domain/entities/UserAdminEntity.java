@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.Domain.entities;
 
 import com.proriberaapp.ribera.Domain.enums.Permission;
 import com.proriberaapp.ribera.Domain.enums.Role;
-import com.proriberaapp.ribera.Domain.enums.States;
+import com.proriberaapp.ribera.Domain.enums.StatesUser;
 import com.proriberaapp.ribera.Domain.enums.TypeDocument;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,7 +40,7 @@ public class UserAdminEntity implements UserDetails {
     private TypeDocument typeDocument;
     private String document;
     private Role role;
-    private States status;
+    private StatesUser status;
     private List<Permission> permission;
     @Column("createdat")
     private Timestamp createdAt;

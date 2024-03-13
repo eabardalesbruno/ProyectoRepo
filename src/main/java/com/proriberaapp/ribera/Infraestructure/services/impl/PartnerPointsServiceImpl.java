@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -18,7 +16,7 @@ public class PartnerPointsServiceImpl implements PartnerPointsService {
     private final PartnerPointsRepository partnerPointsRepository;
     @Override
     public Mono<PartnerPointsEntity> save(PartnerPointsEntity partnerPointsEntity) {
-        return partnerPointsRepository.findByPartnerPointIdAndUserId(partnerPointsEntity.getPartnerPointId(), partnerPointsEntity.getUserId()).hasElement()
+        return partnerPointsRepository.findByPartnerPointIdAndUserClientId(partnerPointsEntity.getPartnerPointId(), partnerPointsEntity.getUserClientId()).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Partner points already exists"))
                         : partnerPointsRepository.save(partnerPointsEntity));
