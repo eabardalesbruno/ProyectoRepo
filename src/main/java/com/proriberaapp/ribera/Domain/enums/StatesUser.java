@@ -1,6 +1,6 @@
 package com.proriberaapp.ribera.Domain.enums;
 
-public enum States {
+public enum StatesUser {
     ACTIVE,
     INACTIVE,
     DELETED

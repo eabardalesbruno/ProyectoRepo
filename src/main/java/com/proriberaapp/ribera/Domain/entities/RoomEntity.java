@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Domain.entities;
 
+import com.proriberaapp.ribera.Domain.enums.StateRoom;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,16 +22,17 @@ public class RoomEntity {
     private String roomName;
     private String image;
     private String occupation;
-    private String terms;
-    private String wifi;
-    private String beds;
-    @Column("checkin")
-    private Timestamp checkIn;
-    @Column("checkout")
-    private Timestamp checkOut;
-    private BigDecimal price;
-    private Integer points;
+    private Integer capacity;
+    @Column("termsid")
+    private Integer termsId;
+    private Boolean wifi;
+    private Integer beds;
+    @Column("roomnumber")
+    private String roomNumber;
+    @Column("roomtype")
+    private String roomType;
     private String info;
+    private StateRoom state;
 
     public static RoomEntity from(RoomEntity room) {
         return RoomEntity.builder()
@@ -38,13 +40,8 @@ public class RoomEntity {
                 .roomName(room.getRoomName())
                 .image(room.getImage())
                 .occupation(room.getOccupation())
-                .terms(room.getTerms())
                 .wifi(room.getWifi())
                 .beds(room.getBeds())
-                .checkIn(room.getCheckIn())
-                .checkOut(room.getCheckOut())
-                .price(room.getPrice())
-                .points(room.getPoints())
                 .info(room.getInfo())
                 .build();
     }

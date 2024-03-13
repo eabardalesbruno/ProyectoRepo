@@ -1,16 +1,14 @@
 package com.proriberaapp.ribera.Crosscutting.security;
 
 import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
-import com.proriberaapp.ribera.Domain.entities.UserEntity;
+import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import java.security.Key;
-import java.util.Base64;
 import java.util.Date;
 
 @Component
@@ -39,7 +37,7 @@ public class JwtTokenProvider {
     }
 
 
-    public String generateToken(UserEntity subject) {
+    public String generateToken(UserClientEntity subject) {
         return Jwts.builder()
                 .setSubject(subject.getUsername())
                 .claim("roles", subject.getAuthorities())
