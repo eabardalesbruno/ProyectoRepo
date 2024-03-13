@@ -3,9 +3,9 @@ package com.proriberaapp.ribera.Infraestructure.services.impl;
 import com.proriberaapp.ribera.Api.controllers.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
-import com.proriberaapp.ribera.Infraestructure.repository.UserRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.Infraestructure.services.UserApiClient;
-import com.proriberaapp.ribera.Infraestructure.services.UserService;
+import com.proriberaapp.ribera.Infraestructure.services.UserClientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,9 +14,9 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserClientServiceImpl implements UserClientService {
 
-    private final UserRepository userRepository;
+    private final UserClientRepository userClientRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtUtil;
     @Autowired
@@ -24,11 +24,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<UserClientEntity> registerUser(UserClientEntity user) {
-        return userRepository.findByEmail(user.getEmail())
+        return userClientRepository.findByEmail(user.getEmail())
                 .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .then(Mono.defer(() -> {
                     validatePassword(user.getPassword());
-                    return userRepository.findByDocumentNumber(user.getDocumentNumber())
+                    return userClientRepository.findByDocumentNumber(user.getDocumentNumber())
                             .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
                             .then(Mono.just(user));
                 }))
@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
                     userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword())); // Cifra la contraseña
                     return userToSave;
                 })
-                .flatMap(userRepository::save);
+                .flatMap(userClientRepository::save);
     }
     private void validatePassword(String password) {
         if (!password.matches("^(?=.*[0-9])(?=.*[a-zA-Z]).{8,}$")) {
@@ -45,11 +45,11 @@ public class UserServiceImpl implements UserService {
     }
     @Override
     public Mono<UserClientEntity> saveUser(UserClientEntity user) {
-        return userRepository.findByEmail(user.getEmail())
+        return userClientRepository.findByEmail(user.getEmail())
                 .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .then(Mono.defer(() -> {
                     validatePassword(user.getPassword());
-                    return userRepository.findByDocumentNumber(user.getDocumentNumber())
+                    return userClientRepository.findByDocumentNumber(user.getDocumentNumber())
                             .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
                             .then(Mono.just(user));
                 }))
@@ -57,12 +57,12 @@ public class UserServiceImpl implements UserService {
                     userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword())); // Cifra la contraseña
                     return userToSave;
                 })
-                .flatMap(userRepository::save);
+                .flatMap(userClientRepository::save);
     }
 
     @Override
     public Mono<String> login(String email, String password) {
-        return userRepository.findByEmail(email)
+        return userClientRepository.findByEmail(email)
                 .flatMap(user -> {
                     if (passwordEncoder.matches(password, user.getPassword())) {
                         return Mono.just(jwtUtil.generateToken(user));
@@ -79,12 +79,12 @@ public class UserServiceImpl implements UserService {
                 .email(email)
                 .firstName(name)
                 .build();
-        return userRepository.save(user);
+        return userClientRepository.save(user);
     }
 
     @Override
     public Mono<String> loginWithGoogle(String googleId) {
-        return userRepository.findByGoogleId(googleId)
+        return userClientRepository.findByGoogleId(googleId)
                 .map(user -> jwtUtil.generateToken(user))
                 .switchIfEmpty(Mono.error(new RuntimeException("Usuario no encontrado")));
     }
@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDataDTO registerUser(UserDataDTO userDataDTO) {
         // Registrar el usuario en la base de datos
-        return userRepository.save(userDataDTO);
+        return userClientRepository.save(userDataDTO);
     }
 
     @Override
@@ -107,13 +107,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<UserEntity> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public Mono<UserClientEntity> findByEmail(String email) {
+        return userClientRepository.findByEmail(email);
     }
 
     @Override
-    public void updatePassword(UserEntity user, String newPassword) {
+    public void updatePassword(UserClientEntity user, String newPassword) {
         user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user).block();
+        userClientRepository.save(user);
     }
+
 }

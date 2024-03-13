@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -41,34 +43,29 @@ public class PasswordResetController {
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")));
     }
      */
-    public PasswordResetController(UserService userService, PasswordResetTokenService passwordResetTokenService) {
-        this.userService = userService;
-        this.passwordResetTokenService = passwordResetTokenService;
-    }
+
     @PostMapping("/request")
     public Mono<ResponseEntity<String>> requestPasswordReset(@RequestParam String email) {
-        return userService.findByEmail(email)
+        return userClientService.findByEmail(email)
                 .flatMap(user -> passwordResetTokenService.generateToken(user)
                         .map(token -> ResponseEntity.ok("Enviamos a su correo el código"))
                         .defaultIfEmpty(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No se pudo generar el token")))
-                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")));
-=======
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")))
                 .flatMap(user -> {
                     String token = generateRandomToken();
                     Timestamp expiryDate = Timestamp.valueOf(LocalDateTime.now().plusMinutes(3)); // Ajustar según sea necesario
 
-                    return passwordResetTokenService.generateToken(user.getUserId(), token, expiryDate)
+                    return passwordResetTokenService.generateToken(user.getUserClientId(), token, expiryDate)
                             .map(resetToken -> {
                                 Map<String, Object> responseMap = new HashMap<>();
                                 responseMap.put("token", resetToken.getToken());
-                                responseMap.put("userId", resetToken.getUserid());
+                                responseMap.put("userId", resetToken.getUserClientId());
                                 return ResponseEntity.ok(responseMap);
                             });
                 })
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Usuario no encontrado"))));
     }
 
-     */
 
     @PostMapping("/request")
     public Mono<ResponseEntity<Map<String, Object>>> requestPasswordReset(@RequestParam String email) {
@@ -88,7 +85,6 @@ public class PasswordResetController {
         Random random = new Random();
         int token = 100000 + random.nextInt(900000);
         return String.valueOf(token);
->>>>>>> jose-dev
     }
 
     @PostMapping("/verify")
