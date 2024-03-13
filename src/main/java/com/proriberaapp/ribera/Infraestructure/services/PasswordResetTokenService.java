@@ -1,11 +1,10 @@
 package com.proriberaapp.ribera.Infraestructure.services;
 
 import com.proriberaapp.ribera.Domain.entities.PasswordResetTokenEntity;
-import com.proriberaapp.ribera.Domain.entities.UserEntity;
+import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PasswordResetTokenRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.UserRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import io.r2dbc.postgresql.PostgresqlConnectionFactory;
-import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -15,28 +14,25 @@ import org.slf4j.LoggerFactory; // Importar la clase LoggerFactory
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Random;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 
 @Service
 public class PasswordResetTokenService {
 
     private final PasswordResetTokenRepository tokenRepository;
-    private final UserRepository userRepository;
+    private final UserClientRepository userClientRepository;
     private static final Logger logger = LoggerFactory.getLogger(PasswordResetTokenService.class);
     private final PostgresqlConnectionFactory connectionFactory;
     @Autowired
-    public PasswordResetTokenService(PasswordResetTokenRepository tokenRepository, UserRepository userRepository, PostgresqlConnectionFactory connectionFactory) {
+    public PasswordResetTokenService(PasswordResetTokenRepository tokenRepository, UserClientRepository userClientRepository, PostgresqlConnectionFactory connectionFactory) {
         this.tokenRepository = tokenRepository;
-        this.userRepository = userRepository;
+        this.userClientRepository = userClientRepository;
         this.connectionFactory = connectionFactory;
     }
 
     public Mono<PasswordResetTokenEntity> generateToken(Integer userId, String token, Timestamp expiryDate) {
         PasswordResetTokenEntity resetToken = new PasswordResetTokenEntity();
-        resetToken.setUserId(userId);
+        resetToken.setUserClientId(userId);
         resetToken.setToken(token);
         resetToken.setExpiryDate(expiryDate);
 
@@ -48,9 +44,9 @@ public class PasswordResetTokenService {
         Timestamp expiryDate = Timestamp.valueOf(LocalDateTime.now().plusMinutes(3));
         executeInsertQuery(userId, token, expiryDate);
         PasswordResetTokenEntity resetToken = PasswordResetTokenEntity.builder()
-                .userId(userId)
+                .userClientId(userId)
                 .token(token)
-                .passwordstate(0)
+                .passwordState(0)
                 .expiryDate(expiryDate)
                 .build();
 
@@ -76,13 +72,13 @@ public class PasswordResetTokenService {
     public void markTokenAsUsed(Integer userId) {
         PasswordResetTokenEntity resetToken = tokenRepository.findByUserId(userId);
         if (resetToken != null) {
-            resetToken.setPasswordstate(1); // Marcar el token como usado
+            resetToken.setPasswordState(1); // Marcar el token como usado
             tokenRepository.save(resetToken);
         }
     }
 
-    public boolean verifyToken(UserEntity user, String token) {
-        PasswordResetTokenEntity resetToken = tokenRepository.findByUserIdAndToken(user.getUserId(), token);
+    public boolean verifyToken(UserClientEntity user, String token) {
+        PasswordResetTokenEntity resetToken = tokenRepository.findByUserIdAndToken(user.getUserClientId(), token);
         return resetToken != null && resetToken.getExpiryDate().after(Timestamp.valueOf(LocalDateTime.now()));
     }
 

@@ -6,6 +6,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface PartnerPointsRepository extends R2dbcRepository<PartnerPointsEntity, Integer> {
-    Mono<Object> findByPartnerPointIdAndUserId(Integer partnerPointId, Integer userId);
-    Flux<Object> findByPartnerPointIdAndUserId(Flux<Integer> partnerPointId, Flux<Integer> userId);
+    Mono<Object> findByPartnerPointIdAndUserClientId(Integer partnerPointId, Integer userClientId);
+    Flux<Object> findByPartnerPointIdAndUserClientId(Flux<Integer> partnerPointId, Flux<Integer> userClientId);
 }

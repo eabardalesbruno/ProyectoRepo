@@ -1,8 +1,6 @@
 package com.proriberaapp.ribera.Domain.entities;
 
-import com.proriberaapp.ribera.Domain.enums.Role;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -20,10 +18,10 @@ import java.util.List;
 @Setter
 @Builder
 @Table("public.user")
-public class UserEntity implements UserDetails {
+public class UserClientEntity implements UserDetails {
     @Id
-    @Column("userid")
-    private Integer userId;
+    @Column("userclientid")
+    private Integer userClientId;
     @Column("registertypeid")
     private Integer registerTypeId;
     @Column("userlevelid")

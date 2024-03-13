@@ -1,14 +1,12 @@
 package com.proriberaapp.ribera.Api.controllers;
 import com.proriberaapp.ribera.Api.controllers.dto.*;
-import com.proriberaapp.ribera.Domain.entities.UserEntity;
-import com.proriberaapp.ribera.Infraestructure.services.TokenBoService;
+import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.services.UserApiClient;
 import com.proriberaapp.ribera.Infraestructure.services.UserRegistrationService;
-import com.proriberaapp.ribera.Infraestructure.services.UserService;
+import com.proriberaapp.ribera.Infraestructure.services.UserClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.token.TokenService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -17,7 +15,7 @@ import reactor.core.publisher.Mono;
 public class UserController {
 
     @Autowired
-    private UserService userService;
+    private UserClientService userClientService;
 
     @Autowired
     private UserApiClient userApiClient;
@@ -36,7 +34,7 @@ public class UserController {
             return Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
         }
 
-        UserEntity user = UserEntity.builder().build();
+        UserClientEntity user = UserClientEntity.builder().build();
         user.setEmail(request.email());
         user.setPassword(request.password());
         user.setFirstName(request.firstName());
@@ -59,10 +57,10 @@ public class UserController {
         user.setGoogleEmail(request.googleEmail());
         user.setUsername(request.username());
 
-        return userService.registerUser(user)
+        return userClientService.registerUser(user)
                 .map(savedUser -> new ResponseEntity<>(
                         new RegisterResponse(
-                                savedUser.getUserId(),
+                                savedUser.getUserClientId(),
                                 savedUser.getFirstName(),
                                 savedUser.getLastName(),
                                 savedUser.getRegisterTypeId(),
@@ -90,7 +88,7 @@ public class UserController {
 
     @PostMapping("/login")
     public Mono<ResponseEntity<LoginResponse>> loginUser(@RequestBody LoginRequest request) {
-        return userService.login(request.email(), request.password())
+        return userClientService.login(request.email(), request.password())
                 .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
@@ -99,12 +97,12 @@ public class UserController {
     public Mono<ResponseEntity<String>> registerAndLoginUser(@RequestBody RegisterAndLoginRequest request) {
         return userRegistrationService.loginAndRegisterUser(request.username(), request.password())
                 .flatMap(token -> {
-                    UserEntity newUser = UserEntity.builder()
+                    UserClientEntity newUser = UserClientEntity.builder()
                             .email(request.email())
                             .password(request.password())
                             .username(request.username())
                             .build();
-                    return userService.saveUser(newUser)
+                    return userClientService.saveUser(newUser)
                             .thenReturn(ResponseEntity.ok("Usuario registrado y logueado exitosamente"));
                 })
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(e.getMessage())));
