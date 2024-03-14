@@ -109,9 +109,12 @@ public class PasswordResetTokenService {
                         .map(count -> count == 1) // Convertir el resultado en un booleano
                 )
                 .next(); // Convertir Flux<Boolean> a Mono<Boolean>
+<<<<<<< HEAD
     }
     public PasswordResetTokenEntity saveToken(PasswordResetTokenEntity tokenEntity) {
         return tokenRepository.save(tokenEntity);
+=======
+>>>>>>> jose-dev
     }
 
     private String generateRandomToken() {
