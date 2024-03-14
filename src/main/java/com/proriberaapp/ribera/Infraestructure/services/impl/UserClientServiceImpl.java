@@ -33,7 +33,7 @@ public class UserClientServiceImpl implements UserClientService {
                             .then(Mono.just(userClient));
                 }))
                 .map(userToSave -> {
-                    userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword())); // Cifra la contraseña
+                    userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
                     return userToSave;
                 })
                 .flatMap(userClientRepository::save);
@@ -91,13 +91,11 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Override
     public UserDataDTO searchUser(String username) {
-        // Llamar al cliente API para buscar el usuario por username
         return userApiClient.searchUser(username);
     }
 
     @Override
     public UserDataDTO registerUser(UserDataDTO userDataDTO) {
-        // Registrar el usuario en la base de datos
         return userClientRepository.save(userDataDTO);
     }
 
@@ -111,9 +109,9 @@ public class UserClientServiceImpl implements UserClientService {
         return userClientRepository.findByEmail(email);
     }
 
-    @Override
-    public void updatePassword(UserClientEntity userClient, String newPassword) {
-        userClient.setPassword(passwordEncoder.encode(newPassword));
-        userClientRepository.save(userClient).block();
+    public Mono<UserClientEntity> updatePassword(UserClientEntity user, String newPassword) {
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(encodedPassword);
+        return userClientRepository.save(user);
     }
 }

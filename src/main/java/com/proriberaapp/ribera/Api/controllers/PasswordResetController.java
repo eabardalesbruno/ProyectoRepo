@@ -83,6 +83,26 @@ public class PasswordResetController {
                 })
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")));
     }
+
+    @PostMapping("/confirm")
+    public Mono<ResponseEntity<String>> confirmPasswordReset(@RequestParam String email, @RequestParam String code, @RequestParam String newPassword) {
+        return userClientService.findByEmail(email)
+                .flatMap(user -> {
+                    return passwordResetTokenService.verifyToken(user.getUserClientId(), code)
+                            .flatMap(isValid -> {
+                                if (isValid) {
+                                    return userClientService.updatePassword(user, newPassword)
+                                            .map(updatedUser -> {
+                                                passwordResetTokenService.markTokenAsUsed(user.getUserClientId());
+                                                return ResponseEntity.ok("Su nueva contraseña ha sido generada exitosamente");
+                                            });
+                                } else {
+                                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El código no es válido"));
+                                }
+                            });
+                })
+                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")));
+    }
 /*
     @PostMapping("/confirm")
     public Mono<ResponseEntity<String>> confirmPasswordReset(@RequestParam String email, @RequestParam String code, @RequestParam String newPassword) {
