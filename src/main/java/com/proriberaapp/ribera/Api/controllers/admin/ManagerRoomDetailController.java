@@ -20,7 +20,7 @@ public class ManagerRoomDetailController {
 
     @GetMapping("/find")
     public Mono<RoomDetailEntity> findRoomDetail(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return roomDetailService.findById(id);
     }
@@ -48,7 +48,7 @@ public class ManagerRoomDetailController {
 
     @DeleteMapping("/delete")
     public Mono<Void> deleteRoomDetail(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return roomDetailService.deleteById(id);
     }

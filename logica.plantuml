@@ -2,22 +2,45 @@
 
 title RELACIONES
 
-PARTNER_POINT "1" *-- "0..*" CLIENT
-CLIENT "1" *-- "0..*" REGISTER_TYPE
-CLIENT "1" *-- "0..*" USER_LEVEL
-BOOKING "1" *-- "0..*" BOOKING_STATE
-BOOKING "1" *-- "0..*" PAYMENT_METHOD
-BOOKING "1" *-- "0..*" ROOM
-BOOKING_DETAIL "1" *-- "0..*" CLIENT
-BOOKING_DETAIL "1" *-- "0..*" BOOKING
-BOOKING_DETAIL "1" *-- "0..*" PAYMENT_STATE
-ROOM_DETAIL "1" *-- "0..*" ROOM
-REFUSE "1" *-- "0..*" PAYMENT_STATE
-REFUSE "1" *-- "0..*" REFUSE_REASON
 
+PartnerPointsEntity "1" *-- "0..*" UserClientEntity
 
-SOLICITUDE "1" *-- "0..*" ADMIN
-SOLICITUDE "1" *-- "0..*" CLIENT
+UserClientEntity "1" *-- "0..*" RegisterTypeEntity
+UserClientEntity "1" *-- "0..*" UserLevelEntity
+
+BookingEntity "1" *-- "0..*" BookingStateEntity
+BookingEntity "1" *-- "0..*" RoomOfferEntity
+ComfortBookingDetailEntity "1" *-- "0..*" BookingEntity
+ComfortBookingDetailEntity "1" *-- "0..*" ComfortTypeEntity
+
+BookingIncidentsEntity "1" *-- "0..*" BookingDetailEntity
+
+RoomOfferEntity "1" *-- "0..*" RoomEntity
+RoomOfferEntity "1" *-- "0..*" OfferTypeEntity
+ComfortRoomOfferDetailEntity  "1" *-- "0..*" RoomOfferEntity
+ComfortRoomOfferDetailEntity  "1" *-- "0..*" ComfortTypeEntity
+
+BookingDetailEntity "1" *-- "0..*" PaymentMethodEntity
+BookingDetailEntity "1" *-- "0..*" UserClientEntity
+BookingDetailEntity "1" *-- "0..*" BookingEntity
+BookingDetailEntity "1" *-- "0..*" PaymentStateEntity
+
+BedroomEntity "1" *-- "0..*" RoomEntity
+BedroomEntity "1" *-- "0..*" BedsTypeEntity
+
+RoomEntity "1" *-- "0..*" RoomTypeEntity
+RoomEntity "1" *-- "0..*" StateRoomEntity
+RoomEntity "1" *-- "0..*" RoomDetailEntity
+
+RefusePaymentEntity "1" *-- "0..*" BookingDetailEntity
+RefusePaymentEntity "1" *-- "0..*" RefuseReasonEntity
+
+FinalCostumersEntity "1" *-- "0..*" BookingEntity
+
+SolicitudeEntity "1" *-- "0..*" UserAdminEntity
+SolicitudeEntity "1" *-- "0..*" UserClientEntity
+
+BookingIncidentsEntity "1" *-- "0..*" UserAdminEntity
 
 
 @enduml

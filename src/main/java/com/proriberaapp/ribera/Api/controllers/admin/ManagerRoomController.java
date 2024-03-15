@@ -22,7 +22,7 @@ public class ManagerRoomController {
         return roomService.save(roomEntity);
     }
     @PostMapping("/register/all")
-    public Flux<RoomEntity> registerAllRooms(@RequestBody List<RoomEntity> roomEntity) {
+    public Flux<RoomEntity> registerAllRooms(@RequestBody Flux<RoomEntity> roomEntity) {
         log.info("List of rooms: " + roomEntity.toString() );
         return roomService.saveAll(roomEntity);
     }
@@ -31,11 +31,11 @@ public class ManagerRoomController {
         return roomService.update(roomEntity);
     }
     @DeleteMapping("/delete")
-    public Mono<Void> deleteRoom(@RequestParam String id) {
+    public Mono<Void> deleteRoom(@RequestParam Integer id) {
         return roomService.deleteById(id);
     }
     @GetMapping("/find")
-    public Mono<RoomEntity> findRoom(@RequestParam String id) {
+    public Mono<RoomEntity> findRoom(@RequestParam Integer id) {
         return roomService.findById(id);
     }
     @GetMapping("/find/all")

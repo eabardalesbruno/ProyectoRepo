@@ -37,8 +37,8 @@ public class BookingDetailServiceImpl implements BookingDetailService {
     }
 
     @Override
-    public Mono<BookingDetailEntity> findById(String id) {
-        return bookingDetailRepository.findById(Integer.parseInt(id));
+    public Mono<BookingDetailEntity> findById(Integer id) {
+        return bookingDetailRepository.findById(id);
     }
 
     @Override
@@ -47,8 +47,8 @@ public class BookingDetailServiceImpl implements BookingDetailService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return bookingDetailRepository.deleteById(Integer.parseInt(id));
+    public Mono<Void> deleteById(Integer id) {
+        return bookingDetailRepository.deleteById(id);
     }
 
     @Override

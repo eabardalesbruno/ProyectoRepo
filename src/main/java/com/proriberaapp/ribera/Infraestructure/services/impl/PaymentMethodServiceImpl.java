@@ -33,10 +33,9 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
                                 .map(PaymentMethodRequest::toEntity)
                 ));
     }
-
     @Override
-    public Mono<PaymentMethodEntity> findById(String id) {
-        return paymentMethodRepository.findById(Integer.valueOf(id));
+    public Mono<PaymentMethodEntity> findById(Integer id) {
+        return paymentMethodRepository.findById(id);
     }
 
     @Override
@@ -45,12 +44,13 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return paymentMethodRepository.deleteById(Integer.valueOf(id));
+    public Mono<Void> deleteById(Integer id) {
+        return paymentMethodRepository.deleteById(id);
     }
 
     @Override
-    public Mono<PaymentMethodEntity> update(PaymentMethodEntity paymentMethodEntity) {
+    public Mono<PaymentMethodEntity> update(PaymentMethodRequest paymentMethodRequest) {
+        PaymentMethodEntity paymentMethodEntity = paymentMethodRequest.toEntity();
         return paymentMethodRepository.save(paymentMethodEntity);
     }
 }

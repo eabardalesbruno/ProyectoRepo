@@ -23,7 +23,7 @@ public class PaymentMethodController {
 
     @GetMapping("/find")
     public Mono<PaymentMethodEntity> findPaymentMethod(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return paymentMethodService.findById(id);
     }

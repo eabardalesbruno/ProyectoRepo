@@ -19,12 +19,12 @@ public class ManagerBookingController {
     }
 
     @GetMapping("/find")
-    public Mono<BookingEntity> findBooking(String id) {
+    public Mono<BookingEntity> findBooking(Integer id) {
         return bookingService.findById(id);
     }
 
     @DeleteMapping("/delete")
-    public Mono<Void> deleteBooking(String id) {
+    public Mono<Void> deleteBooking(Integer id) {
         return bookingService.deleteById(id);
     }
 

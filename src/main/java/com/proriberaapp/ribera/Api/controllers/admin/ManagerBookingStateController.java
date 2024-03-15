@@ -36,14 +36,14 @@ public class ManagerBookingStateController {
 
     @DeleteMapping("/delete")
     public Mono<Void> deleteBookingState(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return bookingStateService.deleteById(id);
     }
 
     @GetMapping("/find")
     public Mono<BookingStateEntity> findBookingState(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return bookingStateService.findById(id);
     }

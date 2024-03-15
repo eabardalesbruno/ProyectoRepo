@@ -23,8 +23,13 @@ public class PartnerPointsServiceImpl implements PartnerPointsService {
     }
 
     @Override
-    public Mono<PartnerPointsEntity> findById(String id) {
-        return partnerPointsRepository.findById(Integer.valueOf(id));
+    public Flux<PartnerPointsEntity> saveAll(Flux<PartnerPointsEntity> entity) {
+        return null;
+    }
+
+    @Override
+    public Mono<PartnerPointsEntity> findById(Integer id) {
+        return partnerPointsRepository.findById(id);
     }
 
     @Override
@@ -33,8 +38,8 @@ public class PartnerPointsServiceImpl implements PartnerPointsService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return partnerPointsRepository.deleteById(Integer.valueOf(id));
+    public Mono<Void> deleteById(Integer id) {
+        return partnerPointsRepository.deleteById(id);
     }
 
     @Override

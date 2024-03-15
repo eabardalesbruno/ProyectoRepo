@@ -21,7 +21,7 @@ public class ManagerPaymentMethodController {
 
     @GetMapping("/find")
     public Mono<PaymentMethodEntity> findPaymentMethod(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return paymentMethodService.findById(id);
     }
@@ -42,14 +42,14 @@ public class ManagerPaymentMethodController {
 
     @PatchMapping("/update")
     public Mono<PaymentMethodEntity> updatePaymentMethod(
-            @RequestBody PaymentMethodEntity paymentMethodEntity
+            @RequestBody PaymentMethodRequest paymentMethodRequest
     ) {
-        return paymentMethodService.update(paymentMethodEntity);
+        return paymentMethodService.update(paymentMethodRequest);
     }
 
     @DeleteMapping("/delete")
     public Mono<Void> deletePaymentMethod(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return paymentMethodService.deleteById(id);
     }

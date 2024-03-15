@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -25,19 +23,17 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public Flux<RoomEntity> saveAll(List<RoomEntity> roomEntity) {
-        return roomRepository.findAllByRoomNameIn(roomEntity)
+    public Flux<RoomEntity> saveAll(Flux<RoomEntity> roomEntity) {
+        return roomRepository.findAllByRoomName(roomEntity.map(RoomEntity::getRoomName))
                 .collectList()
                 .flatMapMany(roomEntities -> roomRepository.saveAll(
-                        roomEntity.stream()
-                                .filter(roomEntity1 -> !roomEntities.contains(roomEntity1))
-                                .toList()
+                        roomEntity.filter(roomEntity1 -> !roomEntities.contains(roomEntity1))
                 ));
     }
 
     @Override
-    public Mono<RoomEntity> findById(String id) {
-        return roomRepository.findById(Integer.valueOf(id));
+    public Mono<RoomEntity> findById(Integer id) {
+        return roomRepository.findById(id);
     }
 
     @Override
@@ -46,8 +42,8 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return roomRepository.deleteById(Integer.valueOf(id));
+    public Mono<Void> deleteById(Integer id) {
+        return roomRepository.deleteById(id);
     }
 
     @Override

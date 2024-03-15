@@ -17,6 +17,8 @@ public class R2dbcConfiguration {
 
     @Value("${spring.r2dbc.password}")
     private String r2dbcPassword;
+    @Value("${spring.r2dbc.schema}")
+    private String r2dbcSchema;
 
     @Bean
     public PostgresqlConnectionFactory connectionFactory() {
@@ -27,6 +29,7 @@ public class R2dbcConfiguration {
                         .database("ribera")
                         .username(r2dbcUsername)
                         .password(r2dbcPassword)
+                        .schema(r2dbcSchema)
                         .build()
         );
     }

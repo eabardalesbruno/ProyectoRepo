@@ -31,14 +31,14 @@ public class ManagerPartnerPointsController {
 
     @DeleteMapping("/delete")
     public Mono<Void> deletePartnerPoints(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return partnerPointsService.deleteById(id);
     }
 
     @GetMapping("/find")
     public Mono<PartnerPointsEntity> findPartnerPoints(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return partnerPointsService.findById(id);
     }

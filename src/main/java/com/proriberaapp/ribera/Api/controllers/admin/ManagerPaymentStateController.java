@@ -20,7 +20,7 @@ public class ManagerPaymentStateController {
 
     @GetMapping("/find")
     public Mono<PaymentStateEntity> findPaymentState(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return paymentStateService.findById(id);
     }
@@ -48,7 +48,7 @@ public class ManagerPaymentStateController {
 
     @DeleteMapping("/delete")
     public Mono<Void> deletePaymentState(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return paymentStateService.deleteById(id);
     }

@@ -38,8 +38,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Mono<BookingEntity> findById(String id) {
-        return bookingRepository.findById(Integer.parseInt(id));
+    public Mono<BookingEntity> findById(Integer id) {
+        return bookingRepository.findById(id);
     }
 
     @Override
@@ -48,8 +48,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return bookingRepository.deleteById(Integer.parseInt(id));
+    public Mono<Void> deleteById(Integer id) {
+        return bookingRepository.deleteById(id);
     }
 
     @Override

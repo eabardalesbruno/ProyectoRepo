@@ -25,8 +25,8 @@ public class RoomDetailServiceImpl implements RoomDetailService {
     }
 
     @Override
-    public Mono<RoomDetailEntity> findById(String id) {
-        return roomDetailRepository.findById(Integer.valueOf(id));
+    public Mono<RoomDetailEntity> findById(Integer id) {
+        return roomDetailRepository.findById(id);
     }
 
     @Override
@@ -35,8 +35,8 @@ public class RoomDetailServiceImpl implements RoomDetailService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return roomDetailRepository.deleteById(Integer.valueOf(id));
+    public Mono<Void> deleteById(Integer id) {
+        return roomDetailRepository.deleteById(id);
     }
 
     @Override

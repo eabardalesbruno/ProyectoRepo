@@ -22,27 +22,27 @@ public class ManagerRegisterTypeController {
 
     @PostMapping("/register/all")
     public Flux<RegisterTypeEntity> registerAllRegisterTypes(
-            @RequestBody Flux<RegisterTypeEntity> registerTypeEntity) {
-        return registerTypeService.saveAll(registerTypeEntity);
+            @RequestBody Flux<RegisterTypeRequest> registerTypeRequest) {
+        return registerTypeService.saveAll(registerTypeRequest);
     }
 
     @PostMapping("/update")
     public Mono<RegisterTypeEntity> updateRegisterType(
-            @RequestBody RegisterTypeEntity registerTypeEntity
+            @RequestBody RegisterTypeRequest registerTypeRequest
     ) {
-        return registerTypeService.update(registerTypeEntity);
+        return registerTypeService.update(registerTypeRequest);
     }
 
     @PostMapping("/delete")
     public Mono<Void> deleteRegisterType(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return registerTypeService.deleteById(id);
     }
 
     @GetMapping("/find")
     public Mono<RegisterTypeEntity> findRegisterType(
-            @RequestParam String id
+            @RequestParam Integer id
     ) {
         return registerTypeService.findById(id);
     }

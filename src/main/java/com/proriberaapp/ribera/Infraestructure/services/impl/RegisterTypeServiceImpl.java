@@ -24,7 +24,8 @@ public class RegisterTypeServiceImpl implements RegisterTypeService {
     }
 
     @Override
-    public Flux<RegisterTypeEntity> saveAll(Flux<RegisterTypeEntity> registerTypeEntity) {
+    public Flux<RegisterTypeEntity> saveAll(Flux<RegisterTypeRequest> registerTypeRequest) {
+        Flux<RegisterTypeEntity> registerTypeEntity = RegisterTypeRequest.toEntity(registerTypeRequest);
         return registerTypeRepository.findByRegisterTypeName(registerTypeEntity)
                 .collectList()
                 .flatMapMany(registerTypeEntities -> registerTypeRepository.saveAll(
@@ -34,8 +35,8 @@ public class RegisterTypeServiceImpl implements RegisterTypeService {
     }
 
     @Override
-    public Mono<RegisterTypeEntity> findById(String id) {
-        return registerTypeRepository.findById(Integer.valueOf(id));
+    public Mono<RegisterTypeEntity> findById(Integer id) {
+        return registerTypeRepository.findById(id);
     }
 
     @Override
@@ -44,12 +45,13 @@ public class RegisterTypeServiceImpl implements RegisterTypeService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return registerTypeRepository.deleteById(Integer.valueOf(id));
+    public Mono<Void> deleteById(Integer id) {
+        return registerTypeRepository.deleteById(id);
     }
 
     @Override
-    public Mono<RegisterTypeEntity> update(RegisterTypeEntity registerTypeEntity) {
+    public Mono<RegisterTypeEntity> update(RegisterTypeRequest registerTypeRequest) {
+        RegisterTypeEntity registerTypeEntity = registerTypeRequest.toEntity();
         return registerTypeRepository.save(registerTypeEntity);
     }
 }

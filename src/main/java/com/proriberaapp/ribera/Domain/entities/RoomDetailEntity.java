@@ -15,15 +15,25 @@ public class RoomDetailEntity {
     @Id
     @Column("roomdetailid")
     private Integer roomDetailId;
-    @Column("roomid")
-    private Integer roomId;
     private String information;
+    private String terms;
+    private Integer bedrooms;
+    @Column("squaremeters")
+    private String squareMeters;
+    @Column("oceanviewbalcony")
+    private Boolean oceanViewBalcony;
+    @Column("balconyoverlookingpool")
+    private Boolean balconyOverlookingPool;
 
     public static RoomDetailEntity from(RoomDetailEntity roomDetailEntity) {
         return RoomDetailEntity.builder()
                 .roomDetailId(roomDetailEntity.getRoomDetailId())
-                .roomId(roomDetailEntity.getRoomId())
                 .information(roomDetailEntity.getInformation())
+                .terms(roomDetailEntity.getTerms())
+                .bedrooms(roomDetailEntity.getBedrooms())
+                .squareMeters(roomDetailEntity.getSquareMeters())
+                .oceanViewBalcony(roomDetailEntity.getOceanViewBalcony())
+                .balconyOverlookingPool(roomDetailEntity.getBalconyOverlookingPool())
                 .build();
     }
 }

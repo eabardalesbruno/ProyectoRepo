@@ -33,8 +33,8 @@ public class PaymentStateServiceImpl implements PaymentStateService {
     }
 
     @Override
-    public Mono<PaymentStateEntity> findById(String id) {
-        return paymentStateRepository.findById(Integer.valueOf(id));
+    public Mono<PaymentStateEntity> findById(Integer id) {
+        return paymentStateRepository.findById(id);
     }
 
     @Override
@@ -43,8 +43,8 @@ public class PaymentStateServiceImpl implements PaymentStateService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return paymentStateRepository.deleteById(Integer.valueOf(id));
+    public Mono<Void> deleteById(Integer id) {
+        return paymentStateRepository.deleteById(id);
     }
 
     @Override

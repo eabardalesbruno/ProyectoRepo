@@ -44,10 +44,10 @@
 			<version>0.8.4.RELEASE</version>
 		</dependency>
 		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-tools</artifactId>
 		</dependency>
+
 
 		<dependency>
 			<groupId>io.springfox</groupId>

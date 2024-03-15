@@ -23,7 +23,7 @@ public class BookingController {
     }
 
     @GetMapping("/find")
-    public Mono<BookingEntity> findBooking(String id) {
+    public Mono<BookingEntity> findBooking(Integer id) {
         return bookingService.findById(id);
     }
 }
