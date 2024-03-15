@@ -20,7 +20,7 @@ public class BookingDetailEntity {
     @Column("bookingid")
     private Integer bookingId;
     @Column("userclientid")
-    private Integer userclientId;
+    private Integer userClientId;
     @Column("paymentstateid")
     private Integer paymentStateId;
     @Column("checkin")

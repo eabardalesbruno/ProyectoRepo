@@ -21,13 +21,4 @@ public class BeansConfig {
     public WebProperties.Resources resources() {
         return new WebProperties.Resources();
     }
-    @Bean
-    ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
-
-        ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
-        initializer.setConnectionFactory(connectionFactory);
-        initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("schema.sql")));
-
-        return initializer;
-    }
 }
