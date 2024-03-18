@@ -91,7 +91,7 @@ public class PasswordResetTokenService {
     public Mono<Boolean> verifyToken(Integer userId, String token) {
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
         return tokenRepository.findByUserClientIdAndTokenAndExpiryDateAfter(userId, token, now)
-                .hasElements(); // Verifica si hay al menos un elemento en el Flux
+                .hasElements();
     }
 
     private String generateRandomToken() {
