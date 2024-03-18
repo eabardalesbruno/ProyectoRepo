@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory; // Importar la clase LoggerFactory
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -76,7 +76,7 @@ public class PasswordResetTokenService {
                 )
                 .flatMap(rowsUpdated -> {
                     if (rowsUpdated == 1) {
-                        return Mono.empty(); // Consulta de inserción exitosa
+                        return Mono.empty();
                     } else {
                         return Mono.error(new RuntimeException("Error al insertar en la tabla passwordresettoken"));
                     }
@@ -85,7 +85,7 @@ public class PasswordResetTokenService {
                         success -> logger.info("Inserción en la tabla passwordresettoken exitosa"),
                         error -> {
                             logger.error("Error al insertar en la tabla passwordresettoken: " + error.getMessage());
-                            error.printStackTrace(); // Imprimir la traza de la excepción
+                            error.printStackTrace();
                         }
                 );
     }
@@ -93,7 +93,7 @@ public class PasswordResetTokenService {
     public void markTokenAsUsed(Integer userId) {
         PasswordResetTokenEntity resetToken = tokenRepository.findByUserId(userId);
         if (resetToken != null) {
-            resetToken.setPasswordState(1); // Marcar el token como usado
+            resetToken.setPasswordState(1);
             tokenRepository.save(resetToken);
         }
     }
@@ -106,14 +106,18 @@ public class PasswordResetTokenService {
                 .flatMapMany(connection -> connection.createStatement(selectQuery)
                         .execute()
                         .flatMap(result -> result.map((row, rowMetadata) -> row.get(0, Integer.class)))
-                        .map(count -> count == 1) // Convertir el resultado en un booleano
+                        .map(count -> count == 1)
                 )
+<<<<<<< HEAD
                 .next(); // Convertir Flux<Boolean> a Mono<Boolean>
 <<<<<<< HEAD
     }
     public PasswordResetTokenEntity saveToken(PasswordResetTokenEntity tokenEntity) {
         return tokenRepository.save(tokenEntity);
 =======
+>>>>>>> jose-dev
+=======
+                .next();
 >>>>>>> jose-dev
     }
 

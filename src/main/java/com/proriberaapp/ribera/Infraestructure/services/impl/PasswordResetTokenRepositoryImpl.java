@@ -33,7 +33,7 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
         }
         return null;
     }
-
+/*
     @Override
     public void insertResetToken(Integer userId, String token, Timestamp expiryDate) {
         PasswordResetTokenEntity resetToken = new PasswordResetTokenEntity();
@@ -43,6 +43,8 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
         resetToken.setPasswordState(0);
         save(resetToken);
     }
+
+ */
 
     @Override
     public <S extends PasswordResetTokenEntity> S save(S entity) {

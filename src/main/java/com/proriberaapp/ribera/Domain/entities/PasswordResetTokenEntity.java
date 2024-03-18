@@ -25,10 +25,8 @@ public class PasswordResetTokenEntity {
     @Column("expirydate")
     private Timestamp expiryDate;
 
-    // Constructor sin argumentos
     public PasswordResetTokenEntity() {}
 
-    // Constructor con los argumentos requeridos
     public PasswordResetTokenEntity(Integer userClientId, String token, Integer passwordState, Timestamp expiryDate) {
         this.userClientId = userClientId;
         this.token = token;
