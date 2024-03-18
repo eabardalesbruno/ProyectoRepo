@@ -15,5 +15,6 @@ public interface UserClientService {
     String loginUser(String username, String password);
     Mono<UserClientEntity> findByEmail(String email);
 
-    void updatePassword(UserClientEntity user, String newPassword);
+    Mono<UserClientEntity> updatePassword(UserClientEntity user, String newPassword);
+
 }

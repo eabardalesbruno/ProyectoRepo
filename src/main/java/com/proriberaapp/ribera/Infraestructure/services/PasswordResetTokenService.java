@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory; // Importar la clase LoggerFactory
+import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -18,15 +18,13 @@ import java.util.Random;
 
 @Service
 public class PasswordResetTokenService {
-
     private final PasswordResetTokenRepository tokenRepository;
-    private final UserClientRepository userClientRepository;
     private static final Logger logger = LoggerFactory.getLogger(PasswordResetTokenService.class);
     private final PostgresqlConnectionFactory connectionFactory;
+
     @Autowired
-    public PasswordResetTokenService(PasswordResetTokenRepository tokenRepository, UserClientRepository userClientRepository, PostgresqlConnectionFactory connectionFactory) {
+    public PasswordResetTokenService(PasswordResetTokenRepository tokenRepository, PostgresqlConnectionFactory connectionFactory) {
         this.tokenRepository = tokenRepository;
-        this.userClientRepository = userClientRepository;
         this.connectionFactory = connectionFactory;
     }
 
@@ -45,7 +43,7 @@ public class PasswordResetTokenService {
         resetToken.setToken(token);
         resetToken.setExpiryDate(expiryDate);
 
-        return Mono.just(tokenRepository.save(resetToken));
+        return tokenRepository.save(resetToken);
     }
 
     public Mono<PasswordResetTokenEntity> generateTokenAndSave(Integer userId) {
@@ -62,33 +60,47 @@ public class PasswordResetTokenService {
         logger.info("Consulta de inserción: INSERT INTO passwordresettoken (userid, token, passwordstate, expirydate) " +
                 "VALUES (" + userId + ", '" + token + "', 0, '" + expiryDate + "')");
 
-        return Mono.just(tokenRepository.save(resetToken));
+        return tokenRepository.save(resetToken);
     }
 
     private void executeInsertQuery(Integer userId, String token, Timestamp expiryDate) {
-        String insertQuery = "INSERT INTO passwordresettoken (userid, token, passwordstate, expirydate) VALUES (?, ?, ?, ?)";
+        String insertQuery = "INSERT INTO passwordresettoken (userclientid, token, passwordstate, expirydate) VALUES ("
+                + userId + ", '" + token + "', 0, '" + expiryDate + "')";
+
         connectionFactory.create()
                 .flatMapMany(connection -> connection.createStatement(insertQuery)
-                        .bind("$1", userId)
-                        .bind("$2", token)
-                        .bind("$3", 0)
-                        .bind("$4", expiryDate)
                         .execute()
-                        .flatMap(result -> Mono.just(result))
-                ).subscribe();
+                        .flatMap(result -> result.map((row, rowMetadata) -> row.get(0, Integer.class)))
+                )
+                .flatMap(rowsUpdated -> {
+                    if (rowsUpdated == 1) {
+                        return Mono.empty();
+                    } else {
+                        return Mono.error(new RuntimeException("Error al insertar en la tabla passwordresettoken"));
+                    }
+                })
+                .subscribe(
+                        success -> logger.info("Inserción en la tabla passwordresettoken exitosa"),
+                        error -> {
+                            logger.error("Error al insertar en la tabla passwordresettoken: " + error.getMessage());
+                            error.printStackTrace();
+                        }
+                );
     }
 
     public void markTokenAsUsed(Integer userId) {
-        PasswordResetTokenEntity resetToken = tokenRepository.findByUserId(userId);
-        if (resetToken != null) {
-            resetToken.setPasswordState(1); // Marcar el token como usado
-            tokenRepository.save(resetToken);
-        }
+        tokenRepository.findByUserClientId(userId)
+                .flatMap(resetToken -> {
+                    resetToken.setPasswordState(1);
+                    return tokenRepository.save(resetToken);
+                })
+                .subscribe();
     }
 
-    public boolean verifyToken(UserClientEntity user, String token) {
-        PasswordResetTokenEntity resetToken = tokenRepository.findByUserIdAndToken(user.getUserClientId(), token);
-        return resetToken != null && resetToken.getExpiryDate().after(Timestamp.valueOf(LocalDateTime.now()));
+    public Mono<Boolean> verifyToken(Integer userId, String token) {
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        return tokenRepository.findByUserClientIdAndTokenAndExpiryDateAfter(userId, token, now)
+                .hasElements(); // Verifica si hay al menos un elemento en el Flux
     }
     public PasswordResetTokenEntity saveToken(PasswordResetTokenEntity tokenEntity) {
         return tokenRepository.save(tokenEntity);
@@ -99,4 +111,5 @@ public class PasswordResetTokenService {
         int token = 100000 + random.nextInt(900000);
         return String.valueOf(token);
     }
+
 }

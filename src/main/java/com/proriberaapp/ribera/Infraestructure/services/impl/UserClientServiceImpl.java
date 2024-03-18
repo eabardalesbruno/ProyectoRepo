@@ -23,14 +23,14 @@ public class UserClientServiceImpl implements UserClientService {
     private UserApiClient userApiClient;
 
     @Override
-    public Mono<UserClientEntity> registerUser(UserClientEntity user) {
-        return userClientRepository.findByEmail(user.getEmail())
+    public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
+        return userClientRepository.findByEmail(userClient.getEmail())
                 .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .then(Mono.defer(() -> {
-                    validatePassword(user.getPassword());
-                    return userClientRepository.findByDocumentNumber(user.getDocumentNumber())
+                    validatePassword(userClient.getPassword());
+                    return userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
                             .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
-                            .then(Mono.just(user));
+                            .then(Mono.just(userClient));
                 }))
                 .map(userToSave -> {
                     userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword())); // Cifra la contraseña
@@ -44,14 +44,14 @@ public class UserClientServiceImpl implements UserClientService {
         }
     }
     @Override
-    public Mono<UserClientEntity> saveUser(UserClientEntity user) {
-        return userClientRepository.findByEmail(user.getEmail())
+    public Mono<UserClientEntity> saveUser(UserClientEntity userClient) {
+        return userClientRepository.findByEmail(userClient.getEmail())
                 .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .then(Mono.defer(() -> {
-                    validatePassword(user.getPassword());
-                    return userClientRepository.findByDocumentNumber(user.getDocumentNumber())
+                    validatePassword(userClient.getPassword());
+                    return userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
                             .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
-                            .then(Mono.just(user));
+                            .then(Mono.just(userClient));
                 }))
                 .map(userToSave -> {
                     userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword())); // Cifra la contraseña
@@ -112,9 +112,8 @@ public class UserClientServiceImpl implements UserClientService {
     }
 
     @Override
-    public void updatePassword(UserClientEntity user, String newPassword) {
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userClientRepository.save(user);
+    public void updatePassword(UserClientEntity userClient, String newPassword) {
+        userClient.setPassword(passwordEncoder.encode(newPassword));
+        userClientRepository.save(userClient).block();
     }
-
 }

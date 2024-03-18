@@ -28,27 +28,6 @@ public class PasswordResetController {
         this.passwordResetTokenService = passwordResetTokenService;
     }
 
-    /*
-    @PostMapping("/request")
-    public Mono<ResponseEntity<Map<String, Object>>> requestPasswordReset(@RequestParam String email) {
-        return userService.findByEmail(email)
-                .flatMap(user -> {
-                    String token = generateRandomToken();
-                    Timestamp expiryDate = Timestamp.valueOf(LocalDateTime.now().plusMinutes(3)); // Ajustar según sea necesario
-
-                    return passwordResetTokenService.generateToken(user.getUserId(), token, expiryDate)
-                            .map(resetToken -> {
-                                Map<String, Object> responseMap = new HashMap<>();
-                                responseMap.put("token", resetToken.getToken());
-                                responseMap.put("userId", resetToken.getUserid());
-                                return ResponseEntity.ok(responseMap);
-                            });
-                })
-                .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Usuario no encontrado"))));
-    }
-
-     */
-
     @PostMapping("/request")
     public Mono<ResponseEntity<Map<String, Object>>> requestPasswordReset(@RequestParam String email) {
         return userClientService.findByEmail(email)
@@ -62,7 +41,6 @@ public class PasswordResetController {
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Usuario no encontrado"))));
     }
 
-    // Method to generate a random 6-digit token
     private String generateRandomToken() {
         Random random = new Random();
         int token = 100000 + random.nextInt(900000);
@@ -73,12 +51,14 @@ public class PasswordResetController {
     public Mono<ResponseEntity<String>> verifyPasswordReset(@RequestParam String email, @RequestParam String code) {
         return userClientService.findByEmail(email)
                 .flatMap(user -> {
-                    boolean isValid = passwordResetTokenService.verifyToken(user, code);
-                    if (isValid) {
-                        return Mono.just(ResponseEntity.ok("El código es válido"));
-                    } else {
-                        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El código no es válido"));
-                    }
+                    return passwordResetTokenService.verifyToken(user.getUserClientId(), code)
+                            .flatMap(isValid -> {
+                                if (isValid) {
+                                    return Mono.just(ResponseEntity.ok("El código es válido"));
+                                } else {
+                                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El código no es válido"));
+                                }
+                            });
                 })
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")));
     }
@@ -87,14 +67,18 @@ public class PasswordResetController {
     public Mono<ResponseEntity<String>> confirmPasswordReset(@RequestParam String email, @RequestParam String code, @RequestParam String newPassword) {
         return userClientService.findByEmail(email)
                 .flatMap(user -> {
-                    boolean isValid = passwordResetTokenService.verifyToken(user, code);
-                    if (isValid) {
-                        userClientService.updatePassword(user, newPassword);
-                        passwordResetTokenService.markTokenAsUsed(user.getUserClientId());
-                        return Mono.just(ResponseEntity.ok("Su nueva contraseña ha sido generada exitosamente"));
-                    } else {
-                        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El código no es válido"));
-                    }
+                    return passwordResetTokenService.verifyToken(user.getUserClientId(), code)
+                            .flatMap(isValid -> {
+                                if (isValid) {
+                                    return userClientService.updatePassword(user, newPassword)
+                                            .map(updatedUser -> {
+                                                passwordResetTokenService.markTokenAsUsed(user.getUserClientId());
+                                                return ResponseEntity.ok("Su nueva contraseña ha sido generada exitosamente");
+                                            });
+                                } else {
+                                    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El código no es válido"));
+                                }
+                            });
                 })
                 .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado")));
     }
