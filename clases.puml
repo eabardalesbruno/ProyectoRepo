@@ -228,6 +228,28 @@ class BedsTypeEntity {
     -String bedTypeDescription
 }
 
+class PaymentBookEntity {
+    -Integer paymentBookId
+    -Integer bookingDetailId
+    -Integer paymentMethodId
+    -Integer currencyTypeId
+    -BigDecimal amount
+    -String description
+    -LocalDateTime paymentDate
+    -String operationCode
+    -String note
+    -BigDecimal totalCost
+    -String imageVoucher
+    -Integer totalPoints
+    -Boolean paymentComplete
+}
+
+class CurrencyTypeEntity {
+    -Integer currencyTypeId
+    -String currencyTypeName
+    -String currencyTypeDescription
+}
+
 PartnerPointsEntity "1" *-- "0..*" UserClientEntity
 
 UserClientEntity "1" *-- "0..*" RegisterTypeEntity
@@ -242,13 +264,17 @@ BookingIncidentsEntity "1" *-- "0..*" BookingDetailEntity
 
 RoomOfferEntity "1" *-- "0..*" RoomEntity
 RoomOfferEntity "1" *-- "0..*" OfferTypeEntity
+
 ComfortRoomOfferDetailEntity  "1" *-- "0..*" RoomOfferEntity
 ComfortRoomOfferDetailEntity  "1" *-- "0..*" ComfortTypeEntity
 
-BookingDetailEntity "1" *-- "0..*" PaymentMethodEntity
 BookingDetailEntity "1" *-- "0..*" UserClientEntity
 BookingDetailEntity "1" *-- "0..*" BookingEntity
-BookingDetailEntity "1" *-- "0..*" PaymentStateEntity
+
+PaymentBookEntity "1" *-- "0..*" PaymentMethodEntity
+PaymentBookEntity "1" *-- "0..*" PaymentStateEntity
+PaymentBookEntity "1" *-- "0..*" BookingDetailEntity
+PaymentBookEntity "1" *-- "0..*" CurrencyTypeEntity
 
 BedroomEntity "1" *-- "0..*" RoomEntity
 BedroomEntity "1" *-- "0..*" BedsTypeEntity

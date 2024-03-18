@@ -11,10 +11,8 @@ public class R2dbcConfiguration {
 
     @Value("${spring.r2dbc.url}")
     private String r2dbcUrl;
-
     @Value("${spring.r2dbc.username}")
     private String r2dbcUsername;
-
     @Value("${spring.r2dbc.password}")
     private String r2dbcPassword;
     @Value("${spring.r2dbc.schema}")
