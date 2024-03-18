@@ -112,8 +112,9 @@ public class UserClientServiceImpl implements UserClientService {
     }
 
     @Override
-    public void updatePassword(UserClientEntity userClient, String newPassword) {
+    public Mono<UserClientEntity> updatePassword(UserClientEntity userClient, String newPassword) {
         userClient.setPassword(passwordEncoder.encode(newPassword));
         userClientRepository.save(userClient).block();
+        return null;
     }
 }

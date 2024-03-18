@@ -34,7 +34,7 @@ public class PasswordResetTokenService {
         resetToken.setUserClientId(user.getUserClientId());
         resetToken.setToken(token);
         resetToken.setExpiryDate(Timestamp.valueOf(LocalDateTime.now().plusMinutes(3))); // Token válido por 3 minutos
-        return Mono.just(tokenRepository.save(resetToken));
+        return tokenRepository.save(resetToken);
     }
 
     public Mono<PasswordResetTokenEntity> generateToken(Integer userId, String token, Timestamp expiryDate) {
@@ -103,7 +103,7 @@ public class PasswordResetTokenService {
                 .hasElements(); // Verifica si hay al menos un elemento en el Flux
     }
     public PasswordResetTokenEntity saveToken(PasswordResetTokenEntity tokenEntity) {
-        return tokenRepository.save(tokenEntity);
+        return tokenRepository.save(tokenEntity).block();
     }
 
     private String generateRandomToken() {
