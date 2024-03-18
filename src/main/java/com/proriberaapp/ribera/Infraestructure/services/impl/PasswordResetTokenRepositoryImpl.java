@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.Optional;
 
 @Repository
-public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepository {
-
+public class PasswordResetTokenRepositoryImpl {
+/*
     private final Map<Long, PasswordResetTokenEntity> tokenMap = new HashMap<>();
 
     @Override
@@ -33,6 +33,8 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
         }
         return null;
     }
+
+ */
 /*
     @Override
     public void insertResetToken(Integer userId, String token, Timestamp expiryDate) {
@@ -45,7 +47,7 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
     }
 
  */
-
+/*
     @Override
     public <S extends PasswordResetTokenEntity> S save(S entity) {
         tokenMap.put(Long.valueOf(entity.getUserClientId()), entity);
@@ -111,4 +113,5 @@ public class PasswordResetTokenRepositoryImpl implements PasswordResetTokenRepos
     public void deleteAll() {
         tokenMap.clear();
     }
+    */
 }

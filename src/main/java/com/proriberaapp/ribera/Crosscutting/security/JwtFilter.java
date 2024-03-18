@@ -16,9 +16,13 @@ public class JwtFilter implements WebFilter {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 <<<<<<< HEAD
+<<<<<<< HEAD
         if (path.contains("/api/v1/admin/login") || path.contains("/api/v1/users/login") || path.contains("/api/v1/users/registerbo") || path.contains("/api/v1/users/register") || path.contains("/api/v1/password-reset/request") || path.contains("/api/v1/password-reset/verify"))
 =======
         if (path.contains("/api/v1/admin/login") || path.contains("/api/v1/users/login") || path.contains("/api/v1/users/registerbo") || path.contains("/api/v1/users/register") || path.contains("/api/v1/password-reset/request") || path.contains("/api/v1/password-reset/verify") || path.contains("/api/v1/password-reset/confirm"))
+>>>>>>> jose-dev
+=======
+        if (path.contains("/api/v1/admin/login") || path.contains("/api/v1/users/login") || path.contains("/api/v1/users/registerbo") || path.contains("/api/v1/users/register") || path.contains("/api/v1/password-reset/request") || path.contains("/api/v1/password-reset/verify") || path.contains("/api/v1/password-reset/confirm") || path.contains("/api/v1/payment-books"))
 >>>>>>> jose-dev
             return chain.filter(exchange);
         String auth = request.getHeaders().getFirst("Authorization");
