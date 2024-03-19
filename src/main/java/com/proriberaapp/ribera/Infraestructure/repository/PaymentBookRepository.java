@@ -6,4 +6,6 @@ import reactor.core.publisher.Flux;
 
 public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity, Integer> {
     Flux<PaymentBookEntity> findAll();
+    Flux<PaymentBookEntity> findByUserClientId(Integer userClientId);
+    Flux<PaymentBookEntity> findByClientTypeId(Integer clientTypeId);
 }
