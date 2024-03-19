@@ -15,7 +15,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class RoomServiceImpl implements RoomService {
+
     private final RoomRepository roomRepository;
+
     @Override
     public Mono<RoomEntity> save(RoomEntity roomEntity) {
         return roomRepository.findByRoomName(roomEntity.getRoomName()).hasElement()

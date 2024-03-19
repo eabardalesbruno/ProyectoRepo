@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS roomoffer (
     offertimeend TIMESTAMP,
     offername VARCHAR(50),
     riberapoints INTEGER,
-    inresortspoints INTEGER,
+    inresortpoints INTEGER,
     points INTEGER,
     CONSTRAINT fk_room_ro FOREIGN KEY (roomid) REFERENCES room(roomid),
     CONSTRAINT fk_offertype_ro FOREIGN KEY (offertypeid) REFERENCES offertype(offertypeid)

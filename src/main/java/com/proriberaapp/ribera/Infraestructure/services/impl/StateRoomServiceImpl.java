@@ -18,17 +18,25 @@ public class StateRoomServiceImpl implements StateRoomService {
     private final StateRoomRepository stateRoomRepository;
     @Override
     public Mono<StateRoomEntity> save(StateRoomEntity entity) {
-        return stateRoomRepository.save(entity);
+        return stateRoomRepository.findByStateRoomName(entity).hasElement()
+                .flatMap(exists -> exists
+                        ? Mono.error(new IllegalArgumentException("StateRoom already exists"))
+                        : stateRoomRepository.save(entity));
     }
 
     @Override
     public Flux<StateRoomEntity> saveAll(List<StateRoomEntity> entity) {
-        return stateRoomRepository.saveAll(entity);
+        return stateRoomRepository.findAllByStateRoomNameIn(entity)
+                .collectList()
+                .flatMapMany(stateRoomEntities -> stateRoomRepository.saveAll(
+                        entity.stream().filter(stateRoomEntity -> !stateRoomEntities.contains(stateRoomEntity)).toList()
+                ));
     }
 
     @Override
     public Mono<StateRoomEntity> findById(Integer id) {
-        return stateRoomRepository.findById(id);
+        return stateRoomRepository.findById(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("StateRoom not found")));
     }
 
     @Override

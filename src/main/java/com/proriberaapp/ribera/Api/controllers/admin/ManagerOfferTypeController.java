@@ -7,8 +7,10 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/v1/admin/manager/offers-type")
+@RequestMapping("/api/v1/admin/manager/offer-type")
 @RequiredArgsConstructor
 public class ManagerOfferTypeController {
     private final OfferTypeService offerTypeService;
@@ -19,23 +21,30 @@ public class ManagerOfferTypeController {
     }
 
     @GetMapping("/find")
-    public Mono<OfferTypeEntity> getOfferTypeById(Integer id) {
+    public Mono<OfferTypeEntity> getOfferTypeById(
+            @RequestParam Integer id) {
         return offerTypeService.findById(id);
     }
 
     @PostMapping("/register")
-    public Mono<OfferTypeEntity> registerOfferType() {
-        return offerTypeService.save(null);
+    public Mono<OfferTypeEntity> registerOfferType(
+            @RequestBody OfferTypeEntity offerTypeEntity
+    ) {
+        return offerTypeService.save(offerTypeEntity);
     }
 
     @PostMapping("/register/all")
-    public Flux<OfferTypeEntity> registerAllOfferTypes() {
-        return offerTypeService.saveAll(null);
+    public Flux<OfferTypeEntity> registerAllOfferTypes(
+            @RequestBody List<OfferTypeEntity> offerTypeEntity
+    ) {
+        return offerTypeService.saveAll(offerTypeEntity);
     }
 
     @PatchMapping("/update")
-    public Mono<OfferTypeEntity> updateOfferType() {
-        return offerTypeService.update(null);
+    public Mono<OfferTypeEntity> updateOfferType(
+            @RequestBody OfferTypeEntity offerTypeEntity
+    ) {
+        return offerTypeService.update(offerTypeEntity);
     }
 
     @DeleteMapping("/delete")

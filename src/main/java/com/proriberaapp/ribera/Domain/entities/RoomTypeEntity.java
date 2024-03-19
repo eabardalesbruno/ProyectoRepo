@@ -10,14 +10,13 @@ import org.springframework.data.relational.core.mapping.Table;
 @Getter
 @Setter
 @Builder
-@Table("bedroom")
-public class BedroomEntity {
+@Table("roomtype")
+public class RoomTypeEntity {
     @Id
-    @Column("bedroomid")
-    private Integer bedroomId;
-    @Column("roomid")
-    private Integer roomId;
-    @Column("bedtypeid")
-    private Integer bedTypeId;
-    private Integer quantity;
+    @Column("roomtypeid")
+    private Integer roomTypeId;
+    @Column("roomtypename")
+    private String roomTypeName;
+    @Column("roomtypedescription")
+    private String roomTypeDescription;
 }

@@ -14,7 +14,7 @@ import java.util.List;
 @RequestMapping("/api/v1/admin/manager/state-room")
 @RequiredArgsConstructor
 @Slf4j
-public class StateRoomController {
+public class ManagerStateRoomController {
     private final StateRoomService stateRoomService;
 
     @GetMapping("/find/all")

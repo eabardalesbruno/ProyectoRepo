@@ -15,20 +15,30 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class BedroomServiceImpl implements BedroomService {
+
     private final BedroomRepository bedroomRepository;
+
     @Override
     public Mono<BedroomEntity> save(BedroomEntity entity) {
-        return bedroomRepository.save(entity);
+        return bedroomRepository.findByRoomId(entity.getRoomId()).hasElement()
+                .flatMap(exists -> exists
+                        ? Mono.error(new IllegalArgumentException("Bedroom already exists"))
+                        : bedroomRepository.save(entity));
     }
 
     @Override
     public Flux<BedroomEntity> saveAll(List<BedroomEntity> entity) {
-        return bedroomRepository.saveAll(entity);
+        return bedroomRepository.findAllByRoomIdIn(entity)
+                .collectList()
+                .flatMapMany(entities -> bedroomRepository.saveAll(
+                        entity.stream().filter(entity1 -> !entities.contains(entity1)).toList()
+                ));
     }
 
     @Override
     public Mono<BedroomEntity> findById(Integer id) {
-        return bedroomRepository.findById(id);
+        return bedroomRepository.findById(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Bedroom not found")));
     }
 
     @Override
@@ -43,6 +53,8 @@ public class BedroomServiceImpl implements BedroomService {
 
     @Override
     public Mono<BedroomEntity> update(BedroomEntity entity) {
-        return bedroomRepository.save(entity);
+        return bedroomRepository.findById(entity.getBedroomId())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Bedroom not found")))
+                .flatMap(bedroomEntity -> bedroomRepository.save(entity));
     }
 }

@@ -16,8 +16,8 @@ public class ManagerBedroomController {
     private final BedroomService bedroomService;
 
     @GetMapping("find/all")
-    public void getAllBedrooms() {
-        bedroomService.findAll();
+    public Flux<BedroomEntity> getAllBedrooms() {
+        return bedroomService.findAll();
     }
 
     @GetMapping("find")
@@ -31,8 +31,8 @@ public class ManagerBedroomController {
     }
 
     @PostMapping("register/all")
-    public void registerAllBedrooms(@RequestBody List<BedroomEntity> bedroomEntity) {
-        bedroomService.saveAll(bedroomEntity);
+    public Flux<BedroomEntity> registerAllBedrooms(@RequestBody List<BedroomEntity> bedroomEntity) {
+        return bedroomService.saveAll(bedroomEntity);
     }
 
     @PatchMapping("update")

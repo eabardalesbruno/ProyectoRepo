@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/admin/manager/room-offer")
 @RequiredArgsConstructor
@@ -26,18 +28,24 @@ public class ManagerRoomOfferController {
     }
 
     @PostMapping("/register")
-    public Mono<RoomOfferEntity> registerRoomOffer() {
-        return roomOfferService.save(null);
+    public Mono<RoomOfferEntity> registerRoomOffer(
+            @RequestBody RoomOfferEntity roomOfferEntity
+    ) {
+        return roomOfferService.save(roomOfferEntity);
     }
 
     @PostMapping("/register/all")
-    public Flux<RoomOfferEntity> registerAllRoomOffers() {
-        return roomOfferService.saveAll(null);
+    public Flux<RoomOfferEntity> registerAllRoomOffers(
+            @RequestBody List<RoomOfferEntity> roomOfferEntity
+    ) {
+        return roomOfferService.saveAll(roomOfferEntity);
     }
 
     @PatchMapping("/update")
-    public Mono<RoomOfferEntity> updateRoomOffer() {
-        return roomOfferService.update(null);
+    public Mono<RoomOfferEntity> updateRoomOffer(
+            @RequestBody RoomOfferEntity roomOfferEntity
+    ) {
+        return roomOfferService.update(roomOfferEntity);
     }
 
     @DeleteMapping("/delete")

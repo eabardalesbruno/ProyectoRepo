@@ -18,12 +18,19 @@ public class RoomOfferServiceImpl implements RoomOfferService {
     private final RoomOfferRepository roomOfferRepository;
     @Override
     public Mono<RoomOfferEntity> save(RoomOfferEntity entity) {
-        return roomOfferRepository.save(entity);
+        return roomOfferRepository.findByRoomIdAndOfferTypeId(entity.getRoomId(), entity.getOfferTypeId()).hasElement()
+                .flatMap(exists -> exists
+                        ? Mono.error(new IllegalArgumentException("RoomOffer already exists"))
+                        : roomOfferRepository.save(entity));
     }
 
     @Override
     public Flux<RoomOfferEntity> saveAll(List<RoomOfferEntity> entity) {
-        return roomOfferRepository.saveAll(entity);
+        return roomOfferRepository.findAllByRoomIdInAndOfferTypeIdIn(entity, entity)
+                .collectList()
+                .flatMapMany(entities -> roomOfferRepository.saveAll(
+                        entity.stream().filter(entity1 -> !entities.contains(entity1)).toList()
+                ));
     }
 
     @Override

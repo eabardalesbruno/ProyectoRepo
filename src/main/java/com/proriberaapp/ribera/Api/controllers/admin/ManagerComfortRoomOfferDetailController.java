@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/admin/manager/comfort-room-offer-detail")
 @RequiredArgsConstructor
@@ -19,23 +21,29 @@ public class ManagerComfortRoomOfferDetailController {
     }
 
     @GetMapping("/find")
-    public Mono<ComfortRoomOfferDetailEntity> getComfortRoomOfferDetailById(Integer id) {
+    public Mono<ComfortRoomOfferDetailEntity> getComfortRoomOfferDetailById(@RequestParam Integer id) {
         return comfortRoomOfferDetailService.findById(id);
     }
 
     @PostMapping("/register")
-    public Mono<ComfortRoomOfferDetailEntity> registerComfortRoomOfferDetail() {
-        return comfortRoomOfferDetailService.save(null);
+    public Mono<ComfortRoomOfferDetailEntity> registerComfortRoomOfferDetail(
+            @RequestBody ComfortRoomOfferDetailEntity comfortRoomOfferDetailEntity
+    ) {
+        return comfortRoomOfferDetailService.save(comfortRoomOfferDetailEntity);
     }
 
     @PostMapping("/register/all")
-    public Flux<ComfortRoomOfferDetailEntity> registerAllComfortRoomOfferDetails() {
-        return comfortRoomOfferDetailService.saveAll(null);
+    public Flux<ComfortRoomOfferDetailEntity> registerAllComfortRoomOfferDetails(
+            @RequestBody List<ComfortRoomOfferDetailEntity> comfortRoomOfferDetailEntity
+    ) {
+        return comfortRoomOfferDetailService.saveAll(comfortRoomOfferDetailEntity);
     }
 
     @PatchMapping("/update")
-    public Mono<ComfortRoomOfferDetailEntity> updateComfortRoomOfferDetail() {
-        return comfortRoomOfferDetailService.update(null);
+    public Mono<ComfortRoomOfferDetailEntity> updateComfortRoomOfferDetail(
+            @RequestBody ComfortRoomOfferDetailEntity comfortRoomOfferDetailEntity
+    ) {
+        return comfortRoomOfferDetailService.update(comfortRoomOfferDetailEntity);
     }
 
     @DeleteMapping("/delete")

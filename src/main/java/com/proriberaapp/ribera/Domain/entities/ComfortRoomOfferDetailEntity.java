@@ -7,14 +7,15 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @Builder
 @Table("comfortroomofferdetail")
-public class ComfortRoomOfferDetailEntity {
-    @Id
-    @Column("roomofferdetailid")
-    private Integer roomOfferDetailId;
+public class ComfortRoomOfferDetailEntity implements Serializable {
+    @Column("roomofferid")
+    private Integer roomOfferId;
     @Column("comforttypeid")
     private Integer comfortTypeId;
 }

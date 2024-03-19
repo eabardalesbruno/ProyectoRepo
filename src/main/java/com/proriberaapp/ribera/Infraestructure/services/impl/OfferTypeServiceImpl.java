@@ -18,17 +18,25 @@ public class OfferTypeServiceImpl implements OfferTypeService {
     private final OfferTypeRepository offerTypeRepository;
     @Override
     public Mono<OfferTypeEntity> save(OfferTypeEntity entity) {
-        return offerTypeRepository.save(entity);
+        return offerTypeRepository.findByOfferTypeName(entity).hasElement()
+                .flatMap(exists -> exists
+                        ? Mono.error(new IllegalArgumentException("OfferType already exists"))
+                        : offerTypeRepository.save(entity));
     }
 
     @Override
     public Flux<OfferTypeEntity> saveAll(List<OfferTypeEntity> entity) {
-        return offerTypeRepository.saveAll(entity);
+        return offerTypeRepository.findAllByOfferTypeNameIn(entity)
+                .collectList()
+                .flatMapMany(offerTypeEntities -> offerTypeRepository.saveAll(
+                        entity.stream().filter(offerTypeEntity -> !offerTypeEntities.contains(offerTypeEntity)).toList()
+                ));
     }
 
     @Override
     public Mono<OfferTypeEntity> findById(Integer id) {
-        return offerTypeRepository.findById(id);
+        return offerTypeRepository.findById(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("OfferType not found")));
     }
 
     @Override
