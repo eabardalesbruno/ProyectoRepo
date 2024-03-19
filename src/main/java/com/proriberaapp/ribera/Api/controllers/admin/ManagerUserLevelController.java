@@ -21,12 +21,12 @@ public class ManagerUserLevelController {
     }
 
     @GetMapping("/find")
-    public Mono<UserLevelEntity> findUserLevel(String id) {
+    public Mono<UserLevelEntity> findUserLevel(Integer id) {
         return userLevelService.findById(id);
     }
 
     @DeleteMapping("/delete")
-    public Mono<Void> deleteUserLevel(String id) {
+    public Mono<Void> deleteUserLevel(Integer id) {
         return userLevelService.deleteById(id);
     }
 

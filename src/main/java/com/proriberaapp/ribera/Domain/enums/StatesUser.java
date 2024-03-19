@@ -4,5 +4,4 @@ public enum StatesUser {
     ACTIVE,
     INACTIVE,
     DELETED
-
 }

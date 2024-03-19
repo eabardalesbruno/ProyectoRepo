@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono;
 public class RoomController {
     private final RoomService roomService;
     @GetMapping("/find")
-    public Mono<RoomEntity> findRoom(@RequestParam String id) {
+    public Mono<RoomEntity> findRoom(@RequestParam Integer id) {
         return roomService.findById(id);
     }
     @GetMapping("/find/all")

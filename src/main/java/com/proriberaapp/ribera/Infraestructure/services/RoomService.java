@@ -6,11 +6,5 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public interface RoomService {
-    Mono<RoomEntity> save(RoomEntity roomEntity);
-    Flux<RoomEntity> saveAll(List<RoomEntity> roomEntity);
-    Mono<RoomEntity> findById(String id);
-    Flux<RoomEntity> findAll();
-    Mono<Void> deleteById(String id);
-    Mono<RoomEntity> update(RoomEntity roomEntity);
+public interface RoomService extends BaseService<RoomEntity, RoomEntity> {
 }

@@ -6,10 +6,5 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public interface PartnerPointsService {
-    Mono<PartnerPointsEntity> save(PartnerPointsEntity partnerPointsEntity);
-    Mono<PartnerPointsEntity> findById(String id);
-    Flux<PartnerPointsEntity> findAll();
-    Mono<Void> deleteById(String id);
-    Mono<PartnerPointsEntity> update(PartnerPointsEntity partnerPointsEntity);
+public interface PartnerPointsService extends BaseService<PartnerPointsEntity,PartnerPointsEntity> {
 }

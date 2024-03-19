@@ -31,11 +31,11 @@ public class ManagerRoomController {
         return roomService.update(roomEntity);
     }
     @DeleteMapping("/delete")
-    public Mono<Void> deleteRoom(@RequestParam String id) {
+    public Mono<Void> deleteRoom(@RequestParam Integer id) {
         return roomService.deleteById(id);
     }
     @GetMapping("/find")
-    public Mono<RoomEntity> findRoom(@RequestParam String id) {
+    public Mono<RoomEntity> findRoom(@RequestParam Integer id) {
         return roomService.findById(id);
     }
     @GetMapping("/find/all")

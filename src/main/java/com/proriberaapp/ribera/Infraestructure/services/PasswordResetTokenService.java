@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Infraestructure.services;
 
 import com.proriberaapp.ribera.Domain.entities.PasswordResetTokenEntity;
+import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PasswordResetTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class PasswordResetTokenService {
         resetToken.setUserClientId(user.getUserClientId());
         resetToken.setToken(token);
         resetToken.setExpiryDate(Timestamp.valueOf(LocalDateTime.now().plusMinutes(3))); // Token válido por 3 minutos
-        return Mono.just(tokenRepository.save(resetToken));
+        return tokenRepository.save(resetToken);
     }
 
     public Mono<PasswordResetTokenEntity> generateToken(Integer userId, String token, Timestamp expiryDate) {
@@ -61,32 +62,12 @@ public class PasswordResetTokenService {
     }
 
     public Mono<Boolean> verifyToken(Integer userId, String token) {
-<<<<<<< HEAD
-        String selectQuery = "SELECT COUNT(*) FROM passwordresettoken WHERE userid = " + userId +
-                " AND token = '" + token + "' AND expirydate > '" + Timestamp.valueOf(LocalDateTime.now()) + "'";
-
-        return connectionFactory.create()
-                .flatMapMany(connection -> connection.createStatement(selectQuery)
-                        .execute()
-                        .flatMap(result -> result.map((row, rowMetadata) -> row.get(0, Integer.class)))
-                        .map(count -> count == 1)
-                )
-<<<<<<< HEAD
-                .next(); // Convertir Flux<Boolean> a Mono<Boolean>
-<<<<<<< HEAD
-    }
-    public PasswordResetTokenEntity saveToken(PasswordResetTokenEntity tokenEntity) {
-        return tokenRepository.save(tokenEntity);
-=======
->>>>>>> jose-dev
-=======
-                .next();
->>>>>>> jose-dev
-=======
         Timestamp now = Timestamp.valueOf(LocalDateTime.now());
         return tokenRepository.findByUserClientIdAndTokenAndExpiryDateAfter(userId, token, now)
                 .hasElements();
->>>>>>> jose-dev
+    }
+    public PasswordResetTokenEntity saveToken(PasswordResetTokenEntity tokenEntity) {
+        return tokenRepository.save(tokenEntity).block();
     }
 
     private String generateRandomToken() {

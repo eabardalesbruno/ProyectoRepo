@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -23,18 +25,18 @@ public class BookingStateServiceImpl implements BookingStateService {
     }
 
     @Override
-    public Flux<BookingStateEntity> saveAll(Flux<BookingStateEntity> bookingStateEntity) {
-        return bookingStateRepository.findByBookingStateName(bookingStateEntity)
+    public Flux<BookingStateEntity> saveAll(List<BookingStateEntity> bookingStateEntity) {
+        return bookingStateRepository.findAllByBookingStateNameIn(bookingStateEntity)
                 .collectList()
                 .flatMapMany(bookingStateEntities -> bookingStateRepository.saveAll(
-                        bookingStateEntity.filter(
-                                bookingStateEntity1 -> !bookingStateEntities.contains(bookingStateEntity1))
+                        bookingStateEntity.stream().filter(
+                                bookingStateEntity1 -> !bookingStateEntities.contains(bookingStateEntity1)).toList()
                 ));
     }
 
     @Override
-    public Mono<BookingStateEntity> findById(String id) {
-        return bookingStateRepository.findById(Integer.parseInt(id));
+    public Mono<BookingStateEntity> findById(Integer id) {
+        return bookingStateRepository.findById(id);
     }
 
     @Override
@@ -43,8 +45,8 @@ public class BookingStateServiceImpl implements BookingStateService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return bookingStateRepository.deleteById(Integer.parseInt(id));
+    public Mono<Void> deleteById(Integer id) {
+        return bookingStateRepository.deleteById(id);
     }
 
     @Override

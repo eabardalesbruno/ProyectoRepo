@@ -1,0 +1,296 @@
+@startuml
+
+class UserLevelEntity {
+    -Integer userLevelId
+    -String levelName
+    -String levelDescription
+}
+
+class RoomDetailEntity {
+    -Integer roomDetailId
+    -String information
+    -String terms
+    -Integer bedrooms
+    -String squareMeters
+    -Boolean oceanViewBalcony
+    -Boolean balconyOverlookingPool
+}
+
+class RoomTypeEntity {
+    -Integer roomTypeId
+    -String roomTypeName
+    -String roomTypeDescription
+}
+
+class StateRoomEntity {
+    -Integer stateRoomId
+    -String stateRoomName
+}
+
+class RoomEntity {
+    -Integer roomId
+    -Integer roomTypeId
+    -Integer stateRoomId
+    -Integer roomDetailId
+    -String roomName
+    -String roomNumber
+    -String image
+    -Integer capacity
+}
+
+class OfferTypeEntity {
+    -Integer offerTypeId
+    -String offerTypeName
+    -String offerTypeDescription
+}
+
+class RoomOfferEntity {
+    -Integer roomOfferId
+    -Integer roomId
+    -Integer offerTypeId
+    -BigDecimal cost
+    -LocalDateTime offerTimeInit
+    -LocalDateTime offerTimeEnd
+    -String offerName
+    -Integer riberaPoints
+    -Integer inResortsPoints
+    -Integer points
+}
+
+class BookingStateEntity {
+    -Integer bookingStateId
+    -String bookingStateName
+}
+
+class BookingEntity {
+    -Integer bookingId
+    -Integer roomOfferId
+    -Integer bookingStateId
+    -BigDecimal costRelative
+    -String detail
+    -String amenities
+    -String services
+}
+
+class ComfortTypeEntity {
+    -Integer comfortTypeId
+    -String comfortTypeName
+    -String comfortTypeDescription
+    -Boolean active
+}
+
+class ComfortBookingDetailEntity {
+    -Integer bookingId
+    -Integer comfortTypeId
+}
+
+class FinalCostumersEntity {
+    -Integer finalCostumerId
+    -Integer bookingId
+    -String documentType
+    -String documentNumber
+    -String firstName
+    -String lastName
+    -Integer yearsOld
+}
+
+class PaymentMethodEntity {
+    -Integer paymentMethodId
+    -String description
+    -StatePaymentMethod state
+}
+
+class PaymentStateEntity {
+    -Integer paymentStateId
+    -String paymentStateName
+}
+
+class RegisterTypeEntity {
+    -Integer registerTypeId
+    -String registerTypeName
+}
+
+class UserAdminEntity {
+    -Integer userAdminId
+    -String email
+    -String password
+    -String username
+    -String firstName
+    -String lastName
+    -String phone
+    -String address
+    -TypeDocument typeDocument
+    -String document
+    -Role role
+    -StatesUser status
+    -List<Permission> permission
+    -Timestamp createdAt
+    -Integer createdId
+    -Timestamp updatedAt
+    -Integer updatedId
+}
+
+class UserClientEntity {
+    -Integer userClientId
+    -Integer registerTypeId
+    -Integer userLevelId
+    -Integer codeUser
+    -String firstName
+    -String lastName
+    -String nationality
+    -String documentType
+    -String documentNumber
+    -Timestamp birthDate
+    -String sex
+    -Integer role
+    -String civilStatus
+    -String city
+    -String address
+    -String cellNumber
+    -String email
+    -String password
+    -String googleAuth
+    -String googleId
+    -String googleEmail
+    -String username
+    -StatesUser status
+}
+
+class PartnerPointsEntity {
+    -Integer partnerPointId
+    -Integer userClientId
+    -Integer points
+}
+
+class BookingDetailEntity {
+    -Integer bookingDetailId
+    -Integer bookingId
+    -Integer userClientId
+    -Integer paymentStateId
+    -LocalDateTime checkIn
+    -LocalDateTime checkOut
+    -BigDecimal costFinal
+}
+
+class BookingIncidentsEntity {
+    -Integer roomIncidentsId
+    -Integer bookingDetailId
+    -Integer userAdminId
+    -String evidenceImage
+    -String description
+    -String observation
+    -String actionStake
+    -LocalDateTime createdAt
+    -Integer createdId
+}
+
+class RefuseReasonEntity {
+    -Integer refuseReasonId
+    -String refuseReasonName
+}
+
+class CurrencyTypeEntity {
+    -Integer currencyTypeId
+    -String currencyTypeName
+    -String currencyTypeDescription
+}
+
+class PaymentBookEntity {
+    -Integer paymentBookId
+    -Integer bookingDetailId
+    -Integer paymentMethodId
+    -Integer currencyTypeId
+    -BigDecimal amount
+    -String description
+    -LocalDateTime paymentDate
+    -String operationCode
+    -String note
+    -BigDecimal totalCost
+    -String imageVoucher
+    -Integer totalPoints
+    -Boolean paymentComplete
+}
+
+class RefusePaymentEntity {
+    -Integer refusePaymentId
+    -Integer paymentBookId
+    -Integer refuseReasonId
+    -String detail
+}
+
+class ComfortRoomOfferDetailEntity {
+    -Integer roomOfferId
+    -Integer comfortTypeId
+}
+
+class BedsTypeEntity {
+    -Integer bedTypeId
+    -String bedTypeName
+    -String bedTypeDescription
+}
+
+class BedroomEntity {
+    -Integer bedroomId
+    -Integer roomId
+    -Integer bedTypeId
+    -Integer quantity
+}
+
+class SolicitudeEntity {
+    -Integer solicitudeId
+    -String email
+    -String phone
+    -String message
+    -String codeSend
+    -SolicitudeState status
+    -Solicitude type
+    -Integer createdId
+    -Timestamp createdAt
+    -Integer responseId
+    -Timestamp responseAt
+}
+
+PartnerPointsEntity "1" *-- "0..*" UserClientEntity
+
+UserClientEntity "1" *-- "0..*" RegisterTypeEntity
+UserClientEntity "1" *-- "0..*" UserLevelEntity
+
+BookingEntity "1" *-- "0..*" BookingStateEntity
+BookingEntity "1" *-- "0..*" RoomOfferEntity
+ComfortBookingDetailEntity "1" *-- "0..*" BookingEntity
+ComfortBookingDetailEntity "1" *-- "0..*" ComfortTypeEntity
+
+BookingIncidentsEntity "1" *-- "0..*" BookingDetailEntity
+
+RoomOfferEntity "1" *-- "0..*" RoomEntity
+RoomOfferEntity "1" *-- "0..*" OfferTypeEntity
+
+ComfortRoomOfferDetailEntity  "1" *-- "0..*" RoomOfferEntity
+ComfortRoomOfferDetailEntity  "1" *-- "0..*" ComfortTypeEntity
+
+BookingDetailEntity "1" *-- "0..*" UserClientEntity
+BookingDetailEntity "1" *-- "0..*" BookingEntity
+
+PaymentBookEntity "1" *-- "0..*" PaymentMethodEntity
+PaymentBookEntity "1" *-- "0..*" PaymentStateEntity
+PaymentBookEntity "1" *-- "0..*" BookingDetailEntity
+PaymentBookEntity "1" *-- "0..*" CurrencyTypeEntity
+
+BedroomEntity "1" *-- "0..*" RoomEntity
+BedroomEntity "1" *-- "0..*" BedsTypeEntity
+
+RoomEntity "1" *-- "0..*" RoomTypeEntity
+RoomEntity "1" *-- "0..*" StateRoomEntity
+RoomEntity "1" *-- "0..*" RoomDetailEntity
+
+RefusePaymentEntity "1" *-- "0..*" PaymentBookEntity
+RefusePaymentEntity "1" *-- "0..*" RefuseReasonEntity
+
+FinalCostumersEntity "1" *-- "0..*" BookingEntity
+
+SolicitudeEntity "1" *-- "0..*" UserAdminEntity
+SolicitudeEntity "1" *-- "0..*" UserClientEntity
+
+BookingIncidentsEntity "1" *-- "0..*" UserAdminEntity
+
+@enduml

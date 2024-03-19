@@ -21,5 +21,4 @@ public class BeansConfig {
     public WebProperties.Resources resources() {
         return new WebProperties.Resources();
     }
-
 }

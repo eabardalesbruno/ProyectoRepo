@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -24,18 +26,19 @@ public class RegisterTypeServiceImpl implements RegisterTypeService {
     }
 
     @Override
-    public Flux<RegisterTypeEntity> saveAll(Flux<RegisterTypeEntity> registerTypeEntity) {
-        return registerTypeRepository.findByRegisterTypeName(registerTypeEntity)
+    public Flux<RegisterTypeEntity> saveAll(List<RegisterTypeRequest> registerTypeRequest) {
+        List<RegisterTypeEntity> registerTypeEntity = RegisterTypeRequest.toEntity(registerTypeRequest);
+        return registerTypeRepository.findAllByRegisterTypeNameIn(registerTypeEntity)
                 .collectList()
                 .flatMapMany(registerTypeEntities -> registerTypeRepository.saveAll(
-                        registerTypeEntity.filter(
-                                registerTypeEntity1 -> !registerTypeEntities.contains(registerTypeEntity1))
+                        registerTypeEntity.stream().filter(
+                                registerTypeEntity1 -> !registerTypeEntities.contains(registerTypeEntity1)).toList()
                 ));
     }
 
     @Override
-    public Mono<RegisterTypeEntity> findById(String id) {
-        return registerTypeRepository.findById(Integer.valueOf(id));
+    public Mono<RegisterTypeEntity> findById(Integer id) {
+        return registerTypeRepository.findById(id);
     }
 
     @Override
@@ -44,12 +47,13 @@ public class RegisterTypeServiceImpl implements RegisterTypeService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return registerTypeRepository.deleteById(Integer.valueOf(id));
+    public Mono<Void> deleteById(Integer id) {
+        return registerTypeRepository.deleteById(id);
     }
 
     @Override
-    public Mono<RegisterTypeEntity> update(RegisterTypeEntity registerTypeEntity) {
+    public Mono<RegisterTypeEntity> update(RegisterTypeRequest registerTypeRequest) {
+        RegisterTypeEntity registerTypeEntity = registerTypeRequest.toEntity();
         return registerTypeRepository.save(registerTypeEntity);
     }
 }

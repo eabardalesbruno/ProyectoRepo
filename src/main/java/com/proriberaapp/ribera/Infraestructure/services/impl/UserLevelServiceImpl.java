@@ -28,17 +28,14 @@ public class UserLevelServiceImpl implements UserLevelService {
         return userLevelRepository.findAllByLevelNameIn(userLevelEntity)
                 .collectList()
                 .flatMapMany(userLevelEntities -> userLevelRepository.saveAll(
-                        userLevelEntity
-                                .stream()
-                                .filter(userLevelEntity1 -> !userLevelEntities.contains(userLevelEntity1))
-                                .toList()
+                        userLevelEntity.stream().filter(userLevelEntity1 -> !userLevelEntities.contains(userLevelEntity1)).toList()
                 ));
 
     }
 
     @Override
-    public Mono<UserLevelEntity> findById(String id) {
-        return userLevelRepository.findById(Integer.valueOf(id));
+    public Mono<UserLevelEntity> findById(Integer id) {
+        return userLevelRepository.findById(id);
     }
 
     @Override
@@ -47,8 +44,8 @@ public class UserLevelServiceImpl implements UserLevelService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return userLevelRepository.deleteById(Integer.valueOf(id));
+    public Mono<Void> deleteById(Integer id) {
+        return userLevelRepository.deleteById(id);
     }
 
     @Override

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -20,13 +22,13 @@ public class RoomDetailServiceImpl implements RoomDetailService {
     }
 
     @Override
-    public Flux<RoomDetailEntity> saveAll(Flux<RoomDetailEntity> roomDetailEntity) {
+    public Flux<RoomDetailEntity> saveAll(List<RoomDetailEntity> roomDetailEntity) {
         return roomDetailRepository.saveAll(roomDetailEntity);
     }
 
     @Override
-    public Mono<RoomDetailEntity> findById(String id) {
-        return roomDetailRepository.findById(Integer.valueOf(id));
+    public Mono<RoomDetailEntity> findById(Integer id) {
+        return roomDetailRepository.findById(id);
     }
 
     @Override
@@ -35,8 +37,8 @@ public class RoomDetailServiceImpl implements RoomDetailService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return roomDetailRepository.deleteById(Integer.valueOf(id));
+    public Mono<Void> deleteById(Integer id) {
+        return roomDetailRepository.deleteById(id);
     }
 
     @Override

@@ -9,7 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v1/admin/manager/userAdmin")
+@RequestMapping("/api/v1/admin/manager/user-admin")
 @RequiredArgsConstructor
 @Slf4j
 public class ManagerUserAdminController {

@@ -16,9 +16,9 @@ public class BookingEntity {
     @Id
     @Column("bookingid")
     private Integer bookingId;
-    @Column("roomid")
-    private Integer roomId;
-    @Column("paymentstateid")
+    @Column("roomofferid")
+    private Integer roomOfferId;
+    @Column("bookingstateid")
     private Integer bookingStateId;
     private BigDecimal costRelative;
     @Column("riberapoints")

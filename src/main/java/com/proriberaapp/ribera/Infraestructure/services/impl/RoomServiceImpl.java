@@ -15,7 +15,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class RoomServiceImpl implements RoomService {
+
     private final RoomRepository roomRepository;
+
     @Override
     public Mono<RoomEntity> save(RoomEntity roomEntity) {
         return roomRepository.findByRoomName(roomEntity.getRoomName()).hasElement()
@@ -26,18 +28,16 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public Flux<RoomEntity> saveAll(List<RoomEntity> roomEntity) {
-        return roomRepository.findAllByRoomNameIn(roomEntity)
+        return roomRepository.findAllByRoomNameIn(roomEntity.stream().map(RoomEntity::getRoomName).toList())
                 .collectList()
                 .flatMapMany(roomEntities -> roomRepository.saveAll(
-                        roomEntity.stream()
-                                .filter(roomEntity1 -> !roomEntities.contains(roomEntity1))
-                                .toList()
+                        roomEntity.stream().filter(roomEntity1 -> !roomEntities.contains(roomEntity1)).toList()
                 ));
     }
 
     @Override
-    public Mono<RoomEntity> findById(String id) {
-        return roomRepository.findById(Integer.valueOf(id));
+    public Mono<RoomEntity> findById(Integer id) {
+        return roomRepository.findById(id);
     }
 
     @Override
@@ -46,8 +46,8 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return roomRepository.deleteById(Integer.valueOf(id));
+    public Mono<Void> deleteById(Integer id) {
+        return roomRepository.deleteById(id);
     }
 
     @Override

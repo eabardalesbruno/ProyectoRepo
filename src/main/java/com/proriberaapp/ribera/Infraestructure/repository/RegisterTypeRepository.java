@@ -5,7 +5,9 @@ import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface RegisterTypeRepository extends R2dbcRepository<RegisterTypeEntity, Integer> {
     Mono<RegisterTypeEntity> findByRegisterTypeName(String registerTypeName);
-    Flux<RegisterTypeEntity> findByRegisterTypeName(Flux<RegisterTypeEntity> registerTypeName);
+    Flux<RegisterTypeEntity> findAllByRegisterTypeNameIn(List<RegisterTypeEntity> registerTypeName);
 }

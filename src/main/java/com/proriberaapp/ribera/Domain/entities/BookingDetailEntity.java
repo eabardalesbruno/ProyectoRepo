@@ -20,23 +20,10 @@ public class BookingDetailEntity {
     @Column("bookingid")
     private Integer bookingId;
     @Column("userclientid")
-    private Integer userclientId;
-    @Column("paymentstateid")
-    private Integer paymentStateId;
+    private Integer userClientId;
     @Column("checkin")
     private LocalDateTime checkIn;
     @Column("checkout")
     private LocalDateTime checkOut;
     private BigDecimal costFinal;
-    private String customer;
-    @Column("documenttype")
-    private String documentType;
-    @Column("documentnumber")
-    private String documentNumber;
-    @Column("adultsnumber")
-    private Integer adultsNumber;
-    @Column("childrennumber")
-    private Integer childrenNumber;
-    @Column("babiesnumber")
-    private Integer babiesNumber;
 }

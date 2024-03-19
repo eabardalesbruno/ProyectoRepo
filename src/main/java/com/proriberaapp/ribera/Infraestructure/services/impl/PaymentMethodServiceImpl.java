@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -24,19 +26,18 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     }
 
     @Override
-    public Flux<PaymentMethodEntity> saveAll(Flux<PaymentMethodRequest> paymentMethodRequest) {
-        return paymentMethodRepository.findByDescription(paymentMethodRequest)
+    public Flux<PaymentMethodEntity> saveAll(List<PaymentMethodRequest> paymentMethodRequest) {
+        return paymentMethodRepository.findAllByDescriptionIn(paymentMethodRequest)
                 .collectList()
                 .flatMapMany(paymentMethodEntities -> paymentMethodRepository.saveAll(
-                        paymentMethodRequest.filter(
-                                paymentMethodEntity1 -> !paymentMethodEntities.contains(paymentMethodEntity1.toEntity()))
-                                .map(PaymentMethodRequest::toEntity)
+                        paymentMethodRequest.stream().map(PaymentMethodRequest::toEntity)
+                                .filter(
+                                        entity -> !paymentMethodEntities.contains(entity)).toList()
                 ));
     }
-
     @Override
-    public Mono<PaymentMethodEntity> findById(String id) {
-        return paymentMethodRepository.findById(Integer.valueOf(id));
+    public Mono<PaymentMethodEntity> findById(Integer id) {
+        return paymentMethodRepository.findById(id);
     }
 
     @Override
@@ -45,12 +46,13 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     }
 
     @Override
-    public Mono<Void> deleteById(String id) {
-        return paymentMethodRepository.deleteById(Integer.valueOf(id));
+    public Mono<Void> deleteById(Integer id) {
+        return paymentMethodRepository.deleteById(id);
     }
 
     @Override
-    public Mono<PaymentMethodEntity> update(PaymentMethodEntity paymentMethodEntity) {
+    public Mono<PaymentMethodEntity> update(PaymentMethodRequest paymentMethodRequest) {
+        PaymentMethodEntity paymentMethodEntity = paymentMethodRequest.toEntity();
         return paymentMethodRepository.save(paymentMethodEntity);
     }
 }
