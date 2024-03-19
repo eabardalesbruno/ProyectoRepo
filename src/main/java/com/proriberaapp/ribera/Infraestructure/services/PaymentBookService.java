@@ -36,4 +36,12 @@ public class PaymentBookService {
     public Mono<Void> deletePaymentBook(Integer id) {
         return paymentBookRepository.deleteById(id);
     }
+
+    public Flux<PaymentBookEntity> getPaymentBooksByUserClientId(Integer userClientId) {
+        return paymentBookRepository.findByUserClientId(userClientId);
+    }
+
+    public Flux<PaymentBookEntity> getPaymentBooksByClientTypeId(Integer clientTypeId) {
+        return paymentBookRepository.findByClientTypeId(clientTypeId);
+    }
 }

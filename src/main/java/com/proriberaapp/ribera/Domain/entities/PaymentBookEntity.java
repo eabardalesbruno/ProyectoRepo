@@ -34,6 +34,12 @@ public class PaymentBookEntity {
     @Column("refusereasonid")
     private Integer refuseReasonId;
 
+    @Column("userclientid")
+    private Integer userClientId;
+
+    @Column("clienttypeid")
+    private Integer clientTypeId;
+
     private BigDecimal amount;
 
     private String description;

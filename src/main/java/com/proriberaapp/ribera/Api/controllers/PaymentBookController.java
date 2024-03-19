@@ -26,6 +26,18 @@ public class PaymentBookController {
         return ResponseEntity.status(HttpStatus.OK).body(paymentBooks);
     }
 
+    @GetMapping("/by-user")
+    public ResponseEntity<Flux<PaymentBookEntity>> getPaymentBooksByUserClientId(@RequestParam Integer userClientId) {
+        Flux<PaymentBookEntity> paymentBooks = paymentBookService.getPaymentBooksByUserClientId(userClientId);
+        return ResponseEntity.status(HttpStatus.OK).body(paymentBooks);
+    }
+
+    @GetMapping("/by-client-type")
+    public ResponseEntity<Flux<PaymentBookEntity>> getPaymentBooksByClientTypeId(@RequestParam Integer clientTypeId) {
+        Flux<PaymentBookEntity> paymentBooks = paymentBookService.getPaymentBooksByClientTypeId(clientTypeId);
+        return ResponseEntity.status(HttpStatus.OK).body(paymentBooks);
+    }
+
     @PostMapping
     public ResponseEntity<Mono<PaymentBookEntity>> createPaymentBook(@RequestBody PaymentBookEntity paymentBookEntity) {
         Mono<PaymentBookEntity> createdPaymentBook = paymentBookService.createPaymentBook(paymentBookEntity);
