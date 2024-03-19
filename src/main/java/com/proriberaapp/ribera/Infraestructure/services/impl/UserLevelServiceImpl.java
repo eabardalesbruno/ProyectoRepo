@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -22,11 +24,11 @@ public class UserLevelServiceImpl implements UserLevelService {
     }
 
     @Override
-    public Flux<UserLevelEntity> saveAll(Flux<UserLevelEntity> userLevelEntity) {
-        return userLevelRepository.findAllByLevelName(userLevelEntity)
+    public Flux<UserLevelEntity> saveAll(List<UserLevelEntity> userLevelEntity) {
+        return userLevelRepository.findAllByLevelNameIn(userLevelEntity)
                 .collectList()
                 .flatMapMany(userLevelEntities -> userLevelRepository.saveAll(
-                        userLevelEntity.filter(userLevelEntity1 -> !userLevelEntities.contains(userLevelEntity1))
+                        userLevelEntity.stream().filter(userLevelEntity1 -> !userLevelEntities.contains(userLevelEntity1)).toList()
                 ));
 
     }

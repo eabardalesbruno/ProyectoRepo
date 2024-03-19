@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -17,22 +19,19 @@ public class BookingDetailServiceImpl implements BookingDetailService {
     @Override
     public Mono<BookingDetailEntity> save(BookingDetailEntity bookingDetailEntity) {
         Integer bookingId = bookingDetailEntity.getBookingId();
-        Integer paymentStateId = bookingDetailEntity.getPaymentStateId();
-        return bookingDetailRepository.findByBookingIdAndPaymentStateId(bookingId, paymentStateId).hasElement()
+        return bookingDetailRepository.findByBookingId(bookingDetailEntity).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Booking detail already exists"))
                         : bookingDetailRepository.save(bookingDetailEntity));
     }
 
     @Override
-    public Flux<BookingDetailEntity> saveAll(Flux<BookingDetailEntity> bookingDetailEntity) {
-        Flux<Integer> bookingIds = bookingDetailEntity.map(BookingDetailEntity::getBookingId);
-        Flux<Integer> paymentStateIds = bookingDetailEntity.map(BookingDetailEntity::getPaymentStateId);
-        return bookingDetailRepository.findByBookingIdAndPaymentStateId(bookingIds, paymentStateIds)
+    public Flux<BookingDetailEntity> saveAll(List<BookingDetailEntity> bookingDetailEntity) {
+        return bookingDetailRepository.findAllByBookingIdIn(bookingDetailEntity)
                 .collectList()
                 .flatMapMany(bookingDetailEntities -> bookingDetailRepository.saveAll(
-                        bookingDetailEntity.filter(
-                                bookingDetailEntity1 -> !bookingDetailEntities.contains(bookingDetailEntity1))
+                        bookingDetailEntity.stream().filter(
+                                bookingDetailEntity1 -> !bookingDetailEntities.contains(bookingDetailEntity1)).toList()
                 ));
     }
 

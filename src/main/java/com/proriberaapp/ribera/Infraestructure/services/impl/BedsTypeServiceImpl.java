@@ -1,15 +1,15 @@
 package com.proriberaapp.ribera.Infraestructure.services.impl;
 
-import com.proriberaapp.ribera.Domain.entities.BedroomEntity;
 import com.proriberaapp.ribera.Domain.entities.BedsTypeEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BedsTypeRepository;
 import com.proriberaapp.ribera.Infraestructure.services.BedsTypeService;
-import com.proriberaapp.ribera.Infraestructure.services.BaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +23,7 @@ public class BedsTypeServiceImpl implements BedsTypeService {
     }
 
     @Override
-    public Flux<BedsTypeEntity> saveAll(Flux<BedsTypeEntity> entity) {
+    public Flux<BedsTypeEntity> saveAll(List<BedsTypeEntity> entity) {
         return bedsTypeRepository.saveAll(entity);
     }
 

@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -24,13 +26,13 @@ public class RegisterTypeServiceImpl implements RegisterTypeService {
     }
 
     @Override
-    public Flux<RegisterTypeEntity> saveAll(Flux<RegisterTypeRequest> registerTypeRequest) {
-        Flux<RegisterTypeEntity> registerTypeEntity = RegisterTypeRequest.toEntity(registerTypeRequest);
-        return registerTypeRepository.findByRegisterTypeName(registerTypeEntity)
+    public Flux<RegisterTypeEntity> saveAll(List<RegisterTypeRequest> registerTypeRequest) {
+        List<RegisterTypeEntity> registerTypeEntity = RegisterTypeRequest.toEntity(registerTypeRequest);
+        return registerTypeRepository.findAllByRegisterTypeNameIn(registerTypeEntity)
                 .collectList()
                 .flatMapMany(registerTypeEntities -> registerTypeRepository.saveAll(
-                        registerTypeEntity.filter(
-                                registerTypeEntity1 -> !registerTypeEntities.contains(registerTypeEntity1))
+                        registerTypeEntity.stream().filter(
+                                registerTypeEntity1 -> !registerTypeEntities.contains(registerTypeEntity1)).toList()
                 ));
     }
 

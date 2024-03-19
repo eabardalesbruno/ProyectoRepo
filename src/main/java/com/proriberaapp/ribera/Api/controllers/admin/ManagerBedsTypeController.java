@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/admin/manager/beds-type")
 @RequiredArgsConstructor
@@ -24,18 +26,23 @@ public class ManagerBedsTypeController {
     }
 
     @PostMapping("/register")
-    public Mono<BedsTypeEntity> registerBedsType() {
-        return bedsTypeService.save(null);
+    public Mono<BedsTypeEntity> registerBedsType(
+            @RequestBody BedsTypeEntity bedsTypeEntity
+    ) {
+        return bedsTypeService.save(bedsTypeEntity);
     }
 
     @PostMapping("/register/all")
-    public Flux<BedsTypeEntity> registerAllBedsType() {
-        return bedsTypeService.saveAll(null);
+    public Flux<BedsTypeEntity> registerAllBedsType(
+            @RequestBody List<BedsTypeEntity> bedsTypeEntity) {
+        return bedsTypeService.saveAll(bedsTypeEntity);
     }
 
     @PatchMapping("/update")
-    public Mono<BedsTypeEntity> updateBedsType() {
-        return bedsTypeService.update(null);
+    public Mono<BedsTypeEntity> updateBedsType(
+            @RequestBody BedsTypeEntity bedsTypeEntity
+    ) {
+        return bedsTypeService.update(bedsTypeEntity);
     }
 
     @DeleteMapping("/delete")

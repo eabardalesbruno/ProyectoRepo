@@ -3,12 +3,13 @@ package com.proriberaapp.ribera.Infraestructure.services.impl;
 import com.proriberaapp.ribera.Domain.entities.BedroomEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BedroomRepository;
 import com.proriberaapp.ribera.Infraestructure.services.BedroomService;
-import com.proriberaapp.ribera.Infraestructure.services.BaseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class BedroomServiceImpl implements BedroomService {
     }
 
     @Override
-    public Flux<BedroomEntity> saveAll(Flux<BedroomEntity> entity) {
+    public Flux<BedroomEntity> saveAll(List<BedroomEntity> entity) {
         return bedroomRepository.saveAll(entity);
     }
 

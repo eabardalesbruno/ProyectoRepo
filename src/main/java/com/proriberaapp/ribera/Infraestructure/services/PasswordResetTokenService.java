@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Infraestructure.services;
 
 import com.proriberaapp.ribera.Domain.entities.PasswordResetTokenEntity;
+import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PasswordResetTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -23,7 +25,7 @@ public class PartnerPointsServiceImpl implements PartnerPointsService {
     }
 
     @Override
-    public Flux<PartnerPointsEntity> saveAll(Flux<PartnerPointsEntity> entity) {
+    public Flux<PartnerPointsEntity> saveAll(List<PartnerPointsEntity> entity) {
         return null;
     }
 

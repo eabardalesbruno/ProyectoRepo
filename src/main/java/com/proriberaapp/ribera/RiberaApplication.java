@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera;
 
+import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
 import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

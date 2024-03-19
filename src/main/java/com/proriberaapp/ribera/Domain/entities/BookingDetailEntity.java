@@ -21,22 +21,9 @@ public class BookingDetailEntity {
     private Integer bookingId;
     @Column("userclientid")
     private Integer userClientId;
-    @Column("paymentstateid")
-    private Integer paymentStateId;
     @Column("checkin")
     private LocalDateTime checkIn;
     @Column("checkout")
     private LocalDateTime checkOut;
     private BigDecimal costFinal;
-    private String customer;
-    @Column("documenttype")
-    private String documentType;
-    @Column("documentnumber")
-    private String documentNumber;
-    @Column("adultsnumber")
-    private Integer adultsNumber;
-    @Column("childrennumber")
-    private Integer childrenNumber;
-    @Column("babiesnumber")
-    private Integer babiesNumber;
 }

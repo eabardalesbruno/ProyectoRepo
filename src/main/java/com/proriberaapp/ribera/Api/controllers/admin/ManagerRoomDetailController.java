@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/admin/manager/room-detail")
 @RequiredArgsConstructor
@@ -34,7 +36,7 @@ public class ManagerRoomDetailController {
 
     @PostMapping("/register/all")
     public Flux<RoomDetailEntity> registerAllRoomDetails(
-            @RequestBody Flux<RoomDetailEntity> roomDetailEntity
+            @RequestBody List<RoomDetailEntity> roomDetailEntity
     ) {
         return roomDetailService.saveAll(roomDetailEntity);
     }

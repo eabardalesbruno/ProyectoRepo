@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -16,9 +18,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     @Override
     public Mono<BookingEntity> save(BookingEntity bookingEntity) {
-        Integer bookingId = bookingEntity.getBookingId();
-        Integer bookingStateId = bookingEntity.getBookingStateId();
-        return bookingRepository.findByBookingStateId(bookingStateId
+        return bookingRepository.findByBookingStateId(bookingEntity
                 ).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Booking already exists"))
@@ -26,14 +26,12 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Flux<BookingEntity> saveAll(Flux<BookingEntity> bookingEntity) {
-        Flux<Integer> bookingId = bookingEntity.map(BookingEntity::getBookingId);
-        Flux<Integer> bookingStateIds = bookingEntity.map(BookingEntity::getBookingStateId);
-        return bookingRepository.findByBookingStateId(bookingStateIds)
+    public Flux<BookingEntity> saveAll(List<BookingEntity> bookingEntity) {
+        return bookingRepository.findAllByBookingStateIdIn(bookingEntity)
                 .collectList()
                 .flatMapMany(bookingEntities -> bookingRepository.saveAll(
-                        bookingEntity.filter(
-                                bookingEntity1 -> !bookingEntities.contains(bookingEntity1))
+                        bookingEntity.stream().filter(
+                                bookingEntity1 -> !bookingEntities.contains(bookingEntity1)).toList()
                 ));
     }
 

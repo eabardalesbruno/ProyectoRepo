@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/admin/manager/register-type")
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class ManagerRegisterTypeController {
 
     @PostMapping("/register/all")
     public Flux<RegisterTypeEntity> registerAllRegisterTypes(
-            @RequestBody Flux<RegisterTypeRequest> registerTypeRequest) {
+            @RequestBody List<RegisterTypeRequest> registerTypeRequest) {
         return registerTypeService.saveAll(registerTypeRequest);
     }
 

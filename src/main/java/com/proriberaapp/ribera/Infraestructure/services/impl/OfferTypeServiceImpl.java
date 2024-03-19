@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -20,7 +22,7 @@ public class OfferTypeServiceImpl implements OfferTypeService {
     }
 
     @Override
-    public Flux<OfferTypeEntity> saveAll(Flux<OfferTypeEntity> entity) {
+    public Flux<OfferTypeEntity> saveAll(List<OfferTypeEntity> entity) {
         return offerTypeRepository.saveAll(entity);
     }
 

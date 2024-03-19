@@ -22,7 +22,7 @@ public class ManagerRoomController {
         return roomService.save(roomEntity);
     }
     @PostMapping("/register/all")
-    public Flux<RoomEntity> registerAllRooms(@RequestBody Flux<RoomEntity> roomEntity) {
+    public Flux<RoomEntity> registerAllRooms(@RequestBody List<RoomEntity> roomEntity) {
         log.info("List of rooms: " + roomEntity.toString() );
         return roomService.saveAll(roomEntity);
     }

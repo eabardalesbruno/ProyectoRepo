@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -24,13 +26,13 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     }
 
     @Override
-    public Flux<PaymentMethodEntity> saveAll(Flux<PaymentMethodRequest> paymentMethodRequest) {
-        return paymentMethodRepository.findByDescription(paymentMethodRequest)
+    public Flux<PaymentMethodEntity> saveAll(List<PaymentMethodRequest> paymentMethodRequest) {
+        return paymentMethodRepository.findAllByDescriptionIn(paymentMethodRequest)
                 .collectList()
                 .flatMapMany(paymentMethodEntities -> paymentMethodRepository.saveAll(
-                        paymentMethodRequest.filter(
-                                paymentMethodEntity1 -> !paymentMethodEntities.contains(paymentMethodEntity1.toEntity()))
-                                .map(PaymentMethodRequest::toEntity)
+                        paymentMethodRequest.stream().map(PaymentMethodRequest::toEntity)
+                                .filter(
+                                        entity -> !paymentMethodEntities.contains(entity)).toList()
                 ));
     }
     @Override

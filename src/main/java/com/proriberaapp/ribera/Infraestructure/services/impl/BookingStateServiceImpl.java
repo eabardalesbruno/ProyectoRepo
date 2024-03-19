@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -23,12 +25,12 @@ public class BookingStateServiceImpl implements BookingStateService {
     }
 
     @Override
-    public Flux<BookingStateEntity> saveAll(Flux<BookingStateEntity> bookingStateEntity) {
-        return bookingStateRepository.findByBookingStateName(bookingStateEntity)
+    public Flux<BookingStateEntity> saveAll(List<BookingStateEntity> bookingStateEntity) {
+        return bookingStateRepository.findAllByBookingStateNameIn(bookingStateEntity)
                 .collectList()
                 .flatMapMany(bookingStateEntities -> bookingStateRepository.saveAll(
-                        bookingStateEntity.filter(
-                                bookingStateEntity1 -> !bookingStateEntities.contains(bookingStateEntity1))
+                        bookingStateEntity.stream().filter(
+                                bookingStateEntity1 -> !bookingStateEntities.contains(bookingStateEntity1)).toList()
                 ));
     }
 

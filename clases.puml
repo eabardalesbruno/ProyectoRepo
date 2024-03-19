@@ -1,5 +1,67 @@
 @startuml
 
+class UserLevelEntity {
+    -Integer userLevelId
+    -String levelName
+    -String levelDescription
+}
+
+class RoomDetailEntity {
+    -Integer roomDetailId
+    -String information
+    -String terms
+    -Integer bedrooms
+    -String squareMeters
+    -Boolean oceanViewBalcony
+    -Boolean balconyOverlookingPool
+}
+
+class RoomTypeEntity {
+    -Integer roomTypeId
+    -String roomTypeName
+    -String roomTypeDescription
+}
+
+class StateRoomEntity {
+    -Integer stateRoomId
+    -String stateRoomName
+}
+
+class RoomEntity {
+    -Integer roomId
+    -Integer roomTypeId
+    -Integer stateRoomId
+    -Integer roomDetailId
+    -String roomName
+    -String roomNumber
+    -String image
+    -Integer capacity
+}
+
+class OfferTypeEntity {
+    -Integer offerTypeId
+    -String offerTypeName
+    -String offerTypeDescription
+}
+
+class RoomOfferEntity {
+    -Integer roomOfferId
+    -Integer roomId
+    -Integer offerTypeId
+    -BigDecimal cost
+    -LocalDateTime offerTimeInit
+    -LocalDateTime offerTimeEnd
+    -String offerName
+    -Integer riberaPoints
+    -Integer inResortsPoints
+    -Integer points
+}
+
+class BookingStateEntity {
+    -Integer bookingStateId
+    -String bookingStateName
+}
+
 class BookingEntity {
     -Integer bookingId
     -Integer roomOfferId
@@ -10,21 +72,16 @@ class BookingEntity {
     -String services
 }
 
+class ComfortTypeEntity {
+    -Integer comfortTypeId
+    -String comfortTypeName
+    -String comfortTypeDescription
+    -Boolean active
+}
+
 class ComfortBookingDetailEntity {
     -Integer bookingId
     -Integer comfortTypeId
-}
-
-class BookingIncidentsEntity {
-    -Integer roomIncidentsId
-    -Integer bookingDetailId
-    -Integer userAdminId
-    -String evidenceImage
-    -String description
-    -String observation
-    -String actionStake
-    -LocalDateTime createdAt
-    -Integer createdId
 }
 
 class FinalCostumersEntity {
@@ -35,17 +92,6 @@ class FinalCostumersEntity {
     -String firstName
     -String lastName
     -Integer yearsOld
-}
-
-class BookingStateEntity {
-    -Integer bookingStateId
-    -String bookingStateName
-}
-
-class PartnerPointsEntity {
-    -Integer partnerPointId
-    -Integer userClientId
-    -Integer points
 }
 
 class PaymentMethodEntity {
@@ -62,46 +108,6 @@ class PaymentStateEntity {
 class RegisterTypeEntity {
     -Integer registerTypeId
     -String registerTypeName
-}
-
-class RoomDetailEntity {
-    -Integer roomDetailId
-    -String information
-    -String terms
-    -Integer bedrooms
-    -String squareMeters
-    -Boolean oceanViewBalcony
-    -Boolean balconyOverlookingPool
-}
-
-class RoomEntity {
-    -Integer roomId
-    -Integer roomTypeId
-    -Integer stateRoomId
-    -Integer roomDetailId
-    -String roomName
-    -String roomNumber
-    -String image
-    -Integer capacity
-}
-
-class StateRoomEntity {
-    -Integer stateRoomId
-    -String stateRoomName
-}
-
-class SolicitudeEntity {
-    -Integer solicitudeId
-    -String email
-    -String phone
-    -String message
-    -String codeSend
-    -SolicitudeState status
-    -Solicitude type
-    -Integer createdId
-    -Timestamp createdAt
-    -Integer responseId
-    -Timestamp responseAt
 }
 
 class UserAdminEntity {
@@ -150,10 +156,10 @@ class UserClientEntity {
     -StatesUser status
 }
 
-class UserLevelEntity {
-    -Integer userLevelId
-    -String levelName
-    -String levelDescription
+class PartnerPointsEntity {
+    -Integer partnerPointId
+    -Integer userClientId
+    -Integer points
 }
 
 class BookingDetailEntity {
@@ -166,11 +172,16 @@ class BookingDetailEntity {
     -BigDecimal costFinal
 }
 
-class RefusePaymentEntity {
-    -Integer refusePaymentId
-    -Integer paymentStateId
-    -Integer refuseReasonId
-    -String detail
+class BookingIncidentsEntity {
+    -Integer roomIncidentsId
+    -Integer bookingDetailId
+    -Integer userAdminId
+    -String evidenceImage
+    -String description
+    -String observation
+    -String actionStake
+    -LocalDateTime createdAt
+    -Integer createdId
 }
 
 class RefuseReasonEntity {
@@ -178,54 +189,10 @@ class RefuseReasonEntity {
     -String refuseReasonName
 }
 
-class RoomOfferEntity {
-    -Integer roomOfferId
-    -Integer roomId
-    -Integer offerTypeId
-    -BigDecimal cost
-    -LocalDateTime offerTimeInit
-    -LocalDateTime offerTimeEnd
-    -String offerName
-    -Integer riberaPoints
-    -Integer inResortsPoints
-    -Integer points
-}
-
-class ComfortRoomOfferDetailEntity {
-    -Integer roomOfferId
-    -Integer comfortTypeId
-}
-
-class ComfortTypeEntity {
-    -Integer comfortTypeId
-    -String comfortTypeName
-    -String comfortTypeDescription
-    -Boolean active
-}
-
-class OfferTypeEntity {
-    -Integer offerTypeId
-    -String offerTypeName
-    -String offerTypeDescription
-}
-
-class RoomTypeEntity {
-    -Integer roomTypeId
-    -String roomTypeName
-    -String roomTypeDescription
-}
-
-class BedroomEntity {
-    -Integer bedroomId
-    -Integer roomId
-    -Integer bedTypeId
-    -Integer quantity
-}
-
-class BedsTypeEntity {
-    -Integer bedTypeId
-    -String bedTypeName
-    -String bedTypeDescription
+class CurrencyTypeEntity {
+    -Integer currencyTypeId
+    -String currencyTypeName
+    -String currencyTypeDescription
 }
 
 class PaymentBookEntity {
@@ -244,10 +211,43 @@ class PaymentBookEntity {
     -Boolean paymentComplete
 }
 
-class CurrencyTypeEntity {
-    -Integer currencyTypeId
-    -String currencyTypeName
-    -String currencyTypeDescription
+class RefusePaymentEntity {
+    -Integer refusePaymentId
+    -Integer paymentBookId
+    -Integer refuseReasonId
+    -String detail
+}
+
+class ComfortRoomOfferDetailEntity {
+    -Integer roomOfferId
+    -Integer comfortTypeId
+}
+
+class BedsTypeEntity {
+    -Integer bedTypeId
+    -String bedTypeName
+    -String bedTypeDescription
+}
+
+class BedroomEntity {
+    -Integer bedroomId
+    -Integer roomId
+    -Integer bedTypeId
+    -Integer quantity
+}
+
+class SolicitudeEntity {
+    -Integer solicitudeId
+    -String email
+    -String phone
+    -String message
+    -String codeSend
+    -SolicitudeState status
+    -Solicitude type
+    -Integer createdId
+    -Timestamp createdAt
+    -Integer responseId
+    -Timestamp responseAt
 }
 
 PartnerPointsEntity "1" *-- "0..*" UserClientEntity
@@ -283,7 +283,7 @@ RoomEntity "1" *-- "0..*" RoomTypeEntity
 RoomEntity "1" *-- "0..*" StateRoomEntity
 RoomEntity "1" *-- "0..*" RoomDetailEntity
 
-RefusePaymentEntity "1" *-- "0..*" BookingDetailEntity
+RefusePaymentEntity "1" *-- "0..*" PaymentBookEntity
 RefusePaymentEntity "1" *-- "0..*" RefuseReasonEntity
 
 FinalCostumersEntity "1" *-- "0..*" BookingEntity

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -20,7 +22,7 @@ public class StateRoomServiceImpl implements StateRoomService {
     }
 
     @Override
-    public Flux<StateRoomEntity> saveAll(Flux<StateRoomEntity> entity) {
+    public Flux<StateRoomEntity> saveAll(List<StateRoomEntity> entity) {
         return stateRoomRepository.saveAll(entity);
     }
 

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -20,7 +22,7 @@ public class ComfortTypeServiceImpl implements ComfortTypeService {
     }
 
     @Override
-    public Flux<ComfortTypeEntity> saveAll(Flux<ComfortTypeEntity> entity) {
+    public Flux<ComfortTypeEntity> saveAll(List<ComfortTypeEntity> entity) {
         return comfortTypeRepository.saveAll(entity);
     }
 

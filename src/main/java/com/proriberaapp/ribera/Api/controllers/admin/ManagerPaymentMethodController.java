@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/admin/manager/payment-method")
 @RequiredArgsConstructor
@@ -35,7 +37,7 @@ public class ManagerPaymentMethodController {
 
     @PostMapping("/register/all")
     public Flux<PaymentMethodEntity> registerAllPaymentMethods(
-            @RequestBody Flux<PaymentMethodRequest> paymentMethodEntity
+            @RequestBody List<PaymentMethodRequest> paymentMethodEntity
     ) {
         return paymentMethodService.saveAll(paymentMethodEntity);
     }

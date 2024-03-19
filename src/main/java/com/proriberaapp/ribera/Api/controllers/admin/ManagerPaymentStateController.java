@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/admin/manager/payment-state")
 @RequiredArgsConstructor
@@ -34,7 +36,7 @@ public class ManagerPaymentStateController {
 
     @PostMapping("/register/all")
     public Flux<PaymentStateEntity> registerAllPaymentStates(
-            @RequestBody Flux<PaymentStateEntity> paymentStateEntity
+            @RequestBody List<PaymentStateEntity> paymentStateEntity
     ) {
         return paymentStateService.saveAll(paymentStateEntity);
     }

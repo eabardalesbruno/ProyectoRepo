@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/admin/manager/state-room")
 @RequiredArgsConstructor
@@ -36,7 +38,7 @@ public class StateRoomController {
 
     @PostMapping("/register/all")
     public Flux<StateRoomEntity> registerAllStateRooms(
-            @RequestBody Flux<StateRoomEntity> stateRoomEntity
+            @RequestBody List<StateRoomEntity> stateRoomEntity
     ) {
         return stateRoomService.saveAll(stateRoomEntity);
     }

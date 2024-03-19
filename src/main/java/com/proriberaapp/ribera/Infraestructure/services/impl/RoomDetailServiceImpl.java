@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -20,7 +22,7 @@ public class RoomDetailServiceImpl implements RoomDetailService {
     }
 
     @Override
-    public Flux<RoomDetailEntity> saveAll(Flux<RoomDetailEntity> roomDetailEntity) {
+    public Flux<RoomDetailEntity> saveAll(List<RoomDetailEntity> roomDetailEntity) {
         return roomDetailRepository.saveAll(roomDetailEntity);
     }
 

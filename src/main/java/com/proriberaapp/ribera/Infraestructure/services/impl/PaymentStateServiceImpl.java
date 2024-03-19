@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -23,12 +25,12 @@ public class PaymentStateServiceImpl implements PaymentStateService {
     }
 
     @Override
-    public Flux<PaymentStateEntity> saveAll(Flux<PaymentStateEntity> paymentStateEntity) {
-        return paymentStateRepository.findByPaymentStateName(paymentStateEntity)
+    public Flux<PaymentStateEntity> saveAll(List<PaymentStateEntity> paymentStateEntity) {
+        return paymentStateRepository.findAllByPaymentStateNameIn(paymentStateEntity)
                 .collectList()
                 .flatMapMany(paymentStateEntities -> paymentStateRepository.saveAll(
-                        paymentStateEntity.filter(
-                                paymentStateEntity1 -> !paymentStateEntities.contains(paymentStateEntity1))
+                        paymentStateEntity.stream().filter(
+                                paymentStateEntity1 -> !paymentStateEntities.contains(paymentStateEntity1)).toList()
                 ));
     }
 

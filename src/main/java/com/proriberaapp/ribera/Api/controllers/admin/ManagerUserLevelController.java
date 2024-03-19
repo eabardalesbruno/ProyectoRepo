@@ -36,7 +36,7 @@ public class ManagerUserLevelController {
     }
 
     @PostMapping("/register/all")
-    public Flux<UserLevelEntity> registerAllUserLevels(@RequestBody Flux<UserLevelEntity> userLevelEntity) {
+    public Flux<UserLevelEntity> registerAllUserLevels(@RequestBody List<UserLevelEntity> userLevelEntity) {
         return userLevelService.saveAll(userLevelEntity);
     }
 
