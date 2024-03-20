@@ -8,6 +8,9 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
+import java.sql.Time;
+import java.sql.Timestamp;
+
 @Getter
 @Setter
 @Builder
@@ -20,13 +23,18 @@ public class BookingEntity {
     private Integer roomOfferId;
     @Column("bookingstateid")
     private Integer bookingStateId;
-    private BigDecimal costRelative;
-    @Column("riberapoints")
-    private Integer riberaPoints;
-    @Column("inresortspoints")
-    private Integer inResortsPoints;
-    private Integer points;
+    @Column("userclientid")
+    private Integer userClientId;
+    @Column("costfinal")
+    private BigDecimal costFinal;
     private String detail;
-    private String amenities;
-    private String services;
+    @Column("daybookinginit")
+    private Timestamp dayBookingInit;
+    @Column("daybookingend")
+    private Timestamp dayBookingEnd;
+    @Column("checkin")
+    private Timestamp checkIn;
+    private Timestamp checkout;
+    @Column("createdat")
+    private Timestamp createdAt;
 }
