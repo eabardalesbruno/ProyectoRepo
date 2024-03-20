@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentMethodRequest;
 import com.proriberaapp.ribera.Domain.entities.PaymentMethodEntity;
-import com.proriberaapp.ribera.Infraestructure.services.PaymentMethodService;
+import com.proriberaapp.ribera.services.PaymentMethodService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;

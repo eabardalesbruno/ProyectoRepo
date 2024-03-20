@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
-import com.proriberaapp.ribera.Infraestructure.services.admin.UserAdminManagerService;
+import com.proriberaapp.ribera.services.admin.UserAdminManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;

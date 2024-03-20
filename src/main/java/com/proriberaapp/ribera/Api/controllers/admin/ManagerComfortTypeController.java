@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Domain.entities.ComfortTypeEntity;
-import com.proriberaapp.ribera.Infraestructure.services.ComfortTypeService;
+import com.proriberaapp.ribera.services.ComfortTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;

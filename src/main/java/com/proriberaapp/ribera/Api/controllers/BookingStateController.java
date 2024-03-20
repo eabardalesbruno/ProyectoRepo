@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers;
 
 import com.proriberaapp.ribera.Domain.entities.BookingStateEntity;
-import com.proriberaapp.ribera.Infraestructure.services.BookingStateService;
+import com.proriberaapp.ribera.services.BookingStateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

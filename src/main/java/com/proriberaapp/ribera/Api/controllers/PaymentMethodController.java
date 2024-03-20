@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers;
 
 import com.proriberaapp.ribera.Domain.entities.PaymentMethodEntity;
-import com.proriberaapp.ribera.Infraestructure.services.PaymentMethodService;
+import com.proriberaapp.ribera.services.PaymentMethodService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

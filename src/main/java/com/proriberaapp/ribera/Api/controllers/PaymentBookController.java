@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers;
 
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
-import com.proriberaapp.ribera.Infraestructure.services.PaymentBookService;
+import com.proriberaapp.ribera.services.PaymentBookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

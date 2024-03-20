@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RegisterTypeRequest;
 import com.proriberaapp.ribera.Domain.entities.RegisterTypeEntity;
-import com.proriberaapp.ribera.Infraestructure.services.RegisterTypeService;
+import com.proriberaapp.ribera.services.RegisterTypeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;

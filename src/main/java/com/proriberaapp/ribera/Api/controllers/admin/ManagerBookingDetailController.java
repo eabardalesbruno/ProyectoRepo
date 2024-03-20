@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Domain.entities.BookingDetailEntity;
-import com.proriberaapp.ribera.Infraestructure.services.BookingDetailService;
+import com.proriberaapp.ribera.services.BookingDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;

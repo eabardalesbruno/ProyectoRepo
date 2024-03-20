@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Domain.entities.UserLevelEntity;
-import com.proriberaapp.ribera.Infraestructure.services.UserLevelService;
+import com.proriberaapp.ribera.services.UserLevelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
