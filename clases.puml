@@ -66,10 +66,11 @@ class BookingEntity {
     -Integer bookingId
     -Integer roomOfferId
     -Integer bookingStateId
-    -BigDecimal costRelative
+    -Integer userClientId
+    -BigDecimal costFinal
     -String detail
-    -String amenities
-    -String services
+    -LocalDateTime checkIn
+    -LocalDateTime checkOut
 }
 
 class ComfortTypeEntity {
@@ -84,7 +85,7 @@ class ComfortBookingDetailEntity {
     -Integer comfortTypeId
 }
 
-class FinalCostumersEntity {
+class FinalCostumerEntity {
     -Integer finalCostumerId
     -Integer bookingId
     -String documentType
@@ -162,19 +163,9 @@ class PartnerPointsEntity {
     -Integer points
 }
 
-class BookingDetailEntity {
-    -Integer bookingDetailId
-    -Integer bookingId
-    -Integer userClientId
-    -Integer paymentStateId
-    -LocalDateTime checkIn
-    -LocalDateTime checkOut
-    -BigDecimal costFinal
-}
-
 class BookingIncidentsEntity {
     -Integer roomIncidentsId
-    -Integer bookingDetailId
+    -Integer bookingId
     -Integer userAdminId
     -String evidenceImage
     -String description
@@ -197,7 +188,7 @@ class CurrencyTypeEntity {
 
 class PaymentBookEntity {
     -Integer paymentBookId
-    -Integer bookingDetailId
+    -Integer bookingId
     -Integer paymentMethodId
     -Integer currencyTypeId
     -BigDecimal amount
@@ -257,10 +248,12 @@ UserClientEntity "1" *-- "0..*" UserLevelEntity
 
 BookingEntity "1" *-- "0..*" BookingStateEntity
 BookingEntity "1" *-- "0..*" RoomOfferEntity
+BookingEntity "1" *-- "0..*" UserClientEntity
+
 ComfortBookingDetailEntity "1" *-- "0..*" BookingEntity
 ComfortBookingDetailEntity "1" *-- "0..*" ComfortTypeEntity
 
-BookingIncidentsEntity "1" *-- "0..*" BookingDetailEntity
+BookingIncidentsEntity "1" *-- "0..*" BookingEntity
 
 RoomOfferEntity "1" *-- "0..*" RoomEntity
 RoomOfferEntity "1" *-- "0..*" OfferTypeEntity
@@ -268,12 +261,9 @@ RoomOfferEntity "1" *-- "0..*" OfferTypeEntity
 ComfortRoomOfferDetailEntity  "1" *-- "0..*" RoomOfferEntity
 ComfortRoomOfferDetailEntity  "1" *-- "0..*" ComfortTypeEntity
 
-BookingDetailEntity "1" *-- "0..*" UserClientEntity
-BookingDetailEntity "1" *-- "0..*" BookingEntity
-
 PaymentBookEntity "1" *-- "0..*" PaymentMethodEntity
 PaymentBookEntity "1" *-- "0..*" PaymentStateEntity
-PaymentBookEntity "1" *-- "0..*" BookingDetailEntity
+PaymentBookEntity "1" *-- "0..*" BookingEntity
 PaymentBookEntity "1" *-- "0..*" CurrencyTypeEntity
 
 BedroomEntity "1" *-- "0..*" RoomEntity
@@ -286,7 +276,7 @@ RoomEntity "1" *-- "0..*" RoomDetailEntity
 RefusePaymentEntity "1" *-- "0..*" PaymentBookEntity
 RefusePaymentEntity "1" *-- "0..*" RefuseReasonEntity
 
-FinalCostumersEntity "1" *-- "0..*" BookingEntity
+FinalCostumerEntity "1" *-- "0..*" BookingEntity
 
 SolicitudeEntity "1" *-- "0..*" UserAdminEntity
 SolicitudeEntity "1" *-- "0..*" UserClientEntity

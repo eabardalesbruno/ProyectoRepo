@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -18,6 +20,7 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     @Override
     public Mono<BookingEntity> save(BookingEntity bookingEntity) {
+        bookingEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         return bookingRepository.findByBookingStateId(bookingEntity
                 ).hasElement()
                 .flatMap(exists -> exists
@@ -31,7 +34,11 @@ public class BookingServiceImpl implements BookingService {
                 .collectList()
                 .flatMapMany(bookingEntities -> bookingRepository.saveAll(
                         bookingEntity.stream().filter(
-                                bookingEntity1 -> !bookingEntities.contains(bookingEntity1)).toList()
+                                bookingEntity1 -> {
+                                    bookingEntity1.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+                                    return !bookingEntities.contains(bookingEntity1);
+                                }
+                        ).toList()
                 ));
     }
 

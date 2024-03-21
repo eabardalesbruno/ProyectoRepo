@@ -71,10 +71,16 @@ CREATE TABLE IF NOT EXISTS booking (
     bookingid SERIAL PRIMARY KEY,
     roomofferid INTEGER,
     bookingstateid INTEGER,
-    costrelative DECIMAL,
+    userclientid INTEGER,
+    costfinal DECIMAL,
     detail VARCHAR(255),
-    amenities VARCHAR(255),
-    services VARCHAR(255),
+    daybookinginit TIMESTAMP,
+    daybookingend TIMESTAMP,
+    checkin TIMESTAMP,
+    checkout TIMESTAMP,
+    createdat TIMESTAMP,
+
+    CONSTRAINT fk_userclient_bd FOREIGN KEY (userclientid) REFERENCES userclient(userclientid),
     CONSTRAINT fk_roomoffer FOREIGN KEY (roomofferid) REFERENCES roomoffer(roomofferid),
     CONSTRAINT fk_bookingstate FOREIGN KEY (bookingstateid) REFERENCES bookingstate(bookingstateid)
 );
@@ -93,7 +99,7 @@ CREATE TABLE IF NOT EXISTS comfortbookingdetail (
     CONSTRAINT fk_comfort_cb FOREIGN KEY (comforttypeid) REFERENCES comforttype(comforttypeid)
 );
 
-CREATE TABLE IF NOT EXISTS finalcostumers (
+CREATE TABLE IF NOT EXISTS finalcostumer (
     finalcostumerid SERIAL PRIMARY KEY,
     bookingid INTEGER,
     documenttype VARCHAR(50),
@@ -175,22 +181,9 @@ CREATE TABLE IF NOT EXISTS partnerpoints (
     CONSTRAINT fk_userclient_pp FOREIGN KEY (userclientid) REFERENCES userclient(userclientid)
 );
 
-CREATE TABLE IF NOT EXISTS bookingdetail (
-    bookingdetailid SERIAL PRIMARY KEY,
-    bookingid INTEGER,
-    userclientid INTEGER,
-    paymentstateid INTEGER,
-    checkin TIMESTAMP,
-    checkout TIMESTAMP,
-    costfinal DECIMAL,
-    CONSTRAINT fk_booking_bd FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
-    CONSTRAINT fk_userclient_bd FOREIGN KEY (userclientid) REFERENCES userclient(userclientid),
-    CONSTRAINT fk_paymentstate_bd FOREIGN KEY (paymentstateid) REFERENCES paymentstate(paymentstateid)
-);
-
 CREATE TABLE IF NOT EXISTS bookingincidents (
     roomincidentsid SERIAL PRIMARY KEY,
-    bookingdetailid INTEGER,
+    bookingid INTEGER,
     useradminid INTEGER,
     evidenceimage VARCHAR(255),
     description VARCHAR(255),
@@ -198,7 +191,7 @@ CREATE TABLE IF NOT EXISTS bookingincidents (
     actionstake VARCHAR(255),
     createdat TIMESTAMP,
     createdid INTEGER,
-    CONSTRAINT fk_bookingdetail_bi FOREIGN KEY (bookingdetailid) REFERENCES bookingdetail(bookingdetailid),
+    CONSTRAINT fk_booking_bi FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
     CONSTRAINT fk_useradmin_bi FOREIGN KEY (useradminid) REFERENCES useradmin(useradminid)
 );
 
@@ -215,7 +208,7 @@ CREATE TABLE IF NOT EXISTS currencytype (
 
 CREATE TABLE IF NOT EXISTS paymentbook (
     paymentbookid SERIAL PRIMARY KEY,
-    bookingdetailid INTEGER,
+    bookingid INTEGER,
     paymentmethodid INTEGER,
     paymentstateid INTEGER,
     currencytypeid INTEGER,
@@ -229,7 +222,7 @@ CREATE TABLE IF NOT EXISTS paymentbook (
     totalpoints INTEGER,
     paymentcomplete BOOLEAN,
     CONSTRAINT fk_currencytype_pb FOREIGN KEY (currencytypeid) REFERENCES currencytype(currencytypeid),
-    CONSTRAINT fk_bookingdetail_pb FOREIGN KEY (bookingdetailid) REFERENCES bookingdetail(bookingdetailid),
+    CONSTRAINT fk_booking_pb FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
     CONSTRAINT fk_paymentmethod_pb FOREIGN KEY (paymentmethodid) REFERENCES paymentmethod(paymentmethodid),
     CONSTRAINT fk_paymentstate_pb FOREIGN KEY (paymentstateid) REFERENCES paymentstate(paymentstateid)
 );
