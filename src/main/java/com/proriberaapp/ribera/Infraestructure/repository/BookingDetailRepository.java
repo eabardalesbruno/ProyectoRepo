@@ -8,4 +8,6 @@ import reactor.core.publisher.Mono;
 public interface BookingDetailRepository extends R2dbcRepository<BookingDetailEntity, Integer> {
     Mono<BookingDetailEntity> findByRoomIdAndBookingIdAndPaymentStateId(Integer roomId, Integer bookingId, Integer paymentStateId);
     Flux<BookingDetailEntity> findByRoomIdAndBookingIdAndPaymentStateId(Flux<Integer> roomId, Flux<Integer> bookingId, Flux<Integer> paymentStateId);
+    Flux<BookingDetailEntity> findByRoomType(String roomType);
+
 }
