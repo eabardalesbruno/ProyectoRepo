@@ -54,4 +54,9 @@ public class BookingDetailServiceImpl implements BookingDetailService {
     public Mono<BookingDetailEntity> update(BookingDetailEntity bookingDetailEntity) {
         return bookingDetailRepository.save(bookingDetailEntity);
     }
+
+    @Override
+    public Flux<BookingDetailEntity> findByRoomType(String roomType) {
+        return bookingDetailRepository.findByRoomType(roomType);
+    }
 }
