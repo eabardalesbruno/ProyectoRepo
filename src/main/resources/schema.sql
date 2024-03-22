@@ -67,47 +67,11 @@ CREATE TABLE IF NOT EXISTS bookingstate (
     bookingstatename VARCHAR(50)
 );
 
-CREATE TABLE IF NOT EXISTS booking (
-    bookingid SERIAL PRIMARY KEY,
-    roomofferid INTEGER,
-    bookingstateid INTEGER,
-    userclientid INTEGER,
-    costfinal DECIMAL,
-    detail VARCHAR(255),
-    daybookinginit TIMESTAMP,
-    daybookingend TIMESTAMP,
-    checkin TIMESTAMP,
-    checkout TIMESTAMP,
-    createdat TIMESTAMP,
-
-    CONSTRAINT fk_userclient_bd FOREIGN KEY (userclientid) REFERENCES userclient(userclientid),
-    CONSTRAINT fk_roomoffer FOREIGN KEY (roomofferid) REFERENCES roomoffer(roomofferid),
-    CONSTRAINT fk_bookingstate FOREIGN KEY (bookingstateid) REFERENCES bookingstate(bookingstateid)
-);
-
 CREATE TABLE IF NOT EXISTS comforttype (
     comforttypeid SERIAL PRIMARY KEY,
     comforttypename VARCHAR(50),
     comforttypedescription VARCHAR(255),
     active BOOLEAN
-);
-
-CREATE TABLE IF NOT EXISTS comfortbookingdetail (
-    bookingid INTEGER,
-    comforttypeid INTEGER,
-    CONSTRAINT fk_booking_cb FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
-    CONSTRAINT fk_comfort_cb FOREIGN KEY (comforttypeid) REFERENCES comforttype(comforttypeid)
-);
-
-CREATE TABLE IF NOT EXISTS finalcostumer (
-    finalcostumerid SERIAL PRIMARY KEY,
-    bookingid INTEGER,
-    documenttype VARCHAR(50),
-    documentnumber VARCHAR(50),
-    firstname VARCHAR(50),
-    lastname VARCHAR(50),
-    yearsold INTEGER,
-    CONSTRAINT fk_booking_fc FOREIGN KEY (bookingid) REFERENCES booking(bookingid)
 );
 
 CREATE TABLE IF NOT EXISTS paymentmethod (
@@ -172,6 +136,42 @@ CREATE TABLE IF NOT EXISTS userclient (
     status VARCHAR(50),
     CONSTRAINT fk_registertype_uc FOREIGN KEY (registertypeid) REFERENCES registertype(registertypeid),
     CONSTRAINT fk_userlevel_uc FOREIGN KEY (userlevelid) REFERENCES userlevel(userlevelid)
+);
+
+CREATE TABLE IF NOT EXISTS booking (
+    bookingid SERIAL PRIMARY KEY,
+    roomofferid INTEGER,
+    bookingstateid INTEGER,
+    userclientid INTEGER,
+    costfinal DECIMAL,
+    detail VARCHAR(255),
+    daybookinginit TIMESTAMP,
+    daybookingend TIMESTAMP,
+    checkin TIMESTAMP,
+    checkout TIMESTAMP,
+    createdat TIMESTAMP,
+
+    CONSTRAINT fk_roomoffer FOREIGN KEY (roomofferid) REFERENCES roomoffer(roomofferid),
+    CONSTRAINT fk_bookingstate FOREIGN KEY (bookingstateid) REFERENCES bookingstate(bookingstateid),
+    CONSTRAINT fk_userclient FOREIGN KEY (userclientid) REFERENCES userclient(userclientid)
+);
+
+CREATE TABLE IF NOT EXISTS comfortbookingdetail (
+    bookingid INTEGER,
+    comforttypeid INTEGER,
+    CONSTRAINT fk_booking_cb FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
+    CONSTRAINT fk_comfort_cb FOREIGN KEY (comforttypeid) REFERENCES comforttype(comforttypeid)
+);
+
+CREATE TABLE IF NOT EXISTS finalcostumer (
+    finalcostumerid SERIAL PRIMARY KEY,
+    bookingid INTEGER,
+    documenttype VARCHAR(50),
+    documentnumber VARCHAR(50),
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
+    yearold INTEGER,
+    CONSTRAINT fk_booking_fc FOREIGN KEY (bookingid) REFERENCES booking(bookingid)
 );
 
 CREATE TABLE IF NOT EXISTS partnerpoints (

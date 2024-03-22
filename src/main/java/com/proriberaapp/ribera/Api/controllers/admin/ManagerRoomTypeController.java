@@ -1,6 +1,8 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
+import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
 import com.proriberaapp.ribera.Domain.entities.RoomTypeEntity;
+import com.proriberaapp.ribera.services.BaseService;
 import com.proriberaapp.ribera.services.RoomTypeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,40 +16,7 @@ import java.util.List;
 @RequestMapping("/api/v1/admin/manager/room-type")
 @RequiredArgsConstructor
 @Slf4j
-public class ManagerRoomTypeController {
+public class ManagerRoomTypeController extends BaseManagerController<RoomTypeEntity, RoomTypeEntity>{
     private final RoomTypeService roomTypeService;
-
-    @GetMapping("/find/all")
-    public Flux<RoomTypeEntity> getAllRoomTypes() {
-        return roomTypeService.findAll();
-    }
-
-    @GetMapping("/find")
-    public Mono<RoomTypeEntity> getRoomTypeById(Integer id) {
-        return roomTypeService.findById(id);
-    }
-
-    @PostMapping("/register")
-    public Mono<RoomTypeEntity> registerRoomType(
-            @RequestBody RoomTypeEntity roomTypeEntity) {
-        return roomTypeService.save(roomTypeEntity);
-    }
-
-    @PostMapping("/register/all")
-    public Flux<RoomTypeEntity> registerAllRoomTypes(
-            @RequestBody List<RoomTypeEntity> roomTypeEntity
-    ) {
-        return roomTypeService.saveAll(roomTypeEntity);
-    }
-
-    @PatchMapping("/update")
-    public Mono<RoomTypeEntity> updateRoomType() {
-        return roomTypeService.update(null);
-    }
-
-    @DeleteMapping("/delete")
-    public Mono<Void> deleteRoomType(Integer id) {
-        return roomTypeService.deleteById(id);
-    }
 
 }
