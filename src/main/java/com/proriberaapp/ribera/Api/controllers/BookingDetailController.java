@@ -41,4 +41,9 @@ public class BookingDetailController {
         Mono<Void> result = bookingDetailService.deleteById(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(result);
     }
+    @GetMapping("/by-room-type/{roomType}")
+    public ResponseEntity<Flux<BookingDetailEntity>> findByRoomType(@PathVariable String roomType) {
+        Flux<BookingDetailEntity> bookingDetails = bookingDetailService.findByRoomType(roomType);
+        return ResponseEntity.status(HttpStatus.OK).body(bookingDetails);
+    }
 }
