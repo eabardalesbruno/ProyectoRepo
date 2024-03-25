@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Crosscutting.security;
 
 import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
+import com.proriberaapp.ribera.Domain.enums.Permission;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtTokenProvider {
@@ -47,22 +49,12 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getKey(jwtSecret))
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return claims.getSubject();
+    public Integer getIdFromToken(String token) {
+        return getClaimsFromToken(token.substring(7)).get("id", Integer.class);
     }
 
-    public Integer getIdFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getKey(jwtSecret))
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-        return claims.get("id", Integer.class);
+    public List<Permission> getPermissionsFromToken(String token) {
+        return getClaimsFromToken(token.substring(7)).get("permissions", List.class);
     }
 
     public Claims getClaimsFromToken(String token) {
