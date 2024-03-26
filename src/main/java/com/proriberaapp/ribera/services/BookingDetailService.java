@@ -11,7 +11,6 @@ public interface BookingDetailService {
     Flux<BookingDetailEntity> findAll();
     Mono<Void> deleteById(String id);
     Mono<BookingDetailEntity> update(BookingDetailEntity bookingDetailEntity);
-
     Flux<BookingDetailEntity> findByRoomType(String roomType);
 
 }
