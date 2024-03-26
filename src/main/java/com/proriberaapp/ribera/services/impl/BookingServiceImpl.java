@@ -1,23 +1,42 @@
 package com.proriberaapp.ribera.services.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.services.BookingService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
+    private final WebClient webClient;
+    @Value("${app.upload.dir}")
+    private String uploadDir;
+    @Value("${app.upload.folderDir}")
+    private String folderDir;
+
+
+    public BookingServiceImpl(BookingRepository bookingRepository, WebClient.Builder webClientBuilder) {
+        this.bookingRepository = bookingRepository;
+        this.webClient = webClientBuilder.baseUrl(uploadDir)
+                .build();
+    }
     @Override
     public Mono<BookingEntity> save(BookingEntity bookingEntity) {
         bookingEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
@@ -61,4 +80,28 @@ public class BookingServiceImpl implements BookingService {
     public Mono<BookingEntity> update(BookingEntity bookingEntity) {
         return bookingRepository.save(bookingEntity);
     }
+
+    @Override
+    public Mono<S3UploadResponse> loadBoucher(Resource file, String token) throws IOException {
+        byte[] imageBytes = Files.readAllBytes(file.getFile().toPath());
+
+        return webClient.post()
+                .uri("/s3")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(buildMultipartData(folderDir, imageBytes)))
+                .retrieve()
+                .bodyToMono(S3UploadResponse.class)
+                .map(S3UploadResponse::responseToEntity);
+    }
+
+    private MultipartBodyBuilder buildMultipartData(String folderNumber, byte[] imageBytes) {
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builder.part("file", imageBytes)
+                .filename("image.jpg")
+                .contentType(MediaType.IMAGE_JPEG)
+                .header("Content-Disposition", "form-data; name=\"file\"; filename=\"image.jpg\"");
+        builder.part("folderNumber", folderNumber);
+        return builder;
+    }
+
 }
