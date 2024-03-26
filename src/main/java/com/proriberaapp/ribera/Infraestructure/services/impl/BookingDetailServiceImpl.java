@@ -1,15 +1,13 @@
-package com.proriberaapp.ribera.services.impl;
+package com.proriberaapp.ribera.Infraestructure.services.impl;
 
 import com.proriberaapp.ribera.Domain.entities.BookingDetailEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingDetailRepository;
-import com.proriberaapp.ribera.services.BookingDetailService;
+import com.proriberaapp.ribera.Infraestructure.services.BookingDetailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -18,26 +16,35 @@ public class BookingDetailServiceImpl implements BookingDetailService {
     private final BookingDetailRepository bookingDetailRepository;
     @Override
     public Mono<BookingDetailEntity> save(BookingDetailEntity bookingDetailEntity) {
+        Integer roomId = bookingDetailEntity.getRoomId();
         Integer bookingId = bookingDetailEntity.getBookingId();
-        return bookingDetailRepository.findByBookingId(bookingDetailEntity).hasElement()
+        Integer paymentStateId = bookingDetailEntity.getPaymentStateId();
+        return bookingDetailRepository.findByRoomIdAndBookingIdAndPaymentStateId(
+                        roomId, bookingId, paymentStateId
+                ).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Booking detail already exists"))
                         : bookingDetailRepository.save(bookingDetailEntity));
     }
 
     @Override
-    public Flux<BookingDetailEntity> saveAll(List<BookingDetailEntity> bookingDetailEntity) {
-        return bookingDetailRepository.findAllByBookingIdIn(bookingDetailEntity)
+    public Flux<BookingDetailEntity> saveAll(Flux<BookingDetailEntity> bookingDetailEntity) {
+        Flux<Integer> roomIds = bookingDetailEntity.map(BookingDetailEntity::getRoomId);
+        Flux<Integer> bookingIds = bookingDetailEntity.map(BookingDetailEntity::getBookingId);
+        Flux<Integer> paymentStateIds = bookingDetailEntity.map(BookingDetailEntity::getPaymentStateId);
+        return bookingDetailRepository.findByRoomIdAndBookingIdAndPaymentStateId(
+                roomIds, bookingIds, paymentStateIds
+                )
                 .collectList()
                 .flatMapMany(bookingDetailEntities -> bookingDetailRepository.saveAll(
-                        bookingDetailEntity.stream().filter(
-                                bookingDetailEntity1 -> !bookingDetailEntities.contains(bookingDetailEntity1)).toList()
+                        bookingDetailEntity.filter(
+                                bookingDetailEntity1 -> !bookingDetailEntities.contains(bookingDetailEntity1))
                 ));
     }
 
     @Override
-    public Mono<BookingDetailEntity> findById(Integer id) {
-        return bookingDetailRepository.findById(id);
+    public Mono<BookingDetailEntity> findById(String id) {
+        return bookingDetailRepository.findById(Integer.parseInt(id));
     }
 
     @Override
@@ -46,8 +53,8 @@ public class BookingDetailServiceImpl implements BookingDetailService {
     }
 
     @Override
-    public Mono<Void> deleteById(Integer id) {
-        return bookingDetailRepository.deleteById(id);
+    public Mono<Void> deleteById(String id) {
+        return bookingDetailRepository.deleteById(Integer.parseInt(id));
     }
 
     @Override
