@@ -1,8 +1,8 @@
-package com.proriberaapp.ribera.Infraestructure.services.impl;
+package com.proriberaapp.ribera.services.impl;
 
 import com.proriberaapp.ribera.Domain.entities.BookingDetailEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingDetailRepository;
-import com.proriberaapp.ribera.Infraestructure.services.BookingDetailService;
+import com.proriberaapp.ribera.services.BookingDetailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
