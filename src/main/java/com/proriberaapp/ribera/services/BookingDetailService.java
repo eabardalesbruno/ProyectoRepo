@@ -1,4 +1,4 @@
-package com.proriberaapp.ribera.Infraestructure.services;
+package com.proriberaapp.ribera.services;
 
 import com.proriberaapp.ribera.Domain.entities.BookingDetailEntity;
 import reactor.core.publisher.Flux;
