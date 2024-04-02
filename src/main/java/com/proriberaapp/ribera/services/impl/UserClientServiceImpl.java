@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -43,6 +44,21 @@ public class UserClientServiceImpl implements UserClientService {
             throw new RuntimeException("La contraseña debe contener al menos una letra y un número, y tener una longitud mínima de 8 caracteres");
         }
     }
+
+    @Override
+    public Flux<UserClientEntity> findAll() {
+        return userClientRepository.findAll();
+    }
+    @Override
+    public Mono<UserClientEntity> findById(Integer id) {
+        return userClientRepository.findById(id);
+    }
+
+    @Override
+    public Mono<Void> deleteById(Integer id) {
+        return userClientRepository.deleteById(id);
+    }
+
     @Override
     public Mono<UserClientEntity> saveUser(UserClientEntity userClient) {
         return userClientRepository.findByEmail(userClient.getEmail())

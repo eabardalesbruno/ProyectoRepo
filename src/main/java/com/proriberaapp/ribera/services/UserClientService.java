@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.services;
 
 import com.proriberaapp.ribera.Api.controllers.dto.UserDataDTO;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface UserClientService {
@@ -14,6 +15,9 @@ public interface UserClientService {
     UserDataDTO registerUser(UserDataDTO userDataDTO);
     String loginUser(String username, String password);
     Mono<UserClientEntity> findByEmail(String email);
+    Flux<UserClientEntity> findAll();
+    Mono<UserClientEntity> findById(Integer id);
+    Mono<Void> deleteById(Integer id);
 
     Mono<UserClientEntity> updatePassword(UserClientEntity user, String newPassword);
 

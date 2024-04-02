@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -106,5 +107,24 @@ public class UserController {
                             .thenReturn(ResponseEntity.ok("Usuario registrado y logueado exitosamente"));
                 })
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(e.getMessage())));
+    }
+
+    @GetMapping
+    public Flux<UserClientEntity> getAllUserClients() {
+        return userClientService.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public Mono<ResponseEntity<UserClientEntity>> getUserClientById(@PathVariable Integer id) {
+        return userClientService.findById(id)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public Mono<ResponseEntity<Void>> deleteUserClient(@PathVariable Integer id) {
+        return userClientService.deleteById(id)
+                .then(Mono.just(ResponseEntity.noContent().<Void>build()))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 }
