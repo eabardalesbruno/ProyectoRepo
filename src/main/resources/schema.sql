@@ -273,3 +273,56 @@ CREATE TABLE IF NOT EXISTS solicitude (
     CONSTRAINT fk_createduser_s FOREIGN KEY (createdid) REFERENCES useradmin(useradminid),
     CONSTRAINT fk_responseuser_s FOREIGN KEY (responseid) REFERENCES userclient(userclientid)
 );
+
+CREATE TABLE IF NOT EXISTS service (
+    serviceid SERIAL PRIMARY KEY,
+    servicedesc VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS pointstype (
+    pointstypeid SERIAL PRIMARY KEY,
+    pointstypedesc VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS exchangetype (
+    exchangetypeid SERIAL PRIMARY KEY,
+    exchangetypedesc VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS requesttype (
+    requesttypeid SERIAL PRIMARY KEY,
+    requesttypedesc VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS sendandreceive (
+    sendandreceiveid SERIAL PRIMARY KEY,
+    sendandreceivedesc VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS pointstransfers (
+    pointstransferid SERIAL PRIMARY KEY,
+    senderid INTEGER REFERENCES userclient(userclientid),
+    requesttypeid INTEGER REFERENCES requesttype(requesttypeid),
+    datetransfer TIMESTAMP,
+    receiverid INTEGER REFERENCES userclient(userclientid),
+    pointstransfered DOUBLE PRECISION,
+    pointstypeid INTEGER REFERENCES pointstype(pointstypeid),
+    sendandreceiveid INTEGER REFERENCES sendandreceive(sendandreceiveid)
+);
+
+CREATE TABLE IF NOT EXISTS pointsexchange (
+    pointsexchangeid SERIAL PRIMARY KEY,
+    userclientid INTEGER REFERENCES userclient(userclientid),
+    echangetypeid INTEGER REFERENCES exchangetype(exchangetypeid),
+    dateuse TIMESTAMP,
+    exchangecode VARCHAR(255),
+    serviceid INTEGER REFERENCES service(serviceid),
+    description VARCHAR(255),
+    checkin TIMESTAMP,
+    checkout TIMESTAMP,
+    nights INTEGER,
+    pointsquantity DOUBLE PRECISION,
+    pointsused DOUBLE PRECISION,
+    pointstypeid INTEGER REFERENCES pointstype(pointstypeid),
+    bookingid INTEGER REFERENCES booking(bookingid)
+);
