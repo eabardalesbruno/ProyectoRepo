@@ -8,7 +8,7 @@ phases:
     - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
     - IMAGE_TAG=${COMMIT_HASH:=latest}
     - APPLICATION_NAME=store-app
-    - if [[ "prod" == ${PROFILE} ]] ; then PROFILE= ; else PROFILE=/$PROFILE ; fi
+    - if [[ "develop" == ${PROFILE} ]] ; then PROFILE= ; else PROFILE=/$PROFILE ; fi
     - REPOSITORY_URI=486849079485.dkr.ecr.us-east-1.amazonaws.com$PROFILE/$APPLICATION_NAME
   build:
     commands:
