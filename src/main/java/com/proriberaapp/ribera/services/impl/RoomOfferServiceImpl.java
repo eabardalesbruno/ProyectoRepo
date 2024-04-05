@@ -5,10 +5,12 @@ import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
 import com.proriberaapp.ribera.services.RoomOfferService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -16,8 +18,19 @@ import java.util.List;
 @Slf4j
 public class RoomOfferServiceImpl implements RoomOfferService {
     private final RoomOfferRepository roomOfferRepository;
+    @Value("${room.offer.ratio.base}")
+    private BigDecimal RATIO_BASE;
+    @Value("${room.offer.ratio.ribera}")
+    private BigDecimal RATIO_RIBERA;
+    @Value("${room.offer.ratio.inresort}")
+    private BigDecimal RATIO_INRESORT;
+
     @Override
     public Mono<RoomOfferEntity> save(RoomOfferEntity entity) {
+        entity.setPoints(calculatePoints(entity.getCost(), RATIO_BASE));
+        entity.setInResortPoints(calculatePoints(entity.getCost(), RATIO_INRESORT));
+        entity.setRiberaPoints(calculatePoints(entity.getCost(), RATIO_RIBERA));
+
         return roomOfferRepository.findByRoomIdAndOfferTypeId(entity.getRoomId(), entity.getOfferTypeId()).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("RoomOffer already exists"))
@@ -29,7 +42,11 @@ public class RoomOfferServiceImpl implements RoomOfferService {
         return roomOfferRepository.findAllByRoomIdInAndOfferTypeIdIn(entity, entity)
                 .collectList()
                 .flatMapMany(entities -> roomOfferRepository.saveAll(
-                        entity.stream().filter(entity1 -> !entities.contains(entity1)).toList()
+                        entity.stream().peek(roomOfferEntity -> {
+                            roomOfferEntity.setPoints(calculatePoints(roomOfferEntity.getCost(), RATIO_BASE));
+                            roomOfferEntity.setInResortPoints(calculatePoints(roomOfferEntity.getCost(), RATIO_INRESORT));
+                            roomOfferEntity.setRiberaPoints(calculatePoints(roomOfferEntity.getCost(), RATIO_RIBERA));
+                        }).filter(entity1 -> !entities.contains(entity1)).toList()
                 ));
     }
 
@@ -51,5 +68,9 @@ public class RoomOfferServiceImpl implements RoomOfferService {
     @Override
     public Mono<RoomOfferEntity> update(RoomOfferEntity entity) {
         return roomOfferRepository.save(entity);
+    }
+
+    private Integer calculatePoints(BigDecimal price, BigDecimal points) {
+        return price.multiply(points).intValue();
     }
 }

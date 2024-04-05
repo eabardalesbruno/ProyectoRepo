@@ -48,4 +48,26 @@ public class PartnerPointsServiceImpl implements PartnerPointsService {
     public Mono<PartnerPointsEntity> update(PartnerPointsEntity partnerPointsEntity) {
         return partnerPointsRepository.save(partnerPointsEntity);
     }
+
+    @Override
+    public Mono<PartnerPointsEntity> incrementPoints(PartnerPointsEntity partnerPointsEntity, Integer increment) {
+        return partnerPointsRepository.findByUserClientId(partnerPointsEntity.getUserClientId())
+                .switchIfEmpty(partnerPointsRepository.save(partnerPointsEntity))
+                .map(partnerPointsEntity1 -> {
+                    partnerPointsEntity1.setPoints(partnerPointsEntity1.getPoints() + increment);
+                    return partnerPointsEntity1;
+                })
+                .flatMap(partnerPointsRepository::save);
+    }
+
+    @Override
+    public Mono<PartnerPointsEntity> decrementPoints(PartnerPointsEntity partnerPointsEntity, Integer decrement) {
+        return partnerPointsRepository.findByUserClientId(partnerPointsEntity.getUserClientId())
+                .switchIfEmpty(partnerPointsRepository.save(partnerPointsEntity))
+                .map(partnerPointsEntity1 -> {
+                    partnerPointsEntity1.setPoints(partnerPointsEntity1.getPoints() - decrement);
+                    return partnerPointsEntity1;
+                })
+                .flatMap(partner -> partner.getPoints() < 0 ? Mono.error(new IllegalArgumentException("Points cannot be negative")) : partnerPointsRepository.save(partner));
+    }
 }
