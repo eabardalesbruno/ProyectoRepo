@@ -30,7 +30,7 @@ abstract class BaseManagerController<R,T> {
     public Mono<R> getEntityById(@RequestParam Integer id,
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jtp.getIdFromToken(token);
-        List<Permission> permissions = jtp.getPermissionsFromToken(token.substring(7));
+        List<Permission> permissions = jtp.getPermissionsFromToken(token);
         return permissions.contains(Permission.READ.name()) ? service.findById(id) : Mono.error(new Exception("No tienes permisos para leer"));
     }
 

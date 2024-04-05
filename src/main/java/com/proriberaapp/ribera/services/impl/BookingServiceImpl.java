@@ -2,8 +2,15 @@ package com.proriberaapp.ribera.services.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
+import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
+import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
+import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.BookingService;
+import com.proriberaapp.ribera.services.PartnerPointsService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -17,6 +24,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.util.List;
@@ -25,23 +33,34 @@ import java.util.List;
 @Slf4j
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
+    private final PartnerPointsService partnerPointsService;
     private final WebClient webClient;
     @Value("${app.upload.dir}")
     private String uploadDir;
     @Value("${app.upload.folderDir}")
     private String folderDir;
+    @Value("${room.offer.ratio.base}")
+    private Integer RATIO_BASE;
 
 
-    public BookingServiceImpl(BookingRepository bookingRepository, WebClient.Builder webClientBuilder) {
+    public BookingServiceImpl(BookingRepository bookingRepository, PartnerPointsService partnerPointsService,
+                              WebClient.Builder webClientBuilder) {
         this.bookingRepository = bookingRepository;
+        this.partnerPointsService = partnerPointsService;
         this.webClient = webClientBuilder.baseUrl(uploadDir)
                 .build();
     }
+
     @Override
     public Mono<BookingEntity> save(BookingEntity bookingEntity) {
+        bookingEntity.setBookingStateId(3);
         bookingEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-        return bookingRepository.findByBookingStateId(bookingEntity
-                ).hasElement()
+
+        return bookingRepository.findExistingBookings(
+                        bookingEntity.getRoomOfferId(),
+                        bookingEntity.getDayBookingInit(),
+                        bookingEntity.getDayBookingEnd())
+                .hasElements()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Booking already exists"))
                         : bookingRepository.save(bookingEntity));
@@ -54,6 +73,7 @@ public class BookingServiceImpl implements BookingService {
                 .flatMapMany(bookingEntities -> bookingRepository.saveAll(
                         bookingEntity.stream().filter(
                                 bookingEntity1 -> {
+                                    bookingEntity1.setBookingStateId(3);
                                     bookingEntity1.setCreatedAt(new Timestamp(System.currentTimeMillis()));
                                     return !bookingEntities.contains(bookingEntity1);
                                 }
@@ -80,6 +100,27 @@ public class BookingServiceImpl implements BookingService {
     public Mono<BookingEntity> update(BookingEntity bookingEntity) {
         return bookingRepository.save(bookingEntity);
     }
+    //TODO: por cada 50 dolares es un punto
+    //TODO: silver 10 alojamientos, gold 15, premium 20
+    //TODO: considerar el consumo
+
+    public Mono<BookingEntity> updateBookingState(Integer bookingId, Integer bookingStateId) {
+        return bookingRepository.findById(bookingId)
+                .map(bookingEntity -> {
+                    bookingEntity.setBookingStateId(bookingStateId);
+                    return bookingEntity;
+                })
+                .flatMap(bookingEntity -> {
+                            PartnerPointsEntity partnerPointsEntity = PartnerPointsEntity.builder()
+                                    .userClientId(bookingEntity.getUserClientId())
+                                    .points(bookingEntity.getCostFinal().intValue() / RATIO_BASE)
+                                    .build();
+
+                            return partnerPointsService.incrementPoints(partnerPointsEntity, partnerPointsEntity.getPoints())
+                                    .flatMap(bookingEntity1 -> bookingRepository.save(bookingEntity));
+                        }
+                );
+    }
 
     @Override
     public Mono<S3UploadResponse> loadBoucher(Resource file, String token) throws IOException {
@@ -94,14 +135,14 @@ public class BookingServiceImpl implements BookingService {
                 .map(S3UploadResponse::responseToEntity);
     }
 
-    private MultipartBodyBuilder buildMultipartData(String folderNumber, byte[] imageBytes) {
+    private MultiValueMap buildMultipartData(String folderNumber, byte[] imageBytes) {
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
         builder.part("file", imageBytes)
                 .filename("image.jpg")
                 .contentType(MediaType.IMAGE_JPEG)
                 .header("Content-Disposition", "form-data; name=\"file\"; filename=\"image.jpg\"");
         builder.part("folderNumber", folderNumber);
-        return builder;
+        return builder.build();
     }
 
 }

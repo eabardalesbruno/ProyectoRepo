@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -22,7 +23,7 @@ public class ManagerBookingController extends BaseManagerController<BookingEntit
 
     @PostMapping("load/boucher")
     public Mono<S3UploadResponse> loadBoucher(@RequestBody Resource file,
-                                              @RequestHeader("Authorization") String token) {
+                                              @RequestHeader("Authorization") String token) throws IOException {
         return bookingService.loadBoucher(file, token);
     }
 }
