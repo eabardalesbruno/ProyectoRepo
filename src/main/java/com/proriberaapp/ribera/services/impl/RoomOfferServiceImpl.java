@@ -19,11 +19,11 @@ import java.util.List;
 public class RoomOfferServiceImpl implements RoomOfferService {
     private final RoomOfferRepository roomOfferRepository;
     @Value("${room.offer.ratio.base}")
-    private BigDecimal RATIO_BASE;
+    private Integer RATIO_BASE;
     @Value("${room.offer.ratio.ribera}")
-    private BigDecimal RATIO_RIBERA;
+    private Integer RATIO_RIBERA;
     @Value("${room.offer.ratio.inresort}")
-    private BigDecimal RATIO_INRESORT;
+    private Integer RATIO_INRESORT;
 
     @Override
     public Mono<RoomOfferEntity> save(RoomOfferEntity entity) {
@@ -70,7 +70,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
         return roomOfferRepository.save(entity);
     }
 
-    private Integer calculatePoints(BigDecimal price, BigDecimal points) {
-        return price.divide(points).intValue();
+    private Integer calculatePoints(BigDecimal price, Integer points) {
+        return price.intValue() / points;
     }
 }
