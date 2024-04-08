@@ -71,6 +71,6 @@ public class RoomOfferServiceImpl implements RoomOfferService {
     }
 
     private Integer calculatePoints(BigDecimal price, BigDecimal points) {
-        return price.multiply(points).intValue();
+        return price.divide(points).intValue();
     }
 }

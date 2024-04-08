@@ -19,6 +19,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     private final PaymentMethodRepository paymentMethodRepository;
     @Override
     public Mono<PaymentMethodEntity> save(PaymentMethodRequest paymentMethodRequest) {
+
         return paymentMethodRepository.findByDescription(paymentMethodRequest.description()).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Payment method already exists"))

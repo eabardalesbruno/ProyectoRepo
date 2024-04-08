@@ -15,12 +15,21 @@ public class JwtFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
-        if (path.contains("/api/v1/admin/login") || path.contains("/api/v1/users/login") || path.contains("/api/v1/users/registerbo") || path.contains("/api/v1/users/register") || path.contains("/api/v1/password-reset/request") || path.contains("/api/v1/password-reset/verify") || path.contains("/api/v1/password-reset/confirm") || path.contains("/api/v1/payment-books"))
+        if (
+                path.contains("/api/v1/admin/login")
+                        || path.contains("/api/v1/users/login")
+                        || path.contains("/api/v1/users/registerbo")
+                        || path.contains("/api/v1/users/register")
+                        || path.contains("/api/v1/password-reset/request")
+                        || path.contains("/api/v1/password-reset/verify")
+                        || path.contains("/api/v1/password-reset/confirm")
+                        || path.contains("/api/v1/payment-books")
+        )
             return chain.filter(exchange);
         String auth = request.getHeaders().getFirst("Authorization");
         if (auth == null)
             return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Missing token"));
-        if(!auth.startsWith("Bearer "))
+        if (!auth.startsWith("Bearer "))
             return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Invalid token"));
         String token = auth.replace("Bearer ", "");
         exchange.getAttributes().put("token", token);
