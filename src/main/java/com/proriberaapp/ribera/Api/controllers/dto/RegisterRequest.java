@@ -10,6 +10,8 @@ public record RegisterRequest(
         Integer registerTypeId,
         Integer userLevelId,
         Integer codeUser,
+        Integer countryId,
+
         String nationality,
         String documentType,
         String documentNumber,

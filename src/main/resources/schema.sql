@@ -114,6 +114,7 @@ CREATE TABLE IF NOT EXISTS userclient (
     userclientid SERIAL PRIMARY KEY,
     registertypeid INTEGER,
     userlevelid INTEGER,
+    countryid INTEGER,
     codeuser INTEGER,
     firstname VARCHAR(50),
     lastname VARCHAR(50),
@@ -136,6 +137,7 @@ CREATE TABLE IF NOT EXISTS userclient (
     status VARCHAR(50),
     CONSTRAINT fk_registertype_uc FOREIGN KEY (registertypeid) REFERENCES registertype(registertypeid),
     CONSTRAINT fk_userlevel_uc FOREIGN KEY (userlevelid) REFERENCES userlevel(userlevelid)
+    CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid)
 );
 
 CREATE TABLE IF NOT EXISTS booking (

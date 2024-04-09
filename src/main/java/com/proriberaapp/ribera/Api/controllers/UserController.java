@@ -43,6 +43,7 @@ public class UserController {
         user.setRegisterTypeId(request.registerTypeId());
         user.setUserLevelId(request.userLevelId());
         user.setCodeUser(request.codeUser());
+        user.setCountryId(request.countryId());
         user.setNationality(request.nationality());
         user.setDocumentType(request.documentType());
         user.setDocumentNumber(request.documentNumber());

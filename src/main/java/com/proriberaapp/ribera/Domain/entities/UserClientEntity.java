@@ -27,6 +27,8 @@ public class UserClientEntity implements UserDetails {
     private Integer registerTypeId;
     @Column("userlevelid")
     private Integer userLevelId;
+    @Column("countryid")
+    private Integer countryId;
     @Column("codeuser")
     private Integer codeUser;
     @Column("firstname")
