@@ -67,6 +67,7 @@ public class UserController {
                                 savedUser.getLastName(),
                                 savedUser.getRegisterTypeId(),
                                 savedUser.getUserLevelId(),
+                                savedUser.getCountryId(),
                                 savedUser.getCodeUser(),
                                 savedUser.getNationality(),
                                 savedUser.getDocumentType(),

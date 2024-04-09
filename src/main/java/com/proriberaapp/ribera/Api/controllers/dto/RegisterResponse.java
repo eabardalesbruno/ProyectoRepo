@@ -8,6 +8,7 @@ public record RegisterResponse(
         String lastName,
         Integer registerTypeId,
         Integer userLevelId,
+        Integer countryId,
         Integer codeUser,
         String nationality,
         String documentType,
