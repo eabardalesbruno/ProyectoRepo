@@ -13,6 +13,12 @@ public class UserDataDTO {
     private String firstName;
     private String lastName;
 
+    private Integer countryId;
+
+    public Integer getCountryId() {
+        return countryId;
+    }
+
     public String getUsername() {
         return username;
     }
