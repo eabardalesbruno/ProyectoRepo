@@ -326,3 +326,8 @@ CREATE TABLE IF NOT EXISTS pointsexchange (
     pointstypeid INTEGER REFERENCES pointstype(pointstypeid),
     bookingid INTEGER REFERENCES booking(bookingid)
 );
+
+CREATE TABLE IF NOT EXISTS country (
+    countryid SERIAL PRIMARY KEY,
+    countrydesc VARCHAR(255)
+);

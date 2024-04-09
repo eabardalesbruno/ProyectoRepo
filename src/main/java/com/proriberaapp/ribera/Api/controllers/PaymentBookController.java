@@ -26,7 +26,6 @@ public class PaymentBookController {
         return ResponseEntity.status(HttpStatus.OK).body(paymentBooks);
     }
 
-
     @GetMapping("/by-user")
     public ResponseEntity<Flux<PaymentBookEntity>> getPaymentBooksByUserClientId(@RequestParam Integer userClientId) {
         Flux<PaymentBookEntity> paymentBooks = paymentBookService.getPaymentBooksByUserClientId(userClientId);
