@@ -34,17 +34,16 @@ public class UserApiEntity implements UserDetails {
     private String firstName;
     @Column("lastname")
     private String lastName;
-    @Column("nationality")
-    private String nationality;
-    @Column("documenttype")
-    private String documentType;
+    @Column("nationalityid")
+    private Integer nationalityId;
+    @Column("documenttypeid")
+    private Integer documenttypeId;
     @Column("documentnumber")
     private String documentNumber;
     @Column("birthdate")
     private Timestamp birthDate;
-    @Column("sex")
-    private String sex;
-
+    @Column("genderid")
+    private Integer genderId;
     private Integer role;
     @Column("civilstatus")
     private String civilStatus;
@@ -66,8 +65,8 @@ public class UserApiEntity implements UserDetails {
     public UserApiEntity() {}
 
     public UserApiEntity(Integer userId, Integer registerTypeId, Integer userLevelId, Integer codeUser,
-                      String firstName, String lastName, String nationality, String documentType,
-                      String documentNumber, Timestamp birthDate, String sex, Integer role,
+                      String firstName, String lastName, Integer nationalityId, Integer documenttypeId,
+                      String documentNumber, Timestamp birthDate, Integer genderId, Integer role,
                       String civilStatus, String city, String address, String cellNumber,
                       String email, String password, String googleAuth, String googleId,
                       String googleEmail, String username) {
@@ -77,11 +76,11 @@ public class UserApiEntity implements UserDetails {
         this.codeUser = codeUser;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.nationality = nationality;
-        this.documentType = documentType;
+        this.nationalityId = nationalityId;
+        this.documenttypeId = documenttypeId;
         this.documentNumber = documentNumber;
         this.birthDate = birthDate;
-        this.sex = sex;
+        this.genderId = genderId;
         this.role = role;
         this.civilStatus = civilStatus;
         this.city = city;
