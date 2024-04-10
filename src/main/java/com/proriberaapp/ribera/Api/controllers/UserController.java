@@ -91,7 +91,7 @@ public class UserController {
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
     }
 
-    @PostMapping("/logino")
+    @PostMapping("/login")
     public Mono<ResponseEntity<LoginResponse>> loginUser(@RequestBody LoginRequest request) {
         return userClientService.login(request.email(), request.password())
                 .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
@@ -108,7 +108,7 @@ public class UserController {
                             .username(request.username())
                             .build();
                     return userClientService.saveUser(newUser)
-                            .thenReturn(ResponseEntity.ok("Usuario registrado ooo y logueado exitosamente"));
+                            .thenReturn(ResponseEntity.ok("Usuario registrado y logueado exitosamente"));
                 })
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(e.getMessage())));
     }
