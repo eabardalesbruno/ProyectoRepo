@@ -141,7 +141,8 @@ CREATE TABLE IF NOT EXISTS userclient (
     CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid),
     CONSTRAINT fk_gender_uc FOREIGN KEY (genderid) REFERENCES gender(genderid),
     CONSTRAINT fk_nationality_uc FOREIGN KEY (nationalityid) REFERENCES nationality(nationalityid),
-    CONSTRAINT fk_areazone_uc FOREIGN KEY (areazoneid) REFERENCES areazone(areazoneid)
+    CONSTRAINT fk_areazone_uc FOREIGN KEY (areazoneid) REFERENCES areazone(areazoneid),
+    CONSTRAINT fk_documenttype_uc FOREIGN KEY (documenttypeid) REFERENCES documenttype(documenttypeid)
 );
 
 CREATE TABLE IF NOT EXISTS booking (
