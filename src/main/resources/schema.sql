@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS userclient (
     firstname VARCHAR(50),
     lastname VARCHAR(50),
     nationalityid INTEGER,
-    documenttype VARCHAR(50),
+    documenttypeid INTEGER,
     documentnumber VARCHAR(50),
     birthdate TIMESTAMP,
     role INTEGER,
