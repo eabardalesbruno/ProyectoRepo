@@ -91,7 +91,7 @@ public class UserController {
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
     }
 
-    @PostMapping("/logino")
+    @PostMapping("/login")
     public Mono<ResponseEntity<LoginResponse>> loginUser(@RequestBody LoginRequest request) {
         return userClientService.login(request.email(), request.password())
                 .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
