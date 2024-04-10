@@ -35,16 +35,18 @@ public class UserClientEntity implements UserDetails {
     private String firstName;
     @Column("lastname")
     private String lastName;
-    @Column("nationality")
-    private String nationality;
+    @Column("nationalityid")
+    private Integer nationalityId;
+    @Column("genderid")
+    private Integer genderId;
+    @Column("areazoneid")
+    private Integer areazoneId;
     @Column("documenttype")
     private String documentType;
     @Column("documentnumber")
     private String documentNumber;
     @Column("birthdate")
     private Timestamp birthDate;
-    @Column("sex")
-    private String sex;
 
     private Integer role;
     @Column("civilstatus")

@@ -115,14 +115,15 @@ CREATE TABLE IF NOT EXISTS userclient (
     registertypeid INTEGER,
     userlevelid INTEGER,
     countryid INTEGER,
+    genderid INTEGER,
+    areazoneid INTEGER,
     codeuser INTEGER,
     firstname VARCHAR(50),
     lastname VARCHAR(50),
-    nationality VARCHAR(50),
+    nationalityid INTEGER,
     documenttype VARCHAR(50),
     documentnumber VARCHAR(50),
     birthdate TIMESTAMP,
-    sex VARCHAR(10),
     role INTEGER,
     civilstatus VARCHAR(50),
     city VARCHAR(50),
@@ -137,7 +138,10 @@ CREATE TABLE IF NOT EXISTS userclient (
     status VARCHAR(50),
     CONSTRAINT fk_registertype_uc FOREIGN KEY (registertypeid) REFERENCES registertype(registertypeid),
     CONSTRAINT fk_userlevel_uc FOREIGN KEY (userlevelid) REFERENCES userlevel(userlevelid),
-    CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid)
+    CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid),
+    CONSTRAINT fk_gender_uc FOREIGN KEY (genderid) REFERENCES gender(genderid),
+    CONSTRAINT fk_nationality_uc FOREIGN KEY (nationalityid) REFERENCES nationality(nationalityid),
+    CONSTRAINT fk_areazone_uc FOREIGN KEY (areazoneid) REFERENCES areazone(areazoneid)
 );
 
 CREATE TABLE IF NOT EXISTS booking (
@@ -332,4 +336,19 @@ CREATE TABLE IF NOT EXISTS pointsexchange (
 CREATE TABLE IF NOT EXISTS country (
     countryid SERIAL PRIMARY KEY,
     countrydesc VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS gender (
+    genderid SERIAL PRIMARY KEY,
+    genderdesc VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS areazone (
+    areazoneid SERIAL PRIMARY KEY,
+    areazonedesc VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS nationality (
+    nationalityid SERIAL PRIMARY KEY,
+    nationalitydesc VARCHAR(255)
 );

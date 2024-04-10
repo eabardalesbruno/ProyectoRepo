@@ -44,11 +44,12 @@ public class UserController {
         user.setUserLevelId(request.userLevelId());
         user.setCodeUser(request.codeUser());
         user.setCountryId(request.countryId());
-        user.setNationality(request.nationality());
+        user.setNationalityId(request.nationalityId());
+        user.setAreazoneId(request.areazoneId());
         user.setDocumentType(request.documentType());
         user.setDocumentNumber(request.documentNumber());
         user.setBirthDate(request.birthDate());
-        user.setSex(request.sex());
+        user.setGenderId(request.genderId());
         user.setRole(request.role());
         user.setCivilStatus(request.civilStatus());
         user.setCity(request.city());
@@ -69,11 +70,12 @@ public class UserController {
                                 savedUser.getUserLevelId(),
                                 savedUser.getCountryId(),
                                 savedUser.getCodeUser(),
-                                savedUser.getNationality(),
+                                savedUser.getGenderId(),
+                                savedUser.getNationalityId(),
+                                savedUser.getAreazoneId(),
                                 savedUser.getDocumentType(),
                                 savedUser.getDocumentNumber(),
                                 savedUser.getBirthDate(),
-                                savedUser.getSex(),
                                 savedUser.getRole(),
                                 savedUser.getCivilStatus(),
                                 savedUser.getCity(),
