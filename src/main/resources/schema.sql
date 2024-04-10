@@ -352,3 +352,8 @@ CREATE TABLE IF NOT EXISTS nationality (
     nationalityid SERIAL PRIMARY KEY,
     nationalitydesc VARCHAR(255)
 );
+
+CREATE TABLE IF NOT EXISTS documenttype (
+    documenttypeid SERIAL PRIMARY KEY,
+    documenttypedesc VARCHAR(255)
+);

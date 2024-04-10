@@ -41,8 +41,8 @@ public class UserClientEntity implements UserDetails {
     private Integer genderId;
     @Column("areazoneid")
     private Integer areazoneId;
-    @Column("documenttype")
-    private String documentType;
+    @Column("documenttypeid")
+    private Integer documenttypeId;
     @Column("documentnumber")
     private String documentNumber;
     @Column("birthdate")

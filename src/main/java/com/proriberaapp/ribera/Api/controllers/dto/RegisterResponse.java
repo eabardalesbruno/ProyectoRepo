@@ -13,7 +13,7 @@ public record RegisterResponse(
         Integer genderId,
         Integer nationalityId,
         Integer areazoneId,
-        String documentType,
+        Integer documenttypeId,
         String documentNumber,
         Timestamp birthDate,
         Integer role,
