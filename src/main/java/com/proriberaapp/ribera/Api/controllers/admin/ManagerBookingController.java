@@ -22,8 +22,9 @@ public class ManagerBookingController extends BaseManagerController<BookingEntit
     private final BookingService bookingService;
 
     @PostMapping("load/boucher")
-    public Mono<S3UploadResponse> loadBoucher(@RequestBody Resource file,
-                                              @RequestHeader("Authorization") String token) throws IOException {
+    public Mono<S3UploadResponse> loadBoucher(
+            @RequestBody Resource file,
+            @RequestHeader("Authorization") String token) throws IOException {
         return bookingService.loadBoucher(file, token);
     }
 }

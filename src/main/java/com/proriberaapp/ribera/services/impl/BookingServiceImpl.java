@@ -3,14 +3,9 @@ package com.proriberaapp.ribera.services.impl;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
-import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
-import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.BookingService;
 import com.proriberaapp.ribera.services.PartnerPointsService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -24,7 +19,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.util.List;
@@ -133,6 +127,16 @@ public class BookingServiceImpl implements BookingService {
                 .retrieve()
                 .bodyToMono(S3UploadResponse.class)
                 .map(S3UploadResponse::responseToEntity);
+    }
+
+    @Override
+    public Flux<BookingEntity> findAllByUserClientIdAndBookingStateIdIn(Integer userClientId, Integer bookingStateId) {
+        return bookingRepository.findAllByUserClientIdAndBookingStateId(userClientId, bookingStateId);
+    }
+
+    @Override
+    public Mono<BookingEntity> findByIdAndIdUserAdmin(Integer idUserAdmin, Integer bookingId) {
+        return bookingRepository.findByBookingIdAndUserClientId(idUserAdmin, bookingId);
     }
 
     private MultiValueMap buildMultipartData(String folderNumber, byte[] imageBytes) {
