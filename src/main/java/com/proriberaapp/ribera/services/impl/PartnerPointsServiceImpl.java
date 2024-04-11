@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -69,5 +70,10 @@ public class PartnerPointsServiceImpl implements PartnerPointsService {
                     return partnerPointsEntity1;
                 })
                 .flatMap(partner -> partner.getPoints() < 0 ? Mono.error(new IllegalArgumentException("Points cannot be negative")) : partnerPointsRepository.save(partner));
+    }
+
+    @Override
+    public Mono<PartnerPointsEntity> paymentPoints(Integer userClientId, Integer pointsBuy, BigDecimal amountFinal) {
+        return null;
     }
 }
