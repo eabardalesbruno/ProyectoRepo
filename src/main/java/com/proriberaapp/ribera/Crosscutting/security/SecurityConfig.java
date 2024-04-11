@@ -29,7 +29,7 @@ public class SecurityConfig {
 
         return http.authorizeExchange(
                         auth -> auth
-                                .pathMatchers("/api/v1/admin/login", "/api/v1/users/**", "/api/v1/password-reset/**", "/api/v1/payment-books/**").permitAll()
+                                .pathMatchers("/api/v1/admin/login", "/api/v1/users/**", "/api/v1/password-reset/**", "/api/v1/payment-books/**","/swagger-ui.html").permitAll()
 
                                 .pathMatchers("/api/v1/admin/manager/**").hasRole("SUPER_ADMIN")
 
