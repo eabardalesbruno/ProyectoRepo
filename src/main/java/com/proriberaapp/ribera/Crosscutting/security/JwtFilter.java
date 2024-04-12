@@ -24,6 +24,24 @@ public class JwtFilter implements WebFilter {
                         || path.contains("/api/v1/password-reset/verify")
                         || path.contains("/api/v1/password-reset/confirm")
                         || path.contains("/api/v1/payment-books")
+
+                        || path.contains("/swagger-doc/**")
+                        || path.contains("/swagger-doc/webjars/**")
+                        || path.contains("/swagger-doc/v3/api-docs")
+                        || path.contains("/swagger-doc/webjars/swagger-ui/**")
+                        || path.contains("/swagger-doc/webjars/swagger-ui/index.html")
+                        || path.contains("/swagger-doc/webjars/swagger-ui/swagger-ui-bundle.js")
+                        || path.contains("/swagger-doc/webjars/swagger-ui/swagger-ui.css")
+                        || path.contains("/swagger-doc/webjars/swagger-ui/swagger-ui-standalone-preset.js")
+                        || path.contains("/swagger-doc/webjars/swagger-ui/swagger-ui.js")
+                        || path.contains("/swagger-doc/webjars/swagger-ui/index.css")
+                        || path.contains("/swagger-doc/webjars/swagger-ui/index.js")
+                        || path.contains("/swagger-doc/webjars/swagger-ui/swagger-initializer.js")
+                        || path.contains("/swagger-doc/webjars/swagger-ui/favicon-32x32.png")
+
+                        || path.contains("/swagger-ui.html")
+                        || path.contains("/api-docs")
+                        || path.contains("/favicon.ico")
         )
             return chain.filter(exchange);
         String auth = request.getHeaders().getFirst("Authorization");
