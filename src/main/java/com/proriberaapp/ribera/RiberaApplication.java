@@ -9,9 +9,16 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
 import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
 import org.springframework.web.reactive.config.EnableWebFlux;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Info;
 
 @EnableWebFlux
 @SpringBootApplication
+@OpenAPIDefinition(info = @Info(
+		title = "Spring webflux",
+		version = "1.0",
+		description = "Spring webflux with r2dbc"
+))
 public class RiberaApplication {
 
 	@Bean
