@@ -29,7 +29,27 @@ public class SecurityConfig {
 
         return http.authorizeExchange(
                         auth -> auth
-                                .pathMatchers("/api/v1/admin/login", "/api/v1/users/**", "/api/v1/password-reset/**", "/api/v1/payment-books/**","/swagger-ui.html").permitAll()
+                                .pathMatchers(
+                                        "/api/v1/admin/login",
+                                        "/api/v1/users/**",
+                                        "/api/v1/password-reset/**",
+                                        "/api/v1/payment-books/**",
+
+                                        "/swagger-doc/webjars/swagger-ui/swagger-ui-bundle.js",
+                                        "/swagger-doc/webjars/swagger-ui/swagger-ui.css",
+                                        "/swagger-doc/webjars/swagger-ui/swagger-initializer.js",
+                                        "/swagger-doc/webjars/swagger-ui/swagger-ui-standalone-preset.js",
+                                        "/swagger-doc/webjars/swagger-ui/swagger-ui.js",
+                                        "/swagger-doc/webjars/swagger-ui/swagger-ui.css",
+                                        "/swagger-doc/webjars/swagger-ui/**",
+                                        "/swagger-doc/webjars/**",
+                                        "/swagger-doc/**",
+                                        "/api-docs/**",
+                                        "/swagger-ui.html",
+                                        "/favicon.ico",
+                                        "/actuator/**"
+                                )
+                                .permitAll()
 
                                 .pathMatchers("/api/v1/admin/manager/**").hasRole("SUPER_ADMIN")
 
