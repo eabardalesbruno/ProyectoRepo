@@ -1,0 +1,175 @@
+@startuml
+
+!define Table(name) class name << (T,orange) >>
+!define IdField(name) + name << (I,orchid) >>
+!define Column(name) - name << (C,yellowgreen) >>
+
+Table("UserLevelEntity") {
+    IdField(userLevelId)
+    Column(levelName)
+    Column(levelDescription)
+}
+
+Table("UserEntity") {
+    IdField(userId)
+    Column(registerTypeId)
+    Column(userLevelId)
+    Column(codeUser)
+    Column(firstName)
+    Column(lastName)
+    Column(nationality)
+    Column(documentType)
+    Column(documentNumber)
+    Column(birthDate)
+    Column(sex)
+    - role
+    Column(civilStatus)
+    Column(city)
+    Column(address)
+    Column(cellNumber)
+    Column(email)
+    Column(password)
+    Column(googleAuth)
+    Column(googleId)
+    Column(googleEmail)
+    Column(googleName)
+}
+
+Table("UserAdminEntity") {
+    IdField(userAdminId)
+    Column(email)
+    Column(password)
+    Column(username)
+    Column(firstName)
+    Column(lastName)
+    Column(phone)
+    Column(address)
+    Column(typeDocument)
+    Column(document)
+    - role
+    - status
+    - permission
+    Column(createdAt)
+    Column(createdId)
+    Column(updatedAt)
+    Column(updatedId)
+}
+
+Table("SolicitudeEntity") {
+    IdField(solicitudeId)
+    Column(email)
+    Column(phone)
+    Column(message)
+    Column(codeSend)
+    - status
+    - type
+    Column(createdId)
+    Column(createdAt)
+    Column(responseId)
+    Column(responseAt)
+}
+
+Table("RoomEntity") {
+    IdField(roomId)
+    Column(roomName)
+    Column(image)
+    Column(occupation)
+    Column(terms)
+    Column(wifi)
+    Column(beds)
+    Column(checkIn)
+    Column(checkOut)
+    Column(price)
+    Column(points)
+    Column(info)
+}
+
+Table("RoomDetailEntity") {
+    IdField(roomDetailId)
+    Column(roomId)
+    Column(information)
+}
+
+Table("RegisterTypeEntity") {
+    IdField(registerTypeId)
+    Column(registerTypeName)
+}
+
+Table("PaymentStateEntity") {
+    IdField(paymentStateId)
+    Column(paymentStateName)
+}
+
+Table("PaymentMethodEntity") {
+    IdField(paymentMethodId)
+    Column(description)
+}
+
+Table("PartnerPointsEntity") {
+    IdField(partnerPointId)
+    Column(userId)
+    Column(partnerPoints)
+}
+
+Table("BookingStateEntity") {
+    IdField(bookingStateId)
+    Column(bookingStateName)
+}
+
+Table("BookingEntity") {
+    IdField(bookingId)
+    Column(userId)
+    Column(paymentMethodId)
+    Column(bookingStateId)
+    Column(roomType)
+    Column(roomName)
+    Column(capacity)
+    Column(cost)
+    Column(riberaPoints)
+    Column(inResortsPoints)
+    Column(detail)
+    Column(amenities)
+    Column(services)
+    Column(image)
+}
+
+Table("BookingDetailEntity") {
+    IdField(bookingDetailId)
+    Column(roomId)
+    Column(bookingId)
+    Column(paymentStateId)
+    Column(checkIn)
+    Column(checkOut)
+    Column(roomNumber)
+    Column(roomType)
+    Column(roomName)
+    Column(capacity)
+    Column(customer)
+    Column(documentType)
+    Column(documentNumber)
+    Column(adultsNumber)
+    Column(childrenNumber)
+    Column(babiesNumber)
+}
+
+UserEntity "1" <-- "1" UserLevelEntity
+UserEntity "1" <-- "1" RegisterTypeEntity
+
+PartnerPointsEntity "1" --> "1" UserEntity
+
+SolicitudeEntity "1" <-- "1" UserEntity
+SolicitudeEntity "1" <-- "1" UserAdminEntity
+
+UserAdminEntity "1" --> "1" UserAdminEntity
+UserAdminEntity "1" --> "1" UserAdminEntity
+
+RoomEntity "1" --> "n" RoomDetailEntity
+
+BookingEntity "1" --> "n" BookingDetailEntity
+BookingEntity "1" <-- "n" BookingStateEntity
+BookingEntity "1" <-- "n" PaymentMethodEntity
+BookingEntity "1" <-- "n" UserEntity
+
+BookingDetailEntity "1" <-- "n" RoomEntity
+BookingDetailEntity "1" <-- "n" PaymentStateEntity
+@enduml
