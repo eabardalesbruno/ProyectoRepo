@@ -24,7 +24,7 @@ public class JwtFilter implements WebFilter {
                         || path.contains("/api/v1/password-reset/verify")
                         || path.contains("/api/v1/password-reset/confirm")
                         || path.contains("/api/v1/payment-books")
-
+                        || path.contains("/api/v1/**")
                         || path.contains("/swagger-doc/**")
                         || path.contains("/swagger-doc/webjars/**")
                         || path.contains("/swagger-doc/v3/api-docs")

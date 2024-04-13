@@ -23,7 +23,7 @@ import java.util.List;
 public class UserApiEntity implements UserDetails {
     @Id
     @Column("userclientid")
-    private Integer userId;
+    private Integer userClientId;
     @Column("registertypeid")
     private Integer registerTypeId;
     @Column("userlevelid")
@@ -34,16 +34,18 @@ public class UserApiEntity implements UserDetails {
     private String firstName;
     @Column("lastname")
     private String lastName;
-    @Column("nationality")
-    private String nationality;
-    @Column("documenttype")
-    private String documentType;
+    @Column("nationalityid")
+    private Integer nationalityId;
+    @Column("genderid")
+    private Integer genderId;
+    @Column("areazoneid")
+    private Integer areazoneId;
+    @Column("documenttypeid")
+    private Integer documenttypeId;
     @Column("documentnumber")
     private String documentNumber;
     @Column("birthdate")
     private Timestamp birthDate;
-    @Column("sex")
-    private String sex;
 
     private Integer role;
     @Column("civilstatus")
@@ -65,23 +67,24 @@ public class UserApiEntity implements UserDetails {
     private String username;
     public UserApiEntity() {}
 
-    public UserApiEntity(Integer userId, Integer registerTypeId, Integer userLevelId, Integer codeUser,
-                      String firstName, String lastName, String nationality, String documentType,
-                      String documentNumber, Timestamp birthDate, String sex, Integer role,
-                      String civilStatus, String city, String address, String cellNumber,
-                      String email, String password, String googleAuth, String googleId,
-                      String googleEmail, String username) {
-        this.userId = userId;
+    public UserApiEntity(Integer userClientId, Integer registerTypeId, Integer userLevelId, Integer codeUser,
+                         String firstName, String lastName, Integer nationalityId, Integer genderId,
+                         Integer areazoneId, Integer documenttypeId, String documentNumber,
+                         Timestamp birthDate, Integer role, String civilStatus, String city,
+                         String address, String cellNumber, String email, String password,
+                         String googleAuth, String googleId, String googleEmail, String username) {
+        this.userClientId = userClientId;
         this.registerTypeId = registerTypeId;
         this.userLevelId = userLevelId;
         this.codeUser = codeUser;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.nationality = nationality;
-        this.documentType = documentType;
+        this.nationalityId = nationalityId;
+        this.genderId = genderId;
+        this.areazoneId = areazoneId;
+        this.documenttypeId = documenttypeId;
         this.documentNumber = documentNumber;
         this.birthDate = birthDate;
-        this.sex = sex;
         this.role = role;
         this.civilStatus = civilStatus;
         this.city = city;
