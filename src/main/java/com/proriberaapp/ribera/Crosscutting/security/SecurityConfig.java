@@ -32,6 +32,7 @@ public class SecurityConfig {
                                 .pathMatchers(
                                         "/api/v1/admin/login",
                                         "/api/v1/users/**",
+                                        "/api/countries/**",
                                         "/api/v1/password-reset/**",
                                         "/api/v1/payment-books/**",
                                         "/api/v1/**",

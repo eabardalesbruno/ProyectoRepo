@@ -336,7 +336,14 @@ CREATE TABLE IF NOT EXISTS pointsexchange (
 
 CREATE TABLE IF NOT EXISTS country (
     countryid SERIAL PRIMARY KEY,
-    countrydesc VARCHAR(255)
+    countrydesc VARCHAR(255),
+    iso VARCHAR(255),
+    nicename VARCHAR(255),
+    iso3 VARCHAR(255),
+    numcode integer,
+    phonecode integer,
+    symbol VARCHAR(255),
+    courtesy VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS gender (
