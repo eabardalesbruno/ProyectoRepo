@@ -116,11 +116,9 @@ CREATE TABLE IF NOT EXISTS userclient (
     userlevelid INTEGER,
     countryid INTEGER,
     genderid INTEGER,
-    areazoneid INTEGER,
     codeuser INTEGER,
     firstname VARCHAR(50),
     lastname VARCHAR(50),
-    nationalityid INTEGER,
     documenttypeid INTEGER,
     documentnumber VARCHAR(50),
     birthdate TIMESTAMP,
@@ -140,8 +138,6 @@ CREATE TABLE IF NOT EXISTS userclient (
     CONSTRAINT fk_userlevel_uc FOREIGN KEY (userlevelid) REFERENCES userlevel(userlevelid),
     CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid),
     CONSTRAINT fk_gender_uc FOREIGN KEY (genderid) REFERENCES gender(genderid),
-    CONSTRAINT fk_nationality_uc FOREIGN KEY (nationalityid) REFERENCES nationality(nationalityid),
-    CONSTRAINT fk_areazone_uc FOREIGN KEY (areazoneid) REFERENCES areazone(areazoneid),
     CONSTRAINT fk_documenttype_uc FOREIGN KEY (documenttypeid) REFERENCES documenttype(documenttypeid)
 );
 
