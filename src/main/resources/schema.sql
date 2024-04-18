@@ -343,7 +343,8 @@ CREATE TABLE IF NOT EXISTS country (
     numcode integer,
     phonecode integer,
     symbol VARCHAR(255),
-    courtesy VARCHAR(255)
+    courtesy VARCHAR(255),
+    icon VARCHAR(500)
 );
 
 CREATE TABLE IF NOT EXISTS gender (

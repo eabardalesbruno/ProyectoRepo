@@ -25,7 +25,7 @@ public class CountryServiceImpl implements CountryService {
 
     @Override
     public Flux<CountryEntity> getAllCountries() {
-        return countryRepository.findAll();
+        return countryRepository.findAllOrderedByCountryId();
     }
 
     @Override

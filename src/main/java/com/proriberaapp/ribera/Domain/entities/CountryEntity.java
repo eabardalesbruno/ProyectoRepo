@@ -28,5 +28,7 @@ public class CountryEntity {
     private Integer phoneCode;
     private String symbol;
     private String courtesy;
+    @Column("icon")
+    private String icon;
 
 }
