@@ -15,10 +15,14 @@ public interface UserClientService {
     UserDataDTO registerUser(UserDataDTO userDataDTO);
     String loginUser(String username, String password);
     Mono<UserClientEntity> findByEmail(String email);
+
     Flux<UserClientEntity> findAll();
     Mono<UserClientEntity> findById(Integer id);
     Mono<Void> deleteById(Integer id);
+    boolean existsByEmail(String email);
 
     Mono<UserClientEntity> updatePassword(UserClientEntity user, String newPassword);
+
+
 
 }

@@ -27,6 +27,7 @@ public class UserController {
         this.userRegistrationService = userRegistrationService;
     }
 
+
     @PostMapping("/register")
     public Mono<ResponseEntity<RegisterResponse>> registerUser(@RequestBody RegisterRequest request) {
 
