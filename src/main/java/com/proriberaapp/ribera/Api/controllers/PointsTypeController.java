@@ -50,4 +50,9 @@ public class PointsTypeController {
                 .then(Mono.just(new ResponseEntity<Void>(HttpStatus.NO_CONTENT)))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+
+    @GetMapping("/pointstypes/search")
+    public Flux<PointsTypeEntity> searchByKeyword(@RequestParam String keyword) {
+        return pointsTypeService.findByPointstypedescContaining(keyword);
+    }
 }

@@ -284,7 +284,14 @@ CREATE TABLE IF NOT EXISTS service (
 
 CREATE TABLE IF NOT EXISTS pointstype (
     pointstypeid SERIAL PRIMARY KEY,
-    pointstypedesc VARCHAR(255)
+    pointstypedesc VARCHAR(255),
+    statepointstypeid INTEGER,
+    CONSTRAINT fk_statepointstypeid_s FOREIGN KEY (statepointstypeid) REFERENCES statepointstype(statepointstypeid)
+);
+
+CREATE TABLE IF NOT EXISTS statepointstype (
+    statepointstypeid SERIAL PRIMARY KEY,
+    statepointstypedesc VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS exchangetype (

@@ -42,6 +42,11 @@ public class PointsTypeServiceImpl implements PointsTypeService {
     }
 
     @Override
+    public Flux<PointsTypeEntity> findByPointstypedescContaining(String keyword) {
+        return pointsTypeRepository.findByPointstypedescContaining(keyword);
+    }
+
+    @Override
     public Mono<Void> deletePointsType(Integer id) {
         return pointsTypeRepository.deleteById(id);
     }
