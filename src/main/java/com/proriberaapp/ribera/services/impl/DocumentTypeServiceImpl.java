@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.DocumentTypeRepository
 import com.proriberaapp.ribera.services.DocumentTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -27,7 +28,7 @@ public class DocumentTypeServiceImpl implements DocumentTypeService {
     }
 
     @Override
-    public List<DocumentTypeEntity> getAllDocumentTypes() {
-        return documentTypeRepository.findAllSync();
+    public Flux<DocumentTypeEntity> getAllDocumentTypes() {
+        return documentTypeRepository.findAll();
     }
 }
