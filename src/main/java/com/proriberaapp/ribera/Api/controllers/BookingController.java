@@ -12,8 +12,8 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1/booking")
 @RequiredArgsConstructor
 public class BookingController {
-    @Autowired
-    private JwtTokenProvider jtp;
+
+    private final JwtTokenProvider jtp;
     private final BookingService bookingService;
 
     @GetMapping("/find/all/state")
