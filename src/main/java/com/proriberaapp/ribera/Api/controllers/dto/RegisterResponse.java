@@ -3,7 +3,7 @@ package com.proriberaapp.ribera.Api.controllers.dto;
 import java.sql.Timestamp;
 
 public record RegisterResponse(
-        Integer userId,
+        Integer userClientId,
         String firstName,
         String lastName,
         Integer registerTypeId,
@@ -11,8 +11,6 @@ public record RegisterResponse(
         Integer countryId,
         Integer codeUser,
         Integer genderId,
-        Integer nationalityId,
-        Integer areazoneId,
         Integer documenttypeId,
         String documentNumber,
         Timestamp birthDate,
@@ -25,5 +23,7 @@ public record RegisterResponse(
         String googleAuth,
         String googleId,
         String googleEmail,
-        String username
+        String username,
+        Timestamp createdat
+
 ) {}

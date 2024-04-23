@@ -35,12 +35,9 @@ public class UserClientEntity implements UserDetails {
     private String firstName;
     @Column("lastname")
     private String lastName;
-    @Column("nationalityid")
-    private Integer nationalityId;
     @Column("genderid")
     private Integer genderId;
-    @Column("areazoneid")
-    private Integer areazoneId;
+
     @Column("documenttypeid")
     private Integer documenttypeId;
     @Column("documentnumber")
@@ -68,7 +65,7 @@ public class UserClientEntity implements UserDetails {
     private String username;
 
     private StatesUser status;
-
+    private Timestamp createdat;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority((role.toString())));

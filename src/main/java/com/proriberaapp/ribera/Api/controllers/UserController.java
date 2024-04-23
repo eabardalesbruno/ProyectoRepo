@@ -27,6 +27,7 @@ public class UserController {
         this.userRegistrationService = userRegistrationService;
     }
 
+
     @PostMapping("/register")
     public Mono<ResponseEntity<RegisterResponse>> registerUser(@RequestBody RegisterRequest request) {
 
@@ -44,8 +45,6 @@ public class UserController {
         user.setUserLevelId(request.userLevelId());
         user.setCodeUser(request.codeUser());
         user.setCountryId(request.countryId());
-        user.setNationalityId(request.nationalityId());
-        user.setAreazoneId(request.areazoneId());
         user.setDocumenttypeId(request.documenttypeId());
         user.setDocumentNumber(request.documentNumber());
         user.setBirthDate(request.birthDate());
@@ -59,6 +58,7 @@ public class UserController {
         user.setGoogleId(request.googleId());
         user.setGoogleEmail(request.googleEmail());
         user.setUsername(request.username());
+        user.setCreatedat(request.createdat());
 
         return userClientService.registerUser(user)
                 .map(savedUser -> new ResponseEntity<>(
@@ -71,8 +71,6 @@ public class UserController {
                                 savedUser.getCountryId(),
                                 savedUser.getCodeUser(),
                                 savedUser.getGenderId(),
-                                savedUser.getNationalityId(),
-                                savedUser.getAreazoneId(),
                                 savedUser.getDocumenttypeId(),
                                 savedUser.getDocumentNumber(),
                                 savedUser.getBirthDate(),
@@ -85,7 +83,8 @@ public class UserController {
                                 savedUser.getGoogleAuth(),
                                 savedUser.getGoogleId(),
                                 savedUser.getGoogleEmail(),
-                                savedUser.getUsername()
+                                savedUser.getUsername(),
+                                savedUser.getCreatedat()
                         ),
                         HttpStatus.CREATED))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));

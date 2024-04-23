@@ -10,4 +10,6 @@ public interface PointsTypeService {
     Flux<PointsTypeEntity> getAllPointsTypes();
     Mono<PointsTypeEntity> updatePointsType(Integer id, PointsTypeEntity pointsType);
     Mono<Void> deletePointsType(Integer id);
+    Flux<PointsTypeEntity> findByPointstypedescContaining(String keyword);
+
 }

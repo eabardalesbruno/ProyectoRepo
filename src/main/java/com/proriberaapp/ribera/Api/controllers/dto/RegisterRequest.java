@@ -12,8 +12,6 @@ public record RegisterRequest(
         Integer codeUser,
         Integer countryId,
         Integer genderId,
-        Integer nationalityId,
-        Integer areazoneId,
         Integer documenttypeId,
         String documentNumber,
         Timestamp birthDate,
@@ -25,5 +23,6 @@ public record RegisterRequest(
         String googleAuth,
         String googleId,
         String googleEmail,
-        String username
+        String username,
+        Timestamp createdat
 ) {}

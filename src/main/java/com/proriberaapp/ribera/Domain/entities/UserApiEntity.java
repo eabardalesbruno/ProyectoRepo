@@ -24,68 +24,47 @@ public class UserApiEntity implements UserDetails {
     @Id
     @Column("userclientid")
     private Integer userClientId;
-
     @Column("registertypeid")
     private Integer registerTypeId;
-
     @Column("userlevelid")
     private Integer userLevelId;
-
     @Column("codeuser")
     private Integer codeUser;
-
     @Column("firstname")
     private String firstName;
-
     @Column("lastname")
     private String lastName;
-
     @Column("nationalityid")
     private Integer nationalityId;
-
     @Column("genderid")
     private Integer genderId;
-
     @Column("areazoneid")
     private Integer areazoneId;
-
     @Column("documenttypeid")
     private Integer documenttypeId;
-
     @Column("documentnumber")
     private String documentNumber;
-
     @Column("birthdate")
     private Timestamp birthDate;
 
     private Integer role;
-
     @Column("civilstatus")
     private String civilStatus;
-
     @Column("city")
     private String city;
-
     @Column("address")
     private String address;
-
     @Column("cellnumber")
     private String cellNumber;
-
     private String email;
     private String password;
-
     @Column("googleauth")
     private String googleAuth;
-
     @Column("googleid")
     private String googleId;
-
     @Column("googleemail")
     private String googleEmail;
-
     private String username;
-
     public UserApiEntity() {}
 
     public UserApiEntity(Integer userClientId, Integer registerTypeId, Integer userLevelId, Integer codeUser,
@@ -118,7 +97,6 @@ public class UserApiEntity implements UserDetails {
         this.googleEmail = googleEmail;
         this.username = username;
     }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority((role.toString())));
@@ -148,4 +126,5 @@ public class UserApiEntity implements UserDetails {
     public boolean isEnabled() {
         return false;
     }
+
 }

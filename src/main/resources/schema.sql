@@ -116,11 +116,9 @@ CREATE TABLE IF NOT EXISTS userclient (
     userlevelid INTEGER,
     countryid INTEGER,
     genderid INTEGER,
-    areazoneid INTEGER,
     codeuser INTEGER,
     firstname VARCHAR(50),
     lastname VARCHAR(50),
-    nationalityid INTEGER,
     documenttypeid INTEGER,
     documentnumber VARCHAR(50),
     birthdate TIMESTAMP,
@@ -136,12 +134,11 @@ CREATE TABLE IF NOT EXISTS userclient (
     googleemail VARCHAR(255),
     username VARCHAR(50),
     status VARCHAR(50),
+    createdat TIMESTAMP,
     CONSTRAINT fk_registertype_uc FOREIGN KEY (registertypeid) REFERENCES registertype(registertypeid),
     CONSTRAINT fk_userlevel_uc FOREIGN KEY (userlevelid) REFERENCES userlevel(userlevelid),
     CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid),
     CONSTRAINT fk_gender_uc FOREIGN KEY (genderid) REFERENCES gender(genderid),
-    CONSTRAINT fk_nationality_uc FOREIGN KEY (nationalityid) REFERENCES nationality(nationalityid),
-    CONSTRAINT fk_areazone_uc FOREIGN KEY (areazoneid) REFERENCES areazone(areazoneid),
     CONSTRAINT fk_documenttype_uc FOREIGN KEY (documenttypeid) REFERENCES documenttype(documenttypeid)
 );
 
@@ -288,7 +285,14 @@ CREATE TABLE IF NOT EXISTS service (
 
 CREATE TABLE IF NOT EXISTS pointstype (
     pointstypeid SERIAL PRIMARY KEY,
-    pointstypedesc VARCHAR(255)
+    pointstypedesc VARCHAR(255),
+    statepointstypeid INTEGER,
+    CONSTRAINT fk_statepointstypeid_s FOREIGN KEY (statepointstypeid) REFERENCES statepointstype(statepointstypeid)
+);
+
+CREATE TABLE IF NOT EXISTS statepointstype (
+    statepointstypeid SERIAL PRIMARY KEY,
+    statepointstypedesc VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS exchangetype (
@@ -336,7 +340,15 @@ CREATE TABLE IF NOT EXISTS pointsexchange (
 
 CREATE TABLE IF NOT EXISTS country (
     countryid SERIAL PRIMARY KEY,
-    countrydesc VARCHAR(255)
+    countrydesc VARCHAR(255),
+    iso VARCHAR(255),
+    nicename VARCHAR(255),
+    iso3 VARCHAR(255),
+    numcode integer,
+    phonecode integer,
+    symbol VARCHAR(255),
+    courtesy VARCHAR(255),
+    icon VARCHAR(500)
 );
 
 CREATE TABLE IF NOT EXISTS gender (
