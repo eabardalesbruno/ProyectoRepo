@@ -58,6 +58,7 @@ public class UserController {
         user.setGoogleId(request.googleId());
         user.setGoogleEmail(request.googleEmail());
         user.setUsername(request.username());
+        user.setCreatedat(request.createdat());
 
         return userClientService.registerUser(user)
                 .map(savedUser -> new ResponseEntity<>(
@@ -82,7 +83,8 @@ public class UserController {
                                 savedUser.getGoogleAuth(),
                                 savedUser.getGoogleId(),
                                 savedUser.getGoogleEmail(),
-                                savedUser.getUsername()
+                                savedUser.getUsername(),
+                                savedUser.getCreatedat()
                         ),
                         HttpStatus.CREATED))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));

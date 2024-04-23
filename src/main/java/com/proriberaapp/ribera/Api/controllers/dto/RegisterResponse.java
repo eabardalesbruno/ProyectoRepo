@@ -23,5 +23,7 @@ public record RegisterResponse(
         String googleAuth,
         String googleId,
         String googleEmail,
-        String username
+        String username,
+        Timestamp createdat
+
 ) {}

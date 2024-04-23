@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.sql.Timestamp;
+
 @Service
 @RequiredArgsConstructor
 public class UserClientServiceImpl implements UserClientService {
@@ -99,6 +101,8 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Override
     public Mono<UserClientEntity> saveUser(UserClientEntity userClient) {
+        userClient.setCreatedat(new Timestamp(System.currentTimeMillis()));
+
         return userClientRepository.findByEmail(userClient.getEmail())
                 .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .then(Mono.defer(() -> {
