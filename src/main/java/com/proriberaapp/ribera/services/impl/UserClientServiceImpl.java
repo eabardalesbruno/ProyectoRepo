@@ -14,6 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +47,15 @@ public class UserClientServiceImpl implements UserClientService {
      */
 
     public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
+<<<<<<< HEAD
         userClient.setCreatedat(new Timestamp(System.currentTimeMillis()));
+=======
+        // Obtener la fecha y hora actual en un Timestamp
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
+// Asignar el Timestamp al campo createdat
+        userClient.setCreatedat(timestamp);
+>>>>>>> jose-dev
         return userClientRepository.findByEmail(userClient.getEmail())
                 .flatMap(existingUser -> {
                     if ("1".equals(userClient.getGoogleAuth())) {
@@ -102,9 +111,16 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Override
     public Mono<UserClientEntity> saveUser(UserClientEntity userClient) {
+<<<<<<< HEAD
         // Establecer la fecha y hora de creación
         userClient.setCreatedat(new Timestamp(System.currentTimeMillis()));
+=======
+        // Obtener la fecha y hora actual en un Timestamp
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+>>>>>>> jose-dev
 
+// Asignar el Timestamp al campo createdat
+        userClient.setCreatedat(timestamp);
         return userClientRepository.findByEmail(userClient.getEmail())
                 .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .then(Mono.defer(() -> {
