@@ -46,6 +46,7 @@ public class UserClientServiceImpl implements UserClientService {
      */
 
     public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
+        userClient.setCreatedat(new Timestamp(System.currentTimeMillis()));
         return userClientRepository.findByEmail(userClient.getEmail())
                 .flatMap(existingUser -> {
                     if ("1".equals(userClient.getGoogleAuth())) {
@@ -101,6 +102,7 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Override
     public Mono<UserClientEntity> saveUser(UserClientEntity userClient) {
+        // Establecer la fecha y hora de creación
         userClient.setCreatedat(new Timestamp(System.currentTimeMillis()));
 
         return userClientRepository.findByEmail(userClient.getEmail())
@@ -115,7 +117,7 @@ public class UserClientServiceImpl implements UserClientService {
                     userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword())); // Cifra la contraseña
                     return userToSave;
                 })
-                .flatMap(userClientRepository::save);
+                .flatMap(userClientRepository::save); // Usar map en lugar de flatMap aquí
     }
 
     @Override
