@@ -134,6 +134,7 @@ CREATE TABLE IF NOT EXISTS userclient (
     googleemail VARCHAR(255),
     username VARCHAR(50),
     status VARCHAR(50),
+    createdat TIMESTAMP,
     CONSTRAINT fk_registertype_uc FOREIGN KEY (registertypeid) REFERENCES registertype(registertypeid),
     CONSTRAINT fk_userlevel_uc FOREIGN KEY (userlevelid) REFERENCES userlevel(userlevelid),
     CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid),

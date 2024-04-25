@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.sql.Timestamp;
+
 @Service
 @RequiredArgsConstructor
 public class UserClientServiceImpl implements UserClientService {
@@ -23,6 +25,7 @@ public class UserClientServiceImpl implements UserClientService {
     @Autowired
     private UserApiClient userApiClient;
 
+    /*
     @Override
     public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
         return userClientRepository.findByEmail(userClient.getEmail())
@@ -39,6 +42,48 @@ public class UserClientServiceImpl implements UserClientService {
                 })
                 .flatMap(userClientRepository::save);
     }
+
+     */
+
+    public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
+        // Obtener la fecha y hora actual
+        long currentTimeMillis = System.currentTimeMillis();
+        Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
+        // Establecer la fecha y hora de creación
+        userClient.setCreatedat(currentTimestamp);
+        return userClientRepository.findByEmail(userClient.getEmail())
+                .flatMap(existingUser -> {
+                    if ("1".equals(userClient.getGoogleAuth())) {
+                        if (existingUser.getPassword() != null) {
+                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
+                        } else {
+                            return Mono.just(existingUser);
+                        }
+                    } else {
+                        if (existingUser.getPassword() != null) {
+                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
+                        } else {
+                            return Mono.just(existingUser);
+                        }
+                    }
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    if (!"1".equals(userClient.getGoogleAuth())) {
+                        validatePassword(userClient.getPassword());
+                    }
+                    return userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
+                            .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
+                            .then(Mono.just(userClient));
+                }))
+                .map(userToSave -> {
+                    if (!"1".equals(userToSave.getGoogleAuth())) {
+                        userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
+                    }
+                    return userToSave;
+                })
+                .flatMap(userClientRepository::save);
+    }
+
     private void validatePassword(String password) {
         if (!password.matches("^(?=.*[0-9])(?=.*[a-zA-Z]).{8,}$")) {
             throw new RuntimeException("La contraseña debe contener al menos una letra y un número, y tener una longitud mínima de 8 caracteres");
@@ -61,6 +106,11 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Override
     public Mono<UserClientEntity> saveUser(UserClientEntity userClient) {
+        // Obtener la fecha y hora actual
+        long currentTimeMillis = System.currentTimeMillis();
+        Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
+        // Establecer la fecha y hora de creación
+        userClient.setCreatedat(currentTimestamp);
         return userClientRepository.findByEmail(userClient.getEmail())
                 .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .then(Mono.defer(() -> {
@@ -96,6 +146,14 @@ public class UserClientServiceImpl implements UserClientService {
                 .firstName(name)
                 .build();
         return userClientRepository.save(user);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userClientRepository.findByEmail(email)
+                .map(user -> true)
+                .defaultIfEmpty(false)
+                .block();
     }
 
     @Override

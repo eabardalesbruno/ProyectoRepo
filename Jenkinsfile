@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        //Conexión ssh
+        //Conexiï¿½n ssh
         SSH_USER = 'eperez'
         SSH_IP = '185.185.82.98'
         //Ruta de scripts a ejecutar
@@ -21,7 +21,7 @@ pipeline {
                     def remoteCommands = [
                         "${PATH_SCRIPTS}/${SCRIPT} --action build --branch ${BRANCH}",
                         "${PATH_SCRIPTS}/${SCRIPT} --action stop --branch ${BRANCH}",
-                        "${PATH_SCRIPTS}/${SCRIPT} --action run --port ${PORT} --branch ${BRANCH}"
+                        "${PATH_SCRIPTS}/${SCRIPT} --action run --branch ${BRANCH}"
                     ]
                     
                     sshagent(['ssh-agent']) {
