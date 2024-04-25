@@ -43,6 +43,8 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setSubject(subject.getUsername())
                 .claim("roles", subject.getAuthorities())
+                .claim("id", subject.getUserClientId())
+                .claim("state", subject.getStatus())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
                 .signWith(getKey(jwtSecret))
