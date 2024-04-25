@@ -44,8 +44,6 @@ public class UserController {
         user.setUserLevelId(request.userLevelId());
         user.setCodeUser(request.codeUser());
         user.setCountryId(request.countryId());
-        user.setNationalityId(request.nationalityId());
-        user.setAreazoneId(request.areazoneId());
         user.setDocumenttypeId(request.documenttypeId());
         user.setDocumentNumber(request.documentNumber());
         user.setBirthDate(request.birthDate());
@@ -71,8 +69,6 @@ public class UserController {
                                 savedUser.getCountryId(),
                                 savedUser.getCodeUser(),
                                 savedUser.getGenderId(),
-                                savedUser.getNationalityId(),
-                                savedUser.getAreazoneId(),
                                 savedUser.getDocumenttypeId(),
                                 savedUser.getDocumentNumber(),
                                 savedUser.getBirthDate(),

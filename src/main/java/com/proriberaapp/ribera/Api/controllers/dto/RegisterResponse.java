@@ -11,8 +11,6 @@ public record RegisterResponse(
         Integer countryId,
         Integer codeUser,
         Integer genderId,
-        Integer nationalityId,
-        Integer areazoneId,
         Integer documenttypeId,
         String documentNumber,
         Timestamp birthDate,

@@ -12,8 +12,6 @@ public record RegisterRequest(
         Integer codeUser,
         Integer countryId,
         Integer genderId,
-        Integer nationalityId,
-        Integer areazoneId,
         Integer documenttypeId,
         String documentNumber,
         Timestamp birthDate,
