@@ -1,16 +1,13 @@
 package com.proriberaapp.ribera.services.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
+import com.proriberaapp.ribera.Api.controllers.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
-import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
-import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
-import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.BookingService;
 import com.proriberaapp.ribera.services.PartnerPointsService;
-import lombok.RequiredArgsConstructor;
+import com.proriberaapp.ribera.services.RoomService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -24,7 +21,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.util.List;
@@ -32,8 +28,14 @@ import java.util.List;
 @Service
 @Slf4j
 public class BookingServiceImpl implements BookingService {
+
     private final BookingRepository bookingRepository;
+
     private final PartnerPointsService partnerPointsService;
+    private final ComfortTypeRepository comfortTypeRepository;
+
+    private final BedsTypeRepository bedsTypeRepository;
+
     private final WebClient webClient;
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -43,10 +45,17 @@ public class BookingServiceImpl implements BookingService {
     private Integer RATIO_BASE;
 
 
-    public BookingServiceImpl(BookingRepository bookingRepository, PartnerPointsService partnerPointsService,
-                              WebClient.Builder webClientBuilder) {
+    public BookingServiceImpl(
+            BookingRepository bookingRepository,
+            PartnerPointsService partnerPointsService,
+            ComfortTypeRepository comfortTypeRepository,
+            BedsTypeRepository bedsTypeRepository,
+            WebClient.Builder webClientBuilder
+    ) {
         this.bookingRepository = bookingRepository;
         this.partnerPointsService = partnerPointsService;
+        this.comfortTypeRepository = comfortTypeRepository;
+        this.bedsTypeRepository = bedsTypeRepository;
         this.webClient = webClientBuilder.baseUrl(uploadDir)
                 .build();
     }
@@ -133,6 +142,30 @@ public class BookingServiceImpl implements BookingService {
                 .retrieve()
                 .bodyToMono(S3UploadResponse.class)
                 .map(S3UploadResponse::responseToEntity);
+    }
+
+    @Override
+    public Flux<ViewBookingReturn> findAllByUserClientIdAndBookingStateIdIn(Integer userClientId, Integer bookingStateId) {
+        return bookingRepository.findAllViewBookingReturnByUserClientIdAndBookingStateId(userClientId, bookingStateId)
+                .flatMap(viewBookingReturn ->
+                     comfortTypeRepository.findAllByViewComfortType(bookingStateId)
+                            .collectList().map(comfortTypeEntity -> {
+                                viewBookingReturn.setListComfortType(comfortTypeEntity);
+                                return viewBookingReturn;
+                            })
+                )
+                .flatMap(viewBookingReturn ->
+                    bedsTypeRepository.findAllByViewBedsType(bookingStateId)
+                            .collectList().map(bedsTypeEntity -> {
+                                viewBookingReturn.setListBedsType(bedsTypeEntity);
+                                return viewBookingReturn;
+                            })
+                );
+    }
+
+    @Override
+    public Mono<BookingEntity> findByIdAndIdUserAdmin(Integer idUserAdmin, Integer bookingId) {
+        return bookingRepository.findByBookingIdAndUserClientId(idUserAdmin, bookingId);
     }
 
     private MultiValueMap buildMultipartData(String folderNumber, byte[] imageBytes) {

@@ -32,11 +32,10 @@ public class SecurityConfig {
                                 .pathMatchers(
                                         "/api/v1/admin/login",
                                         "/api/v1/users/**",
-                                        "/api/countries/**",
                                         "/api/v1/password-reset/**",
                                         "/api/documenttype/**",
                                         "/api/v1/payment-books/**",
-                                        "/api/v1/**",
+
                                         "/swagger-doc/webjars/swagger-ui/swagger-ui-bundle.js",
                                         "/swagger-doc/webjars/swagger-ui/swagger-ui.css",
                                         "/swagger-doc/webjars/swagger-ui/swagger-initializer.js",

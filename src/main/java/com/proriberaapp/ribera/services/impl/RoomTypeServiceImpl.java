@@ -2,7 +2,6 @@ package com.proriberaapp.ribera.services.impl;
 
 import com.proriberaapp.ribera.Domain.entities.RoomTypeEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomTypeRepository;
-import com.proriberaapp.ribera.services.RoomTypeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,7 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RoomTypeServiceImpl implements RoomTypeService {
+public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.RoomTypeService {
 
     private final RoomTypeRepository roomTypeRepository;
 

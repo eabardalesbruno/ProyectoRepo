@@ -370,3 +370,66 @@ CREATE TABLE IF NOT EXISTS documenttype (
     documenttypeid SERIAL PRIMARY KEY,
     documenttypedesc VARCHAR(255)
 );
+
+CREATE OR REPLACE VIEW ViewBedsType AS
+SELECT
+    b.bookingid AS bookingId,
+    bt.*
+FROM
+    booking b
+JOIN
+    roomoffer ro ON b.roomofferid = ro.roomofferid
+JOIN
+    room r ON ro.roomid = r.roomid
+JOIN
+	bedroom br ON r.roomid = br.roomid
+JOIN
+	bedstype bt ON br.bedtypeid = bt.bedtypeid;
+
+
+
+CREATE OR REPLACE VIEW viewcomfortdata AS
+SELECT
+    b.bookingid AS bookingId,
+    ct.*
+FROM
+    booking b
+JOIN
+    roomoffer ro ON b.roomofferid = ro.roomofferid
+JOIN
+    comfortroomofferdetail crod ON ro.roomofferid = crod.roomofferid
+JOIN
+    comforttype ct ON crod.comforttypeid = ct.comforttypeid;
+
+
+
+CREATE OR REPLACE VIEW ViewBookingReturn AS
+SELECT
+    b.bookingid AS bookingId,
+	b.userclientid,
+	b.bookingstateid,
+    r.image AS image,
+    bs.bookingstatename AS state,
+    rd.information AS description,
+    rd.bedrooms AS bedrooms,
+    rd.squaremeters AS squareMeters,
+    rd.oceanviewbalcony AS oceanViewBalcony,
+    rd.balconyoverlookingpool AS balconyOverlookingPool,
+    r.capacity AS capacity,
+    b.daybookinginit AS dayBookingInit,
+    b.daybookingend AS dayBookingEnd,
+    ro.cost AS price,
+    ro.inresortpoints AS pointsInResort,
+    ro.riberapoints AS pointsRibera
+FROM
+    booking b
+JOIN
+    roomoffer ro ON b.roomofferid = ro.roomofferid
+JOIN
+    room r ON ro.roomid = r.roomid
+JOIN
+    roomtype rt ON r.roomtypeid = rt.roomtypeid
+JOIN
+    roomdetail rd ON r.roomdetailid = rd.roomdetailid
+JOIN
+    bookingstate bs ON b.bookingstateid = bs.bookingstateid;
