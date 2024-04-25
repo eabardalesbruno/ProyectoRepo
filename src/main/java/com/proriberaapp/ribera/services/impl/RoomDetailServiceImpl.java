@@ -2,7 +2,6 @@ package com.proriberaapp.ribera.services.impl;
 
 import com.proriberaapp.ribera.Domain.entities.RoomDetailEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomDetailRepository;
-import com.proriberaapp.ribera.services.RoomDetailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,7 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RoomDetailServiceImpl implements RoomDetailService {
+public class RoomDetailServiceImpl implements com.proriberaapp.ribera.services.RoomDetailService {
     private final RoomDetailRepository roomDetailRepository;
     @Override
     public Mono<RoomDetailEntity> save(RoomDetailEntity roomDetailEntity) {

@@ -76,4 +76,9 @@ public class PartnerPointsServiceImpl implements PartnerPointsService {
     public Mono<PartnerPointsEntity> paymentPoints(Integer userClientId, Integer pointsBuy, BigDecimal amountFinal) {
         return null;
     }
+
+    @Override
+    public Mono<PartnerPointsEntity> getPartnerPointsByUserClientId(Integer userClientId) {
+        return partnerPointsRepository.findByUserClientId(userClientId);
+    }
 }

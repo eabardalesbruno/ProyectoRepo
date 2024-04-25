@@ -9,4 +9,6 @@ public interface PartnerPointsService extends BaseService<PartnerPointsEntity,Pa
     Mono<PartnerPointsEntity> incrementPoints(PartnerPointsEntity partnerPointsEntity, Integer increment);
     Mono<PartnerPointsEntity> decrementPoints(PartnerPointsEntity partnerPointsEntity, Integer decrement);
     Mono<PartnerPointsEntity> paymentPoints(Integer userClientId, Integer pointsBuy, BigDecimal amountFinal);
+
+    Mono<PartnerPointsEntity> getPartnerPointsByUserClientId(Integer userClientId);
 }

@@ -2,7 +2,6 @@ package com.proriberaapp.ribera.services.impl;
 
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
-import com.proriberaapp.ribera.services.RoomOfferService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +15,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RoomOfferServiceImpl implements RoomOfferService {
+public class RoomOfferServiceImpl implements com.proriberaapp.ribera.services.RoomOfferService {
     private final RoomOfferRepository roomOfferRepository;
     @Value("${room.offer.ratio.base}")
     private Integer RATIO_BASE;

@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
+import com.proriberaapp.ribera.Api.controllers.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
@@ -12,10 +13,17 @@ import java.util.List;
 
 public interface BookingRepository extends R2dbcRepository<BookingEntity, Integer> {
     Mono<BookingEntity> findByBookingStateId(BookingEntity bookingEntity);
+
     Flux<BookingEntity> findAllByBookingStateIdIn(List<BookingEntity> bookingEntity);
+
     Flux<BookingEntity> findAllByUserClientIdAndBookingStateId(Integer userClientId, Integer bookingStateId);
+
     @Query("SELECT * FROM booking WHERE roomofferid = :roomOfferId AND ((daybookinginit <= :dayBookingEnd) AND (daybookingend >= :dayBookingInit))")
     Flux<BookingEntity> findExistingBookings(@Param("roomOfferId") Integer roomOfferId, @Param("dayBookingInit") Timestamp dayBookingInit, @Param("dayBookingEnd") Timestamp dayBookingEnd);
 
     Mono<BookingEntity> findByBookingIdAndUserClientId(Integer userClientId, Integer bookingId);
+
+    @Query("SELECT * FROM ViewBookingReturn WHERE userClientId = :userClientId AND bookingStateId = :bookingStateId")
+    Flux<ViewBookingReturn> findAllViewBookingReturnByUserClientIdAndBookingStateId(@Param("userClientId") Integer userClientId, @Param("bookingStateId") Integer bookingStateId);
+
 }

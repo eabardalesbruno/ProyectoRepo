@@ -358,3 +358,39 @@ CREATE TABLE IF NOT EXISTS documenttype (
     documenttypeid SERIAL PRIMARY KEY,
     documenttypedesc VARCHAR(255)
 );
+
+-- Stored procedures
+
+CREATE OR REPLACE PROCEDURE FindViewBookingReturnByUserClientIdAndBookingStateId(ucId INT, bsId INT)
+LANGUAGE SQL
+AS $$
+    SELECT
+        b.bookingid AS bookingId,
+        r.image AS image,
+        bs.bookingstatename AS state,
+        rd.information AS description,
+        rd.bedrooms AS bedrooms,
+        rd.squaremeters AS squareMeters,
+        rd.oceanviewbalcony AS oceanViewBalcony,
+        rd.balconyoverlookingpool AS balconyOverLookingPool,
+        r.capacity AS capacity,
+        b.daybookinginit AS dayBookingInit,
+        b.daybookingend AS dayBookingEnd,
+        ro.cost AS price,
+        ro.inresortpoints AS pointsInsort,
+        ro.riberapoints AS pointsRibera
+    FROM
+        booking b
+    JOIN
+        roomoffer ro ON b.roomofferid = ro.roomofferid
+    JOIN
+        room r ON ro.roomid = r.roomid
+    JOIN
+        roomtype rt ON r.roomtypeid = rt.roomtypeid
+    JOIN
+        roomdetail rd ON r.roomdetailid = rd.roomdetailid
+    JOIN
+        bookingstate bs ON b.bookingstateid = bs.bookingstateid
+    WHERE
+        b.userclientid = ucId AND b.bookingstateid = bsId
+$$;
