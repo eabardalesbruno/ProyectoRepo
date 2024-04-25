@@ -15,7 +15,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 @EnableWebFlux
 @SpringBootApplication
 @OpenAPIDefinition(info = @Info(
-		title = "Spring webflux ",
+		title = "Spring webflux",
 		version = "1.0",
 		description = "Spring webflux with r2dbc"
 ))
