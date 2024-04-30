@@ -12,7 +12,7 @@ public class UserAdminController {
 
     private final UserAdminManagerService userAdminManagerService;
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public Mono<TokenDto> login(@RequestBody LoginRequest loginRequest) {
         return userAdminManagerService.login(loginRequest);
     }
