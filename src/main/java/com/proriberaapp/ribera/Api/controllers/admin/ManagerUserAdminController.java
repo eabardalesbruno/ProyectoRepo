@@ -65,6 +65,14 @@ public class ManagerUserAdminController {
         return userAdminManagerService.findById(idUserAdmin);
     }
 
+    @GetMapping("/find/my-data")
+    public Mono<UserAdminResponse> findMyData(
+            @RequestHeader("Authorization") String token) {
+        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token);
+        log.info("idUserAdmin: " + idUserAdmin);
+        return userAdminManagerService.findById(idUserAdmin);
+    }
+
     @GetMapping("/find/email")
     public Mono<UserAdminResponse> findByEmail(@RequestParam String email) {
         return userAdminManagerService.findByEmail(email);

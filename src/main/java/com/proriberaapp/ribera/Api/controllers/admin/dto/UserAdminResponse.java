@@ -7,7 +7,8 @@ public record UserAdminResponse(
         String email,
         String username,
         String firstName,
-        String lastName
+        String lastName,
+        String document
 ) {
     public static UserAdminResponse toResponse(UserAdminEntity users) {
         return new UserAdminResponse(
@@ -15,7 +16,8 @@ public record UserAdminResponse(
                 users.getEmail(),
                 users.getUsername(),
                 users.getFirstName(),
-                users.getLastName()
+                users.getLastName(),
+                users.getDocument()
         );
     }
 }
