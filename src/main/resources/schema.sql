@@ -167,6 +167,13 @@ CREATE TABLE IF NOT EXISTS comfortbookingdetail (
     CONSTRAINT fk_comfort_cb FOREIGN KEY (comforttypeid) REFERENCES comforttype(comforttypeid)
 );
 
+CREATE TABLE IF NOT EXISTS comfortservicedetail (
+    roomofferid INTEGER,
+    comforttypeid INTEGER,
+    CONSTRAINT fk_roomoffer_cb FOREIGN KEY (roomofferid) REFERENCES roomoffer(roomofferid),
+    CONSTRAINT fk_comfort_cb FOREIGN KEY (comforttypeid) REFERENCES comforttype(comforttypeid)
+);
+
 CREATE TABLE IF NOT EXISTS finalcostumer (
     finalcostumerid SERIAL PRIMARY KEY,
     bookingid INTEGER,

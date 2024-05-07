@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ViewRoomReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomRepository;
 import com.proriberaapp.ribera.services.RoomService;
@@ -53,5 +54,18 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public Mono<RoomEntity> update(RoomEntity roomEntity) {
         return roomRepository.save(roomEntity);
+    }
+
+    @Override
+    public Flux<ViewRoomReturn> findAllView() {
+        return roomRepository.findAllViewRoomReturn()
+                .flatMap(room ->
+                        roomRepository.findAllViewBedroomReturn(room.getRoomId())
+                                .collectList()
+                                .map(bed -> {
+                                    room.setListBedroomReturn(bed);
+                                    return room;
+                                })
+                );
     }
 }

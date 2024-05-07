@@ -1,4 +1,6 @@
 package com.proriberaapp.ribera.services.impl;
+
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ViewServiceReturn;
 import com.proriberaapp.ribera.Domain.entities.ServicesEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.ServicesRepository;
 import com.proriberaapp.ribera.services.ServicesService;
@@ -6,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Service
 public class ServicesServiceImpl implements ServicesService {
@@ -43,5 +48,24 @@ public class ServicesServiceImpl implements ServicesService {
     @Override
     public Mono<Void> deleteService(Integer id) {
         return servicesRepository.deleteById(id);
+    }
+
+    @Override
+    public Flux<ViewServiceReturn> findAllViewServiceReturn() {
+        BigDecimal porcentaje = new BigDecimal("1.10"); // 10% expresado como 1 más el porcentaje
+
+        return servicesRepository.findAllViewServiceReturn()
+                .flatMap(service -> servicesRepository.findAllViewComfortReturn(service.getRoomofferid())
+                        .collectList().map(comfort -> {
+                                    service.setListAmenities(comfort);
+                                    return service;
+                                }
+                        ))
+                .flatMap(service -> servicesRepository.findAllViewServiceComfortReturn(service.getRoomofferid())
+                        .collectList().map(comfort -> {
+                            service.setListService(comfort);
+                            return service;
+                        })
+                );
     }
 }
