@@ -27,7 +27,7 @@ public class UserController {
         this.userRegistrationService = userRegistrationService;
     }
 
-
+/*
     @PostMapping("/register")
     public Mono<ResponseEntity<RegisterResponse>> registerUser(@RequestBody RegisterRequest request) {
 
@@ -88,6 +88,54 @@ public class UserController {
                         ),
                         HttpStatus.CREATED))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+    }
+ */
+
+    @PostMapping("/register")
+    public Mono<Object> registerUser(@RequestBody RegisterRequest request) {
+        if (request.email() == null || request.password() == null ||
+            request.firstName() == null || request.lastName() == null) {
+        return Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+     }
+
+    return userClientService.findByEmail(request.email())
+            .flatMap(existingUser -> {
+                return Mono.error(new RuntimeException("El correo electrónico ya está registrado"));
+            })
+            .switchIfEmpty(Mono.defer(() -> {
+                UserClientEntity user = UserClientEntity.builder().build();
+                user.setEmail(request.email());
+                user.setPassword(request.password());
+                user.setFirstName(request.firstName());
+                user.setLastName(request.lastName());
+                user.setRegisterTypeId(request.registerTypeId());
+                user.setUserLevelId(request.userLevelId());
+                user.setCodeUser(request.codeUser());
+                user.setCountryId(request.countryId());
+                user.setDocumenttypeId(request.documenttypeId());
+                user.setDocumentNumber(request.documentNumber());
+                user.setBirthDate(request.birthDate());
+                user.setGenderId(request.genderId());
+                user.setRole(request.role());
+                user.setCivilStatus(request.civilStatus());
+                user.setCity(request.city());
+                user.setAddress(request.address());
+                user.setCellNumber(request.cellNumber());
+                user.setGoogleAuth(request.googleAuth());
+                user.setGoogleId(request.googleId());
+                user.setGoogleEmail(request.googleEmail());
+                user.setUsername(request.username());
+                user.setCreatedat(request.createdat());
+
+                return userClientService.registerUser(user)
+                        .flatMap(savedUser -> {
+                            return userClientService.login(request.email(), request.password())
+                                    .map(token -> {
+                                        return new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK);
+                                    });
+                        });
+            }))
+            .onErrorResume(e -> Mono.just(new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST)));
     }
 
     @PostMapping("/login")

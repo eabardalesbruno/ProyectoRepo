@@ -383,7 +383,7 @@ CREATE TABLE IF NOT EXISTS termsversion (
     userclientid INTEGER,
     s3_url VARCHAR(255),
     active BOOLEAN,
-    createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    createdat TIMESTAMP,
     CONSTRAINT fk_userclient_version FOREIGN KEY (userclientid) REFERENCES userclient(userclientid)
 );
 
