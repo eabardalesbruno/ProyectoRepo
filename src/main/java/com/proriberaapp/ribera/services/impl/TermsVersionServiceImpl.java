@@ -9,41 +9,24 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class TermsVersionServiceImpl implements TermsVersionService {
+    private final TermsVersionRepository termsVersionRepository;
 
-    private final TermsVersionRepository repository;
-
-    public TermsVersionServiceImpl(TermsVersionRepository repository) {
-        this.repository = repository;
+    public TermsVersionServiceImpl(TermsVersionRepository termsVersionRepository) {
+        this.termsVersionRepository = termsVersionRepository;
     }
 
     @Override
     public Mono<TermsVersionEntity> createTermsVersion(TermsVersionEntity termsVersion) {
-        return repository.save(termsVersion);
-    }
-
-    @Override
-    public Mono<TermsVersionEntity> getTermsVersion(Integer versionId) {
-        return repository.findById(versionId);
+        return termsVersionRepository.save(termsVersion);
     }
 
     @Override
     public Flux<TermsVersionEntity> getAllTermsVersions() {
-        return repository.findAll();
+        return termsVersionRepository.findAll();
     }
 
     @Override
-    public Mono<TermsVersionEntity> updateTermsVersion(Integer versionId, TermsVersionEntity termsVersion) {
-        return repository.findById(versionId)
-                .flatMap(existingVersion -> {
-                    existingVersion.setUserClientId(termsVersion.getUserClientId());
-                    existingVersion.setS3Url(termsVersion.getS3Url());
-                    existingVersion.setActive(termsVersion.getActive());
-                    return repository.save(existingVersion);
-                });
-    }
-
-    @Override
-    public Mono<Void> deleteTermsVersion(Integer versionId) {
-        return repository.deleteById(versionId);
+    public Mono<TermsVersionEntity> getTermsVersionById(Integer id) {
+        return termsVersionRepository.findById(id);
     }
 }

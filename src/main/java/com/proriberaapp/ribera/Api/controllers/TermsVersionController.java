@@ -9,35 +9,24 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/api/termsversions")
 public class TermsVersionController {
+    private final TermsVersionService termsVersionService;
 
-    private final TermsVersionService service;
-
-    public TermsVersionController(TermsVersionService service) {
-        this.service = service;
+    public TermsVersionController(TermsVersionService termsVersionService) {
+        this.termsVersionService = termsVersionService;
     }
 
     @PostMapping
     public Mono<TermsVersionEntity> createTermsVersion(@RequestBody TermsVersionEntity termsVersion) {
-        return service.createTermsVersion(termsVersion);
-    }
-
-    @GetMapping("/{versionId}")
-    public Mono<TermsVersionEntity> getTermsVersion(@PathVariable Integer versionId) {
-        return service.getTermsVersion(versionId);
+        return termsVersionService.createTermsVersion(termsVersion);
     }
 
     @GetMapping
     public Flux<TermsVersionEntity> getAllTermsVersions() {
-        return service.getAllTermsVersions();
+        return termsVersionService.getAllTermsVersions();
     }
 
-    @PutMapping("/{versionId}")
-    public Mono<TermsVersionEntity> updateTermsVersion(@PathVariable Integer versionId, @RequestBody TermsVersionEntity termsVersion) {
-        return service.updateTermsVersion(versionId, termsVersion);
-    }
-
-    @DeleteMapping("/{versionId}")
-    public Mono<Void> deleteTermsVersion(@PathVariable Integer versionId) {
-        return service.deleteTermsVersion(versionId);
+    @GetMapping("/{id}")
+    public Mono<TermsVersionEntity> getTermsVersionById(@PathVariable Integer id) {
+        return termsVersionService.getTermsVersionById(id);
     }
 }

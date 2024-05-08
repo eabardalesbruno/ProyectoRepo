@@ -380,17 +380,16 @@ CREATE TABLE IF NOT EXISTS documenttype (
 
 CREATE TABLE IF NOT EXISTS termsversion (
     versionid SERIAL PRIMARY KEY,
-    userclientid INTEGER,
-    s3_url VARCHAR(255),
-    active BOOLEAN,
-    createdat TIMESTAMP,
-    CONSTRAINT fk_userclient_version FOREIGN KEY (userclientid) REFERENCES userclient(userclientid)
+    s3url VARCHAR(255),
+    createdat TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS userclientversion (
     userclientversionid SERIAL PRIMARY KEY,
     userclientid INTEGER,
     versionid INTEGER,
+	active BOOLEAN,
+	createdat TIMESTAMP,
     CONSTRAINT fk_userclient_uv FOREIGN KEY (userclientid) REFERENCES userclient(userclientid),
     CONSTRAINT fk_termsversion_uv FOREIGN KEY (versionid) REFERENCES termsversion(versionid)
 );

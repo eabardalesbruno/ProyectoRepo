@@ -6,8 +6,7 @@ import reactor.core.publisher.Mono;
 
 public interface TermsVersionService {
     Mono<TermsVersionEntity> createTermsVersion(TermsVersionEntity termsVersion);
-    Mono<TermsVersionEntity> getTermsVersion(Integer versionId);
     Flux<TermsVersionEntity> getAllTermsVersions();
-    Mono<TermsVersionEntity> updateTermsVersion(Integer versionId, TermsVersionEntity termsVersion);
-    Mono<Void> deleteTermsVersion(Integer versionId);
+    Mono<TermsVersionEntity> getTermsVersionById(Integer id);
+    // Otros métodos CRUD según sea necesario
 }

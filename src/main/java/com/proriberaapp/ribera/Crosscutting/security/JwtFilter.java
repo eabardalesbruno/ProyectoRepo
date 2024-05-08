@@ -23,6 +23,7 @@ public class JwtFilter implements WebFilter {
                         || path.contains("/api/countries")
                         || path.contains("/api/documenttype")
                         || path.contains("/api/termsversions")
+                        || path.contains("/api/userclientversions")
                         || path.contains("/api/v1/password-reset/request")
                         || path.contains("/api/v1/password-reset/verify")
                         || path.contains("/api/v1/password-reset/confirm")

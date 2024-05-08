@@ -12,15 +12,20 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 @Builder
-@Table("termsversion")
-public class TermsVersionEntity {
+@Table("userclientversion")
+public class UserClientVersionEntity {
 
     @Id
+    @Column("userclientversionid")
+    private Integer userClientVersionId;
+
+    @Column("userclientid")
+    private Integer userClientId;
+
     @Column("versionid")
     private Integer versionId;
 
-    @Column("s3url")
-    private String s3Url;
+    private Boolean active;
 
     @Column("createdat")
     private Timestamp createdAt;

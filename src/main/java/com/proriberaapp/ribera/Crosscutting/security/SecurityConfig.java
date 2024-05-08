@@ -36,6 +36,7 @@ public class SecurityConfig {
                                         "/api/documenttype/**",
                                         "/api/v1/payment-books/**",
                                         "/api/termsversions/**",
+                                        "/api/userclientversions/**",
                                         "/swagger-doc/webjars/swagger-ui/swagger-ui-bundle.js",
                                         "/swagger-doc/webjars/swagger-ui/swagger-ui.css",
                                         "/swagger-doc/webjars/swagger-ui/swagger-initializer.js",
