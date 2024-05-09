@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.sql.Timestamp;
+
 @RestController
 @RequestMapping("/api/termsversions")
 public class TermsVersionController {
@@ -17,6 +19,8 @@ public class TermsVersionController {
 
     @PostMapping
     public Mono<TermsVersionEntity> createTermsVersion(@RequestBody TermsVersionEntity termsVersion) {
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        termsVersion.setCreatedAt(timestamp);
         return termsVersionService.createTermsVersion(termsVersion);
     }
 
