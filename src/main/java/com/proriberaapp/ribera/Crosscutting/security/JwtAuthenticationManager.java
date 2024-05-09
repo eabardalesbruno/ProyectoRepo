@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Crosscutting.security;
 
 import com.proriberaapp.ribera.Api.controllers.admin.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,14 +18,18 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
 
     private final JwtTokenProvider jwtTokenProvider;
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
         return Mono.just(authentication)
-                .map(auth -> jwtTokenProvider.getClaimsFromToken(auth.getCredentials().toString()))
-                .log()
+                .map(auth -> {
+                    log.info("JwtAuthenticationManager: auth {}", auth);
+                    return jwtTokenProvider.getClaimsFromToken(auth.getCredentials().toString());
+                })
+                //.log()
                 .onErrorResume(e -> Mono.error(new CustomException(HttpStatus.UNAUTHORIZED, "bad token")))
                 .map(claims -> new UsernamePasswordAuthenticationToken(claims.getSubject(), null,
                         Stream.of(claims.get("roles"))

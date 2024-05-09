@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Crosscutting.security;
 
 import com.proriberaapp.ribera.Api.controllers.admin.exception.CustomException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -10,6 +11,7 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
 @Component
+@Slf4j
 public class JwtFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -46,7 +48,8 @@ public class JwtFilter implements WebFilter {
                         || path.contains("/favicon.ico")
         )
             return chain.filter(exchange);
-        String auth = request.getHeaders().getFirst("Authorization");
+        String auth = request.getHeaders().getFirst("authorization");
+        log.info("JwtFilter: auth {}", auth);
         if (auth == null)
             return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Missing token"));
         if (!auth.startsWith("Bearer "))
