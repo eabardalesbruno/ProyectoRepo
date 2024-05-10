@@ -4,9 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
@@ -59,7 +56,6 @@ public class SecurityConfig {
                                 .pathMatchers(GET, "/api/v1/admin/manager/payment/**").hasAnyAuthority("READ", "WRITE")
                                 .pathMatchers(POST, "/api/v1/admin/manager/payment/**").hasAnyAuthority("READ", "WRITE")
 
-
                                 .anyExchange().authenticated()
                 )
 
@@ -70,8 +66,12 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
                 .cors(ServerHttpSecurity.CorsSpec::disable)
+
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
 
                 .build();
     }
+
+
+
 }

@@ -14,8 +14,12 @@ import reactor.core.publisher.Flux;
 @RequiredArgsConstructor
 @Slf4j
 public class ManagerRoomController extends BaseManagerController<RoomEntity, RoomEntity>{
+
     private final RoomService roomService;
 
+
+
+    @CrossOrigin()
     @GetMapping("/find/all/view")
     public Flux<ViewRoomReturn> findAllViewRoomReturn() {
         return roomService.findAllView();
