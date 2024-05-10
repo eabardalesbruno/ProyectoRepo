@@ -71,7 +71,7 @@ public class SecurityConfig {
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
                 //eliminar
-                //.cors(ServerHttpSecurity.CorsSpec::disable)
+                .cors(ServerHttpSecurity.CorsSpec::disable)
 
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
 
