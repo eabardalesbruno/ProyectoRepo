@@ -13,6 +13,11 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.springframework.web.server.WebFilter;
+
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
@@ -65,13 +70,16 @@ public class SecurityConfig {
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
+                //eliminar
                 .cors(ServerHttpSecurity.CorsSpec::disable)
 
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
 
+
                 .build();
     }
 
+    // Agrega este método para configurar CORS
 
 
 }
