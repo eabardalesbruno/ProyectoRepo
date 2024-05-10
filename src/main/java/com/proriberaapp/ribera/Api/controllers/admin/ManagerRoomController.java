@@ -19,7 +19,7 @@ public class ManagerRoomController extends BaseManagerController<RoomEntity, Roo
 
 
 
-    @CrossOrigin()
+    @CrossOrigin('http://localhost:4200')
     @GetMapping("/find/all/view")
     public Flux<ViewRoomReturn> findAllViewRoomReturn() {
         return roomService.findAllView();
