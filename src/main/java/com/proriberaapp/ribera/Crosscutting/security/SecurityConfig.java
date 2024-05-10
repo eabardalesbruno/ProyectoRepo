@@ -18,6 +18,8 @@ import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.server.WebFilter;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
@@ -65,21 +67,29 @@ public class SecurityConfig {
                 )
 
                 .addFilterAfter(jwtFilter, SecurityWebFiltersOrder.FIRST)
+                .addFilterAt(corsWebFilter(), SecurityWebFiltersOrder.CORS) // Agregar tu filtro CORS personalizado
                 .securityContextRepository(securityContextRepository)
-
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .logout(ServerHttpSecurity.LogoutSpec::disable)
-                //eliminar
-                .cors(ServerHttpSecurity.CorsSpec::disable)
-
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
-
-
+                .cors(ServerHttpSecurity.CorsSpec::disable) // Deshabilitar el manejo CORS predeterminado
+                .csrf(ServerHttpSecurity.CsrfSpec::disable) // Deshabilitar CSRF
                 .build();
     }
 
-    // Agrega este método para configurar CORS
+    @Bean
+    public CorsWebFilter corsWebFilter() {
 
+        CorsConfiguration corsConfig = new CorsConfiguration();
+        corsConfig.setAllowedOrigins(Arrays.asList("*"));
+        corsConfig.setMaxAge(3600L);
+        corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        corsConfig.addAllowedHeader("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfig);
+
+        return new CorsWebFilter(source);
+    }
 
 }
