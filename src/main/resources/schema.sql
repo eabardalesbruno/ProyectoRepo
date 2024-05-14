@@ -378,6 +378,22 @@ CREATE TABLE IF NOT EXISTS documenttype (
     documenttypedesc VARCHAR(255)
 );
 
+CREATE TABLE IF NOT EXISTS termsversion (
+    versionid SERIAL PRIMARY KEY,
+    s3url VARCHAR(255),
+    createdat TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS userclientversion (
+    userclientversionid SERIAL PRIMARY KEY,
+    userclientid INTEGER,
+    versionid INTEGER,
+	active BOOLEAN,
+	createdat TIMESTAMP,
+    CONSTRAINT fk_userclient_uv FOREIGN KEY (userclientid) REFERENCES userclient(userclientid),
+    CONSTRAINT fk_termsversion_uv FOREIGN KEY (versionid) REFERENCES termsversion(versionid)
+);
+
 CREATE OR REPLACE VIEW ViewBedsType AS
 SELECT
     b.bookingid AS bookingId,
