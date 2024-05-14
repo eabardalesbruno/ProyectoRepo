@@ -1,6 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers;
 
-import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
+import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
 import com.proriberaapp.ribera.services.PartnerPointsService;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Slf4j
 public class PartnerPointsController {
-    private final JwtTokenProvider jtp;
+    private final JwtProvider jtp;
     private final PartnerPointsService partnerPointsService;
     @GetMapping("/find")
     public Mono<PartnerPointsEntity> getAllPartnerPoints(

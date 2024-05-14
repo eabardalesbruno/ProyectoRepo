@@ -1,6 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
-import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
+import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.services.admin.UserAdminManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,13 +15,13 @@ import reactor.core.publisher.Mono;
 public class ManagerUserAdminController {
 
     private final UserAdminManagerService userAdminManagerService;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtProvider jwtProvider;
 
     @PostMapping("/register")
     public Mono<UserAdminResponse> register(
             @RequestBody RegisterRequest registerRequest,
             @RequestHeader("Authorization") String token) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token.substring(7));
         log.info("idUserAdmin: " + idUserAdmin);
         return userAdminManagerService.register(idUserAdmin, registerRequest);
     }
@@ -31,7 +31,7 @@ public class ManagerUserAdminController {
             @RequestParam Integer idUserAdminUpdate,
             @RequestBody UpdateUserAdminRequest updateRequest,
             @RequestHeader("Authorization") String token) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token.substring(7));
         return userAdminManagerService.update(idUserAdmin, idUserAdminUpdate, updateRequest);
     }
 
@@ -40,7 +40,7 @@ public class ManagerUserAdminController {
             @RequestParam Integer idUserAdminUpdatePassword,
             @RequestParam String newPassword,
             @RequestHeader("Authorization") String token) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token.substring(7));
         return userAdminManagerService.updatePassword(idUserAdmin, idUserAdminUpdatePassword, newPassword);
     }
 
@@ -48,7 +48,7 @@ public class ManagerUserAdminController {
     public Mono<UserAdminResponse> updateStatusEnable(
             @RequestParam Integer idUserAdminUpdateStatus,
             @RequestHeader("Authorization") String token) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token.substring(7));
         return userAdminManagerService.enable(idUserAdmin, idUserAdminUpdateStatus);
     }
 
@@ -56,7 +56,7 @@ public class ManagerUserAdminController {
     public Mono<UserAdminResponse> updateStatusDisable(
             @RequestParam Integer idUserAdminUpdateStatus,
             @RequestHeader("Authorization") String token) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token.substring(7));
         return userAdminManagerService.disable(idUserAdmin, idUserAdminUpdateStatus);
     }
 
@@ -68,7 +68,7 @@ public class ManagerUserAdminController {
     @GetMapping("/find/my-data")
     public Mono<UserAdminResponse> findMyData(
             @RequestHeader("Authorization") String token) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token);
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token);
         log.info("idUserAdmin: " + idUserAdmin);
         return userAdminManagerService.findById(idUserAdmin);
     }
@@ -87,7 +87,7 @@ public class ManagerUserAdminController {
     public Mono<UserAdminResponse> delete(
             @RequestParam Integer idUserAdminDelete,
             @RequestHeader("Authorization") String token) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token.substring(7));
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token.substring(7));
         return userAdminManagerService.delete(idUserAdmin, idUserAdminDelete);
     }
 

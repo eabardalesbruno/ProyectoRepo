@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
@@ -25,10 +26,12 @@ public class SecurityConfig {
     private final SecurityContextRepository securityContextRepository;
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, JwtFilter jwtFilter) {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 
         return http.authorizeExchange(
                         auth -> auth
+                                .pathMatchers(HttpMethod.OPTIONS).permitAll()
+
                                 .pathMatchers(
                                         "/api/v1/admin/login",
                                         "/api/v1/users/**",
@@ -49,8 +52,7 @@ public class SecurityConfig {
                                         "/swagger-ui.html",
                                         "/favicon.ico",
                                         "/actuator/**"
-                                )
-                                .permitAll()
+                                ).permitAll()
 
                                 .pathMatchers("/api/v1/admin/manager/**").hasRole("SUPER_ADMIN")
 
@@ -62,7 +64,6 @@ public class SecurityConfig {
                                 .anyExchange().authenticated()
                 )
 
-                .addFilterAfter(jwtFilter, SecurityWebFiltersOrder.FIRST)
                 .securityContextRepository(securityContextRepository)
 
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
@@ -73,4 +74,5 @@ public class SecurityConfig {
 
                 .build();
     }
+
 }

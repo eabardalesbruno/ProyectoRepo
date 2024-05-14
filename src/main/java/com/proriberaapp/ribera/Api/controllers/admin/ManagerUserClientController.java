@@ -1,6 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
-import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
+import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.services.admin.ClientManagerService;
 import lombok.RequiredArgsConstructor;
@@ -16,14 +16,14 @@ import reactor.core.publisher.Mono;
 public class ManagerUserClientController {
 
     private final ClientManagerService clientManagerService;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtProvider jwtProvider;
 
     @PatchMapping("/update/password")
     public Mono<UserClientEntity> updatePassword(
             @RequestHeader("Authorization") String token,
             @RequestParam Integer id,
             @RequestParam String newPassword) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token);
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token);
         return clientManagerService.updatePassword(id, newPassword);
     }
 
@@ -31,7 +31,7 @@ public class ManagerUserClientController {
     public Mono<UserClientEntity> findById(
             @RequestHeader("Authorization") String token,
             @PathVariable Integer id) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token);
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token);
         return clientManagerService.findById(id);
     }
 
@@ -43,25 +43,25 @@ public class ManagerUserClientController {
 
     @PatchMapping("/disable")
     public Mono<UserClientEntity> disable(@RequestHeader("Authorization") String token, @RequestParam Integer id) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token);
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token);
         return clientManagerService.disable(id);
     }
 
     @PatchMapping("/enable")
     public Mono<UserClientEntity> enable(@RequestHeader("Authorization") String token, @RequestParam Integer id) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token);
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token);
         return clientManagerService.enable(id);
     }
 
     @DeleteMapping("/delete")
     public Mono<UserClientEntity> delete(@RequestHeader("Authorization") String token, @RequestParam Integer id) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token);
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token);
         return clientManagerService.delete(id);
     }
 
     @GetMapping("/find/by-email")
     public Mono<UserClientEntity> findByEmail(@RequestHeader("Authorization") String token, @RequestParam String email) {
-        Integer idUserAdmin = jwtTokenProvider.getIdFromToken(token);
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token);
         return clientManagerService.findByEmail(email);
     }
 

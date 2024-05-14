@@ -21,23 +21,23 @@ import java.util.stream.Stream;
 @Slf4j
 public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
 
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtProvider jwtProvider;
     @Override
+    @SuppressWarnings("unchecked")
     public Mono<Authentication> authenticate(Authentication authentication) {
         return Mono.just(authentication)
-                .map(auth -> {
-                    log.info("JwtAuthenticationManager: auth {}", auth);
-                    return jwtTokenProvider.getClaimsFromToken(auth.getCredentials().toString());
-                })
-                //.log()
-                .onErrorResume(e -> Mono.error(new CustomException(HttpStatus.UNAUTHORIZED, "bad token")))
-                .map(claims -> new UsernamePasswordAuthenticationToken(claims.getSubject(), null,
+                .map(auth -> jwtProvider.getClaimsFromToken(auth.getCredentials().toString()))
+                .log()
+                .onErrorResume(e -> Mono.error(new Throwable("bad token")))
+                .map(claims -> new UsernamePasswordAuthenticationToken(
+                        claims.getSubject(),
+                        null,
                         Stream.of(claims.get("roles"))
                                 .map(role -> (List<Map<String, String>>) role)
                                 .flatMap(role -> role.stream()
                                         .map(r -> r.get("authority"))
                                         .map(SimpleGrantedAuthority::new))
-                                .collect(Collectors.toList()))
+                                .toList())
                 );
     }
 }

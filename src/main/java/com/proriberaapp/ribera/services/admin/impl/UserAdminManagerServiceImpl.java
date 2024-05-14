@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.admin.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Api.controllers.admin.exception.CustomException;
-import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
+import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
 import com.proriberaapp.ribera.Domain.enums.StatesUser;
 import com.proriberaapp.ribera.Infraestructure.repository.UserAdminRepository;
@@ -24,7 +24,7 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
 
     private final UserAdminRepository userAdminRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtProvider jwtProvider;
 
     @Override
     public Mono<TokenDto> login(LoginRequest loginRequest) {
@@ -34,7 +34,7 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "user is not active")))
                 .filter(user -> passwordEncoder.matches(loginRequest.password(), user.getPassword()))
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "bad credentials")))
-                .map(user -> new TokenDto(jwtTokenProvider.generateTokenAdmin(user)))
+                .map(user -> new TokenDto(jwtProvider.generateTokenAdmin(user)))
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "error generating token")));
     }
 

@@ -1,8 +1,11 @@
 package com.proriberaapp.ribera.Crosscutting.security;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
@@ -11,21 +14,24 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Component
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Slf4j
 public class SecurityContextRepository implements ServerSecurityContextRepository  {
 
-    private final JwtAuthenticationManager jwtAuthenticationManager;
+    private JwtAuthenticationManager jwtAuthenticationManager;
     @Override
-    public Mono<Void> save(ServerWebExchange exchange, SecurityContext context) {
-        return Mono.empty();
+    public Mono<Void> save(ServerWebExchange swe, SecurityContext sc) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Mono<SecurityContext> load(ServerWebExchange exchange) {
-        String token = exchange.getAttribute("token");
-        log.info("SecurityContextRepository: token {}", token);
-        return jwtAuthenticationManager.authenticate(new UsernamePasswordAuthenticationToken(token, token))
-                .map(SecurityContextImpl::new);
+    public Mono<SecurityContext> load(ServerWebExchange swe) {
+        return Mono.justOrEmpty(swe.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
+                .filter(authHeader -> authHeader.startsWith("Bearer "))
+                .flatMap(authHeader -> {
+                    String authToken = authHeader.substring(7);
+                    Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
+                    return this.jwtAuthenticationManager.authenticate(auth).map(SecurityContextImpl::new);
+                });
     }
 }

@@ -1,6 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
-import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
+import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.enums.Permission;
 import com.proriberaapp.ribera.services.BaseService;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,7 @@ abstract class BaseManagerController<R,T> {
     @Autowired
     private BaseService<R,T> service;
     @Autowired
-    private JwtTokenProvider jtp;
+    private JwtProvider jtp;
 
     @GetMapping("find/all")
     public Flux<R> getAllEntity(

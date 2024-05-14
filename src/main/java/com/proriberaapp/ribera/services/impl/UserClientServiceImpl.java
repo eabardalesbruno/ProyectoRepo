@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.services.impl;
 
 import com.proriberaapp.ribera.Api.controllers.dto.UserDataDTO;
-import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
+import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.UserApiClient;
@@ -21,7 +21,7 @@ public class UserClientServiceImpl implements UserClientService {
 
     private final UserClientRepository userClientRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtUtil;
+    private final JwtProvider jwtUtil;
     @Autowired
     private UserApiClient userApiClient;
 

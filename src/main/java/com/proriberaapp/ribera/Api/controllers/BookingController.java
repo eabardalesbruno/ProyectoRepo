@@ -1,12 +1,11 @@
 package com.proriberaapp.ribera.Api.controllers;
 import com.proriberaapp.ribera.Api.controllers.dto.ViewBookingReturn;
-import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
+import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.services.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,7 +16,7 @@ import reactor.core.publisher.Mono;
 public class BookingController {
 
     private static final Logger log = LoggerFactory.getLogger(BookingController.class);
-    private final JwtTokenProvider jtp;
+    private final JwtProvider jtp;
     private final BookingService bookingService;
 
     @GetMapping("/find/all/state")
