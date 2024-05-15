@@ -13,6 +13,7 @@ import java.io.IOException;
 public interface BookingService extends BaseService<BookingEntity,BookingEntity> {
     Mono<S3UploadResponse> loadBoucher(Resource file, String token) throws IOException;
     Flux<ViewBookingReturn> findAllByUserClientIdAndBookingStateIdIn(Integer userClientId, Integer stateId);
+    Flux<ViewBookingReturn> findAllByUserClientIdAndBookingIn(Integer userClientId);
 
     Mono<BookingEntity> findByIdAndIdUserAdmin(Integer idUserAdmin, Integer bookingId);
 }

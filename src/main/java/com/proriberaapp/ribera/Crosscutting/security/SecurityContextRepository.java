@@ -16,9 +16,10 @@ import reactor.core.publisher.Mono;
 @Component
 @AllArgsConstructor
 @Slf4j
-public class SecurityContextRepository implements ServerSecurityContextRepository  {
+public class SecurityContextRepository implements ServerSecurityContextRepository {
 
     private JwtAuthenticationManager jwtAuthenticationManager;
+
     @Override
     public Mono<Void> save(ServerWebExchange swe, SecurityContext sc) {
         throw new UnsupportedOperationException("Not supported yet.");

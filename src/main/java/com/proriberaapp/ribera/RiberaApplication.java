@@ -3,6 +3,7 @@ package com.proriberaapp.ribera;
 import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
 import io.r2dbc.spi.ConnectionFactory;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -14,11 +15,6 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 
 @EnableWebFlux
 @SpringBootApplication
-@OpenAPIDefinition(info = @Info(
-		title = "Spring webflux",
-		version = "1.0",
-		description = "Spring webflux with r2dbc"
-))
 public class RiberaApplication {
 
 	@Bean
@@ -26,7 +22,7 @@ public class RiberaApplication {
 
 		ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
 		initializer.setConnectionFactory(connectionFactory);
-		initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("schema.sql")));
+		//initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("schema.sql")));
 
 		return initializer;
 	}

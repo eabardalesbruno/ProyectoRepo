@@ -164,6 +164,25 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public Flux<ViewBookingReturn> findAllByUserClientIdAndBookingIn(Integer userClientId) {
+        return bookingRepository.findAllViewBookingReturnByUserClientId(userClientId)
+                .flatMap(viewBookingReturn ->
+                        comfortTypeRepository.findAllByViewComfortType(viewBookingReturn.getBookingId())
+                                .collectList().map(comfortTypeEntity -> {
+                                    viewBookingReturn.setListComfortType(comfortTypeEntity);
+                                    return viewBookingReturn;
+                                })
+                )
+                .flatMap(viewBookingReturn ->
+                        bedsTypeRepository.findAllByViewBedsType(viewBookingReturn.getBookingId())
+                                .collectList().map(bedsTypeEntity -> {
+                                    viewBookingReturn.setListBedsType(bedsTypeEntity);
+                                    return viewBookingReturn;
+                                })
+                );
+    }
+
+    @Override
     public Mono<BookingEntity> findByIdAndIdUserAdmin(Integer idUserAdmin, Integer bookingId) {
         return bookingRepository.findByBookingIdAndUserClientId(idUserAdmin, bookingId);
     }

@@ -7,6 +7,7 @@ import com.proriberaapp.ribera.services.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import org.springframework.http.HttpHeaders;
@@ -19,14 +20,8 @@ public class ManagerRoomController extends BaseManagerController<RoomEntity, Roo
 
     private final RoomService roomService;
 
-
-
-    //@CrossOrigin(origins = "*")
     @GetMapping("/find/all/view")
-    public ResponseEntity<Flux<ViewRoomReturn>> findAllViewRoomReturn() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Origin", "*"); // Permitir desde cualquier origen
-
-        return ResponseEntity.ok().headers(headers).body(roomService.findAllView());
+    public Flux<ViewRoomReturn> findAllViewRoomReturn() {
+        return roomService.findAllView();
     }
 }

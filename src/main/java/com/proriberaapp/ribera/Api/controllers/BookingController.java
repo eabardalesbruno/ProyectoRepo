@@ -20,12 +20,18 @@ public class BookingController {
     private final BookingService bookingService;
 
     @GetMapping("/find/all/state")
-    public Flux<ViewBookingReturn> findAllBookings(
+    public Flux<ViewBookingReturn> findAllByStateBookings(
             @RequestParam("stateId") Integer stateId,
             @RequestHeader("Authorization") String token) {
         Integer userClientId = jtp.getIdFromToken(token);
-        log.info("Finding all bookings with stateId: " + stateId + " and userClientId: " + userClientId);
         return bookingService.findAllByUserClientIdAndBookingStateIdIn(userClientId, stateId);
+    }
+
+    @GetMapping("/find/all")
+    public Flux<ViewBookingReturn> findAllBookings(
+            @RequestHeader("Authorization") String token) {
+        Integer userClientId = jtp.getIdFromToken(token);
+        return bookingService.findAllByUserClientIdAndBookingIn(userClientId);
     }
 
     @GetMapping("/find")
