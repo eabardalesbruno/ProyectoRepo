@@ -98,6 +98,11 @@ public class UserClientServiceImpl implements UserClientService {
     public Mono<UserClientEntity> findById(Integer id) {
         return userClientRepository.findById(id);
     }
+    @Override
+    public Mono<UserDataDTO> findUserDTOById(Integer id) {
+        return userClientRepository.findById(id)
+                .flatMap(user -> new UserDataDTO().convertTo(user));
+    }
 
     @Override
     public Mono<Void> deleteById(Integer id) {

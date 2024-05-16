@@ -1,11 +1,6 @@
 package com.proriberaapp.ribera.Crosscutting.security;
 
-import com.proriberaapp.ribera.Api.controllers.admin.exception.CustomException;
-import io.jsonwebtoken.Claims;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.sl.usermodel.SlideShow;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,15 +10,13 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
 
-    private final JwtProvider jwtProvider;
+    @Autowired
+    private JwtProvider jwtProvider;
 
     @Override
     @SuppressWarnings("unchecked")

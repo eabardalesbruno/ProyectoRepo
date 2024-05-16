@@ -1,5 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.UserAdminResponse;
 import com.proriberaapp.ribera.Api.controllers.dto.*;
+import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.services.UserApiClient;
 import com.proriberaapp.ribera.services.UserRegistrationService;
@@ -17,6 +19,8 @@ public class UserController {
 
     @Autowired
     private UserClientService userClientService;
+    @Autowired
+    private JwtProvider jwtProvider;
 
     @Autowired
     private UserApiClient userApiClient;
@@ -177,5 +181,12 @@ public class UserController {
         return userClientService.deleteById(id)
                 .then(Mono.just(ResponseEntity.noContent().<Void>build()))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/find/my-data")
+    public Mono<UserDataDTO> findMyData(
+            @RequestHeader("Authorization") String token) {
+        Integer idUserAdmin = jwtProvider.getIdFromToken(token);
+        return userClientService.findUserDTOById(idUserAdmin);
     }
 }

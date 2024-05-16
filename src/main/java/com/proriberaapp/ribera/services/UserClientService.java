@@ -18,6 +18,7 @@ public interface UserClientService {
 
     Flux<UserClientEntity> findAll();
     Mono<UserClientEntity> findById(Integer id);
+    Mono<UserDataDTO> findUserDTOById(Integer id);
     Mono<Void> deleteById(Integer id);
     boolean existsByEmail(String email);
 
