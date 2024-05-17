@@ -31,10 +31,17 @@ public class PaymentBookEntity {
     @Column("currencytypeid")
     private Integer currencyTypeId;
 
-    @Column("amount")
+    @Column("refusereasonid")
+    private Integer refuseReasonId;
+
+    @Column("userclientid")
+    private Integer userClientId;
+
+    @Column("clienttypeid")
+    private Integer clientTypeId;
+
     private BigDecimal amount;
 
-    @Column("description")
     private String description;
 
     @Column("paymentdate")
@@ -43,7 +50,6 @@ public class PaymentBookEntity {
     @Column("operationcode")
     private String operationCode;
 
-    @Column("note")
     private String note;
 
     @Column("totalcost")
