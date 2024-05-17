@@ -1,6 +1,5 @@
 package com.proriberaapp.ribera.Domain.entities;
 
-import com.proriberaapp.ribera.Domain.enums.StatePaymentMethod;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +15,14 @@ public class PaymentMethodEntity {
     @Id
     @Column("paymentmethodid")
     private Integer paymentMethodId;
+
+    @Column("description")
     private String description;
+
+    @Column("state")
     private StatePaymentMethod state;
+}
+
+enum StatePaymentMethod {
+    ACTIVE, INACTIVE
 }
