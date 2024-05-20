@@ -38,6 +38,7 @@ public class SecurityConfig {
 =======
 >>>>>>> jose-dev
                                 "/api/v1/payment-method/**",
+                                "/api/v1/payment-book/**",
                                 "/swagger-doc/**"
                         ).permitAll()
 
