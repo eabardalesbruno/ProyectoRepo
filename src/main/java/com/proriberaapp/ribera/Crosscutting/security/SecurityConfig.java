@@ -33,7 +33,10 @@ public class SecurityConfig {
                                 "/api/v1/users/**",
                                 "/api/v1/password-reset/**",
                                 "/api/documenttype/**",
+<<<<<<< HEAD
                                 "/api/v1/payment-books/**",
+=======
+>>>>>>> jose-dev
                                 "/api/v1/payment-method/**",
                                 "/swagger-doc/**"
                         ).permitAll()
