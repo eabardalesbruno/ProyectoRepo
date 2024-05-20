@@ -24,7 +24,6 @@ public class RiberaApplication {
 		initializer.setConnectionFactory(connectionFactory);
 		//initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("schema.sql")));
 
-
 		return initializer;
 	}
 	public static void main(String[] args) {
