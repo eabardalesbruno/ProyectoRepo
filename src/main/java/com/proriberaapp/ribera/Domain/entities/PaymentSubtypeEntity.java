@@ -17,6 +17,10 @@ public class PaymentSubtypeEntity {
     private Integer paymentSubtypeId;
     @Column("paymentsubtypedesc")
     private String paymentSubtypeDesc;
+    @Column("accountsoles")
+    private String accountSoles;
+    @Column("accountdollars")
+    private String accountDollars;
     @Column("paymenttypeid")
     private Integer paymentTypeId;
     private Double soles;
