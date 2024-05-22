@@ -456,3 +456,26 @@ JOIN
     roomdetail rd ON r.roomdetailid = rd.roomdetailid
 JOIN
     bookingstate bs ON b.bookingstateid = bs.bookingstateid;
+
+CREATE TABLE IF NOT EXISTS paymenttype (
+    paymenttypeid SERIAL PRIMARY KEY,
+    paymenttypedesc VARCHAR(255),
+    countryid INTEGER,
+    paymentmethodid INTEGER,
+    CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid),
+    CONSTRAINT fk_paymentmethod_uc FOREIGN KEY (paymentmethodid) REFERENCES paymentmethod(paymentmethodid)
+);
+
+CREATE TABLE IF NOT EXISTS paymentsubtype (
+    paymentsubtypeid SERIAL PRIMARY KEY,
+    paymentsubtypedesc VARCHAR(255),
+    accountsoles VARCHAR(255),
+    accountdollars VARCHAR(255),
+    paymenttypeid INTEGER,
+    soles DOUBLE PRECISION,
+    dollars DOUBLE PRECISION,
+    percentage DOUBLE PRECISION,
+    statussoles INTEGER,
+    statusdollars INTEGER,
+    CONSTRAINT fk_paymenttype_uc FOREIGN KEY (paymenttypeid) REFERENCES paymenttype(paymenttypeid)
+);
