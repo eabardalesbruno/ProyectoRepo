@@ -37,4 +37,8 @@ public class PaymentSubtypeServiceImpl implements PaymentSubtypeService {
     public Mono<Void> deletePaymentSubtype(Integer paymentSubtypeId) {
         return paymentSubtypeRepository.deleteById(paymentSubtypeId);
     }
+    @Override
+    public Flux<PaymentSubtypeEntity> getPaymentSubtypesByPaymentTypeId(Integer paymentTypeId) {
+        return paymentSubtypeRepository.findByPaymentTypeId(paymentTypeId);
+    }
 }

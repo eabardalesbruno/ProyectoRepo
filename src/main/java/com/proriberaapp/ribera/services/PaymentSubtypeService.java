@@ -9,4 +9,6 @@ public interface PaymentSubtypeService {
     Mono<PaymentSubtypeEntity> getPaymentSubtype(Integer paymentSubtypeId);
     Flux<PaymentSubtypeEntity> getAllPaymentSubtypes();
     Mono<Void> deletePaymentSubtype(Integer paymentSubtypeId);
+    Flux<PaymentSubtypeEntity> getPaymentSubtypesByPaymentTypeId(Integer paymentTypeId);
+
 }

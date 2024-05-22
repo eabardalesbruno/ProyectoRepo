@@ -36,4 +36,8 @@ public class PaymentSubtypeController {
     public Mono<Void> deletePaymentSubtype(@PathVariable Integer paymentSubtypeId) {
         return paymentSubtypeService.deletePaymentSubtype(paymentSubtypeId);
     }
+    @GetMapping("/bypaymenttype/{paymentTypeId}")
+    public Flux<PaymentSubtypeEntity> getPaymentSubtypesByPaymentTypeId(@PathVariable Integer paymentTypeId) {
+        return paymentSubtypeService.getPaymentSubtypesByPaymentTypeId(paymentTypeId);
+    }
 }
