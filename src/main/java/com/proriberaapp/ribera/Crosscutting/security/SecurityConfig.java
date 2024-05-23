@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Crosscutting.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,6 +20,13 @@ public class SecurityConfig {
 
     private final SecurityContextRepository securityContextRepository;
 
+    @Value("${url.version.v1}")
+    private String PATH_INIT;
+    @Value("${url.admin}")
+    private String PATH_ADMIN;
+    @Value("${url.manager}")
+    private String PATH_MANAGER;
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 
@@ -28,22 +36,23 @@ public class SecurityConfig {
 
                 .authorizeExchange(auth -> auth
                         .pathMatchers(OPTIONS).permitAll()
+                        .pathMatchers(PATH_ADMIN + "/login").permitAll()
 
-                        .pathMatchers("/api/v1/admin/login",
-                                "/api/v1/users/**",
-                                "/api/v1/password-reset/**",
+                        .pathMatchers(
+                                PATH_INIT + "/users/**",
+                                PATH_INIT + "/password-reset/**",
                                 "/api/documenttype/**",
-                                "/api/v1/payment-books/**",
+                                PATH_INIT + "/payment-books/**",
                                 "/swagger-doc/**"
                         ).permitAll()
 
-                        .pathMatchers("/api/v1/admin/**").hasRole("SUPER_ADMIN")
+                        .pathMatchers(PATH_ADMIN + "/**").hasRole("SUPER_ADMIN")
 
-                        .pathMatchers("/api/v1/admin/manager/**").hasAnyRole("ADMIN")
-                        .pathMatchers(GET, "/api/v1/admin/manager/**").hasAnyAuthority("READ")
-                        .pathMatchers(POST, "/api/v1/admin/manager/**").hasAnyAuthority("WRITE")
-                        .pathMatchers(PATCH, "/api/v1/admin/manager/**").hasAnyAuthority("UPDATE")
-                        .pathMatchers(DELETE, "/api/v1/admin/manager/**").hasAnyAuthority("DELETE")
+                        .pathMatchers(PATH_MANAGER + "/**").hasAnyRole("ADMIN")
+                        .pathMatchers(GET, PATH_MANAGER + "/**").hasAnyAuthority("READ")
+                        .pathMatchers(POST, PATH_MANAGER + "/**").hasAnyAuthority("WRITE")
+                        .pathMatchers(PATCH, PATH_MANAGER + "/**").hasAnyAuthority("UPDATE")
+                        .pathMatchers(DELETE, PATH_MANAGER + "/**").hasAnyAuthority("DELETE")
 
                         .anyExchange().authenticated()
                 )

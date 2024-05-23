@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/admin/manager/beds-type")
+@RequestMapping("${url.manager}/beds-type")
 @RequiredArgsConstructor
 public class ManagerBedsTypeController extends BaseManagerController<BedsTypeEntity, BedsTypeEntity> {
     private final BedsTypeService bedsTypeService;

@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/admin/manager/offer-type")
+@RequestMapping("${url.manager}/offer-type")
 @RequiredArgsConstructor
 public class ManagerOfferTypeController extends BaseManagerController<OfferTypeEntity, OfferTypeEntity>{
     private final OfferTypeService offerTypeService;

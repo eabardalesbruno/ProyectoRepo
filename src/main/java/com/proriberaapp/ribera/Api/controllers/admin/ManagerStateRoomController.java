@@ -7,7 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/admin/manager/state-room")
+@RequestMapping("${url.manager}/state-room")
 @RequiredArgsConstructor
 @Slf4j
 public class ManagerStateRoomController extends BaseManagerController<StateRoomEntity, StateRoomEntity>{

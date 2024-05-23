@@ -16,7 +16,11 @@ import java.util.stream.Stream;
 public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
 
     @Autowired
-    private JwtProvider jwtProvider;
+    private final JwtProvider jwtProvider;
+
+    public JwtAuthenticationManager(JwtProvider jwtProvider) {
+        this.jwtProvider = jwtProvider;
+    }
 
     @Override
     @SuppressWarnings("unchecked")

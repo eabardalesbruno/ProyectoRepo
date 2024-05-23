@@ -1,6 +1,6 @@
 package com.proriberaapp.ribera.services.impl;
 
-import com.proriberaapp.ribera.Api.controllers.admin.dto.ViewRoomReturn;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomRepository;
 import com.proriberaapp.ribera.services.RoomService;

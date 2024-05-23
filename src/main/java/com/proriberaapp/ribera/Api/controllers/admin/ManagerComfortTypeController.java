@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/admin/manager/comfort-type")
+@RequestMapping("${url.manager}/comfort-type")
 @RequiredArgsConstructor
 public class ManagerComfortTypeController extends BaseManagerController<ComfortTypeEntity, ComfortTypeEntity>{
     private final ComfortTypeService comfortTypeService;

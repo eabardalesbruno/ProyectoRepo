@@ -1,4 +1,4 @@
-package com.proriberaapp.ribera.Api.controllers.admin.dto;
+package com.proriberaapp.ribera.Api.controllers.admin.dto.views;
 
 import lombok.Builder;
 import lombok.Data;

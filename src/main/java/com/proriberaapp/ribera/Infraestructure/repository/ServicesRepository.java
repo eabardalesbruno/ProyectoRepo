@@ -1,6 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
-import com.proriberaapp.ribera.Api.controllers.admin.dto.ViewServiceReturn;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewServiceReturn;
 import com.proriberaapp.ribera.Domain.entities.ServicesEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;

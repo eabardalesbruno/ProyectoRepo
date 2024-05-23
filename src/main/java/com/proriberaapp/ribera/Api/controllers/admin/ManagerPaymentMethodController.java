@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/admin/manager/payment-method")
+@RequestMapping("${url.manager}/payment-method")
 @RequiredArgsConstructor
 public class ManagerPaymentMethodController extends BaseManagerController<PaymentMethodEntity, PaymentMethodRequest>{
     private final PaymentMethodService paymentMethodService;

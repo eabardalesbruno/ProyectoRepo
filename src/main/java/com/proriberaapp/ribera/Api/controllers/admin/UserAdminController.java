@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v1/admin")
+@RequestMapping("${url.admin}")
 @RequiredArgsConstructor
 public class UserAdminController {
 

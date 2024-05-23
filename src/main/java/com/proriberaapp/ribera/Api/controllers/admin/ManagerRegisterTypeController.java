@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 @RestController
-@RequestMapping("/api/v1/admin/manager/register-type")
+@RequestMapping("${url.manager}/register-type")
 @RequiredArgsConstructor
 public class ManagerRegisterTypeController extends BaseManagerController<RegisterTypeEntity, RegisterTypeRequest>{
     private final RegisterTypeService registerTypeService;

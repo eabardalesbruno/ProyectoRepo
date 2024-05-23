@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/admin/manager/user-level")
+@RequestMapping("${url.manager}/user-level")
 @RequiredArgsConstructor
 public class ManagerUserLevelController extends BaseManagerController<UserLevelEntity, UserLevelEntity>{
     private final UserLevelService userLevelService;

@@ -1,6 +1,6 @@
 package com.proriberaapp.ribera.services;
 
-import com.proriberaapp.ribera.Api.controllers.admin.dto.ViewServiceReturn;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewServiceReturn;
 import com.proriberaapp.ribera.Domain.entities.ServicesEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

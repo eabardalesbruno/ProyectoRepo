@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/admin/manager/payment-state")
+@RequestMapping("${url.manager}/payment-state")
 @RequiredArgsConstructor
 public class ManagerPaymentStateController extends BaseManagerController<PaymentStateEntity, PaymentStateEntity>{
     private final PaymentStateService paymentStateService;
