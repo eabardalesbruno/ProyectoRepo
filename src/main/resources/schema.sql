@@ -220,8 +220,12 @@ CREATE TABLE IF NOT EXISTS currencytype (
 CREATE TABLE IF NOT EXISTS paymentbook (
     paymentbookid SERIAL PRIMARY KEY,
     bookingid INTEGER,
+	userclientid INTEGER,
+	refusereasonid INTEGER,
     paymentmethodid INTEGER,
     paymentstateid INTEGER,
+    paymenttypeid INTEGER,
+    paymentsubtypeid INTEGER,
     currencytypeid INTEGER,
     amount DECIMAL,
     description VARCHAR(255),
@@ -235,7 +239,11 @@ CREATE TABLE IF NOT EXISTS paymentbook (
     CONSTRAINT fk_currencytype_pb FOREIGN KEY (currencytypeid) REFERENCES currencytype(currencytypeid),
     CONSTRAINT fk_booking_pb FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
     CONSTRAINT fk_paymentmethod_pb FOREIGN KEY (paymentmethodid) REFERENCES paymentmethod(paymentmethodid),
-    CONSTRAINT fk_paymentstate_pb FOREIGN KEY (paymentstateid) REFERENCES paymentstate(paymentstateid)
+    CONSTRAINT fk_paymentstate_pb FOREIGN KEY (paymentstateid) REFERENCES paymentstate(paymentstateid),
+    CONSTRAINT fk_paymenttype_pb FOREIGN KEY (paymenttypeid) REFERENCES paymenttype(paymenttypeid),
+    CONSTRAINT fk_paymentsubtype_pb FOREIGN KEY (paymentsubtypeid) REFERENCES paymentsubtype(paymentsubtypeid),
+	CONSTRAINT fk_userclient_pb FOREIGN KEY (userclientid) REFERENCES userclient(userclientid),
+	CONSTRAINT fk_refusereason_pb FOREIGN KEY (refusereasonid) REFERENCES refusereason(refusereasonid)
 );
 
 CREATE TABLE IF NOT EXISTS refusepayment (

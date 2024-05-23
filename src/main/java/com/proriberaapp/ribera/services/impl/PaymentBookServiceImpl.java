@@ -27,12 +27,13 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         return paymentBookRepository.findById(id)
                 .flatMap(existingBook -> {
                     existingBook.setBookingId(paymentBook.getBookingId());
+                    existingBook.setUserClientId(paymentBook.getUserClientId());
+                    existingBook.setRefuseReasonId(paymentBook.getRefuseReasonId());
                     existingBook.setPaymentMethodId(paymentBook.getPaymentMethodId());
                     existingBook.setPaymentStateId(paymentBook.getPaymentStateId());
+                    existingBook.setPaymentTypeId(paymentBook.getPaymentTypeId());
+                    existingBook.setPaymentSubTypeId(paymentBook.getPaymentSubTypeId());
                     existingBook.setCurrencyTypeId(paymentBook.getCurrencyTypeId());
-                    existingBook.setRefuseReasonId(paymentBook.getRefuseReasonId());
-                    existingBook.setUserClientId(paymentBook.getUserClientId());
-                    existingBook.setClientTypeId(paymentBook.getClientTypeId());
                     existingBook.setAmount(paymentBook.getAmount());
                     existingBook.setDescription(paymentBook.getDescription());
                     existingBook.setPaymentDate(paymentBook.getPaymentDate());
