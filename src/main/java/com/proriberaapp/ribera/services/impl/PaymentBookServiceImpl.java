@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
 @Service
 public class PaymentBookServiceImpl implements PaymentBookService {
     private final PaymentBookRepository paymentBookRepository;
@@ -19,6 +22,9 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
     @Override
     public Mono<PaymentBookEntity> createPaymentBook(PaymentBookEntity paymentBook) {
+        LocalDateTime now = LocalDateTime.now();
+        Timestamp timestamp = Timestamp.valueOf(now);
+        paymentBook.setPaymentDate(timestamp);
         return paymentBookRepository.save(paymentBook);
     }
 
