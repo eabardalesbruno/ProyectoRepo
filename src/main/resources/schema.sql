@@ -233,7 +233,7 @@ CREATE TABLE IF NOT EXISTS paymentbook (
     operationcode VARCHAR(50),
     note VARCHAR(255),
     totalcost DECIMAL,
-    imagevoucher VARCHAR(500000),
+    imagevoucher VARCHAR(150000),
     totalpoints INTEGER,
     paymentcomplete BOOLEAN,
     CONSTRAINT fk_currencytype_pb FOREIGN KEY (currencytypeid) REFERENCES currencytype(currencytypeid),
