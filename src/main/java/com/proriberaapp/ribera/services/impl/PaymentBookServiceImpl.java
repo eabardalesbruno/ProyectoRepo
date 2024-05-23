@@ -69,11 +69,6 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     }
 
     @Override
-    public Flux<PaymentBookEntity> getPaymentBooksByClientTypeId(Integer clientTypeId) {
-        return paymentBookRepository.findByClientTypeId(clientTypeId);
-    }
-
-    @Override
     public Mono<Void> deletePaymentBook(Integer id) {
         return paymentBookRepository.deleteById(id);
     }

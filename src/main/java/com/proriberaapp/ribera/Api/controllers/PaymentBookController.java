@@ -43,11 +43,6 @@ public class PaymentBookController {
         return paymentBookService.getPaymentBooksByUserClientId(userClientId);
     }
 
-    @GetMapping("/client-type/{clientTypeId}")
-    public Flux<PaymentBookEntity> getPaymentBooksByClientTypeId(@PathVariable Integer clientTypeId) {
-        return paymentBookService.getPaymentBooksByClientTypeId(clientTypeId);
-    }
-
     @DeleteMapping("/{id}")
     public Mono<Void> deletePaymentBook(@PathVariable Integer id) {
         return paymentBookService.deletePaymentBook(id);
