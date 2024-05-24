@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.services.UserApiClient;
 import com.proriberaapp.ribera.services.UserRegistrationService;
 import com.proriberaapp.ribera.services.UserClientService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/v1/users")
+@Slf4j
 public class UserController {
 
     @Autowired
@@ -186,7 +188,7 @@ public class UserController {
     @GetMapping("/find/my-data")
     public Mono<UserDataDTO> findMyData(
             @RequestHeader("Authorization") String token) {
-        Integer idUserAdmin = jwtProvider.getIdFromToken(token);
-        return userClientService.findUserDTOById(idUserAdmin);
+        Integer idUserClient = jwtProvider.getIdFromToken(token);
+        return userClientService.findUserDTOById(idUserClient);
     }
 }
