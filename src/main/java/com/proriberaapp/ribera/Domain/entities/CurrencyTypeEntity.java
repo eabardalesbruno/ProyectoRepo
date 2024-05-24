@@ -10,19 +10,15 @@ import org.springframework.data.relational.core.mapping.Table;
 @Getter
 @Setter
 @Builder
-@Table("paymentmethod")
-public class PaymentMethodEntity {
+@Table("currencytype")
+public class CurrencyTypeEntity {
     @Id
-    @Column("paymentmethodid")
-    private Integer paymentMethodId;
+    @Column("currencytypeid")
+    private Integer currencyTypeId;
 
-    @Column("description")
-    private String description;
+    @Column("currencytypename")
+    private String currencyTypeName;
 
-    @Column("state")
-    private StatePaymentMethod state;
-}
-
-enum StatePaymentMethod {
-    ACTIVE, INACTIVE
+    @Column("currencytypedescription")
+    private String currencyTypeDescription;
 }

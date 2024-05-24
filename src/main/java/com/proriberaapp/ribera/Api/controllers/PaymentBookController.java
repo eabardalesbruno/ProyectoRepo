@@ -3,14 +3,12 @@ package com.proriberaapp.ribera.Api.controllers;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.services.PaymentBookService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v1/payment-books")
+@RequestMapping("/api/v1/payment-book")
 public class PaymentBookController {
 
     private final PaymentBookService paymentBookService;
@@ -20,39 +18,33 @@ public class PaymentBookController {
         this.paymentBookService = paymentBookService;
     }
 
-    @GetMapping
-    public ResponseEntity<Flux<PaymentBookEntity>> getAllPaymentBooks() {
-        Flux<PaymentBookEntity> paymentBooks = paymentBookService.getAllPaymentBooks();
-        return ResponseEntity.status(HttpStatus.OK).body(paymentBooks);
-    }
-
-    @GetMapping("/by-user")
-    public ResponseEntity<Flux<PaymentBookEntity>> getPaymentBooksByUserClientId(@RequestParam Integer userClientId) {
-        Flux<PaymentBookEntity> paymentBooks = paymentBookService.getPaymentBooksByUserClientId(userClientId);
-        return ResponseEntity.status(HttpStatus.OK).body(paymentBooks);
-    }
-
-    @GetMapping("/by-client-type")
-    public ResponseEntity<Flux<PaymentBookEntity>> getPaymentBooksByClientTypeId(@RequestParam Integer clientTypeId) {
-        Flux<PaymentBookEntity> paymentBooks = paymentBookService.getPaymentBooksByClientTypeId(clientTypeId);
-        return ResponseEntity.status(HttpStatus.OK).body(paymentBooks);
-    }
-
     @PostMapping
-    public ResponseEntity<Mono<PaymentBookEntity>> createPaymentBook(@RequestBody PaymentBookEntity paymentBookEntity) {
-        Mono<PaymentBookEntity> createdPaymentBook = paymentBookService.createPaymentBook(paymentBookEntity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdPaymentBook);
+    public Mono<PaymentBookEntity> createPaymentBook(@RequestBody PaymentBookEntity paymentBook) {
+        return paymentBookService.createPaymentBook(paymentBook);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Mono<PaymentBookEntity>> updatePaymentBook(@PathVariable("id") Integer id, @RequestBody PaymentBookEntity paymentBookEntity) {
-        Mono<PaymentBookEntity> updatedPaymentBook = paymentBookService.updatePaymentBook(id, paymentBookEntity);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedPaymentBook);
+    public Mono<PaymentBookEntity> updatePaymentBook(@PathVariable Integer id, @RequestBody PaymentBookEntity paymentBook) {
+        return paymentBookService.updatePaymentBook(id, paymentBook);
+    }
+
+    @GetMapping("/{id}")
+    public Mono<PaymentBookEntity> getPaymentBookById(@PathVariable Integer id) {
+        return paymentBookService.getPaymentBookById(id);
+    }
+
+    @GetMapping
+    public Flux<PaymentBookEntity> getAllPaymentBooks() {
+        return paymentBookService.getAllPaymentBooks();
+    }
+
+    @GetMapping("/user-client/{userClientId}")
+    public Flux<PaymentBookEntity> getPaymentBooksByUserClientId(@PathVariable Integer userClientId) {
+        return paymentBookService.getPaymentBooksByUserClientId(userClientId);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Mono<Void>> deletePaymentBook(@PathVariable("id") Integer id) {
-        Mono<Void> result = paymentBookService.deletePaymentBook(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(result);
+    public Mono<Void> deletePaymentBook(@PathVariable Integer id) {
+        return paymentBookService.deletePaymentBook(id);
     }
 }

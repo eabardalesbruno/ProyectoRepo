@@ -19,29 +19,34 @@ public class PaymentBookEntity {
     @Column("paymentbookid")
     private Integer paymentBookId;
 
-    @Column("bookingdetailid")
-    private Integer bookingDetailId;
-
-    @Column("paymentmethodid")
-    private Integer paymentMethodId;
-
-    @Column("currencytypeid")
-    private Integer currencyTypeId;
-
-    @Column("paymentstateid")
-    private Integer paymentStateId;
-
-    @Column("refusereasonid")
-    private Integer refuseReasonId;
+    @Column("bookingid")
+    private Integer bookingId;
 
     @Column("userclientid")
     private Integer userClientId;
 
-    @Column("clienttypeid")
-    private Integer clientTypeId;
+    @Column("refusereasonid")
+    private Integer refuseReasonId;
 
+    @Column("paymentmethodid")
+    private Integer paymentMethodId;
+
+    @Column("paymentstateid")
+    private Integer paymentStateId;
+
+    @Column("paymenttypeid")
+    private Integer paymentTypeId;
+
+    @Column("paymentsubtypeid")
+    private Integer paymentSubTypeId;
+
+    @Column("currencytypeid")
+    private Integer currencyTypeId;
+
+    @Column("amount")
     private BigDecimal amount;
 
+    @Column("description")
     private String description;
 
     @Column("paymentdate")
@@ -50,6 +55,7 @@ public class PaymentBookEntity {
     @Column("operationcode")
     private String operationCode;
 
+    @Column("note")
     private String note;
 
     @Column("totalcost")

@@ -19,7 +19,6 @@ import reactor.core.publisher.Mono;
 public class SecurityContextRepository implements ServerSecurityContextRepository {
 
     private JwtAuthenticationManager jwtAuthenticationManager;
-
     @Override
     public Mono<Void> save(ServerWebExchange swe, SecurityContext sc) {
         throw new UnsupportedOperationException("Not supported yet.");

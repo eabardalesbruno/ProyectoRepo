@@ -1,47 +1,19 @@
 package com.proriberaapp.ribera.services;
 
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
-import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-@Service
-public class PaymentBookService {
+public interface PaymentBookService {
+    Mono<PaymentBookEntity> createPaymentBook(PaymentBookEntity paymentBook);
 
-    private final PaymentBookRepository paymentBookRepository;
+    Mono<PaymentBookEntity> updatePaymentBook(Integer id, PaymentBookEntity paymentBook);
 
-    @Autowired
-    public PaymentBookService(PaymentBookRepository paymentBookRepository) {
-        this.paymentBookRepository = paymentBookRepository;
-    }
+    Mono<PaymentBookEntity> getPaymentBookById(Integer id);
 
-    public Flux<PaymentBookEntity> getAllPaymentBooks() {
-        return paymentBookRepository.findAll();
-    }
+    Flux<PaymentBookEntity> getAllPaymentBooks();
 
-    public Mono<PaymentBookEntity> createPaymentBook(PaymentBookEntity paymentBookEntity) {
-        return paymentBookRepository.save(paymentBookEntity);
-    }
+    Flux<PaymentBookEntity> getPaymentBooksByUserClientId(Integer userClientId);
 
-    public Mono<PaymentBookEntity> updatePaymentBook(Integer id, PaymentBookEntity paymentBookEntity) {
-        return paymentBookRepository.findById(id)
-                .flatMap(existingPaymentBook -> {
-                    paymentBookEntity.setPaymentBookId(id);
-                    return paymentBookRepository.save(paymentBookEntity);
-                });
-    }
-
-    public Mono<Void> deletePaymentBook(Integer id) {
-        return paymentBookRepository.deleteById(id);
-    }
-
-    public Flux<PaymentBookEntity> getPaymentBooksByUserClientId(Integer userClientId) {
-        return paymentBookRepository.findByUserClientId(userClientId);
-    }
-
-    public Flux<PaymentBookEntity> getPaymentBooksByClientTypeId(Integer clientTypeId) {
-        return paymentBookRepository.findByClientTypeId(clientTypeId);
-    }
+    Mono<Void> deletePaymentBook(Integer id);
 }

@@ -52,9 +52,6 @@ public class PaymentBookExportController {
                 row.createCell(1).setCellValue(paymentBook.getPaymentMethodId());
                 row.createCell(2).setCellValue(paymentBook.getCurrencyTypeId());
                 row.createCell(3).setCellValue(paymentBook.getPaymentStateId());
-                row.createCell(4).setCellValue(paymentBook.getRefuseReasonId());
-                row.createCell(5).setCellValue(paymentBook.getUserClientId());
-                row.createCell(6).setCellValue(paymentBook.getClientTypeId());
                 row.createCell(7).setCellValue(paymentBook.getAmount().doubleValue());
                 row.createCell(8).setCellValue(paymentBook.getDescription());
                 row.createCell(9).setCellValue(paymentBook.getPaymentDate().toString());

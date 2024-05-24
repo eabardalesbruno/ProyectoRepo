@@ -69,7 +69,6 @@ public class ManagerUserAdminController {
     public Mono<UserAdminResponse> findMyData(
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jwtProvider.getIdFromToken(token);
-        log.info("idUserAdmin: " + idUserAdmin);
         return userAdminManagerService.findById(idUserAdmin);
     }
 

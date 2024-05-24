@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 import java.sql.Timestamp;
 @Data
 public class UserDataDTO {
+    private Integer userClientId;
     private String username;
     private String documentNumber;
     private String civilStatus;
@@ -21,6 +22,7 @@ public class UserDataDTO {
 
     public Mono<UserDataDTO> convertTo(UserClientEntity user) {
          UserDataDTO userDTO = new UserDataDTO();
+         userDTO.setUserClientId(user.getUserClientId());
         userDTO.setBirthDate(user.getBirthDate());
         userDTO.setCity(user.getCity());
         userDTO.setCellNumber(user.getCellNumber());
