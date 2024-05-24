@@ -48,9 +48,9 @@ public class BookingManagerServiceImpl implements BookingManagerService {
                                 .flatMap(stateRoom ->
                                         offerTypeRepository.findAll().collectList()
                                                 .map(offerType -> FindFiltersBooking.builder()
-                                                        .roomTypeEntity(roomType)
-                                                        .stateRoomEntity(stateRoom)
-                                                        .offerTypeEntity(offerType)
+                                                        .roomType(roomType)
+                                                        .stateRoom(stateRoom)
+                                                        .offerType(offerType)
                                                         .build()
                                                 )
                                 )
