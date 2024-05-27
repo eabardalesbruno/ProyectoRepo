@@ -3,21 +3,27 @@ package com.proriberaapp.ribera.services.impl;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
 import com.proriberaapp.ribera.services.PaymentBookService;
+import com.proriberaapp.ribera.services.S3Uploader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Service
 public class PaymentBookServiceImpl implements PaymentBookService {
     private final PaymentBookRepository paymentBookRepository;
+    private final S3Uploader s3Uploader;
 
     @Autowired
-    public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository) {
+    public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository, S3Uploader s3Uploader) {
         this.paymentBookRepository = paymentBookRepository;
+        this.s3Uploader = s3Uploader;
     }
 
     @Override
@@ -25,6 +31,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         LocalDateTime now = LocalDateTime.now();
         Timestamp timestamp = Timestamp.valueOf(now);
         paymentBook.setPaymentDate(timestamp);
+
         return paymentBookRepository.save(paymentBook);
     }
 

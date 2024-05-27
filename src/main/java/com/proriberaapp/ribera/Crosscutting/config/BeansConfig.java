@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Crosscutting.config;
 
+import com.proriberaapp.ribera.services.S3Uploader;
 import io.r2dbc.spi.ConnectionFactory;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.context.annotation.Bean;
@@ -26,5 +27,10 @@ public class BeansConfig {
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public S3Uploader s3Uploader(RestTemplate restTemplate) {
+        return new S3Uploader(restTemplate);
     }
 }

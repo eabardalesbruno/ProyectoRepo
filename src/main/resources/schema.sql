@@ -220,8 +220,12 @@ CREATE TABLE IF NOT EXISTS currencytype (
 CREATE TABLE IF NOT EXISTS paymentbook (
     paymentbookid SERIAL PRIMARY KEY,
     bookingid INTEGER,
+    userclientid INTEGER NOT NULL,
+    refusereasonid INTEGER,
     paymentmethodid INTEGER,
     paymentstateid INTEGER,
+    paymenttypeid INTEGER,
+    paymentsubtypeid INTEGER,
     currencytypeid INTEGER,
     amount DECIMAL,
     description VARCHAR(255),
@@ -229,13 +233,17 @@ CREATE TABLE IF NOT EXISTS paymentbook (
     operationcode VARCHAR(50),
     note VARCHAR(255),
     totalcost DECIMAL,
-    imagevoucher VARCHAR(255),
+    imagevoucher VARCHAR(150000),
     totalpoints INTEGER,
     paymentcomplete BOOLEAN,
     CONSTRAINT fk_currencytype_pb FOREIGN KEY (currencytypeid) REFERENCES currencytype(currencytypeid),
     CONSTRAINT fk_booking_pb FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
     CONSTRAINT fk_paymentmethod_pb FOREIGN KEY (paymentmethodid) REFERENCES paymentmethod(paymentmethodid),
-    CONSTRAINT fk_paymentstate_pb FOREIGN KEY (paymentstateid) REFERENCES paymentstate(paymentstateid)
+    CONSTRAINT fk_paymentstate_pb FOREIGN KEY (paymentstateid) REFERENCES paymentstate(paymentstateid),
+    CONSTRAINT fk_paymenttype_pb FOREIGN KEY (paymenttypeid) REFERENCES paymenttype(paymenttypeid),
+    CONSTRAINT fk_paymentsubtype_pb FOREIGN KEY (paymentsubtypeid) REFERENCES paymentsubtype(paymentsubtypeid),
+    CONSTRAINT fk_userclient_pb FOREIGN KEY (userclientid) REFERENCES userclient(userclientid),
+    CONSTRAINT fk_refusereason_pb FOREIGN KEY (refusereasonid) REFERENCES refusereason(refusereasonid)
 );
 
 CREATE TABLE IF NOT EXISTS refusepayment (
@@ -252,13 +260,6 @@ CREATE TABLE IF NOT EXISTS comfortroomofferdetail (
     comforttypeid INTEGER,
     CONSTRAINT fk_roomoffer_cr FOREIGN KEY (roomofferid) REFERENCES roomoffer(roomofferid),
     CONSTRAINT fk_comfort_cr FOREIGN KEY (comforttypeid) REFERENCES comforttype(comforttypeid)
-);
-
-CREATE TABLE IF NOT EXISTS roomofferroom (
-    roomofferid INTEGER,
-    roomid INTEGER,
-    CONSTRAINT fk_roomoffer_ror FOREIGN KEY (roomofferid) REFERENCES roomoffer(roomofferid),
-    CONSTRAINT fk_room_ror FOREIGN KEY (roomid) REFERENCES room(roomid),
 );
 
 CREATE TABLE IF NOT EXISTS bedstype (
@@ -399,4 +400,90 @@ CREATE TABLE IF NOT EXISTS userclientversion (
 	createdat TIMESTAMP,
     CONSTRAINT fk_userclient_uv FOREIGN KEY (userclientid) REFERENCES userclient(userclientid),
     CONSTRAINT fk_termsversion_uv FOREIGN KEY (versionid) REFERENCES termsversion(versionid)
+);
+
+CREATE OR REPLACE VIEW ViewBedsType AS
+SELECT
+    b.bookingid AS bookingId,
+    bt.*
+FROM
+    booking b
+JOIN
+    roomoffer ro ON b.roomofferid = ro.roomofferid
+JOIN
+    room r ON ro.roomid = r.roomid
+JOIN
+	bedroom br ON r.roomid = br.roomid
+JOIN
+	bedstype bt ON br.bedtypeid = bt.bedtypeid;
+
+
+
+CREATE OR REPLACE VIEW viewcomfortdata AS
+SELECT
+    b.bookingid AS bookingId,
+    ct.*
+FROM
+    booking b
+JOIN
+    roomoffer ro ON b.roomofferid = ro.roomofferid
+JOIN
+    comfortroomofferdetail crod ON ro.roomofferid = crod.roomofferid
+JOIN
+    comforttype ct ON crod.comforttypeid = ct.comforttypeid;
+
+
+
+CREATE OR REPLACE VIEW ViewBookingReturn AS
+SELECT
+    b.bookingid AS bookingId,
+	b.userclientid,
+	b.bookingstateid,
+    r.image AS image,
+    bs.bookingstatename AS state,
+    rd.information AS description,
+    rd.bedrooms AS bedrooms,
+    rd.squaremeters AS squareMeters,
+    rd.oceanviewbalcony AS oceanViewBalcony,
+    rd.balconyoverlookingpool AS balconyOverlookingPool,
+    r.capacity AS capacity,
+    b.daybookinginit AS dayBookingInit,
+    b.daybookingend AS dayBookingEnd,
+    ro.cost AS price,
+    ro.inresortpoints AS pointsInResort,
+    ro.riberapoints AS pointsRibera
+FROM
+    booking b
+JOIN
+    roomoffer ro ON b.roomofferid = ro.roomofferid
+JOIN
+    room r ON ro.roomid = r.roomid
+JOIN
+    roomtype rt ON r.roomtypeid = rt.roomtypeid
+JOIN
+    roomdetail rd ON r.roomdetailid = rd.roomdetailid
+JOIN
+    bookingstate bs ON b.bookingstateid = bs.bookingstateid;
+
+CREATE TABLE IF NOT EXISTS paymenttype (
+    paymenttypeid SERIAL PRIMARY KEY,
+    paymenttypedesc VARCHAR(255),
+    countryid INTEGER,
+    paymentmethodid INTEGER,
+    CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid),
+    CONSTRAINT fk_paymentmethod_uc FOREIGN KEY (paymentmethodid) REFERENCES paymentmethod(paymentmethodid)
+);
+
+CREATE TABLE IF NOT EXISTS paymentsubtype (
+    paymentsubtypeid SERIAL PRIMARY KEY,
+    paymentsubtypedesc VARCHAR(255),
+    accountsoles VARCHAR(255),
+    accountdollars VARCHAR(255),
+    paymenttypeid INTEGER,
+    soles DOUBLE PRECISION,
+    dollars DOUBLE PRECISION,
+    percentage DOUBLE PRECISION,
+    statussoles INTEGER,
+    statusdollars INTEGER,
+    CONSTRAINT fk_paymenttype_uc FOREIGN KEY (paymenttypeid) REFERENCES paymenttype(paymenttypeid)
 );
