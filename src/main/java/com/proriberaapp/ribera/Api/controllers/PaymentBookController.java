@@ -3,10 +3,12 @@ package com.proriberaapp.ribera.Api.controllers;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.services.PaymentBookService;
 import com.proriberaapp.ribera.services.S3Uploader;
+import com.proriberaapp.ribera.services.admin.impl.S3ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
@@ -21,30 +23,30 @@ import java.io.IOException;
 public class PaymentBookController {
     private final PaymentBookService paymentBookService;
     private final S3Uploader s3Uploader;
+    private final S3ClientService s3ClientService;
 
     @Autowired
-    public PaymentBookController(PaymentBookService paymentBookService, S3Uploader s3Uploader) {
+    public PaymentBookController(PaymentBookService paymentBookService, S3Uploader s3Uploader, S3ClientService s3ClientService) {
         this.paymentBookService = paymentBookService;
         this.s3Uploader = s3Uploader;
+        this.s3ClientService = s3ClientService;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<ResponseEntity<PaymentBookEntity>> createPaymentBook(
-            @RequestParam(value = "file", required = false) MultipartFile file,
-            @RequestParam(value = "folderNumber", required = false, defaultValue = "13") Integer folderNumber,
+            @RequestPart("image") Mono<FilePart> image,
+            @RequestParam("folderNumber") Integer folderNumber,
             @ModelAttribute PaymentBookEntity paymentBook) {
 
-        try {
-            return s3Uploader.uploadToS3AndGetUrl(file, folderNumber)
-                    .flatMap(imageUrl -> {
-                        paymentBook.setImageVoucher(imageUrl);
-                        return paymentBookService.createPaymentBook(paymentBook)
-                                .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook));
-                    });
-        } catch (IOException e) {
-            e.printStackTrace();
-            return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-        }
+        return s3ClientService.upload(image, folderNumber,null)
+                .flatMap(imageUrl -> {
+
+                    paymentBook.setImageVoucher(imageUrl.data());
+
+                    return paymentBookService.createPaymentBook(paymentBook)
+                            .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook));
+                })
+                .onErrorResume(error -> Mono.error(new RuntimeException("Error al cargar la imagen al servidor S3."))) ;
     }
 
     private String processFileAndGetImageUrl(MultipartFile file, int folderNumber) throws IOException {

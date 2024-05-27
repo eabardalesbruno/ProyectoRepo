@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Api.controllers.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
@@ -7,14 +8,17 @@ import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.BookingService;
 import com.proriberaapp.ribera.services.PartnerPointsService;
-import com.proriberaapp.ribera.services.RoomService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -22,6 +26,9 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Map;
+
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -36,7 +43,7 @@ public class BookingServiceImpl implements BookingService {
 
     private final BedsTypeRepository bedsTypeRepository;
 
-    private final WebClient webClient;
+    //private final WebClient webClient;
     @Value("${app.upload.dir}")
     private String uploadDir;
     @Value("${app.upload.folderDir}")
@@ -49,15 +56,14 @@ public class BookingServiceImpl implements BookingService {
             BookingRepository bookingRepository,
             PartnerPointsService partnerPointsService,
             ComfortTypeRepository comfortTypeRepository,
-            BedsTypeRepository bedsTypeRepository,
-            WebClient.Builder webClientBuilder
+            BedsTypeRepository bedsTypeRepository//,
+            //WebClient.Builder webClientBuilder
     ) {
         this.bookingRepository = bookingRepository;
         this.partnerPointsService = partnerPointsService;
         this.comfortTypeRepository = comfortTypeRepository;
         this.bedsTypeRepository = bedsTypeRepository;
-        this.webClient = webClientBuilder.baseUrl(uploadDir)
-                .build();
+        //this.webClient = webClientBuilder.baseUrl(uploadDir).build();
     }
 
     @Override
@@ -132,34 +138,40 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Mono<S3UploadResponse> loadBoucher(Resource file, String token) throws IOException {
-        byte[] imageBytes = Files.readAllBytes(file.getFile().toPath());
+    public Mono<S3UploadResponse> loadBoucher(Mono<FilePart> file,Integer folderNumber, String token) {
+        return file.flatMap(f -> {
+            WebClient webClient = WebClient.create();
 
-        return webClient.post()
-                .uri("/s3")
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(BodyInserters.fromMultipartData(buildMultipartData(folderDir, imageBytes)))
-                .retrieve()
-                .bodyToMono(S3UploadResponse.class)
-                .map(S3UploadResponse::responseToEntity);
+            MultipartBodyBuilder bodyBuilder = new MultipartBodyBuilder();
+            bodyBuilder.part("file", f).contentType(MediaType.MULTIPART_FORM_DATA);
+            bodyBuilder.part("folderNumber", folderNumber);
+
+            return webClient.post()
+                    .uri(uploadDir)
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
+                    .retrieve()
+                    .bodyToMono(S3UploadResponse.class)
+                    .map(S3UploadResponse::responseToEntity);
+        });
     }
 
     @Override
     public Flux<ViewBookingReturn> findAllByUserClientIdAndBookingStateIdIn(Integer userClientId, Integer bookingStateId) {
         return bookingRepository.findAllViewBookingReturnByUserClientIdAndBookingStateId(userClientId, bookingStateId)
                 .flatMap(viewBookingReturn ->
-                     comfortTypeRepository.findAllByViewComfortType(viewBookingReturn.getBookingId())
-                            .collectList().map(comfortTypeEntity -> {
-                                viewBookingReturn.setListComfortType(comfortTypeEntity);
-                                return viewBookingReturn;
-                            })
+                        comfortTypeRepository.findAllByViewComfortType(viewBookingReturn.getBookingId())
+                                .collectList().map(comfortTypeEntity -> {
+                                    viewBookingReturn.setListComfortType(comfortTypeEntity);
+                                    return viewBookingReturn;
+                                })
                 )
                 .flatMap(viewBookingReturn ->
-                    bedsTypeRepository.findAllByViewBedsType(viewBookingReturn.getBookingId())
-                            .collectList().map(bedsTypeEntity -> {
-                                viewBookingReturn.setListBedsType(bedsTypeEntity);
-                                return viewBookingReturn;
-                            })
+                        bedsTypeRepository.findAllByViewBedsType(viewBookingReturn.getBookingId())
+                                .collectList().map(bedsTypeEntity -> {
+                                    viewBookingReturn.setListBedsType(bedsTypeEntity);
+                                    return viewBookingReturn;
+                                })
                 );
     }
 
