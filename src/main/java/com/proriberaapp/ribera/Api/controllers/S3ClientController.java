@@ -20,6 +20,7 @@ public class S3ClientController {
     )
     public Mono<S3UploadResponse> loadBoucher(
             @RequestPart("image") Mono<FilePart> image,
+
             @RequestHeader("folderNumber") Integer folderNumber,
             @RequestHeader("Authorization") String token
     ) {
