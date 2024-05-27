@@ -35,10 +35,9 @@ public class PaymentBookController {
             @ModelAttribute PaymentBookEntity paymentBook) {
 
         try {
-            if (file != null && !file.isEmpty()) {
-                String imageUrl = processFileAndGetImageUrl(file, folderNumber);
-                paymentBook.setImageVoucher(file); // Asignar directamente el archivo multipart
-            }
+            String imageUrl = processFileAndGetImageUrl(file, folderNumber);
+            paymentBook.setImageVoucher(imageUrl);
+
             return paymentBookService.createPaymentBook(paymentBook)
                     .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook));
         } catch (IOException e) {
@@ -48,9 +47,14 @@ public class PaymentBookController {
     }
 
     private String processFileAndGetImageUrl(MultipartFile file, int folderNumber) throws IOException {
+        // Verificar si el archivo es nulo o está vacío
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("El archivo recibido es nulo o está vacío.");
+        }
+
+        // Utilizar el S3Uploader para cargar el archivo y obtener la URL de la imagen
         return s3Uploader.uploadToS3(file, folderNumber);
     }
-
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<PaymentBookEntity>> updatePaymentBook(@PathVariable Integer id,
