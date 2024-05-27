@@ -32,18 +32,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         Timestamp timestamp = Timestamp.valueOf(now);
         paymentBook.setPaymentDate(timestamp);
 
-        return Mono.just(paymentBook)
-                .flatMap(book -> {
-                    File imageFile = new File(paymentBook.getImageVoucher());
-                    String imageUrl = null;
-                    try {
-                        imageUrl = s3Uploader.uploadToS3((MultipartFile) imageFile, 13);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    paymentBook.setImageVoucher(imageUrl);
-                    return paymentBookRepository.save(paymentBook);
-                });
+        return paymentBookRepository.save(paymentBook);
     }
 
     @Override

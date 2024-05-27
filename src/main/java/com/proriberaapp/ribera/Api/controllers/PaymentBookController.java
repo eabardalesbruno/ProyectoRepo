@@ -35,11 +35,12 @@ public class PaymentBookController {
             @ModelAttribute PaymentBookEntity paymentBook) {
 
         try {
-            String imageUrl = processFileAndGetImageUrl(file, folderNumber);
-            paymentBook.setImageVoucher(imageUrl);
-
-            return paymentBookService.createPaymentBook(paymentBook)
-                    .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook));
+            return s3Uploader.uploadToS3AndGetUrl(file, folderNumber)
+                    .flatMap(imageUrl -> {
+                        paymentBook.setImageVoucher(imageUrl);
+                        return paymentBookService.createPaymentBook(paymentBook)
+                                .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook));
+                    });
         } catch (IOException e) {
             e.printStackTrace();
             return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
