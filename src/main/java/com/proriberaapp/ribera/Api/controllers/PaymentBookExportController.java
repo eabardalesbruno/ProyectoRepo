@@ -58,7 +58,7 @@ public class PaymentBookExportController {
                 row.createCell(10).setCellValue(paymentBook.getOperationCode());
                 row.createCell(11).setCellValue(paymentBook.getNote());
                 row.createCell(12).setCellValue(paymentBook.getTotalCost().doubleValue());
-                row.createCell(13).setCellValue(paymentBook.getImageVoucher());
+                //row.createCell(13).setCellValue(paymentBook.getImageVoucher());
                 row.createCell(14).setCellValue(paymentBook.getTotalPoints());
             }
 

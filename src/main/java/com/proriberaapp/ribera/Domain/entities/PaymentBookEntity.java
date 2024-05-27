@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -62,7 +63,7 @@ public class PaymentBookEntity {
     private BigDecimal totalCost;
 
     @Column("imagevoucher")
-    private String imageVoucher;
+    private MultipartFile imageVoucher;
 
     @Column("totalpoints")
     private Integer totalPoints;

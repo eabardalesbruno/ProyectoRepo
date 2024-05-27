@@ -34,15 +34,16 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
         return Mono.just(paymentBook)
                 .flatMap(book -> {
-                    File imageFile = new File(paymentBook.getImageVoucher());
-                    String imageUrl = null;
                     try {
-                        imageUrl = s3Uploader.uploadToS3((MultipartFile) imageFile, 13);
+                        MultipartFile file = paymentBook.getImageVoucher(); // Obtener el archivo directamente
+                        if (file != null && !file.isEmpty()) {
+                            String imageUrl = s3Uploader.uploadToS3(file, 13); // Subir el archivo
+                            paymentBook.setImageVoucher(file); // Establecer el archivo en el objeto PaymentBookEntity
+                        }
+                        return paymentBookRepository.save(paymentBook);
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        return Mono.error(e);
                     }
-                    paymentBook.setImageVoucher(imageUrl);
-                    return paymentBookRepository.save(paymentBook);
                 });
     }
 
