@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/v1/payment-book")
@@ -41,6 +42,11 @@ public class PaymentBookController {
     public Mono<ResponseEntity<PaymentBookEntity>> createPaymentBookPay(@RequestBody PaymentBookEntity paymentBook) {
         return paymentBookService.createPaymentBookPay(paymentBook)
                 .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook));
+    }
+
+    @GetMapping("/costfinal/{bookingId}")
+    public Mono<BigDecimal> getCostFinalByBookingId(@PathVariable Integer bookingId) {
+        return paymentBookService.getCostFinalByBookingId(bookingId);
     }
 
     @PutMapping("/{id}")

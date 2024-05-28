@@ -1,6 +1,8 @@
 package com.proriberaapp.ribera.services.impl;
 
+import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
 import com.proriberaapp.ribera.services.PaymentBookService;
 import com.proriberaapp.ribera.services.S3Uploader;
@@ -12,6 +14,7 @@ import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -19,12 +22,15 @@ import java.time.ZoneId;
 @Service
 public class PaymentBookServiceImpl implements PaymentBookService {
     private final PaymentBookRepository paymentBookRepository;
+    private final BookingRepository bookingRepository;
+
     private final S3Uploader s3Uploader;
 
     @Autowired
-    public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository, S3Uploader s3Uploader) {
+    public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository, S3Uploader s3Uploader,BookingRepository bookingRepository) {
         this.paymentBookRepository = paymentBookRepository;
         this.s3Uploader = s3Uploader;
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
@@ -42,6 +48,12 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         Timestamp timestamp = Timestamp.valueOf(localDateTime);
         paymentBook.setPaymentDate(timestamp);
         return paymentBookRepository.save(paymentBook);
+    }
+
+    @Override
+    public Mono<BigDecimal> getCostFinalByBookingId(Integer bookingId) {
+        return bookingRepository.findById(bookingId)
+                .map(BookingEntity::getCostFinal);
     }
 
     @Override
