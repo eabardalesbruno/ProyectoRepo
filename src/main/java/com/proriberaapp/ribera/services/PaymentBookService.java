@@ -5,7 +5,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.File;
-import java.math.BigDecimal;
 
 public interface PaymentBookService {
 
@@ -22,7 +21,4 @@ public interface PaymentBookService {
     Flux<PaymentBookEntity> getPaymentBooksByUserClientId(Integer userClientId);
 
     Mono<Void> deletePaymentBook(Integer id);
-
-    Mono<BigDecimal> getCostFinalByBookingId(Integer bookingId);
-
 }

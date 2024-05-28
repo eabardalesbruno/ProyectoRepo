@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -28,5 +29,6 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
 
     @Query("SELECT * FROM ViewBookingReturn WHERE userClientId = :userClientId")
     Flux<ViewBookingReturn> findAllViewBookingReturnByUserClientId(@Param("userClientId") Integer userClientId);
+    Mono<BigDecimal> findByBookingId(Integer bookingId);
 
 }

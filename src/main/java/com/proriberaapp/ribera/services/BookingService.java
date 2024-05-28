@@ -10,6 +10,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 public interface BookingService extends BaseService<BookingEntity,BookingEntity> {
     Mono<S3UploadResponse> loadBoucher(Mono<FilePart> file, Integer folderNumber, String token);
@@ -17,4 +18,7 @@ public interface BookingService extends BaseService<BookingEntity,BookingEntity>
     Flux<ViewBookingReturn> findAllByUserClientIdAndBookingIn(Integer userClientId);
 
     Mono<BookingEntity> findByIdAndIdUserAdmin(Integer idUserAdmin, Integer bookingId);
+    Mono<BigDecimal> getCostFinalByBookingId(Integer bookingId);
+
+
 }

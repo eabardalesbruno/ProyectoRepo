@@ -25,6 +25,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -94,6 +95,18 @@ public class BookingServiceImpl implements BookingService {
                                 }
                         ).toList()
                 ));
+    }
+
+    @Override
+    public Mono<BigDecimal> getCostFinalByBookingId(Integer bookingId) {
+        return bookingRepository.findById(bookingId)
+                .flatMap(bookingEntity -> {
+                    if (bookingEntity != null) {
+                        return Mono.just(bookingEntity.getCostFinal());
+                    } else {
+                        return Mono.error(new RuntimeException("BookingEntity not found for bookingId: " + bookingId));
+                    }
+                });
     }
 
     @Override

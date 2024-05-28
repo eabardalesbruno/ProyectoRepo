@@ -6,9 +6,12 @@ import com.proriberaapp.ribera.services.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/v1/booking")
@@ -40,5 +43,12 @@ public class BookingController {
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jtp.getIdFromToken(token);
         return bookingService.findByIdAndIdUserAdmin(idUserAdmin, bookingId);
+    }
+
+    @GetMapping("/{bookingId}/costfinal")
+    public Mono<ResponseEntity<BigDecimal>> getCostFinalByBookingId(@PathVariable Integer bookingId) {
+        return bookingService.getCostFinalByBookingId(bookingId)
+                .map(costFinal -> ResponseEntity.ok().body(costFinal))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 }
