@@ -219,9 +219,9 @@ CREATE TABLE IF NOT EXISTS currencytype (
 
 CREATE TABLE IF NOT EXISTS paymentbook (
     paymentbookid SERIAL PRIMARY KEY,
-    bookingid INTEGER,
+    bookingid INTEGER NOT NULL,
     userclientid INTEGER NOT NULL,
-    refusereasonid INTEGER,
+    refusereasonid INTEGER NOT NULL,
     paymentmethodid INTEGER,
     paymentstateid INTEGER,
     paymenttypeid INTEGER,

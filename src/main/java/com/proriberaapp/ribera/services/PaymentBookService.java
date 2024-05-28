@@ -7,6 +7,9 @@ import reactor.core.publisher.Mono;
 import java.io.File;
 
 public interface PaymentBookService {
+
+    Mono<PaymentBookEntity> createPaymentBookPay(PaymentBookEntity paymentBook);
+
     Mono<PaymentBookEntity> createPaymentBook(PaymentBookEntity paymentBook);
 
     Mono<PaymentBookEntity> updatePaymentBook(Integer id, PaymentBookEntity paymentBook);

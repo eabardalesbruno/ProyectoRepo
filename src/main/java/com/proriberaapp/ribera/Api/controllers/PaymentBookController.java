@@ -37,6 +37,12 @@ public class PaymentBookController {
                 .onErrorResume(error -> Mono.error(new RuntimeException("Error al cargar la imagen al servidor S3."))) ;
     }
 
+    @PostMapping("/booking-pay")
+    public Mono<ResponseEntity<PaymentBookEntity>> createPaymentBookPay(@RequestBody PaymentBookEntity paymentBook) {
+        return paymentBookService.createPaymentBookPay(paymentBook)
+                .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook));
+    }
+
     @PutMapping("/{id}")
     public Mono<ResponseEntity<PaymentBookEntity>> updatePaymentBook(@PathVariable Integer id,
                                                                      @RequestBody PaymentBookEntity paymentBook) {

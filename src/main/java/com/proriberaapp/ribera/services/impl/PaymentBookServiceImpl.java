@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Service
 public class PaymentBookServiceImpl implements PaymentBookService {
@@ -32,6 +33,14 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         Timestamp timestamp = Timestamp.valueOf(now);
         paymentBook.setPaymentDate(timestamp);
 
+        return paymentBookRepository.save(paymentBook);
+    }
+
+    @Override
+    public Mono<PaymentBookEntity> createPaymentBookPay(PaymentBookEntity paymentBook) {
+        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
+        Timestamp timestamp = Timestamp.valueOf(localDateTime);
+        paymentBook.setPaymentDate(timestamp);
         return paymentBookRepository.save(paymentBook);
     }
 
