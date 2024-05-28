@@ -13,8 +13,10 @@ import reactor.core.publisher.Mono;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.UUID;
 
 @Service
 public class PaymentBookServiceImpl implements PaymentBookService {
@@ -77,6 +79,29 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     @Override
     public Flux<PaymentBookEntity> getAllPaymentBooks() {
         return paymentBookRepository.findAll();
+    }
+
+    @Override
+    public Mono<String> generateAndSavePaymentToken(Integer userClientId, Integer bookingId, String email) {
+        // Generar un token único
+        String token = UUID.randomUUID().toString();
+
+        // Calcular la fecha de expiración del token (24 horas después de ahora)
+        LocalDateTime expirationTime = LocalDateTime.now().plus(Duration.ofHours(24));
+
+        // Crear una nueva entidad de PaymentBook con el token y la información proporcionada
+        PaymentBookEntity paymentBookEntity = PaymentBookEntity.builder()
+                .userClientId(userClientId)
+                .bookingId(bookingId)
+                .email(email)
+                .paymenttoken(token)
+                .tokenexpiration(Timestamp.valueOf(expirationTime))
+                .pendingpay(1) // Marcamos como pendiente de pago
+                .build();
+
+        // Guardar la entidad en la base de datos
+        return paymentBookRepository.save(paymentBookEntity)
+                .map(savedEntity -> savedEntity.getPaymenttoken()); // Devolver el token generado
     }
 
     @Override

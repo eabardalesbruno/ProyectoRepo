@@ -21,4 +21,7 @@ public interface PaymentBookService {
     Flux<PaymentBookEntity> getPaymentBooksByUserClientId(Integer userClientId);
 
     Mono<Void> deletePaymentBook(Integer id);
+
+    Mono<String> generateAndSavePaymentToken(Integer userClientId, Integer bookingId, String email);
+
 }
