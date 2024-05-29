@@ -24,7 +24,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
     @Override
     public Mono<String> generateAndSaveToken(Integer bookingId, Integer paymentBookId) {
         String token = UUID.randomUUID().toString();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
         return paymentTokenRepository.generateAndSaveToken(token, bookingId, paymentBookId)
                 .thenReturn(token);
     }
