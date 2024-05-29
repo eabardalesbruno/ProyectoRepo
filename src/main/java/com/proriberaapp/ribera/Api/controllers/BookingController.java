@@ -51,4 +51,11 @@ public class BookingController {
                 .map(costFinal -> ResponseEntity.ok().body(costFinal))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/{bookingId}")
+    public Mono<ResponseEntity<BookingEntity>> findBookingById(@PathVariable Integer bookingId) {
+        return bookingService.findByBookingId(bookingId)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
 }

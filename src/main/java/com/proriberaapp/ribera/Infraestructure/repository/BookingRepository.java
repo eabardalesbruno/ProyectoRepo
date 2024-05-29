@@ -29,6 +29,4 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
 
     @Query("SELECT * FROM ViewBookingReturn WHERE userClientId = :userClientId")
     Flux<ViewBookingReturn> findAllViewBookingReturnByUserClientId(@Param("userClientId") Integer userClientId);
-    Mono<BigDecimal> findByBookingId(Integer bookingId);
-
 }

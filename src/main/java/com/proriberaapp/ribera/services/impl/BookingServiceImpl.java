@@ -108,7 +108,10 @@ public class BookingServiceImpl implements BookingService {
                     }
                 });
     }
-
+    @Override
+    public Mono<BookingEntity> findByBookingId(Integer bookingId) {
+        return bookingRepository.findById(bookingId);
+    }
     @Override
     public Mono<BookingEntity> findById(Integer id) {
         return bookingRepository.findById(id);

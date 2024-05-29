@@ -42,6 +42,7 @@ public class SecurityConfig {
                                 "/api/v1/paymenttypes/**",
                                 "/api/v1/paymentsubtypes/**",
                                 "/api/v1/currencytype/**",
+                                "/api/v1/booking/**",
                                 "/swagger-doc/**"
                         ).permitAll()
 

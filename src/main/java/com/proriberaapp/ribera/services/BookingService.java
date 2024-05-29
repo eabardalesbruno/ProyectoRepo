@@ -20,5 +20,6 @@ public interface BookingService extends BaseService<BookingEntity,BookingEntity>
     Mono<BookingEntity> findByIdAndIdUserAdmin(Integer idUserAdmin, Integer bookingId);
     Mono<BigDecimal> getCostFinalByBookingId(Integer bookingId);
 
+    Mono<BookingEntity> findByBookingId(Integer bookingId);
 
 }

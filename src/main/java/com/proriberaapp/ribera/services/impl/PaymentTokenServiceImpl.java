@@ -34,4 +34,9 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
     public Mono<BookingEntity> findBookingByPaymentToken(String paymentToken) {
         return paymentTokenRepository.findBookingByPaymentToken(paymentToken);
     }
+
+    @Override
+    public Mono<Integer> findBookingIdByPaymentToken(String paymentToken) {
+        return paymentTokenRepository.findBookingIdByPaymentToken(paymentToken);
+    }
 }

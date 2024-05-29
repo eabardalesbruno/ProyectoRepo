@@ -32,4 +32,9 @@ public class PaymentTokenController {
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/{paymentToken}/bookingid")
+    public Mono<Integer> getBookingIdByPaymentToken(@PathVariable("paymentToken") String paymentToken) {
+        return paymentTokenService.findBookingIdByPaymentToken(paymentToken);
+    }
 }
