@@ -237,9 +237,6 @@ CREATE TABLE IF NOT EXISTS paymentbook (
     totalpoints INTEGER,
     paymentcomplete BOOLEAN,
     pendingpay INTEGER DEFAULT 0,
-    email VARCHAR(255),
-    paymenttoken VARCHAR(255),
-    tokenexpiration TIMESTAMP,
     CONSTRAINT fk_currencytype_pb FOREIGN KEY (currencytypeid) REFERENCES currencytype(currencytypeid),
     CONSTRAINT fk_booking_pb FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
     CONSTRAINT fk_paymentmethod_pb FOREIGN KEY (paymentmethodid) REFERENCES paymentmethod(paymentmethodid),
@@ -248,6 +245,17 @@ CREATE TABLE IF NOT EXISTS paymentbook (
     CONSTRAINT fk_paymentsubtype_pb FOREIGN KEY (paymentsubtypeid) REFERENCES paymentsubtype(paymentsubtypeid),
     CONSTRAINT fk_userclient_pb FOREIGN KEY (userclientid) REFERENCES userclient(userclientid),
     CONSTRAINT fk_refusereason_pb FOREIGN KEY (refusereasonid) REFERENCES refusereason(refusereasonid)
+);
+
+CREATE TABLE IF NOT EXISTS paymenttoken (
+    paymenttokenid SERIAL PRIMARY KEY,
+    paymenttoken VARCHAR(255),
+	startdate TIMESTAMP,
+	enddate TIMESTAMP,
+	bookingid INTEGER NOT NULL,
+	paymentbookid INTEGER NOT NULL,
+    CONSTRAINT fk_booking_pb FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
+	CONSTRAINT fk_paymentbook_pb FOREIGN KEY (paymentbookid) REFERENCES paymentbook(paymentbookid)
 );
 
 CREATE TABLE IF NOT EXISTS refusepayment (

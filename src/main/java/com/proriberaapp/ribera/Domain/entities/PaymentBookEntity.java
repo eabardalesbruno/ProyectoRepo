@@ -72,13 +72,4 @@ public class PaymentBookEntity {
 
     @Column("pendingpay")
     private Integer pendingpay;
-
-    @Column("paymenttoken")
-    private String paymenttoken;
-
-    @Column("tokenexpiration")
-    private Timestamp tokenexpiration;
-
-    @Column("email")
-    private String email;
 }

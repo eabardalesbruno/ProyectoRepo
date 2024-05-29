@@ -76,16 +76,6 @@ public class PaymentBookController {
         return paymentBookService.deletePaymentBook(id);
     }
 
-    @PostMapping("/{userClientId}/{bookingId}/{email}/generate-token")
-    public Mono<ResponseEntity<String>> generateAndSavePaymentToken(
-            @PathVariable Integer userClientId,
-            @PathVariable Integer bookingId,
-            @PathVariable String email) {
-        return paymentBookService.generateAndSavePaymentToken(userClientId, bookingId, email)
-                .map(token -> ResponseEntity.status(HttpStatus.CREATED).body(token))
-                .defaultIfEmpty(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-    }
-
     private String generateUniquePaymentToken() {
         // Implementa la lógica para generar un token único (por ejemplo, utilizando JWT)
         return UUID.randomUUID().toString();

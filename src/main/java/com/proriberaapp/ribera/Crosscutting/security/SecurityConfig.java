@@ -38,6 +38,7 @@ public class SecurityConfig {
                                 "/api/v1/payment-book/**",
                                 "/api/v1/payment-book/booking-pay/**",
                                 "/api/v1/booking-pay/**",
+                                "/api/v1/payment-token/**",
                                 "/api/v1/paymenttypes/**",
                                 "/api/v1/paymentsubtypes/**",
                                 "/api/v1/currencytype/**",
