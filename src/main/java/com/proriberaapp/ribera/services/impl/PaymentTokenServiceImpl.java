@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.impl;
 
+import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentTokenEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentTokenRepository;
 import com.proriberaapp.ribera.services.PaymentTokenService;
@@ -27,5 +28,10 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
         LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
         return paymentTokenRepository.generateAndSaveToken(token, bookingId, paymentBookId)
                 .thenReturn(token);
+    }
+
+    @Override
+    public Mono<BookingEntity> findBookingByPaymentToken(String paymentToken) {
+        return paymentTokenRepository.findBookingByPaymentToken(paymentToken);
     }
 }

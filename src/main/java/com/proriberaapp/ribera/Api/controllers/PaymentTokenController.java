@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers;
 
+import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.services.PaymentTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,5 +24,12 @@ public class PaymentTokenController {
             @PathVariable Integer paymentBookId) {
         return paymentTokenService.generateAndSaveToken(bookingId, paymentBookId)
                 .map(token -> ResponseEntity.status(HttpStatus.CREATED).body(token));
+    }
+
+    @GetMapping("/{paymentToken}")
+    public Mono<ResponseEntity<BookingEntity>> getBookingByPaymentToken(@PathVariable String paymentToken) {
+        return paymentTokenService.findBookingByPaymentToken(paymentToken)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 }
