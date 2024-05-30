@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers;
 
+import com.proriberaapp.ribera.Api.controllers.dto.PaymentTokenResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.services.PaymentTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +20,11 @@ public class PaymentTokenController {
     }
 
     @PostMapping("/{bookingId}/{paymentBookId}")
-    public Mono<ResponseEntity<String>> generateAndSaveToken(
+    public Mono<ResponseEntity<PaymentTokenResponse>> generateAndSaveToken(
             @PathVariable Integer bookingId,
             @PathVariable Integer paymentBookId) {
         return paymentTokenService.generateAndSaveToken(bookingId, paymentBookId)
-                .map(token -> ResponseEntity.status(HttpStatus.CREATED).body(token));
+                .map(token -> ResponseEntity.status(HttpStatus.CREATED).body(new PaymentTokenResponse(token)));
     }
 
     @GetMapping("/{paymentToken}")
