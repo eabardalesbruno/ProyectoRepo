@@ -18,7 +18,6 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1/users")
 @Slf4j
 public class UserController {
-
     @Autowired
     private UserClientService userClientService;
     @Autowired
