@@ -2,13 +2,11 @@ package com.proriberaapp.ribera.services.impl;
 
 import com.proriberaapp.ribera.services.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmailServiceImpl implements EmailService {
-
+/*
     @Autowired
     private JavaMailSender mailSender;
 
@@ -21,4 +19,6 @@ public class EmailServiceImpl implements EmailService {
         message.setText(text);
         mailSender.send(message);
     }
+
+ */
 }

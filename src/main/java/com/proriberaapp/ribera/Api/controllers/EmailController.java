@@ -18,10 +18,12 @@ public class EmailController {
 
     @Autowired
     private EmailService emailService;
-
+/*
     @PostMapping("/send")
     public String sendEmail(@RequestBody EmailRequest emailRequest) {
         emailService.sendEmail(emailRequest.getTo(), emailRequest.getSubject(), emailRequest.getText());
         return "Email sent successfully";
     }
+
+ */
 }
