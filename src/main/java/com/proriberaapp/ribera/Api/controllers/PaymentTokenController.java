@@ -18,7 +18,7 @@ public class PaymentTokenController {
     public PaymentTokenController(PaymentTokenService paymentTokenService) {
         this.paymentTokenService = paymentTokenService;
     }
-
+//jose
     @PostMapping("/{bookingId}/{paymentBookId}")
     public Mono<ResponseEntity<PaymentTokenResponse>> generateAndSaveToken(
             @PathVariable Integer bookingId,
