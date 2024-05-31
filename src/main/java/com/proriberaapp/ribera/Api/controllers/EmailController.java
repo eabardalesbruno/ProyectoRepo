@@ -28,7 +28,7 @@ public class EmailController {
     @PostMapping("/send")
     public Mono<ResponseEntity<String>> sendEmail(@RequestBody EmailRequest emailRequest) {
         return emailService.sendEmail(emailRequest.getTo(), emailRequest.getSubject(), emailRequest.getBody())
-                .thenReturn(ResponseEntity.ok("Email sent successfully"))
-                .onErrorReturn(ResponseEntity.status(500).body("Failed to send email"));
+                .thenReturn(ResponseEntity.ok("Email enviado"))
+                .onErrorReturn(ResponseEntity.status(500).body("Enviado"));
     }
 }
