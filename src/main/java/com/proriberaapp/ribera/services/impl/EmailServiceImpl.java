@@ -29,6 +29,7 @@ public class EmailServiceImpl implements EmailService {
         return Mono.fromRunnable(() -> {
             try {
                 SimpleMailMessage message = new SimpleMailMessage();
+                message.setFrom("inclubnotification@inclub.world");
                 message.setTo(to);
                 message.setSubject(subject);
                 message.setText(body);
