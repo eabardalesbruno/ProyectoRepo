@@ -289,6 +289,15 @@ CREATE TABLE IF NOT EXISTS bedroom (
     CONSTRAINT fk_bedtype_bed FOREIGN KEY (bedtypeid) REFERENCES bedstype(bedtypeid)
 );
 
+CREATE TABLE emaillog (
+    emaillogid SERIAL PRIMARY KEY,
+    recipient VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    body TEXT NOT NULL,
+    sentdate TIMESTAMP NOT NULL,
+    status VARCHAR(50) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS solicitude (
     solicitudeid SERIAL PRIMARY KEY,
     email VARCHAR(255),

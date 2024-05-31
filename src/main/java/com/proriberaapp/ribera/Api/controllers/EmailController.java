@@ -3,6 +3,8 @@ package com.proriberaapp.ribera.Api.controllers;
 import com.proriberaapp.ribera.Api.controllers.dto.EmailRequest;
 import com.proriberaapp.ribera.services.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,14 +18,17 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/email")
 public class EmailController {
 
+    private final EmailService emailService;
+
     @Autowired
-    private EmailService emailService;
-/*
-    @PostMapping("/send")
-    public String sendEmail(@RequestBody EmailRequest emailRequest) {
-        emailService.sendEmail(emailRequest.getTo(), emailRequest.getSubject(), emailRequest.getText());
-        return "Email sent successfully";
+    public EmailController(EmailService emailService) {
+        this.emailService = emailService;
     }
 
- */
+    @PostMapping("/send")
+    public Mono<ResponseEntity<String>> sendEmail(@RequestBody EmailRequest emailRequest) {
+        return emailService.sendEmail(emailRequest.getTo(), emailRequest.getSubject(), emailRequest.getBody())
+                .thenReturn(ResponseEntity.ok("Email sent successfully"))
+                .onErrorReturn(ResponseEntity.status(500).body("Failed to send email"));
+    }
 }

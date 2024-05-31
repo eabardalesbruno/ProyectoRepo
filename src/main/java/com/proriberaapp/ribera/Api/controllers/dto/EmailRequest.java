@@ -3,9 +3,10 @@ package com.proriberaapp.ribera.Api.controllers.dto;
 public class EmailRequest {
     private String to;
     private String subject;
-    private String text;
+    private String body;
 
     // Getters and setters
+
     public String getTo() {
         return to;
     }
@@ -22,11 +23,11 @@ public class EmailRequest {
         this.subject = subject;
     }
 
-    public String getText() {
-        return text;
+    public String getBody() {
+        return body;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setBody(String body) {
+        this.body = body;
     }
 }
