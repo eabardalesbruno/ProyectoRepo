@@ -42,6 +42,7 @@ public class SecurityConfig {
                                 "/api/v1/paymenttypes/**",
                                 "/api/v1/paymentsubtypes/**",
                                 "/api/v1/currencytype/**",
+                                "/api/v1/token-email/**",
                                 "/api/v1/booking/**",
                                 "/api/v1/email/**",
                                 "/swagger-doc/**"
