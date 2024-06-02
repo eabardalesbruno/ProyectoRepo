@@ -39,4 +39,9 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
     public Mono<Integer> findBookingIdByPaymentToken(String paymentToken) {
         return paymentTokenRepository.findBookingIdByPaymentToken(paymentToken);
     }
+    @Override
+    public Mono<Boolean> isPaymentTokenActive(String paymentToken) {
+        return paymentTokenRepository.findPaymentTokenEndDate(paymentToken)
+                .map(endDate -> LocalDateTime.now().isBefore(endDate));
+    }
 }

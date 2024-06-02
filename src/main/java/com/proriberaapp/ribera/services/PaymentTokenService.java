@@ -9,5 +9,6 @@ public interface PaymentTokenService {
     Mono<String> generateAndSaveToken(Integer bookingId, Integer paymentBookId);
     Mono<BookingEntity> findBookingByPaymentToken(String paymentToken);
     Mono<Integer> findBookingIdByPaymentToken(String paymentToken);
+    Mono<Boolean> isPaymentTokenActive(String paymentToken);
 
 }

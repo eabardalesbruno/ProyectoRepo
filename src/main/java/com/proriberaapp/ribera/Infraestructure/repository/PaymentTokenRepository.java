@@ -7,6 +7,8 @@ import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 @Repository
 public interface PaymentTokenRepository extends R2dbcRepository<PaymentTokenEntity, Integer> {
 
@@ -17,4 +19,7 @@ public interface PaymentTokenRepository extends R2dbcRepository<PaymentTokenEnti
     Mono<BookingEntity> findBookingByPaymentToken(String paymentToken);
     @Query("SELECT bookingid FROM paymenttoken WHERE paymenttoken = :paymentToken")
     Mono<Integer> findBookingIdByPaymentToken(String paymentToken);
+
+    @Query("SELECT enddate FROM paymenttoken WHERE paymenttoken = :paymentToken")
+    Mono<LocalDateTime> findPaymentTokenEndDate(String paymentToken);
 }

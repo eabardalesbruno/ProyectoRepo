@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/token-email")
 public class TokenEmailController {
@@ -25,7 +28,7 @@ public class TokenEmailController {
     }
 
     @PostMapping("/send")
-    public Mono<ResponseEntity<String>> generateTokenAndSendEmail(@RequestBody TokenEmailRequest request) {
+    public Mono<ResponseEntity<Map<String, String>>> generateTokenAndSendEmail(@RequestBody TokenEmailRequest request) {
         return paymentTokenService.generateAndSaveToken(request.getBookingId(), request.getUserClientId())
                 .flatMap(token -> {
                     String subject = "Pagos";
@@ -56,9 +59,21 @@ public class TokenEmailController {
                     body += "</div></center>";
                     body += "</body></html>";
 
-                    return emailService.sendEmail(request.getEmail(), subject, body);
+                    return emailService.sendEmail(request.getEmail(), subject, body)
+                            .thenReturn(token);
                 })
-                .thenReturn(ResponseEntity.ok("Enviado"))
-                .onErrorReturn(ResponseEntity.status(500).body("Enviado"));
+                .map(token -> {
+                    Map<String, String> response = new HashMap<>();
+                    response.put("token", token);
+                    return ResponseEntity.ok(response);
+                })
+                .onErrorResume(e -> {
+                    Map<String, String> response = new HashMap<>();
+                    return paymentTokenService.generateAndSaveToken(request.getBookingId(), request.getUserClientId())
+                            .map(token -> {
+                                response.put("token", token);
+                                return ResponseEntity.status(200).body(response);
+                            });
+                });
     }
 }

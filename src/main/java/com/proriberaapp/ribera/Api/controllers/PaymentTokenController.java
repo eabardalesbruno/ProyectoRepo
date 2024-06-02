@@ -38,4 +38,11 @@ public class PaymentTokenController {
     public Mono<Integer> getBookingIdByPaymentToken(@PathVariable("paymentToken") String paymentToken) {
         return paymentTokenService.findBookingIdByPaymentToken(paymentToken);
     }
+
+    @GetMapping("/{paymentToken}/active")
+    public Mono<ResponseEntity<Boolean>> isPaymentTokenActive(@PathVariable String paymentToken) {
+        return paymentTokenService.isPaymentTokenActive(paymentToken)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).body(false));
+    }
 }
