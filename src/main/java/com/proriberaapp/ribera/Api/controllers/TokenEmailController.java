@@ -60,18 +60,23 @@ public class TokenEmailController {
                     body += "</body></html>";
 
                     return emailService.sendEmail(request.getEmail(), subject, body)
-                            .thenReturn(token);
+                            .thenReturn(linkPayment);
                 })
-                .map(token -> {
+                .map(linkPayment -> {
                     Map<String, String> response = new HashMap<>();
-                    response.put("token", token);
+                    response.put("token", linkPayment.split("token=")[1]);
+                    response.put("linkPayment", linkPayment);
+                    response.put("mensaje", "Enviado");
                     return ResponseEntity.ok(response);
                 })
                 .onErrorResume(e -> {
                     Map<String, String> response = new HashMap<>();
                     return paymentTokenService.generateAndSaveToken(request.getBookingId(), request.getUserClientId())
                             .map(token -> {
+                                String linkPayment = "https://ribera-dev.inclub.world/payment-validation?token=" + token;
                                 response.put("token", token);
+                                response.put("linkPayment", linkPayment);
+                                response.put("message", "Enviado");
                                 return ResponseEntity.status(200).body(response);
                             });
                 });

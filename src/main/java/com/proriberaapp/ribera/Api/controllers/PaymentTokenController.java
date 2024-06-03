@@ -59,23 +59,8 @@ public class PaymentTokenController {
 
     @GetMapping("/{paymentToken}/paymentbook")
     public Mono<ResponseEntity<Map<String, Object>>> getPaymentBookIfTokenActive(@PathVariable String paymentToken) {
-        return paymentTokenService.isPaymentTokenActive(paymentToken)
-                .flatMap(isActive -> {
-                    if (isActive) {
-                        return paymentTokenService.findBookingIdByPaymentToken(paymentToken)
-                                .flatMap(paymentBookService::findById)
-                                .map(paymentBook -> {
-                                    Map<String, Object> response = new HashMap<>();
-                                    response.put("active", true);
-                                    response.put("paymentBook", paymentBook);
-                                    return ResponseEntity.ok(response);
-                                });
-                    } else {
-                        Map<String, Object> response = new HashMap<>();
-                        response.put("active", false);
-                        response.put("paymentBook", null);
-                        return Mono.just(ResponseEntity.ok(response));
-                    }
-                });
+        return paymentTokenService.getPaymentBookIfTokenActiveWithDetails(paymentToken)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
     }
 }

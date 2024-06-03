@@ -14,6 +14,8 @@ import reactor.core.publisher.Mono;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -72,5 +74,36 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
     @Override
     public Mono<PaymentBookEntity> findById(Integer id) {
         return paymentBookRepository.findById(id);
+    }
+
+    @Override
+    public Mono<Map<String, Object>> getPaymentBookIfTokenActiveWithDetails(String paymentToken) {
+        return paymentTokenRepository.findByPaymentToken(paymentToken)
+                .flatMap(paymentTokenEntity -> {
+                    Timestamp now = Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Lima")));
+                    String linkPayment = "https://ribera-dev.inclub.world/payment-validation?token=" + paymentToken;
+                    if (now.before(paymentTokenEntity.getEndDate())) {
+                        return paymentBookService.getPaymentBookById(paymentTokenEntity.getPaymentBookId())
+                                .map(paymentBook -> {
+                                    Map<String, Object> response = new HashMap<>();
+                                    response.put("active", true);
+                                    response.put("paymentBook", paymentBook);
+                                    response.put("token", paymentToken);
+                                    response.put("linkPayment", linkPayment);
+                                    response.put("status", 1);
+                                    response.put("message", "Token validado");
+                                    return response;
+                                });
+                    } else {
+                        Map<String, Object> response = new HashMap<>();
+                        response.put("active", false);
+                        response.put("paymentBook", null);
+                        response.put("token", paymentToken);
+                        response.put("linkPayment", linkPayment);
+                        response.put("status", 0);
+                        response.put("message", "Token vencido");
+                        return Mono.just(response);
+                    }
+                });
     }
 }
