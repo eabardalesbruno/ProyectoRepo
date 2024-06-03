@@ -2,6 +2,8 @@ package com.proriberaapp.ribera.Api.controllers;
 
 import com.proriberaapp.ribera.Api.controllers.dto.PaymentTokenResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
+import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
+import com.proriberaapp.ribera.services.PaymentBookService;
 import com.proriberaapp.ribera.services.PaymentTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,10 +18,12 @@ import java.util.Map;
 @RequestMapping("/api/v1/payment-token")
 public class PaymentTokenController {
     private final PaymentTokenService paymentTokenService;
+    private final PaymentBookService paymentBookService;
 
     @Autowired
-    public PaymentTokenController(PaymentTokenService paymentTokenService) {
+    public PaymentTokenController(PaymentTokenService paymentTokenService, PaymentBookService paymentBookService) {
         this.paymentTokenService = paymentTokenService;
+        this.paymentBookService = paymentBookService;
     }
 //jose
     @PostMapping("/{bookingId}/{paymentBookId}")
@@ -51,5 +55,27 @@ public class PaymentTokenController {
                     return ResponseEntity.ok(response);
                 })
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
+    }
+
+    @GetMapping("/{paymentToken}/paymentbook")
+    public Mono<ResponseEntity<Map<String, Object>>> getPaymentBookIfTokenActive(@PathVariable String paymentToken) {
+        return paymentTokenService.isPaymentTokenActive(paymentToken)
+                .flatMap(isActive -> {
+                    if (isActive) {
+                        return paymentTokenService.findBookingIdByPaymentToken(paymentToken)
+                                .flatMap(paymentBookService::findById)
+                                .map(paymentBook -> {
+                                    Map<String, Object> response = new HashMap<>();
+                                    response.put("active", true);
+                                    response.put("paymentBook", paymentBook);
+                                    return ResponseEntity.ok(response);
+                                });
+                    } else {
+                        Map<String, Object> response = new HashMap<>();
+                        response.put("active", false);
+                        response.put("paymentBook", null);
+                        return Mono.just(ResponseEntity.ok(response));
+                    }
+                });
     }
 }

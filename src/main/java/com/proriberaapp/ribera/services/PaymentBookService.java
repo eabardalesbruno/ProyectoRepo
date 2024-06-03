@@ -22,5 +22,6 @@ public interface PaymentBookService {
 
     Mono<Void> deletePaymentBook(Integer id);
     Mono<Void> updateBookingStateIfRequired(Integer bookingId);
+    Mono<PaymentBookEntity> findById(Integer id);
 
 }

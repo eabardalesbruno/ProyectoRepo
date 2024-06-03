@@ -103,4 +103,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                 .flatMap(booking -> bookingService.updateBookingStatePay(bookingId, 2)) // Si es 2, lo actualizas
                 .then();
     }
+    @Override
+    public Mono<PaymentBookEntity> findById(Integer id) {
+        return paymentBookRepository.findById(id);
+    }
 }
