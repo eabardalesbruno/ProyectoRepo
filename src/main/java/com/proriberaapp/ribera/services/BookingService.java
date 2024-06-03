@@ -22,4 +22,6 @@ public interface BookingService extends BaseService<BookingEntity,BookingEntity>
 
     Mono<BookingEntity> findByBookingId(Integer bookingId);
 
+    Mono<BookingEntity> updateBookingStatePay(Integer bookingId, Integer bookingStateId);
+
 }

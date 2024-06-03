@@ -135,6 +135,27 @@ public class BookingServiceImpl implements BookingService {
     //TODO: silver 10 alojamientos, gold 15, premium 20
     //TODO: considerar el consumo
 
+    @Override
+    public Mono<BookingEntity> updateBookingStatePay(Integer bookingId, Integer bookingStateId) {
+        return bookingRepository.findById(bookingId)
+                .map(bookingEntity -> {
+                    bookingEntity.setBookingStateId(bookingStateId);
+                    return bookingEntity;
+                })
+                .flatMap(bookingEntity -> {
+                    if (bookingStateId == 3) {
+                        bookingEntity.setBookingStateId(2);
+                    }
+                    PartnerPointsEntity partnerPointsEntity = PartnerPointsEntity.builder()
+                            .userClientId(bookingEntity.getUserClientId())
+                            .points(bookingEntity.getCostFinal().intValue() / RATIO_BASE)
+                            .build();
+
+                    return partnerPointsService.incrementPoints(partnerPointsEntity, partnerPointsEntity.getPoints())
+                            .flatMap(updatedBookingEntity -> bookingRepository.save(bookingEntity));
+                });
+    }
+
     public Mono<BookingEntity> updateBookingState(Integer bookingId, Integer bookingStateId) {
         return bookingRepository.findById(bookingId)
                 .map(bookingEntity -> {

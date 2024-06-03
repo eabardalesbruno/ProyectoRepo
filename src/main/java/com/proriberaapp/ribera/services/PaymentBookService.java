@@ -21,5 +21,6 @@ public interface PaymentBookService {
     Flux<PaymentBookEntity> getPaymentBooksByUserClientId(Integer userClientId);
 
     Mono<Void> deletePaymentBook(Integer id);
+    Mono<Void> updateBookingStateIfRequired(Integer bookingId);
 
 }
