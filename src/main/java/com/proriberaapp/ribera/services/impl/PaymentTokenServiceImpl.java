@@ -41,7 +41,11 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
     }
     @Override
     public Mono<Boolean> isPaymentTokenActive(String paymentToken) {
-        return paymentTokenRepository.findPaymentTokenEndDate(paymentToken)
-                .map(endDate -> LocalDateTime.now().isBefore(endDate));
+        return paymentTokenRepository.findByPaymentToken(paymentToken)
+                .map(paymentTokenEntity -> {
+                    Timestamp now = Timestamp.valueOf(LocalDateTime.now(ZoneId.of("UTC")));
+                    return now.before(paymentTokenEntity.getEndDate());
+                })
+                .defaultIfEmpty(false);
     }
 }

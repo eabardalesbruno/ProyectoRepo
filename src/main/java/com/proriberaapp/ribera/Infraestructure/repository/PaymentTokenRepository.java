@@ -22,4 +22,6 @@ public interface PaymentTokenRepository extends R2dbcRepository<PaymentTokenEnti
 
     @Query("SELECT enddate FROM paymenttoken WHERE paymenttoken = :paymentToken")
     Mono<LocalDateTime> findPaymentTokenEndDate(String paymentToken);
+
+    Mono<PaymentTokenEntity> findByPaymentToken(String paymentToken);
 }

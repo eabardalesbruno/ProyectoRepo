@@ -9,6 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/payment-token")
 public class PaymentTokenController {
@@ -40,9 +43,13 @@ public class PaymentTokenController {
     }
 
     @GetMapping("/{paymentToken}/active")
-    public Mono<ResponseEntity<Boolean>> isPaymentTokenActive(@PathVariable String paymentToken) {
+    public Mono<ResponseEntity<Map<String, Boolean>>> isPaymentTokenActive(@PathVariable String paymentToken) {
         return paymentTokenService.isPaymentTokenActive(paymentToken)
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).body(false));
+                .map(isActive -> {
+                    Map<String, Boolean> response = new HashMap<>();
+                    response.put("active", isActive);
+                    return ResponseEntity.ok(response);
+                })
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).body(null));
     }
 }
