@@ -43,7 +43,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
     public Mono<Boolean> isPaymentTokenActive(String paymentToken) {
         return paymentTokenRepository.findByPaymentToken(paymentToken)
                 .map(paymentTokenEntity -> {
-                    Timestamp now = Timestamp.valueOf(LocalDateTime.now(ZoneId.of("UTC")));
+                    Timestamp now = Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Lima")));
                     return now.before(paymentTokenEntity.getEndDate());
                 })
                 .defaultIfEmpty(false);
