@@ -114,12 +114,14 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
                                                 Map<String, Object> response = new HashMap<>();
                                                 response.put("active", true);
                                                 response.put("paymentBook", paymentBook);
-                                                response.put("booking", tuple.getT1());
-                                                response.put("userClient", tuple.getT2());
-                                                response.put("paymentMethod", tuple.getT3());
-                                                response.put("paymentState", tuple.getT4());
-                                                response.put("paymentType", tuple.getT5());
-                                                response.put("paymentSubType", tuple.getT6());
+                                                response.put("details", new Object[]{
+                                                        Map.of("type", "booking", "data", tuple.getT1()),
+                                                        Map.of("type", "userClient", "data", tuple.getT2()),
+                                                        Map.of("type", "paymentMethod", "data", tuple.getT3()),
+                                                        Map.of("type", "paymentState", "data", tuple.getT4()),
+                                                        Map.of("type", "paymentType", "data", tuple.getT5()),
+                                                        Map.of("type", "paymentSubType", "data", tuple.getT6()),
+                                                });
                                                 response.put("token", paymentToken);
                                                 response.put("linkPayment", linkPayment);
                                                 response.put("status", 1);
@@ -131,6 +133,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
                         Map<String, Object> response = new HashMap<>();
                         response.put("active", false);
                         response.put("paymentBook", null);
+                        response.put("details", new Object[]{});
                         response.put("token", paymentToken);
                         response.put("linkPayment", linkPayment);
                         response.put("status", 0);
