@@ -25,7 +25,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
     private final PaymentMethodRepository paymentMethodRepository;
     private final PaymentStateRepository paymentStateRepository;
     private final PaymentTypeRepository paymentTypeRepository;
-    private final CurrencyTypeRepository currencyTypeRepository;
+    private final PaymentSubtypeRepository paymentSubtypeRepository;
 
     @Autowired
     public PaymentTokenServiceImpl(
@@ -37,7 +37,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
             PaymentMethodRepository paymentMethodRepository,
             PaymentStateRepository paymentStateRepository,
             PaymentTypeRepository paymentTypeRepository,
-            CurrencyTypeRepository currencyTypeRepository) {
+            PaymentSubtypeRepository paymentSubtypeRepository) {
         this.paymentTokenRepository = paymentTokenRepository;
         this.paymentBookService = paymentBookService;
         this.paymentBookRepository = paymentBookRepository;
@@ -46,7 +46,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
         this.paymentMethodRepository = paymentMethodRepository;
         this.paymentStateRepository = paymentStateRepository;
         this.paymentTypeRepository = paymentTypeRepository;
-        this.currencyTypeRepository = currencyTypeRepository;
+        this.paymentSubtypeRepository = paymentSubtypeRepository;
     }
 
     @Override
@@ -107,9 +107,9 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
                                     Mono<PaymentMethodEntity> paymentMethodMono = paymentMethodRepository.findById(paymentBook.getPaymentMethodId());
                                     Mono<PaymentStateEntity> paymentStateMono = paymentStateRepository.findById(paymentBook.getPaymentStateId());
                                     Mono<PaymentTypeEntity> paymentTypeMono = paymentTypeRepository.findById(paymentBook.getPaymentTypeId());
-                                    Mono<CurrencyTypeEntity> currencyTypeMono = currencyTypeRepository.findById(paymentBook.getCurrencyTypeId());
+                                    Mono<PaymentSubtypeEntity> paymentSubtypeMono = paymentSubtypeRepository.findById(paymentBook.getCurrencyTypeId());
 
-                                    return Mono.zip(bookingMono, userClientMono, paymentMethodMono, paymentStateMono, paymentTypeMono, currencyTypeMono)
+                                    return Mono.zip(bookingMono, userClientMono, paymentMethodMono, paymentStateMono, paymentTypeMono, paymentSubtypeMono)
                                             .map(tuple -> {
                                                 Map<String, Object> response = new HashMap<>();
                                                 response.put("active", true);
