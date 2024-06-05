@@ -26,6 +26,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
     private final PaymentStateRepository paymentStateRepository;
     private final PaymentTypeRepository paymentTypeRepository;
     private final PaymentSubtypeRepository paymentSubtypeRepository;
+    private final CurrencyTypeRepository currencyTypeRepository;
 
     @Autowired
     public PaymentTokenServiceImpl(
@@ -37,7 +38,8 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
             PaymentMethodRepository paymentMethodRepository,
             PaymentStateRepository paymentStateRepository,
             PaymentTypeRepository paymentTypeRepository,
-            PaymentSubtypeRepository paymentSubtypeRepository) {
+            PaymentSubtypeRepository paymentSubtypeRepository,
+            CurrencyTypeRepository currencyTypeRepository) {
         this.paymentTokenRepository = paymentTokenRepository;
         this.paymentBookService = paymentBookService;
         this.paymentBookRepository = paymentBookRepository;
@@ -47,6 +49,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
         this.paymentStateRepository = paymentStateRepository;
         this.paymentTypeRepository = paymentTypeRepository;
         this.paymentSubtypeRepository = paymentSubtypeRepository;
+        this.currencyTypeRepository = currencyTypeRepository;
     }
 
     @Override
@@ -108,8 +111,9 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
                                     Mono<PaymentStateEntity> paymentStateMono = paymentStateRepository.findById(paymentBook.getPaymentStateId());
                                     Mono<PaymentTypeEntity> paymentTypeMono = paymentTypeRepository.findById(paymentBook.getPaymentTypeId());
                                     Mono<PaymentSubtypeEntity> paymentSubtypeMono = paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId());
+                                    Mono<CurrencyTypeEntity> currencyTypeMono = currencyTypeRepository.findById(paymentBook.getCurrencyTypeId());
 
-                                    return Mono.zip(bookingMono, userClientMono, paymentMethodMono, paymentStateMono, paymentTypeMono, paymentSubtypeMono)
+                                    return Mono.zip(bookingMono, userClientMono, paymentMethodMono, paymentStateMono, paymentTypeMono, paymentSubtypeMono, currencyTypeMono)
                                             .map(tuple -> {
                                                 Map<String, Object> response = new HashMap<>();
                                                 response.put("active", true);
@@ -121,6 +125,8 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
                                                         Map.of("type", "paymentState", "data", tuple.getT4()),
                                                         Map.of("type", "paymentType", "data", tuple.getT5()),
                                                         Map.of("type", "paymentSubType", "data", tuple.getT6()),
+                                                        Map.of("type", "currencyType", "data", tuple.getT7()),
+
                                                 });
                                                 response.put("token", paymentToken);
                                                 response.put("linkPayment", linkPayment);
