@@ -107,7 +107,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
                                     Mono<PaymentMethodEntity> paymentMethodMono = paymentMethodRepository.findById(paymentBook.getPaymentMethodId());
                                     Mono<PaymentStateEntity> paymentStateMono = paymentStateRepository.findById(paymentBook.getPaymentStateId());
                                     Mono<PaymentTypeEntity> paymentTypeMono = paymentTypeRepository.findById(paymentBook.getPaymentTypeId());
-                                    Mono<PaymentSubtypeEntity> paymentSubtypeMono = paymentSubtypeRepository.findById(paymentBook.getCurrencyTypeId());
+                                    Mono<PaymentSubtypeEntity> paymentSubtypeMono = paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId());
 
                                     return Mono.zip(bookingMono, userClientMono, paymentMethodMono, paymentStateMono, paymentTypeMono, paymentSubtypeMono)
                                             .map(tuple -> {
