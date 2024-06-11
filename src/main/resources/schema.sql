@@ -508,3 +508,47 @@ CREATE TABLE IF NOT EXISTS paymentsubtype (
     statusdollars INTEGER,
     CONSTRAINT fk_paymenttype_uc FOREIGN KEY (paymenttypeid) REFERENCES paymenttype(paymenttypeid)
 );
+
+
+CREATE TABLE transactioncategory
+(
+    transactioncategoryid integer PRIMARY KEY,
+    name varchar(255)
+);
+
+CREATE TABLE typepointstransaction
+(
+    typepointstransactionid integer PRIMARY KEY,
+    description varchar(255),
+    status integer,
+    transactioncategoryid integer,
+    istransferbalanceavailable integer,
+    CONSTRAINT fk_transactioncategory FOREIGN KEY (transactioncategoryid) REFERENCES transactioncategory (transactioncategoryid)
+);
+
+CREATE TABLE pointstransaction
+(
+    pointstransactionid integer PRIMARY KEY,
+    partnerpointid integer,
+    typepointstransactionid integer,
+    initialdate timestamp,
+    points integer,
+    isavailable integer,
+    availabilitydate timestamp,
+    referencedata varchar(255),
+    successfultransaction integer,
+    CONSTRAINT fk_partnerpoint FOREIGN KEY (partnerpointid) REFERENCES partnerpoints (partnerpointid),
+    CONSTRAINT fk_typepointstransaction FOREIGN KEY (typepointstransactionid) REFERENCES typepointstransaction (typepointstransactionid)
+);
+
+CREATE TABLE tokenpointstransaction
+(
+    tokenpointstransactionid integer PRIMARY KEY,
+    codigotoken varchar(255),
+    datecreated timestamp,
+    expirationdate timestamp,
+    partnerpointid integer,
+    bookingid integer,
+    CONSTRAINT fk_partnerpoint FOREIGN KEY (partnerpointid) REFERENCES partnerpoints (partnerpointid),
+    CONSTRAINT fk_booking FOREIGN KEY (bookingid) REFERENCES booking (bookingid)
+);
