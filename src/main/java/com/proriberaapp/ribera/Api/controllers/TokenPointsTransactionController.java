@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers;
 
+import com.proriberaapp.ribera.Api.controllers.dto.PointsRequest;
 import com.proriberaapp.ribera.Domain.entities.TokenPointsTransaction;
 import com.proriberaapp.ribera.services.TokenPointsTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,8 @@ public class TokenPointsTransactionController {
     }
 
     @PostMapping("/create")
-    public Mono<TokenPointsTransaction> createToken(@RequestParam Integer partnerPointId, @RequestParam Integer bookingId) {
-        return tokenPointsTransactionService.createToken(partnerPointId, bookingId);
+    public Mono<String> createToken(@RequestBody PointsRequest tokenRequest) {
+        return tokenPointsTransactionService.createToken(tokenRequest.getPartnerPointId(), tokenRequest.getBookingId())
+                .map(token -> token.getCodigoToken());
     }
 }

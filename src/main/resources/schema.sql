@@ -528,7 +528,7 @@ CREATE TABLE typepointstransaction
 
 CREATE TABLE pointstransaction
 (
-    pointstransactionid integer PRIMARY KEY,
+    pointstransactionid SERIAL PRIMARY KEY,
     partnerpointid integer,
     typepointstransactionid integer,
     initialdate timestamp,
@@ -543,12 +543,12 @@ CREATE TABLE pointstransaction
 
 CREATE TABLE tokenpointstransaction
 (
-    tokenpointstransactionid integer PRIMARY KEY,
-    codigotoken varchar(255),
-    datecreated timestamp,
-    expirationdate timestamp,
-    partnerpointid integer,
-    bookingid integer,
+    tokenpointstransactionid SERIAL PRIMARY KEY,
+    codigotoken VARCHAR(255),
+    datecreated TIMESTAMP,
+    expirationdate TIMESTAMP,
+    partnerpointid INTEGER,
+    bookingid INTEGER,
     CONSTRAINT fk_partnerpoint FOREIGN KEY (partnerpointid) REFERENCES partnerpoints (partnerpointid),
     CONSTRAINT fk_booking FOREIGN KEY (bookingid) REFERENCES booking (bookingid)
 );
