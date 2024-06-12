@@ -9,4 +9,7 @@ import reactor.core.publisher.Mono;
 public interface PartnerPointsRepository extends R2dbcRepository<PartnerPointsEntity, Integer> {
     Mono<PartnerPointsEntity> findByPartnerPointIdAndUserClientId(Integer partnerPointId, Integer userClientId);
     Mono<PartnerPointsEntity> findByUserClientId(Integer userClientId);
+
+    @Query("SELECT uc.email FROM userclient uc JOIN partnerpoints pp ON uc.userclientid = pp.userclientid WHERE pp.partnerpointid = :partnerPointId")
+    Mono<String> findEmailByPartnerPointId(Integer partnerPointId);
 }
