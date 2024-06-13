@@ -178,7 +178,7 @@ public class TokenPointsTransactionServiceImpl implements TokenPointsTransaction
         body += "<div style='width: 100%'>";
         body += "<div style='display:flex;'>";
         body += "</div>";
-        body += "<img style='width: 100%' src='http://www.inresorts.club/Views/img/fondo.png'>";
+        body += "<img style='width: 100%' src='http://www.inresorts.club/Views/img/fondo.png' />";
         body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>"
                 + "Bienvenido " + email + "</h1>";
         body += "<h3 style='text-align: center;'>Producto por Adquirir: Reserva</h3>";
