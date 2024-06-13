@@ -8,9 +8,11 @@ import com.proriberaapp.ribera.services.S3UploadService;
 import com.proriberaapp.ribera.services.TokenPointsTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 /*
@@ -86,10 +88,13 @@ public class TokenPointsTransactionController {
                     response.put("linkPayment", "https://ribera-dev.inclub.world/payment-validation?token=" + token.getCodigoToken());
                     response.put("mensaje", "Enviado");
 
-                    // Generar PDF y subirlo a S3
                     try {
-                        byte[] pdfData = pdfGeneratorService.generatePDF(buildEmailBody(response));
-                        return s3UploadService.uploadPdf(pdfData)
+                        String pdfFileName = token.getCodigoToken() + ".pdf";
+                        File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response), pdfFileName);
+
+                        // Aquí se debe pasar el folderNumber adecuadamente
+                        int folderNumber = 13; // Ajusta este valor según tus necesidades
+                        return s3UploadService.uploadPdf(pdfFile, folderNumber) // Pasar folderNumber aquí
                                 .map(s3Url -> ResponseEntity.ok(response))
                                 .defaultIfEmpty(ResponseEntity.badRequest().build());
                     } catch (Exception e) {
@@ -104,10 +109,13 @@ public class TokenPointsTransactionController {
                                 response.put("linkPayment", "https://ribera-dev.inclub.world/payment-validation?token=" + token.getCodigoToken());
                                 response.put("mensaje", "Enviado (sin email)");
 
-                                // Generar PDF y subirlo a S3
                                 try {
-                                    byte[] pdfData = pdfGeneratorService.generatePDF(buildEmailBody(response));
-                                    return s3UploadService.uploadPdf(pdfData)
+                                    String pdfFileName = token.getCodigoToken() + ".pdf";
+                                    File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response), pdfFileName);
+
+                                    // Aquí se debe pasar el folderNumber adecuadamente
+                                    int folderNumber = 13; // Ajusta este valor según tus necesidades
+                                    return s3UploadService.uploadPdf(pdfFile, folderNumber) // Pasar folderNumber aquí
                                             .map(s3Url -> ResponseEntity.ok(response))
                                             .defaultIfEmpty(ResponseEntity.badRequest().build());
                                 } catch (Exception ex) {
@@ -119,7 +127,6 @@ public class TokenPointsTransactionController {
 
     private String buildEmailBody(Map<String, String> response) {
         String emailBody = "<html><body>";
-        // Construir el cuerpo del email a partir de los datos de la respuesta
         emailBody += "<h1>Token: " + response.get("token") + "</h1>";
         emailBody += "<p>Link de pago: " + response.get("linkPayment") + "</p>";
         emailBody += "<p>Mensaje: " + response.get("mensaje") + "</p>";
