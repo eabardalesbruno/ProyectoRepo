@@ -3,10 +3,8 @@ package com.proriberaapp.ribera.services;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,12 +33,12 @@ public class S3UploadService {
                     .doFinally(signal -> {
                         try {
                             Files.deleteIfExists(tempFile);
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
                     });
-        }).onErrorResume(WebClientResponseException.class, e -> {
-            return Mono.error(new RuntimeException("Failed to upload PDF to S3: " + e.getResponseBodyAsString()));
+        }).onErrorResume(e -> {
+            return Mono.error(new RuntimeException("Failed to upload PDF to S3", e));
         });
     }
 }
