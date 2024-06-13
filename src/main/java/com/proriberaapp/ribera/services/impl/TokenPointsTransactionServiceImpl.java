@@ -188,7 +188,7 @@ public class TokenPointsTransactionServiceImpl implements TokenPointsTransaction
         body += "<center><div style='width: 100%'>";
         body += "<p style='margin-left: 10%; margin-right: 10%;'>Click en el boton para pagar</p>";
         body += "<a style='text-decoration: none;' href='" + linkPayment + "'>";
-        body += "<center><div style='background: #0d80ea; border-radius: 10px; width: 158px; height: 30px; font-size: 16px; color: white; font-weight: bold; padding: 4px; padding-top: 10px; cursor: pointer; text-align: center; margin: 23px;'>Validar pago<div></center>";
+        body += "<center><div style='background: #0d80ea; border-radius: 10px; width: 158px; height: 30px; font-size: 16px; color: white; font-weight: bold; padding: 4px; padding-top: 10px; cursor: pointer; text-align: center; margin: 23px;'>Validar pago</div></center>";
         body += "</a></div></center>";
         body += "<center><div style='width: 100%'>";
         body += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
@@ -197,7 +197,7 @@ public class TokenPointsTransactionServiceImpl implements TokenPointsTransaction
         body += "<center><div style='width: 100%'>";
         body += "<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>";
         body += "</div></center>";
-        body += "</div></center>";
+        body += "</div>";
         body += "</body></html>";
 
         return body;
