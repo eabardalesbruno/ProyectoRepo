@@ -1,7 +1,11 @@
 package com.proriberaapp.ribera.services.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOffer;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
+import com.proriberaapp.ribera.Infraestructure.viewRepository.RoomOfferViewRepository;
+import com.proriberaapp.ribera.services.RoomOfferService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,8 +19,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RoomOfferServiceImpl implements com.proriberaapp.ribera.services.RoomOfferService {
+public class RoomOfferServiceImpl implements RoomOfferService {
     private final RoomOfferRepository roomOfferRepository;
+    private final RoomOfferViewRepository roomOfferViewRepository;
     @Value("${room.offer.ratio.base}")
     private Integer RATIO_BASE;
     @Value("${room.offer.ratio.ribera}")
@@ -57,6 +62,11 @@ public class RoomOfferServiceImpl implements com.proriberaapp.ribera.services.Ro
     @Override
     public Flux<RoomOfferEntity> findAll() {
         return roomOfferRepository.findAll();
+    }
+
+    @Override
+    public Flux<ViewRoomOfferReturn> viewRoomOfferReturn(SearchFiltersRoomOffer filters) {
+        return roomOfferViewRepository.viewRoomOfferReturn(filters);
     }
 
     @Override

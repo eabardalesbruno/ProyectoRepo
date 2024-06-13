@@ -22,8 +22,10 @@ public class RiberaApplication {
 
 		ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
 		initializer.setConnectionFactory(connectionFactory);
-		//initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("schema.sql")));
-		//initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("createViews.sql")));
+		//initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("sql/schema.sql")));
+		//initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("sql/createViews.sql")));
+		//initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("sql/insertUserAdmin.sql")));
+		//initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ClassPathResource("sql/insertData.sql")));
 
 		return initializer;
 	}

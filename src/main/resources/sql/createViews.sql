@@ -62,6 +62,8 @@ JOIN
 JOIN
     bookingstate bs ON b.bookingstateid = bs.bookingstateid;
 
+
+
 CREATE OR REPLACE VIEW ViewAdminBookingInventoryReturn AS
 SELECT
 	r.roomid,
@@ -97,6 +99,8 @@ SELECT
 FROM roomoffer ro
 JOIN room r ON r.roomid = ro.roomid
 JOIN roomtype rt ON rt.roomtypeid = r.roomtypeid;
+
+
 
 CREATE OR REPLACE VIEW ViewAdminBookingReturn AS
 SELECT
@@ -141,6 +145,8 @@ JOIN userclient uc ON uc.userclientid = bk.userclientid
 JOIN documenttype dt ON dt.documenttypeid = uc.documenttypeid
 JOIN room r ON r.roomid = ro.roomid
 JOIN roomtype rt ON rt.roomtypeid = r.roomtypeid;
+
+
 
 CREATE OR REPLACE VIEW viewadminbookingavailabilityreturn AS
 SELECT
@@ -188,3 +194,49 @@ JOIN documenttype dt ON dt.documenttypeid = uc.documenttypeid
 JOIN room r ON r.roomid = ro.roomid
 JOIN roomtype rt ON rt.roomtypeid = r.roomtypeid
 JOIN bookingstate bks ON bks.bookingstateid = bk.bookingstateid;
+
+
+
+CREATE OR REPLACE VIEW ViewRoomOfferReturn AS
+SELECT
+	ro.roomofferid,
+	r.roomid,
+	rt.roomtypeid,
+
+	ROW_NUMBER() OVER (ORDER BY roomofferid) AS item,
+
+	ro.offertimeinit as offertimeinit,
+	ro.offertimeend as offertimeend,
+	CONCAT('Inicio: ', to_char(ro.offertimeinit, 'DD/MM/YYYY'), E'\n', 'Fin: ', to_char(ro.offertimeend, 'DD/MM/YYYY')) AS offertimestring,
+
+	r.roomnumber as numberroom,
+	r.roomname as typeroom,
+    r.image AS image,
+    r.capacity AS capacity,
+
+    rd.information AS description,
+    rd.bedrooms AS bedrooms,
+    rd.squaremeters AS squareMeters,
+    rd.oceanviewbalcony AS oceanViewBalcony,
+    rd.balconyoverlookingpool AS balconyOverLookingPool,
+
+	ro.cost AS costRegular,
+	ro.cost AS costTotal,
+	ro.cost AS costExchange,
+	ro.cost AS costTotalExchange,
+	ro.riberapoints AS pointRibera,
+	ro.inresortpoints AS pointInResort,
+
+	CONCAT('S/',ro.cost) AS costRegularstring,
+	CONCAT('S/',ro.cost) AS costTotalstring,
+	CONCAT('S/',ro.cost) AS costExchangestring,
+	CONCAT('S/',ro.cost) AS costTotalExchangestring,
+	CONCAT(ro.riberapoints,' pts Inresorts') AS pointRiberastring,
+	CONCAT(ro.inresortpoints,' pts Ribera') AS pointInResortstring
+
+FROM roomoffer ro
+
+JOIN room r ON r.roomid = ro.roomid
+JOIN roomtype rt ON rt.roomtypeid = r.roomtypeid
+JOIN roomdetail rd ON r.roomdetailid = rd.roomdetailid;
+

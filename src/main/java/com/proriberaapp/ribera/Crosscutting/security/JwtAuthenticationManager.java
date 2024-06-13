@@ -26,8 +26,7 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
     @SuppressWarnings("unchecked")
     public Mono<Authentication> authenticate(Authentication authentication) {
         return Mono.just(authentication)
-                .map(auth -> jwtProvider.getClaimsFromToken(auth.getCredentials().toString())
-                )
+                .map(auth -> jwtProvider.getClaimsFromToken(auth.getCredentials().toString()))
                 .onErrorResume(e -> Mono.error(new Throwable("bad token")))
                 .map(claims -> new UsernamePasswordAuthenticationToken(
                                 claims.getSubject(),
@@ -41,4 +40,5 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
                         )
                 );
     }
+
 }
