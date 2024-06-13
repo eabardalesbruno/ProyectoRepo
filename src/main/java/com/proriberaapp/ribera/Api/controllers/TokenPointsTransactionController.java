@@ -98,12 +98,21 @@ public class TokenPointsTransactionController {
                 })
                 .onErrorResume(e -> {
                     return tokenPointsTransactionService.createToken(request.getPartnerPointId(), request.getBookingId())
-                            .map(token -> {
+                            .flatMap(token -> {
                                 Map<String, String> response = new HashMap<>();
                                 response.put("token", token.getCodigoToken());
                                 response.put("linkPayment", "https://ribera-dev.inclub.world/payment-validation?token=" + token.getCodigoToken());
                                 response.put("mensaje", "Enviado (sin email)");
-                                return ResponseEntity.ok(response);
+
+                                // Generar PDF y subirlo a S3
+                                try {
+                                    byte[] pdfData = pdfGeneratorService.generatePDF(buildEmailBody(response));
+                                    return s3UploadService.uploadPdf(pdfData)
+                                            .map(s3Url -> ResponseEntity.ok(response))
+                                            .defaultIfEmpty(ResponseEntity.badRequest().build());
+                                } catch (Exception ex) {
+                                    return Mono.error(ex);
+                                }
                             });
                 });
     }
