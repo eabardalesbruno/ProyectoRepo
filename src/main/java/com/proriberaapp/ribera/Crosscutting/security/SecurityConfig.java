@@ -29,10 +29,24 @@ public class SecurityConfig {
                 .authorizeExchange(auth -> auth
                         .pathMatchers(OPTIONS).permitAll()
 
-                        .pathMatchers("/api/v1/admin/login", "/api/v1/users/**",
-                                "/api/v1/s3-client/**", "/api/v1/password-reset/**", "/api/documenttype/**",
-                                "/api/v1/payment-method/**", "/api/v1/payment-book/**", "/api/v1/paymenttypes/**",
-                                "/api/v1/paymentsubtypes/**", "/api/v1/currencytype/**", "/swagger-doc/**"
+                        .pathMatchers("/api/v1/admin/login",
+                                "/api/v1/users/**",
+                                "/api/v1/s3-client/**",
+                                "/api/v1/password-reset/**",
+                                "/api/documenttype/**",
+                                "/api/v1/payment-method/**",
+                                "/api/v1/payment-book/**",
+                                "/api/v1/payment-book/booking-pay/**",
+                                "/api/v1/booking-pay/**",
+                                "/api/v1/payment-token/**",
+                                "/api/v1/paymenttypes/**",
+                                "/api/v1/paymentsubtypes/**",
+                                "/api/v1/currencytype/**",
+                                "/api/v1/token-email/**",
+                                "/api/v1/points/**",
+                                "/api/v1/booking/**",
+                                "/api/v1/email/**",
+                                "/swagger-doc/**"
                         ).permitAll()
 
                         .pathMatchers("/api/v1/admin/**").hasRole("SUPER_ADMIN")

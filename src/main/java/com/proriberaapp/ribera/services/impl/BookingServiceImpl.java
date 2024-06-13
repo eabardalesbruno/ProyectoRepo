@@ -25,6 +25,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -97,6 +98,21 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public Mono<BigDecimal> getCostFinalByBookingId(Integer bookingId) {
+        return bookingRepository.findById(bookingId)
+                .flatMap(bookingEntity -> {
+                    if (bookingEntity != null) {
+                        return Mono.just(bookingEntity.getCostFinal());
+                    } else {
+                        return Mono.error(new RuntimeException("BookingEntity not found for bookingId: " + bookingId));
+                    }
+                });
+    }
+    @Override
+    public Mono<BookingEntity> findByBookingId(Integer bookingId) {
+        return bookingRepository.findById(bookingId);
+    }
+    @Override
     public Mono<BookingEntity> findById(Integer id) {
         return bookingRepository.findById(id);
     }
@@ -118,6 +134,27 @@ public class BookingServiceImpl implements BookingService {
     //TODO: por cada 50 dolares es un punto
     //TODO: silver 10 alojamientos, gold 15, premium 20
     //TODO: considerar el consumo
+
+    @Override
+    public Mono<BookingEntity> updateBookingStatePay(Integer bookingId, Integer bookingStateId) {
+        return bookingRepository.findById(bookingId)
+                .map(bookingEntity -> {
+                    bookingEntity.setBookingStateId(bookingStateId);
+                    return bookingEntity;
+                })
+                .flatMap(bookingEntity -> {
+                    if (bookingStateId == 3) {
+                        bookingEntity.setBookingStateId(2);
+                    }
+                    PartnerPointsEntity partnerPointsEntity = PartnerPointsEntity.builder()
+                            .userClientId(bookingEntity.getUserClientId())
+                            .points(bookingEntity.getCostFinal().intValue() / RATIO_BASE)
+                            .build();
+
+                    return partnerPointsService.incrementPoints(partnerPointsEntity, partnerPointsEntity.getPoints())
+                            .flatMap(updatedBookingEntity -> bookingRepository.save(bookingEntity));
+                });
+    }
 
     public Mono<BookingEntity> updateBookingState(Integer bookingId, Integer bookingStateId) {
         return bookingRepository.findById(bookingId)

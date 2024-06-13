@@ -219,9 +219,9 @@ CREATE TABLE IF NOT EXISTS currencytype (
 
 CREATE TABLE IF NOT EXISTS paymentbook (
     paymentbookid SERIAL PRIMARY KEY,
-    bookingid INTEGER,
+    bookingid INTEGER NOT NULL,
     userclientid INTEGER NOT NULL,
-    refusereasonid INTEGER,
+    refusereasonid INTEGER NOT NULL,
     paymentmethodid INTEGER,
     paymentstateid INTEGER,
     paymenttypeid INTEGER,
@@ -236,6 +236,7 @@ CREATE TABLE IF NOT EXISTS paymentbook (
     imagevoucher VARCHAR(150000),
     totalpoints INTEGER,
     paymentcomplete BOOLEAN,
+    pendingpay INTEGER DEFAULT 0,
     CONSTRAINT fk_currencytype_pb FOREIGN KEY (currencytypeid) REFERENCES currencytype(currencytypeid),
     CONSTRAINT fk_booking_pb FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
     CONSTRAINT fk_paymentmethod_pb FOREIGN KEY (paymentmethodid) REFERENCES paymentmethod(paymentmethodid),
@@ -244,6 +245,17 @@ CREATE TABLE IF NOT EXISTS paymentbook (
     CONSTRAINT fk_paymentsubtype_pb FOREIGN KEY (paymentsubtypeid) REFERENCES paymentsubtype(paymentsubtypeid),
     CONSTRAINT fk_userclient_pb FOREIGN KEY (userclientid) REFERENCES userclient(userclientid),
     CONSTRAINT fk_refusereason_pb FOREIGN KEY (refusereasonid) REFERENCES refusereason(refusereasonid)
+);
+
+CREATE TABLE IF NOT EXISTS paymenttoken (
+    paymenttokenid SERIAL PRIMARY KEY,
+    paymenttoken VARCHAR(255),
+	startdate TIMESTAMP,
+	enddate TIMESTAMP,
+	bookingid INTEGER NOT NULL,
+	paymentbookid INTEGER NOT NULL,
+    CONSTRAINT fk_booking_pb FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
+	CONSTRAINT fk_paymentbook_pb FOREIGN KEY (paymentbookid) REFERENCES paymentbook(paymentbookid)
 );
 
 CREATE TABLE IF NOT EXISTS refusepayment (
@@ -275,6 +287,15 @@ CREATE TABLE IF NOT EXISTS bedroom (
     quantity INTEGER,
     CONSTRAINT fk_room_bed FOREIGN KEY (roomid) REFERENCES room(roomid),
     CONSTRAINT fk_bedtype_bed FOREIGN KEY (bedtypeid) REFERENCES bedstype(bedtypeid)
+);
+
+CREATE TABLE emaillog (
+    emaillogid SERIAL PRIMARY KEY,
+    recipient VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    body TEXT NOT NULL,
+    sentdate TIMESTAMP NOT NULL,
+    status VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS solicitude (
@@ -486,4 +507,48 @@ CREATE TABLE IF NOT EXISTS paymentsubtype (
     statussoles INTEGER,
     statusdollars INTEGER,
     CONSTRAINT fk_paymenttype_uc FOREIGN KEY (paymenttypeid) REFERENCES paymenttype(paymenttypeid)
+);
+
+
+CREATE TABLE transactioncategory
+(
+    transactioncategoryid integer PRIMARY KEY,
+    name varchar(255)
+);
+
+CREATE TABLE typepointstransaction
+(
+    typepointstransactionid integer PRIMARY KEY,
+    description varchar(255),
+    status integer,
+    transactioncategoryid integer,
+    istransferbalanceavailable integer,
+    CONSTRAINT fk_transactioncategory FOREIGN KEY (transactioncategoryid) REFERENCES transactioncategory (transactioncategoryid)
+);
+
+CREATE TABLE pointstransaction
+(
+    pointstransactionid SERIAL PRIMARY KEY,
+    partnerpointid integer,
+    typepointstransactionid integer,
+    initialdate timestamp,
+    points integer,
+    isavailable integer,
+    availabilitydate timestamp,
+    referencedata varchar(255),
+    successfultransaction integer,
+    CONSTRAINT fk_partnerpoint FOREIGN KEY (partnerpointid) REFERENCES partnerpoints (partnerpointid),
+    CONSTRAINT fk_typepointstransaction FOREIGN KEY (typepointstransactionid) REFERENCES typepointstransaction (typepointstransactionid)
+);
+
+CREATE TABLE tokenpointstransaction
+(
+    tokenpointstransactionid SERIAL PRIMARY KEY,
+    codigotoken VARCHAR(255),
+    datecreated TIMESTAMP,
+    expirationdate TIMESTAMP,
+    partnerpointid INTEGER,
+    bookingid INTEGER,
+    CONSTRAINT fk_partnerpoint FOREIGN KEY (partnerpointid) REFERENCES partnerpoints (partnerpointid),
+    CONSTRAINT fk_booking FOREIGN KEY (bookingid) REFERENCES booking (bookingid)
 );

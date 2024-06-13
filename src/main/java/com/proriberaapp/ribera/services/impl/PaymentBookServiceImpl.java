@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.services.impl;
 
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
+import com.proriberaapp.ribera.services.BookingService;
 import com.proriberaapp.ribera.services.PaymentBookService;
 import com.proriberaapp.ribera.services.S3Uploader;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,16 +14,22 @@ import reactor.core.publisher.Mono;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.UUID;
 
 @Service
 public class PaymentBookServiceImpl implements PaymentBookService {
     private final PaymentBookRepository paymentBookRepository;
+    private final BookingService bookingService;
+
     private final S3Uploader s3Uploader;
 
     @Autowired
-    public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository, S3Uploader s3Uploader) {
+    public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository,BookingService bookingService, S3Uploader s3Uploader) {
         this.paymentBookRepository = paymentBookRepository;
+        this.bookingService = bookingService;
         this.s3Uploader = s3Uploader;
     }
 
@@ -33,6 +40,15 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         paymentBook.setPaymentDate(timestamp);
 
         return paymentBookRepository.save(paymentBook);
+    }
+
+    @Override
+    public Mono<PaymentBookEntity> createPaymentBookPay(PaymentBookEntity paymentBook) {
+        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
+        Timestamp timestamp = Timestamp.valueOf(localDateTime);
+        paymentBook.setPaymentDate(timestamp);
+        return paymentBookRepository.save(paymentBook)
+                .flatMap(savedPaymentBook -> updateBookingStateIfRequired(savedPaymentBook.getBookingId()).thenReturn(savedPaymentBook));
     }
 
     @Override
@@ -78,5 +94,17 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     @Override
     public Mono<Void> deletePaymentBook(Integer id) {
         return paymentBookRepository.deleteById(id);
+    }
+
+    @Override
+    public Mono<Void> updateBookingStateIfRequired(Integer bookingId) {
+        return bookingService.updateBookingStatePay(bookingId, 3) // Aquí verificas y actualizas el estado a 3
+                .filter(booking -> booking.getBookingStateId() == 2) // Verifica si el estado es 2
+                .flatMap(booking -> bookingService.updateBookingStatePay(bookingId, 2)) // Si es 2, lo actualizas
+                .then();
+    }
+    @Override
+    public Mono<PaymentBookEntity> findById(Integer id) {
+        return paymentBookRepository.findById(id);
     }
 }

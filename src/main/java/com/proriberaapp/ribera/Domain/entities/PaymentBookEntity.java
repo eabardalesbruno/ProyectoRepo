@@ -69,4 +69,7 @@ public class PaymentBookEntity {
 
     @Column("paymentcomplete")
     private Boolean paymentComplete;
+
+    @Column("pendingpay")
+    private Integer pendingpay;
 }

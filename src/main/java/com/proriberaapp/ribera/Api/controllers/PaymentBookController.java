@@ -17,6 +17,9 @@ import reactor.core.publisher.Mono;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/payment-book")
@@ -35,6 +38,12 @@ public class PaymentBookController {
         return paymentBookService.createPaymentBook(paymentBook)
                 .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook))
                 .onErrorResume(error -> Mono.error(new RuntimeException("Error al cargar la imagen al servidor S3."))) ;
+    }
+
+    @PostMapping("/booking-pay")
+    public Mono<ResponseEntity<PaymentBookEntity>> createPaymentBookPay(@RequestBody PaymentBookEntity paymentBook) {
+        return paymentBookService.createPaymentBookPay(paymentBook)
+                .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook));
     }
 
     @PutMapping("/{id}")
@@ -67,4 +76,8 @@ public class PaymentBookController {
         return paymentBookService.deletePaymentBook(id);
     }
 
+    private String generateUniquePaymentToken() {
+        // Implementa la lógica para generar un token único (por ejemplo, utilizando JWT)
+        return UUID.randomUUID().toString();
+    }
 }
