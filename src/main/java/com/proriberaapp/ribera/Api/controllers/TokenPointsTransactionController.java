@@ -124,7 +124,29 @@ public class TokenPointsTransactionController {
                             });
                 });
     }
+    private String buildEmailBody(Map<String, String> response) {
+        String emailBody = "<html><head><title></title></head><body style='color:black'>";
+        emailBody += "<div style='width: 100%;'>";
+        emailBody += "<div style='display:flex;'>";
+        emailBody += "<img style='width: 100%;' src='http://www.inresorts.club/Views/img/fondo.png' />";
+        emailBody += "</div>";
+        emailBody += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>Voucher de Pago Wallet</h1>";
+        emailBody += "<h3 style='text-align: center;'>Fecha de Pago: 13-06-2023 04:55:00 pm</h3>";
+        emailBody += "<h3 style='text-align: center;'>Puntos Pagados: 50</h3>";
+        emailBody += "<center><p style='margin-left: 10%; margin-right: 10%;'>Cod Transaccion: " + response.get("token") + "</p></center>";
+        emailBody += "<center><p style='margin-left: 10%; margin-right: 10%;'>Gracias por su pago </p></center>";
+        emailBody += "<center><div style='width: 100%;'>";
+        emailBody += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
+        emailBody += "<center>Recuerde que el pago lo puede realizar mediante los medios de pagos que se encuentran en el portal.</center>";
+        emailBody += "</div></center>";
+        emailBody += "<center><div style='width: 100%;'>";
+        emailBody += "<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>";
+        emailBody += "</div></center>";
+        emailBody += "</div></body></html>";
 
+        return emailBody;
+    }
+/*
     private String buildEmailBody(Map<String, String> response) {
         String emailBody = "<html><body>";
         emailBody += "<h1>Token: " + response.get("token") + "</h1>";
@@ -133,4 +155,5 @@ public class TokenPointsTransactionController {
         emailBody += "</body></html>";
         return emailBody;
     }
+ */
 }
