@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.PartnerPointsRepositor
 import com.proriberaapp.ribera.Infraestructure.repository.TokenPointsTransactionRepository;
 import com.proriberaapp.ribera.services.EmailService;
 import com.proriberaapp.ribera.services.PDFGeneratorService;
+import com.proriberaapp.ribera.services.S3UploadService;
 import com.proriberaapp.ribera.services.TokenPointsTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -106,13 +107,15 @@ public class TokenPointsTransactionServiceImpl implements TokenPointsTransaction
     private final EmailService emailService;
     private final PDFGeneratorService pdfGeneratorService;
     private final WebClient webClient;
+    private final S3UploadService s3UploadService;
 
     @Autowired
-    public TokenPointsTransactionServiceImpl(TokenPointsTransactionRepository tokenPointsTransactionRepository, EmailService emailService, PDFGeneratorService pdfGeneratorService, WebClient.Builder webClientBuilder) {
+    public TokenPointsTransactionServiceImpl(TokenPointsTransactionRepository tokenPointsTransactionRepository, EmailService emailService, PDFGeneratorService pdfGeneratorService, WebClient.Builder webClientBuilder, S3UploadService s3UploadService) {
         this.tokenPointsTransactionRepository = tokenPointsTransactionRepository;
         this.emailService = emailService;
         this.pdfGeneratorService = pdfGeneratorService;
         this.webClient = webClientBuilder.baseUrl("https://riberams-dev.inclub.world/api/v1/s3-client/upload").build();
+        this.s3UploadService = s3UploadService;
     }
 
     @Override
@@ -146,18 +149,14 @@ public class TokenPointsTransactionServiceImpl implements TokenPointsTransaction
                                 String subject = "Pagos";
                                 String body = generateEmailBody(email, linkPayment);
 
-                                // Generar PDF
-                                byte[] pdfBytes;
                                 try {
-                                    pdfBytes = pdfGeneratorService.generatePDF(body);
+                                    byte[] pdfData = pdfGeneratorService.generatePDF(body);
+                                    return s3UploadService.uploadPdf(pdfData)
+                                            .then(emailService.sendEmail(email, subject, body))
+                                            .thenReturn(savedToken);
                                 } catch (IOException e) {
-                                    return Mono.error(e);
+                                    return Mono.error(new RuntimeException("Failed to generate PDF", e));
                                 }
-
-                                // Enviar PDF a S3
-                                return uploadPDFToS3(pdfBytes)
-                                        .then(emailService.sendEmail(email, subject, body))
-                                        .thenReturn(savedToken);
                             });
                 });
     }
