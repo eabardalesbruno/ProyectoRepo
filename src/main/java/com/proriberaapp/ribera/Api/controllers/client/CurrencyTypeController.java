@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Domain.entities.CurrencyTypeEntity;
-import com.proriberaapp.ribera.services.CurrencyTypeService;
+import com.proriberaapp.ribera.services.client.CurrencyTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

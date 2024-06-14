@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.CreateTokenRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PointsRequest;
-import com.proriberaapp.ribera.services.TokenPointsTransactionService;
+import com.proriberaapp.ribera.services.client.TokenPointsTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

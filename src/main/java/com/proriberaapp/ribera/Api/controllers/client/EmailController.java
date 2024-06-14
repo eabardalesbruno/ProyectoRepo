@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.EmailRequest;
-import com.proriberaapp.ribera.services.EmailService;
+import com.proriberaapp.ribera.services.client.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

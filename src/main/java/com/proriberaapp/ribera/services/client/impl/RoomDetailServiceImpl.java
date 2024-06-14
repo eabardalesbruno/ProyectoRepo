@@ -13,7 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RoomDetailServiceImpl implements com.proriberaapp.ribera.services.RoomDetailService {
+public class RoomDetailServiceImpl implements com.proriberaapp.ribera.services.client.RoomDetailService {
     private final RoomDetailRepository roomDetailRepository;
     @Override
     public Mono<RoomDetailEntity> save(RoomDetailEntity roomDetailEntity) {

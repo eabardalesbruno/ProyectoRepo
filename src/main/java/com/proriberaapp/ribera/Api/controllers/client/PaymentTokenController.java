@@ -2,8 +2,8 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaymentTokenResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
-import com.proriberaapp.ribera.services.PaymentBookService;
-import com.proriberaapp.ribera.services.PaymentTokenService;
+import com.proriberaapp.ribera.services.client.PaymentBookService;
+import com.proriberaapp.ribera.services.client.PaymentTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

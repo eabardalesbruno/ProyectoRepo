@@ -3,7 +3,7 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentMethodRequest;
 import com.proriberaapp.ribera.Domain.entities.PaymentMethodEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentMethodRepository;
-import com.proriberaapp.ribera.services.PaymentMethodService;
+import com.proriberaapp.ribera.services.client.PaymentMethodService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

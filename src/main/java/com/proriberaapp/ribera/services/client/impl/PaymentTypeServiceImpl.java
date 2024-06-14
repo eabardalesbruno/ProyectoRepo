@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.PaymentTypeEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentTypeRepository;
-import com.proriberaapp.ribera.services.PaymentTypeService;
+import com.proriberaapp.ribera.services.client.PaymentTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

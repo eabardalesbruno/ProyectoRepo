@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.BenefitEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BenefitRepository;
-import com.proriberaapp.ribera.services.BenefitService;
+import com.proriberaapp.ribera.services.client.BenefitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

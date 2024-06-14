@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Domain.entities.FinalCostumerEntity;
-import com.proriberaapp.ribera.services.FinalCostumerService;
+import com.proriberaapp.ribera.services.client.FinalCostumerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

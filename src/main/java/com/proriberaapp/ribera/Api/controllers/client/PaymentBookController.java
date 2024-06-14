@@ -1,24 +1,15 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
-import com.proriberaapp.ribera.services.PaymentBookService;
-import com.proriberaapp.ribera.services.S3Uploader;
-import com.proriberaapp.ribera.services.admin.impl.S3ClientService;
+import com.proriberaapp.ribera.services.client.PaymentBookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController

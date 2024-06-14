@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Domain.entities.TermsVersionEntity;
-import com.proriberaapp.ribera.services.TermsVersionService;
+import com.proriberaapp.ribera.services.client.TermsVersionService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

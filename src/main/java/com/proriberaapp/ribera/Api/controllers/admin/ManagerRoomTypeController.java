@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Domain.entities.RoomTypeEntity;
-import com.proriberaapp.ribera.services.RoomTypeService;
+import com.proriberaapp.ribera.services.client.RoomTypeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;

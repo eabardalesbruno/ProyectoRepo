@@ -13,7 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BookingStateServiceImpl implements com.proriberaapp.ribera.services.BookingStateService {
+public class BookingStateServiceImpl implements com.proriberaapp.ribera.services.client.BookingStateService {
     private final BookingStateRepository bookingStateRepository;
     @Override
     public Mono<BookingStateEntity> save(BookingStateEntity bookingStateEntity) {

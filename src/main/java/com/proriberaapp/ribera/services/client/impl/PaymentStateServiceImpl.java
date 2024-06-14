@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.PaymentStateEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentStateRepository;
-import com.proriberaapp.ribera.services.PaymentStateService;
+import com.proriberaapp.ribera.services.client.PaymentStateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

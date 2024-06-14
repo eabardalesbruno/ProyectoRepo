@@ -2,9 +2,9 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
-import com.proriberaapp.ribera.services.BookingService;
-import com.proriberaapp.ribera.services.PaymentBookService;
-import com.proriberaapp.ribera.services.S3Uploader;
+import com.proriberaapp.ribera.services.client.BookingService;
+import com.proriberaapp.ribera.services.client.PaymentBookService;
+import com.proriberaapp.ribera.services.client.S3Uploader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

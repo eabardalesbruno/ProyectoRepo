@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.ComfortRoomOfferDetailEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.ComfortRoomOfferDetailRepository;
-import com.proriberaapp.ribera.services.ComfortRoomOfferDetailService;
+import com.proriberaapp.ribera.services.client.ComfortRoomOfferDetailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

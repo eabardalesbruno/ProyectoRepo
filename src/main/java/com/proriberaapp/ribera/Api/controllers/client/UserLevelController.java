@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Domain.entities.UserLevelEntity;
-import com.proriberaapp.ribera.services.UserLevelService;
+import com.proriberaapp.ribera.services.client.UserLevelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

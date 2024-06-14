@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
-import com.proriberaapp.ribera.services.PaymentBookService;
+import com.proriberaapp.ribera.services.client.PaymentBookService;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;

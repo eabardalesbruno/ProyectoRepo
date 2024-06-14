@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.RequestTypeEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RequestTypeRepository;
-import com.proriberaapp.ribera.services.RequestTypeService;
+import com.proriberaapp.ribera.services.client.RequestTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.SendAndReceiveEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.SendAndReceiveRepository;
-import com.proriberaapp.ribera.services.SendAndReceiveService;
+import com.proriberaapp.ribera.services.client.SendAndReceiveService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

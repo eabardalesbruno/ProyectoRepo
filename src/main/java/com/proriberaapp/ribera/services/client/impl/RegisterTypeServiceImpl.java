@@ -3,7 +3,7 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RegisterTypeRequest;
 import com.proriberaapp.ribera.Domain.entities.RegisterTypeEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RegisterTypeRepository;
-import com.proriberaapp.ribera.services.RegisterTypeService;
+import com.proriberaapp.ribera.services.client.RegisterTypeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

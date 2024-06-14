@@ -13,7 +13,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.RoomTypeService {
+public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.client.RoomTypeService {
 
     private final RoomTypeRepository roomTypeRepository;
 

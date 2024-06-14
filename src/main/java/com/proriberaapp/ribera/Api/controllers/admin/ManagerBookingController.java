@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
-import com.proriberaapp.ribera.services.BookingService;
+import com.proriberaapp.ribera.services.client.BookingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

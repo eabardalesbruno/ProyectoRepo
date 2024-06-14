@@ -1,15 +1,10 @@
 package com.proriberaapp.ribera.Crosscutting.config;
 
-import com.proriberaapp.ribera.services.S3Uploader;
-import io.r2dbc.spi.ConnectionFactory;
+import com.proriberaapp.ribera.services.client.S3Uploader;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
-import org.springframework.r2dbc.connection.init.ResourceDatabasePopulator;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration

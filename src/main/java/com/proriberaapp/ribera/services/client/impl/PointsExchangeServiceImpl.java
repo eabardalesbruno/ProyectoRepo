@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.PointsExchangeEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PointsExchangeRepository;
-import com.proriberaapp.ribera.services.PointsExchangeService;
+import com.proriberaapp.ribera.services.client.PointsExchangeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

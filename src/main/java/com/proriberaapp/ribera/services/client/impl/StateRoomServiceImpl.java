@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.StateRoomEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.StateRoomRepository;
-import com.proriberaapp.ribera.services.StateRoomService;
+import com.proriberaapp.ribera.services.client.StateRoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

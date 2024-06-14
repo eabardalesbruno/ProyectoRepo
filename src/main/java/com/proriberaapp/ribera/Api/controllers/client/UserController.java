@@ -1,11 +1,10 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
-import com.proriberaapp.ribera.Api.controllers.dto.*;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
-import com.proriberaapp.ribera.services.UserApiClient;
-import com.proriberaapp.ribera.services.UserRegistrationService;
-import com.proriberaapp.ribera.services.UserClientService;
+import com.proriberaapp.ribera.services.client.UserApiClient;
+import com.proriberaapp.ribera.services.client.UserRegistrationService;
+import com.proriberaapp.ribera.services.client.UserClientService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
-import com.proriberaapp.ribera.services.PartnerPointsService;
+import com.proriberaapp.ribera.services.client.PartnerPointsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

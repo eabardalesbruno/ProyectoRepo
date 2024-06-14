@@ -5,7 +5,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferRetu
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
 import com.proriberaapp.ribera.Infraestructure.viewRepository.RoomOfferViewRepository;
-import com.proriberaapp.ribera.services.RoomOfferService;
+import com.proriberaapp.ribera.services.client.RoomOfferService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

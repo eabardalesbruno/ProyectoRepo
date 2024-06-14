@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
-import com.proriberaapp.ribera.services.BookingService;
+import com.proriberaapp.ribera.services.client.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

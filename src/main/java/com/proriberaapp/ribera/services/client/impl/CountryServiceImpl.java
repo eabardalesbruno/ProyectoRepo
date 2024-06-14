@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.CountryEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.CountryRepository;
-import com.proriberaapp.ribera.services.CountryService;
+import com.proriberaapp.ribera.services.client.CountryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.TermsVersionEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.TermsVersionRepository;
-import com.proriberaapp.ribera.services.TermsVersionService;
+import com.proriberaapp.ribera.services.client.TermsVersionService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

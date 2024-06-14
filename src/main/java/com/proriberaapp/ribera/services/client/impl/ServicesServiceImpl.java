@@ -3,7 +3,7 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewServiceReturn;
 import com.proriberaapp.ribera.Domain.entities.ServicesEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.ServicesRepository;
-import com.proriberaapp.ribera.services.ServicesService;
+import com.proriberaapp.ribera.services.client.ServicesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;

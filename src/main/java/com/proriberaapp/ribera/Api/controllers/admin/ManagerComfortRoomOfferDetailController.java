@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Domain.entities.ComfortRoomOfferDetailEntity;
-import com.proriberaapp.ribera.services.ComfortRoomOfferDetailService;
+import com.proriberaapp.ribera.services.client.ComfortRoomOfferDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

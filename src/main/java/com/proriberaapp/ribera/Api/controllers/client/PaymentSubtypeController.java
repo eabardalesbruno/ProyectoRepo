@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Domain.entities.PaymentSubtypeEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentSubtypeRepository;
-import com.proriberaapp.ribera.services.PaymentSubtypeService;
+import com.proriberaapp.ribera.services.client.PaymentSubtypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

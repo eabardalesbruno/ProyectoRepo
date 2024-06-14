@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Domain.entities.PaymentStateEntity;
-import com.proriberaapp.ribera.services.PaymentStateService;
+import com.proriberaapp.ribera.services.client.PaymentStateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

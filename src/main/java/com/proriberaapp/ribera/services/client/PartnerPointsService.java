@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client;
 
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
+import com.proriberaapp.ribera.services.BaseService;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;

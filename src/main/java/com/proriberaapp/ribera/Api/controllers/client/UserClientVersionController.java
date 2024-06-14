@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Domain.entities.UserClientVersionEntity;
-import com.proriberaapp.ribera.services.UserClientVersionService;
+import com.proriberaapp.ribera.services.client.UserClientVersionService;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

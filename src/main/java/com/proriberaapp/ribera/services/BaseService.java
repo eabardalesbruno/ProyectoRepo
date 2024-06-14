@@ -1,4 +1,4 @@
-package com.proriberaapp.ribera.services.client;
+package com.proriberaapp.ribera.services;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

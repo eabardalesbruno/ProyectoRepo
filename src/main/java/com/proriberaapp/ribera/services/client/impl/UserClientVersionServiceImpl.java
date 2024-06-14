@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.UserClientVersionEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientVersionRepository;
-import com.proriberaapp.ribera.services.UserClientVersionService;
+import com.proriberaapp.ribera.services.client.UserClientVersionService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

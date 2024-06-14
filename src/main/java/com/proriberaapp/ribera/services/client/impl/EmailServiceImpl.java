@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.EmailLogEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.EmailLogRepository;
-import com.proriberaapp.ribera.services.EmailService;
+import com.proriberaapp.ribera.services.client.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
-import com.proriberaapp.ribera.services.RoomOfferService;
+import com.proriberaapp.ribera.services.client.RoomOfferService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -2,7 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PartnerPointsRepository;
-import com.proriberaapp.ribera.services.PartnerPointsService;
+import com.proriberaapp.ribera.services.client.PartnerPointsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

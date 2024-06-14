@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewServiceReturn;
-import com.proriberaapp.ribera.services.ServicesService;
+import com.proriberaapp.ribera.services.client.ServicesService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;

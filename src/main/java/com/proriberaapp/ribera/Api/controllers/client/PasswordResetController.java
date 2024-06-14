@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
-import com.proriberaapp.ribera.services.PasswordResetTokenService;
-import com.proriberaapp.ribera.services.UserClientService;
+import com.proriberaapp.ribera.services.client.PasswordResetTokenService;
+import com.proriberaapp.ribera.services.client.UserClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

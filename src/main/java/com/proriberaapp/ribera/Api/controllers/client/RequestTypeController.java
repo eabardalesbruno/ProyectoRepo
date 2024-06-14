@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Domain.entities.RequestTypeEntity;
-import com.proriberaapp.ribera.services.RequestTypeService;
+import com.proriberaapp.ribera.services.client.RequestTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
