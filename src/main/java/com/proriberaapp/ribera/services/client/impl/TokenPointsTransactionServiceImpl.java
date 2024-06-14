@@ -1,12 +1,12 @@
-package com.proriberaapp.ribera.services.impl;
+package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.TokenPointsTransaction;
 import com.proriberaapp.ribera.Infraestructure.repository.PartnerPointsRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.TokenPointsTransactionRepository;
-import com.proriberaapp.ribera.services.EmailService;
+import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.PDFGeneratorService;
 import com.proriberaapp.ribera.services.S3UploadService;
-import com.proriberaapp.ribera.services.TokenPointsTransactionService;
+import com.proriberaapp.ribera.services.client.TokenPointsTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
