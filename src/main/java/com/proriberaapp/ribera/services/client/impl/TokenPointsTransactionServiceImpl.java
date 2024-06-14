@@ -1,17 +1,28 @@
-package com.proriberaapp.ribera.services.client.impl;
+package com.proriberaapp.ribera.services.impl;
 
 import com.proriberaapp.ribera.Domain.entities.TokenPointsTransaction;
 import com.proriberaapp.ribera.Infraestructure.repository.PartnerPointsRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.TokenPointsTransactionRepository;
-import com.proriberaapp.ribera.services.client.EmailService;
-import com.proriberaapp.ribera.services.client.TokenPointsTransactionService;
+import com.proriberaapp.ribera.services.EmailService;
+import com.proriberaapp.ribera.services.PDFGeneratorService;
+import com.proriberaapp.ribera.services.S3UploadService;
+import com.proriberaapp.ribera.services.TokenPointsTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
