@@ -130,7 +130,7 @@ public class TokenPointsTransactionController {
         emailBody += "<div style='display:flex;'>";
         emailBody += "<img style='width: 100%;' src='http://www.inresorts.club/Views/img/fondo.png' />";
         emailBody += "</div>";
-        emailBody += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>Voucher de Pago Wallet</h1>";
+        emailBody += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>Voucher de Pago con Puntos</h1>";
         emailBody += "<h3 style='text-align: center;'>Fecha de Pago: 13-06-2023 04:55:00 pm</h3>";
         emailBody += "<h3 style='text-align: center;'>Puntos Pagados: 50</h3>";
         emailBody += "<center><p style='margin-left: 10%; margin-right: 10%;'>Cod Transaccion: " + response.get("token") + "</p></center>";
