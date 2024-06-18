@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.admin.dto.views;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ListAmenities;
 import lombok.Builder;
 import lombok.Data;
 
@@ -35,11 +36,4 @@ public class ViewServiceReturn {
     private String image;
     private String stateroomname;
 
-    @Data
-    @Builder
-    public static class ListAmenities {
-        private String comforttypename;
-        private String comforttypedescription;
-        private Boolean active;
-    }
 }

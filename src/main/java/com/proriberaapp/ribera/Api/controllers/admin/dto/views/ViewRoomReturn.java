@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.admin.dto.views;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.BedroomReturn;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.relational.core.mapping.Column;
@@ -21,11 +22,4 @@ public class ViewRoomReturn {
     @Column("listbedroomreturn")
     private List<BedroomReturn> listBedroomReturn;
 
-    @Data
-    @Builder
-    public static class BedroomReturn {
-        @Column("bedtypename")
-        private String bedTypeName;
-        private Integer quantity;
-    }
 }

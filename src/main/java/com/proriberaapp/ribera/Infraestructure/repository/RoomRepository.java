@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.BedroomReturn;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import org.springframework.data.r2dbc.repository.Query;
@@ -18,5 +19,5 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
     Flux<ViewRoomReturn> findAllViewRoomReturn();
 
     @Query("SELECT * FROM ViewBedroomReturn WHERE roomid = :roomid")
-    Flux<ViewRoomReturn.BedroomReturn> findAllViewBedroomReturn(@Param("roomid") Integer roomid);
+    Flux<BedroomReturn> findAllViewBedroomReturn(@Param("roomid") Integer roomid);
 }

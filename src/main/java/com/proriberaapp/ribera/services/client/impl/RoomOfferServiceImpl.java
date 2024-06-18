@@ -3,7 +3,9 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOffer;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.BedroomRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.ServicesRepository;
 import com.proriberaapp.ribera.Infraestructure.viewRepository.RoomOfferViewRepository;
 import com.proriberaapp.ribera.services.client.RoomOfferService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,8 @@ import java.util.List;
 public class RoomOfferServiceImpl implements RoomOfferService {
     private final RoomOfferRepository roomOfferRepository;
     private final RoomOfferViewRepository roomOfferViewRepository;
+    private final ServicesRepository servicesRepository;
+    private final BedroomRepository bedroomRepository;
     @Value("${room.offer.ratio.base}")
     private Integer RATIO_BASE;
     @Value("${room.offer.ratio.ribera}")
@@ -66,7 +70,19 @@ public class RoomOfferServiceImpl implements RoomOfferService {
 
     @Override
     public Flux<ViewRoomOfferReturn> viewRoomOfferReturn(SearchFiltersRoomOffer filters) {
-        return roomOfferViewRepository.viewRoomOfferReturn(filters);
+        return roomOfferViewRepository.viewRoomOfferReturn(filters)
+                .flatMap(service -> servicesRepository.findAllViewComfortReturn(service.getRoomOfferId())
+                        .collectList().map(comfort -> {
+                            service.setListAmenities(comfort);
+                            return service;
+                        })
+                )
+                .flatMap(service -> bedroomRepository.findAllViewBedroomReturn(service.getRoomId())
+                        .collectList().map(bedroom -> {
+                            service.setListBedroomReturn(bedroom);
+                            return service;
+                        })
+                );
     }
 
     @Override
