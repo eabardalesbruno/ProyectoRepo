@@ -3,8 +3,6 @@ package com.proriberaapp.ribera.Api.controllers.admin.dto.views;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BedroomReturn;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ListAmenities;
 import io.r2dbc.spi.Readable;
-import io.r2dbc.spi.Row;
-import io.r2dbc.spi.RowMetadata;
 import lombok.Builder;
 
 import java.math.BigDecimal;
