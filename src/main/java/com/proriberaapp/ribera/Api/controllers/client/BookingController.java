@@ -1,4 +1,5 @@
 package com.proriberaapp.ribera.Api.controllers.client;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
@@ -57,5 +58,11 @@ public class BookingController {
         return bookingService.findByBookingId(bookingId)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/calendarDate")
+    public Flux<CalendarDate> downloadBoucher(
+            @RequestParam("roomOfferId") Integer id) {
+        return bookingService.calendarDate(id);
     }
 }
