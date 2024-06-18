@@ -1,14 +1,18 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.UserDataToken;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.enums.Permission;
 import com.proriberaapp.ribera.services.BaseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.security.Principal;
 import java.util.List;
 
 @Slf4j
@@ -18,7 +22,7 @@ abstract class BaseManagerController<R,T> {
     @Autowired
     private JwtProvider jtp;
 
-    @GetMapping("find/all")
+    @GetMapping(value = "find/all", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<R> getAllEntity(
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jtp.getIdFromToken(token);

@@ -39,7 +39,7 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
     }
 
     @Override
-    public Mono<UserAdminResponse> register(Integer idUserAdmin, RegisterRequest registerRequest) {
+    public Mono<UserResponse> register(Integer idUserAdmin, RegisterRequest registerRequest) {
 
         String password = passwordEncoder.encode(registerRequest.password());
 
@@ -53,11 +53,11 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
                 .flatMap(exists -> exists ?
                         Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "username or email or document already in use"))
                         : userAdminRepository.save(userCreate))
-                .map(UserAdminResponse::toResponse);
+                .map(UserResponse::toResponse);
     }
 
     @Override
-    public Mono<UserAdminResponse> update(
+    public Mono<UserResponse> update(
             Integer idUserAdmin,
             Integer idUserAdminUpdate,
             UpdateUserAdminRequest updateUserAdminRequest
@@ -86,11 +86,11 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
                     return user;
                 })
                 .flatMap(userAdminRepository::save)
-                .map(UserAdminResponse::toResponse);
+                .map(UserResponse::toResponse);
     }
 
     @Override
-    public Mono<UserAdminResponse> updatePassword(Integer idUserAdmin, Integer idUserAdminUpdatePassword, String newPassword) {
+    public Mono<UserResponse> updatePassword(Integer idUserAdmin, Integer idUserAdminUpdatePassword, String newPassword) {
         return userAdminRepository.findById(idUserAdminUpdatePassword)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NO_CONTENT, "user not found")))
                 .filter(user -> user.getStatus() == StatesUser.ACTIVE)
@@ -103,11 +103,11 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
                     return user;
                 })
                 .flatMap(userAdminRepository::save)
-                .map(UserAdminResponse::toResponse);
+                .map(UserResponse::toResponse);
     }
 
     @Override
-    public Mono<UserAdminResponse> updatePasswordBySolicitude(Integer idUserAdmin, Integer idUserAdminUpdatePassword, String newPassword, String oldPassword) {
+    public Mono<UserResponse> updatePasswordBySolicitude(Integer idUserAdmin, Integer idUserAdminUpdatePassword, String newPassword, String oldPassword) {
         return userAdminRepository.findById(idUserAdminUpdatePassword)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NO_CONTENT, "user not found")))
                 .filter(user -> user.getStatus() == StatesUser.ACTIVE)
@@ -122,50 +122,50 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
                     return user;
                 })
                 .flatMap(userAdminRepository::save)
-                .map(UserAdminResponse::toResponse);
+                .map(UserResponse::toResponse);
     }
 
     @Override
-    public Mono<UserAdminResponse> updatePasswordByVerificationCode(String verificationCode, String newPassword) {
+    public Mono<UserResponse> updatePasswordByVerificationCode(String verificationCode, String newPassword) {
         return null;
     }
 
     @Override
-    public Mono<UserAdminResponse> updatePasswordByVerificationCode(Integer idUserAdmin, String verificationCode, String newPassword) {
+    public Mono<UserResponse> updatePasswordByVerificationCode(Integer idUserAdmin, String verificationCode, String newPassword) {
         return null;
     }
 
     @Override
-    public Mono<UserAdminResponse> requestUpdatePassword(RequestUpdateUserAdminRequest requestUpdateRequest) {
+    public Mono<UserResponse> requestUpdatePassword(RequestUpdateUserAdminRequest requestUpdateRequest) {
         return userAdminRepository.findByEmailAndDocument(requestUpdateRequest.email(), requestUpdateRequest.document())
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NO_CONTENT, "user not found")))
                 .filter(user -> user.getStatus() == StatesUser.ACTIVE)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "user is not active")))
 
                 .flatMap(userAdminRepository::save)
-                .map(UserAdminResponse::toResponse);
+                .map(UserResponse::toResponse);
     }
 
     @Override
-    public Mono<UserAdminResponse> findByEmail(String email) {
+    public Mono<UserResponse> findByEmail(String email) {
         return userAdminRepository.findByEmail(email)
-                .map(UserAdminResponse::toResponse);
+                .map(UserResponse::toResponse);
     }
 
     @Override
-    public Mono<UserAdminResponse> findById(Integer id) {
+    public Mono<UserResponse> findById(Integer id) {
         return userAdminRepository.findById(id)
-                .map(UserAdminResponse::toResponse);
+                .map(UserResponse::toResponse);
     }
 
     @Override
-    public Flux<UserAdminResponse> findAll() {
+    public Flux<UserResponse> findAll() {
         return userAdminRepository.findAll()
-                .map(UserAdminResponse::toResponse);
+                .map(UserResponse::toResponse);
     }
 
     @Override
-    public Mono<UserAdminResponse> disable(Integer idUserAdmin, Integer idUserAdminUpdateStatus) {
+    public Mono<UserResponse> disable(Integer idUserAdmin, Integer idUserAdminUpdateStatus) {
         return userAdminRepository.findById(idUserAdminUpdateStatus)
                 .map(user -> {
                     user.setStatus(StatesUser.INACTIVE);
@@ -175,11 +175,11 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
                     return user;
                 })
                 .flatMap(userAdminRepository::save)
-                .map(UserAdminResponse::toResponse);
+                .map(UserResponse::toResponse);
     }
 
     @Override
-    public Mono<UserAdminResponse> enable(Integer idUserAdmin, Integer idUserAdminUpdateStatus) {
+    public Mono<UserResponse> enable(Integer idUserAdmin, Integer idUserAdminUpdateStatus) {
         return userAdminRepository.findById(idUserAdminUpdateStatus)
                 .map(user -> {
                     user.setStatus(StatesUser.ACTIVE);
@@ -189,11 +189,11 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
                     return user;
                 })
                 .flatMap(userAdminRepository::save)
-                .map(UserAdminResponse::toResponse);
+                .map(UserResponse::toResponse);
     }
 
     @Override
-    public Mono<UserAdminResponse> delete(Integer id, Integer idUserAdminDelete) {
+    public Mono<UserResponse> delete(Integer id, Integer idUserAdminDelete) {
         return userAdminRepository.findById(id)
                 .map(user -> {
                     user.setStatus(StatesUser.DELETED);
@@ -203,6 +203,6 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
                     return user;
                 })
                 .flatMap(userAdminRepository::save)
-                .map(UserAdminResponse::toResponse);
+                .map(UserResponse::toResponse);
     }
 }

@@ -21,11 +21,11 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-@Table("useradmin")
-public class UserAdminEntity implements UserDetails {
+@Table("userpromoter")
+public class UserPromoterEntity implements UserDetails {
     @Id
-    @Column("useradminid")
-    private Integer userAdminId;
+    @Column("userpromoterid")
+    private Integer userPromoterId;
 
     private String email;
     private String password;
@@ -78,4 +78,3 @@ public class UserAdminEntity implements UserDetails {
         return true;
     }
 }
-

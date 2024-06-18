@@ -18,7 +18,7 @@ public class ManagerUserAdminController {
     private final JwtProvider jwtProvider;
 
     @PostMapping("/register")
-    public Mono<UserAdminResponse> register(
+    public Mono<UserResponse> register(
             @RequestBody RegisterRequest registerRequest,
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jwtProvider.getIdFromToken(token.substring(7));
@@ -27,7 +27,7 @@ public class ManagerUserAdminController {
     }
 
     @PatchMapping("/update")
-    public Mono<UserAdminResponse> update(
+    public Mono<UserResponse> update(
             @RequestParam Integer idUserAdminUpdate,
             @RequestBody UpdateUserAdminRequest updateRequest,
             @RequestHeader("Authorization") String token) {
@@ -36,7 +36,7 @@ public class ManagerUserAdminController {
     }
 
     @PatchMapping("/update/password")
-    public Mono<UserAdminResponse> updatePassword(
+    public Mono<UserResponse> updatePassword(
             @RequestParam Integer idUserAdminUpdatePassword,
             @RequestParam String newPassword,
             @RequestHeader("Authorization") String token) {
@@ -45,7 +45,7 @@ public class ManagerUserAdminController {
     }
 
     @PatchMapping("/update/status/enable")
-    public Mono<UserAdminResponse> updateStatusEnable(
+    public Mono<UserResponse> updateStatusEnable(
             @RequestParam Integer idUserAdminUpdateStatus,
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jwtProvider.getIdFromToken(token.substring(7));
@@ -53,7 +53,7 @@ public class ManagerUserAdminController {
     }
 
     @PatchMapping("/update/status/disable")
-    public Mono<UserAdminResponse> updateStatusDisable(
+    public Mono<UserResponse> updateStatusDisable(
             @RequestParam Integer idUserAdminUpdateStatus,
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jwtProvider.getIdFromToken(token.substring(7));
@@ -61,29 +61,29 @@ public class ManagerUserAdminController {
     }
 
     @GetMapping("/find/id")
-    public Mono<UserAdminResponse> findById(@RequestParam Integer idUserAdmin) {
+    public Mono<UserResponse> findById(@RequestParam Integer idUserAdmin) {
         return userAdminManagerService.findById(idUserAdmin);
     }
 
     @GetMapping("/find/my-data")
-    public Mono<UserAdminResponse> findMyData(
+    public Mono<UserResponse> findMyData(
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jwtProvider.getIdFromToken(token);
         return userAdminManagerService.findById(idUserAdmin);
     }
 
     @GetMapping("/find/email")
-    public Mono<UserAdminResponse> findByEmail(@RequestParam String email) {
+    public Mono<UserResponse> findByEmail(@RequestParam String email) {
         return userAdminManagerService.findByEmail(email);
     }
 
     @GetMapping("/find/all")
-    public Flux<UserAdminResponse> findAll() {
+    public Flux<UserResponse> findAll() {
         return userAdminManagerService.findAll();
     }
 
     @DeleteMapping("/delete")
-    public Mono<UserAdminResponse> delete(
+    public Mono<UserResponse> delete(
             @RequestParam Integer idUserAdminDelete,
             @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jwtProvider.getIdFromToken(token.substring(7));

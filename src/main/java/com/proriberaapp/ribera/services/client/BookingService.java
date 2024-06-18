@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
@@ -23,4 +24,5 @@ public interface BookingService extends BaseService<BookingEntity,BookingEntity>
 
     Mono<BookingEntity> updateBookingStatePay(Integer bookingId, Integer bookingStateId);
 
+    Flux<CalendarDate> calendarDate(Integer id);
 }

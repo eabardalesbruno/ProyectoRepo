@@ -1,0 +1,15 @@
+package com.proriberaapp.ribera.Infraestructure.repository;
+
+import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
+import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import reactor.core.publisher.Mono;
+
+public interface UserPromoterRepository extends R2dbcRepository<UserPromoterEntity, Integer> {
+    Mono<UserPromoterEntity> findByUsernameOrEmail(String username, String email);
+
+    Mono<UserAdminEntity> findByUsernameOrEmailOrDocument(String username, String email, String document);
+
+}
+
+

@@ -110,6 +110,26 @@ CREATE TABLE IF NOT EXISTS useradmin (
     updatedid INTEGER
 );
 
+CREATE TABLE IF NOT EXISTS userpromoter (
+    userpromoterid SERIAL PRIMARY KEY,
+    email VARCHAR(255),
+    password VARCHAR(255),
+    username VARCHAR(50),
+    firstname VARCHAR(50),
+    lastname VARCHAR(50),
+    phone VARCHAR(50),
+    address VARCHAR(255),
+    typedocument VARCHAR(50),
+    document VARCHAR(50),
+    role VARCHAR(50),
+    status VARCHAR(50),
+    permission VARCHAR(50),
+    createdat TIMESTAMP,
+    createdid INTEGER,
+    updatedat TIMESTAMP,
+    updatedid INTEGER
+);
+
 CREATE TABLE IF NOT EXISTS userclient (
     userclientid SERIAL PRIMARY KEY,
     registertypeid INTEGER,
@@ -289,7 +309,7 @@ CREATE TABLE IF NOT EXISTS bedroom (
     CONSTRAINT fk_bedtype_bed FOREIGN KEY (bedtypeid) REFERENCES bedstype(bedtypeid)
 );
 
-CREATE TABLE emaillog (
+CREATE TABLE IF NOT EXISTS emaillog (
     emaillogid SERIAL PRIMARY KEY,
     recipient VARCHAR(255) NOT NULL,
     subject VARCHAR(255) NOT NULL,
@@ -423,68 +443,6 @@ CREATE TABLE IF NOT EXISTS userclientversion (
     CONSTRAINT fk_termsversion_uv FOREIGN KEY (versionid) REFERENCES termsversion(versionid)
 );
 
-CREATE OR REPLACE VIEW ViewBedsType AS
-SELECT
-    b.bookingid AS bookingId,
-    bt.*
-FROM
-    booking b
-JOIN
-    roomoffer ro ON b.roomofferid = ro.roomofferid
-JOIN
-    room r ON ro.roomid = r.roomid
-JOIN
-	bedroom br ON r.roomid = br.roomid
-JOIN
-	bedstype bt ON br.bedtypeid = bt.bedtypeid;
-
-
-
-CREATE OR REPLACE VIEW viewcomfortdata AS
-SELECT
-    b.bookingid AS bookingId,
-    ct.*
-FROM
-    booking b
-JOIN
-    roomoffer ro ON b.roomofferid = ro.roomofferid
-JOIN
-    comfortroomofferdetail crod ON ro.roomofferid = crod.roomofferid
-JOIN
-    comforttype ct ON crod.comforttypeid = ct.comforttypeid;
-
-
-
-CREATE OR REPLACE VIEW ViewBookingReturn AS
-SELECT
-    b.bookingid AS bookingId,
-	b.userclientid,
-	b.bookingstateid,
-    r.image AS image,
-    bs.bookingstatename AS state,
-    rd.information AS description,
-    rd.bedrooms AS bedrooms,
-    rd.squaremeters AS squareMeters,
-    rd.oceanviewbalcony AS oceanViewBalcony,
-    rd.balconyoverlookingpool AS balconyOverlookingPool,
-    r.capacity AS capacity,
-    b.daybookinginit AS dayBookingInit,
-    b.daybookingend AS dayBookingEnd,
-    ro.cost AS price,
-    ro.inresortpoints AS pointsInResort,
-    ro.riberapoints AS pointsRibera
-FROM
-    booking b
-JOIN
-    roomoffer ro ON b.roomofferid = ro.roomofferid
-JOIN
-    room r ON ro.roomid = r.roomid
-JOIN
-    roomtype rt ON r.roomtypeid = rt.roomtypeid
-JOIN
-    roomdetail rd ON r.roomdetailid = rd.roomdetailid
-JOIN
-    bookingstate bs ON b.bookingstateid = bs.bookingstateid;
 
 CREATE TABLE IF NOT EXISTS paymenttype (
     paymenttypeid SERIAL PRIMARY KEY,
@@ -510,13 +468,13 @@ CREATE TABLE IF NOT EXISTS paymentsubtype (
 );
 
 
-CREATE TABLE transactioncategory
+CREATE TABLE IF NOT EXISTS transactioncategory
 (
     transactioncategoryid integer PRIMARY KEY,
     name varchar(255)
 );
 
-CREATE TABLE typepointstransaction
+CREATE TABLE IF NOT EXISTS typepointstransaction
 (
     typepointstransactionid integer PRIMARY KEY,
     description varchar(255),
@@ -526,7 +484,7 @@ CREATE TABLE typepointstransaction
     CONSTRAINT fk_transactioncategory FOREIGN KEY (transactioncategoryid) REFERENCES transactioncategory (transactioncategoryid)
 );
 
-CREATE TABLE pointstransaction
+CREATE TABLE IF NOT EXISTS pointstransaction
 (
     pointstransactionid SERIAL PRIMARY KEY,
     partnerpointid integer,
@@ -541,7 +499,7 @@ CREATE TABLE pointstransaction
     CONSTRAINT fk_typepointstransaction FOREIGN KEY (typepointstransactionid) REFERENCES typepointstransaction (typepointstransactionid)
 );
 
-CREATE TABLE tokenpointstransaction
+CREATE TABLE IF NOT EXISTS tokenpointstransaction
 (
     tokenpointstransactionid SERIAL PRIMARY KEY,
     codigotoken VARCHAR(255),

@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import org.springframework.data.r2dbc.repository.Query;
@@ -28,7 +29,11 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
 
     @Query("SELECT * FROM ViewBookingReturn WHERE userClientId = :userClientId")
     Flux<ViewBookingReturn> findAllViewBookingReturnByUserClientId(@Param("userClientId") Integer userClientId);
+
     @Query("SELECT * FROM ViewBookingReturn")
     Flux<ViewBookingReturn> findAllViewBookingReturn();
+
+    @Query("SELECT bookingid, roomofferid, daybookinginit, daybookingend FROM booking WHERE roomofferid = :roomOfferId AND dayBookingEnd >= CURRENT_DATE")
+    Flux<CalendarDate> findAllCalendarDate(@Param("roomofferid") Integer roomOfferId);
 
 }

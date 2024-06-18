@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
@@ -145,6 +146,11 @@ public class BookingServiceImpl implements BookingService {
                     return partnerPointsService.incrementPoints(partnerPointsEntity, partnerPointsEntity.getPoints())
                             .flatMap(updatedBookingEntity -> bookingRepository.save(bookingEntity));
                 });
+    }
+
+    @Override
+    public Flux<CalendarDate> calendarDate(Integer id) {
+        return bookingRepository.findAllCalendarDate(id);
     }
 
     public Mono<BookingEntity> updateBookingState(Integer bookingId, Integer bookingStateId) {

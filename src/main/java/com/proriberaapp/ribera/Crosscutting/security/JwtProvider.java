@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Crosscutting.security;
 
 import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
+import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
 import com.proriberaapp.ribera.Domain.enums.Permission;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
@@ -23,6 +24,28 @@ public class JwtProvider {
 
     @Value("${jwt.expiration.admin}")
     private long jwtExpirationMs;
+
+    public String generateTokenPromoter(UserPromoterEntity userDetails) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+
+        return Jwts.builder()
+                .claim("id", userDetails.getUserPromoterId())
+
+                .setSubject(userDetails.getUsername())
+
+                .claim("document", userDetails.getDocument())
+                .claim("roles", userDetails.getAuthorities())
+                .claim("permissions", userDetails.getPermission())
+                .claim("state", userDetails.getStatus())
+
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+
+                .signWith(getKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
 
     public String generateTokenAdmin(UserAdminEntity userDetails) {
         Date now = new Date();

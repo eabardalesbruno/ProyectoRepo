@@ -18,13 +18,13 @@ public class UserAdminController {
     }
 
     @PostMapping("/request/update/password")
-    public Mono<UserAdminResponse> requestUpdatePassword(
+    public Mono<UserResponse> requestUpdatePassword(
             @RequestBody RequestUpdateUserAdminRequest requestUpdateRequest) {
         return userAdminManagerService.requestUpdatePassword(requestUpdateRequest);
     }
 
     @PostMapping("/update/password")
-    public Mono<UserAdminResponse> updatePassword(
+    public Mono<UserResponse> updatePassword(
             @RequestParam String verificationCode,
             @RequestParam String newPassword) {
         return userAdminManagerService.updatePasswordByVerificationCode(verificationCode, newPassword);
