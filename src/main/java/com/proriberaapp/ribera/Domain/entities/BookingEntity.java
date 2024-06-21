@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Domain.entities;
 
+import io.r2dbc.spi.Parameter;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +29,14 @@ public class BookingEntity {
     @Column("costfinal")
     private BigDecimal costFinal;
     private String detail;
+
+    @Column("numberadults")
+    private Integer numberAdults;
+    @Column("numberchildren")
+    private Integer numberChildren;
+    @Column("numberbabies")
+    private Integer numberBabies;
+
     @Column("daybookinginit")
     private Timestamp dayBookingInit;
     @Column("daybookingend")

@@ -169,6 +169,11 @@ CREATE TABLE IF NOT EXISTS booking (
     userclientid INTEGER,
     costfinal DECIMAL,
     detail VARCHAR(255),
+
+    numberadults INTEGER,
+    numberchildren INTEGER,
+    numberbabies INTEGER,
+
     daybookinginit TIMESTAMP,
     daybookingend TIMESTAMP,
     checkin TIMESTAMP,

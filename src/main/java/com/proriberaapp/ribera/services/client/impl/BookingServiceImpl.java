@@ -167,6 +167,9 @@ public class BookingServiceImpl implements BookingService {
                 .bookingStateId(3)
                 .userClientId(userClientId)
                 //.detail(bookingSaveRequest.getDetail())
+                .numberAdults(bookingSaveRequest.getNumberAdult())
+                .numberChildren(bookingSaveRequest.getNumberChild())
+                .numberBabies(bookingSaveRequest.getNumberBaby())
 
                 .dayBookingInit(Timestamp.valueOf(bookingSaveRequest.getDayBookingInit().atStartOfDay()))
                 .dayBookingEnd(Timestamp.valueOf(bookingSaveRequest.getDayBookingEnd().atStartOfDay()))
