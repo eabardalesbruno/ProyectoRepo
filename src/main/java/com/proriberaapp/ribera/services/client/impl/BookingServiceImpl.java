@@ -2,9 +2,11 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
+import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
+import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.PartnerPointsService;
@@ -23,6 +25,11 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 
 import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -33,6 +40,7 @@ public class BookingServiceImpl implements BookingService {
 
     private final PartnerPointsService partnerPointsService;
     private final ComfortTypeRepository comfortTypeRepository;
+    private final RoomOfferRepository roomOfferRespository;
 
     private final BedsTypeRepository bedsTypeRepository;
 
@@ -49,29 +57,21 @@ public class BookingServiceImpl implements BookingService {
             BookingRepository bookingRepository,
             PartnerPointsService partnerPointsService,
             ComfortTypeRepository comfortTypeRepository,
-            BedsTypeRepository bedsTypeRepository//,
+            BedsTypeRepository bedsTypeRepository,
+            RoomOfferRepository roomOfferRespository
             //WebClient.Builder webClientBuilder
     ) {
         this.bookingRepository = bookingRepository;
         this.partnerPointsService = partnerPointsService;
         this.comfortTypeRepository = comfortTypeRepository;
         this.bedsTypeRepository = bedsTypeRepository;
+        this.roomOfferRespository = roomOfferRespository;
         //this.webClient = webClientBuilder.baseUrl(uploadDir).build();
     }
 
     @Override
-    public Mono<BookingEntity> save(BookingEntity bookingEntity) {
-        bookingEntity.setBookingStateId(3);
-        bookingEntity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-
-        return bookingRepository.findExistingBookings(
-                        bookingEntity.getRoomOfferId(),
-                        bookingEntity.getDayBookingInit(),
-                        bookingEntity.getDayBookingEnd())
-                .hasElements()
-                .flatMap(exists -> exists
-                        ? Mono.error(new IllegalArgumentException("Booking already exists"))
-                        : bookingRepository.save(bookingEntity));
+    public Mono<BookingEntity> save(BookingEntity entity) {
+        return null;
     }
 
     @Override
@@ -100,10 +100,12 @@ public class BookingServiceImpl implements BookingService {
                     }
                 });
     }
+
     @Override
     public Mono<BookingEntity> findByBookingId(Integer bookingId) {
         return bookingRepository.findById(bookingId);
     }
+
     @Override
     public Mono<BookingEntity> findById(Integer id) {
         return bookingRepository.findById(id);
@@ -153,6 +155,47 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.findAllCalendarDate(id);
     }
 
+    @Override
+    public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest) {
+
+        Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
+        log.info("numberOfDays: {}", numberOfDays);
+        Mono<RoomOfferEntity> roomOfferEntityMono = roomOfferRespository.findById(bookingSaveRequest.getRoomOfferId());
+
+        BookingEntity bookingEntity = BookingEntity.builder()
+                .roomOfferId(bookingSaveRequest.getRoomOfferId())
+                .bookingStateId(3)
+                .userClientId(userClientId)
+                //.detail(bookingSaveRequest.getDetail())
+
+                .dayBookingInit(Timestamp.valueOf(bookingSaveRequest.getDayBookingInit().atStartOfDay()))
+                .dayBookingEnd(Timestamp.valueOf(bookingSaveRequest.getDayBookingEnd().atStartOfDay()))
+
+                .createdAt(new Timestamp(System.currentTimeMillis()))
+                .build();
+
+        return bookingRepository.findExistingBookings(
+                        bookingEntity.getRoomOfferId(),
+                        bookingEntity.getDayBookingInit(),
+                        bookingEntity.getDayBookingEnd())
+                .hasElements()
+                .flatMap(exists -> exists
+                        ? Mono.error(new IllegalArgumentException("Booking already exists"))
+                        : Mono.just(bookingEntity)
+                        .flatMap(bookingEntity1 -> roomOfferEntityMono
+                                .map(roomOfferEntity -> {
+                                    bookingEntity1.setCostFinal(roomOfferEntity.getCost().multiply(BigDecimal.valueOf(numberOfDays)));
+                                    return bookingEntity1;
+                                })
+                        )
+                        .flatMap(bookingRepository::save)
+                );
+    }
+
+    private Integer calculateDaysBetween(LocalDate dayBookingInit, LocalDate dayBookingEnd) {
+        return (int) ChronoUnit.DAYS.between(dayBookingInit, dayBookingEnd) + 1;
+    }
+
     public Mono<BookingEntity> updateBookingState(Integer bookingId, Integer bookingStateId) {
         return bookingRepository.findById(bookingId)
                 .map(bookingEntity -> {
@@ -172,7 +215,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Mono<S3UploadResponse> loadBoucher(Mono<FilePart> file,Integer folderNumber, String token) {
+    public Mono<S3UploadResponse> loadBoucher(Mono<FilePart> file, Integer folderNumber, String token) {
         return file.flatMap(f -> {
             WebClient webClient = WebClient.create();
 

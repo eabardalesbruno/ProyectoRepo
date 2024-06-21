@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
+import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
@@ -45,6 +46,17 @@ public class BookingController {
         Integer idUserAdmin = jtp.getIdFromToken(token);
         return bookingService.findByIdAndIdUserAdmin(idUserAdmin, bookingId);
     }
+
+    @PostMapping("/save")
+    public Mono<BookingEntity> saveBooking(
+            @RequestBody BookingSaveRequest bookingSaveRequest,
+            @RequestHeader("Authorization") String token) {
+        Integer userClientId = jtp.getIdFromToken(token);
+        log.info("userClientId: {}", userClientId);
+        log.info("bookingSaveRequest: {}", bookingSaveRequest);
+        return bookingService.save(userClientId, bookingSaveRequest);
+    }
+
 
     @GetMapping("/{bookingId}/costfinal")
     public Mono<ResponseEntity<BigDecimal>> getCostFinalByBookingId(@PathVariable Integer bookingId) {

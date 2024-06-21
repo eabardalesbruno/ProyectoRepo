@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 public interface BookingRepository extends R2dbcRepository<BookingEntity, Integer> {
+
     Mono<BookingEntity> findByBookingStateId(BookingEntity bookingEntity);
 
     Flux<BookingEntity> findAllByBookingStateIdIn(List<BookingEntity> bookingEntity);
