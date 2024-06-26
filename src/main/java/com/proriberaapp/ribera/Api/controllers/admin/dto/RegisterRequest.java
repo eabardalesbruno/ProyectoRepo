@@ -16,7 +16,7 @@ public record RegisterRequest(
         String lastName,
         String phone,
         String address,
-        TypeDocument typeDocument,
+        Integer typeDocument,
         String document,
         Role role,
         List<Permission> permission
@@ -31,8 +31,8 @@ public record RegisterRequest(
                 .lastName(registerRequest.lastName().toUpperCase())
                 .phone(registerRequest.phone())
                 .address(registerRequest.address())
-                .typeDocument(registerRequest.typeDocument())
-                .document(registerRequest.document())
+                .documenttypeId(registerRequest.typeDocument())
+                .documentNumber(registerRequest.document())
                 .role(registerRequest.role())
                 .status(StatesUser.ACTIVE)
                 .permission(registerRequest.permission())
@@ -49,8 +49,8 @@ public record RegisterRequest(
                 .lastName(registerRequest.lastName().toUpperCase())
                 .phone(registerRequest.phone())
                 .address(registerRequest.address())
-                .typeDocument(registerRequest.typeDocument())
-                .document(registerRequest.document())
+                .documenttypeId(registerRequest.typeDocument())
+                .documentNumber(registerRequest.document())
                 .role(registerRequest.role())
                 .status(StatesUser.ACTIVE)
                 .permission(registerRequest.permission())

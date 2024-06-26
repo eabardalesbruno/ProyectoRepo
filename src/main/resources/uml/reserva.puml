@@ -1,0 +1,20 @@
+@startuml
+start
+:El usuario selecciona roomOffer;
+:Muestra detalles de roomOffer;
+:El usuario selecciona fechas y número de ocupantes;
+:Muestra detalles actualizados de roomOffer;
+:El usuario crea la reserva;
+:Establece coste, fechas, número de personas;
+:Establece estado a 'pendiente';
+:Muestra detalles de la reserva;
+if (El usuario acepta la reserva) then (sí)
+    :Establece estado a 'aceptado';
+    :Muestra detalles actualizados de la reserva;
+else (no)
+    :El usuario cancela la reserva;
+    :Establece estado a 'cancelado';
+    :Muestra detalles actualizados de la reserva;
+endif
+stop
+@enduml

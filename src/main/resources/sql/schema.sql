@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS userlevel (
     levelname VARCHAR(50),
     leveldescription VARCHAR(255)
 );
-
 CREATE TABLE IF NOT EXISTS roomdetail (
     roomdetailid SERIAL PRIMARY KEY,
     information VARCHAR(255),
@@ -15,18 +14,148 @@ CREATE TABLE IF NOT EXISTS roomdetail (
     oceanviewbalcony BOOLEAN,
     balconyoverlookingpool BOOLEAN
 );
-
 CREATE TABLE IF NOT EXISTS roomtype (
     roomtypeid SERIAL PRIMARY KEY,
     roomtypename VARCHAR(50),
     roomtypedescription VARCHAR(255)
 );
-
 CREATE TABLE IF NOT EXISTS stateroom (
     stateroomid SERIAL PRIMARY KEY,
     stateroomname VARCHAR(50)
 );
-
+CREATE TABLE IF NOT EXISTS offertype (
+    offertypeid SERIAL PRIMARY KEY,
+    offertypename VARCHAR(50),
+    offertypedescription VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS bookingstate (
+    bookingstateid SERIAL PRIMARY KEY,
+    bookingstatename VARCHAR(50)
+);
+CREATE TABLE IF NOT EXISTS comforttype (
+    comforttypeid SERIAL PRIMARY KEY,
+    comforttypename VARCHAR(50),
+    comforttypedescription VARCHAR(255),
+    active BOOLEAN
+);
+CREATE TABLE IF NOT EXISTS paymentmethod (
+    paymentmethodid SERIAL PRIMARY KEY,
+    description VARCHAR(255),
+    state VARCHAR(50)
+);
+CREATE TABLE IF NOT EXISTS paymentstate (
+    paymentstateid SERIAL PRIMARY KEY,
+    paymentstatename VARCHAR(50)
+);
+CREATE TABLE IF NOT EXISTS registertype (
+    registertypeid SERIAL PRIMARY KEY,
+    registertypename VARCHAR(50)
+);
+CREATE TABLE IF NOT EXISTS statepointstype (
+    statepointstypeid SERIAL PRIMARY KEY,
+    statepointstypedesc VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS exchangetype (
+    exchangetypeid SERIAL PRIMARY KEY,
+    exchangetypedesc VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS requesttype (
+    requesttypeid SERIAL PRIMARY KEY,
+    requesttypedesc VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS sendandreceive (
+    sendandreceiveid SERIAL PRIMARY KEY,
+    sendandreceivedesc VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS pointstransfers (
+    pointstransferid SERIAL PRIMARY KEY,
+    senderid INTEGER,
+    requesttypeid INTEGER,
+    receiverid INTEGER,
+    pointstypeid INTEGER,
+    sendandreceiveid INTEGER,
+    datetransfer TIMESTAMP,
+    pointstransfered DOUBLE PRECISION
+);
+CREATE TABLE IF NOT EXISTS pointsexchange (
+    pointsexchangeid SERIAL PRIMARY KEY,
+    userclientid INTEGER,
+    exchangetypeid INTEGER,
+    serviceid INTEGER,
+    pointstypeid INTEGER,
+    bookingid INTEGER,
+    dateuse TIMESTAMP,
+    exchangecode VARCHAR(255),
+    description VARCHAR(255),
+    checkin TIMESTAMP,
+    checkout TIMESTAMP,
+    nights INTEGER,
+    pointsquantity DOUBLE PRECISION,
+    pointsused DOUBLE PRECISION
+);
+CREATE TABLE IF NOT EXISTS country (
+    countryid SERIAL PRIMARY KEY,
+    countrydesc VARCHAR(255),
+    iso VARCHAR(255),
+    nicename VARCHAR(255),
+    iso3 VARCHAR(255),
+    numcode integer,
+    phonecode integer,
+    symbol VARCHAR(255),
+    courtesy VARCHAR(255),
+    icon VARCHAR(500)
+);
+CREATE TABLE IF NOT EXISTS gender (
+    genderid SERIAL PRIMARY KEY,
+    genderdesc VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS areazone (
+    areazoneid SERIAL PRIMARY KEY,
+    areazonedesc VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS nationality (
+    nationalityid SERIAL PRIMARY KEY,
+    nationalitydesc VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS documenttype (
+    documenttypeid SERIAL PRIMARY KEY,
+    documenttypedesc VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS termsversion (
+    versionid SERIAL PRIMARY KEY,
+    s3url VARCHAR(255),
+    createdat TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS refusereason (
+    refusereasonid SERIAL PRIMARY KEY,
+    refusereasonname VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS currencytype (
+    currencytypeid SERIAL PRIMARY KEY,
+    currencytypename VARCHAR(50),
+    currencytypedescription VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS bedstype (
+    bedtypeid SERIAL PRIMARY KEY,
+    bedtypename VARCHAR(50),
+    bedtypedescription VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS emaillog (
+    emaillogid SERIAL PRIMARY KEY,
+    recipient VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    body TEXT NOT NULL,
+    sentdate TIMESTAMP NOT NULL,
+    status VARCHAR(50) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS service (
+    serviceid SERIAL PRIMARY KEY,
+    servicedesc VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS transactioncategory(
+    transactioncategoryid integer PRIMARY KEY,
+    name varchar(255)
+);
 CREATE TABLE IF NOT EXISTS room (
     roomid SERIAL PRIMARY KEY,
     roomtypeid INTEGER,
@@ -35,18 +164,8 @@ CREATE TABLE IF NOT EXISTS room (
     roomname VARCHAR(50),
     roomnumber VARCHAR(50),
     image VARCHAR(255),
-    capacity INTEGER,
-    CONSTRAINT fk_roomtype FOREIGN KEY (roomtypeid) REFERENCES roomtype(roomtypeid),
-    CONSTRAINT fk_stateroom FOREIGN KEY (stateroomid) REFERENCES stateroom(stateroomid),
-    CONSTRAINT fk_roomdetail FOREIGN KEY (roomdetailid) REFERENCES roomdetail(roomdetailid)
+    capacity INTEGER
 );
-
-CREATE TABLE IF NOT EXISTS offertype (
-    offertypeid SERIAL PRIMARY KEY,
-    offertypename VARCHAR(50),
-    offertypedescription VARCHAR(255)
-);
-
 CREATE TABLE IF NOT EXISTS roomoffer (
     roomofferid SERIAL PRIMARY KEY,
     roomid INTEGER,
@@ -57,39 +176,8 @@ CREATE TABLE IF NOT EXISTS roomoffer (
     offername VARCHAR(50),
     riberapoints INTEGER,
     inresortpoints INTEGER,
-    points INTEGER,
-    CONSTRAINT fk_room_ro FOREIGN KEY (roomid) REFERENCES room(roomid),
-    CONSTRAINT fk_offertype_ro FOREIGN KEY (offertypeid) REFERENCES offertype(offertypeid)
+    points INTEGER
 );
-
-CREATE TABLE IF NOT EXISTS bookingstate (
-    bookingstateid SERIAL PRIMARY KEY,
-    bookingstatename VARCHAR(50)
-);
-
-CREATE TABLE IF NOT EXISTS comforttype (
-    comforttypeid SERIAL PRIMARY KEY,
-    comforttypename VARCHAR(50),
-    comforttypedescription VARCHAR(255),
-    active BOOLEAN
-);
-
-CREATE TABLE IF NOT EXISTS paymentmethod (
-    paymentmethodid SERIAL PRIMARY KEY,
-    description VARCHAR(255),
-    state VARCHAR(50)
-);
-
-CREATE TABLE IF NOT EXISTS paymentstate (
-    paymentstateid SERIAL PRIMARY KEY,
-    paymentstatename VARCHAR(50)
-);
-
-CREATE TABLE IF NOT EXISTS registertype (
-    registertypeid SERIAL PRIMARY KEY,
-    registertypename VARCHAR(50)
-);
-
 CREATE TABLE IF NOT EXISTS useradmin (
     useradminid SERIAL PRIMARY KEY,
     email VARCHAR(255),
@@ -99,8 +187,8 @@ CREATE TABLE IF NOT EXISTS useradmin (
     lastname VARCHAR(50),
     phone VARCHAR(50),
     address VARCHAR(255),
-    typedocument VARCHAR(50),
-    document VARCHAR(50),
+    documenttypeid INTEGER,
+    documentnumber VARCHAR(50),
     role VARCHAR(50),
     status VARCHAR(50),
     permission VARCHAR(50),
@@ -109,7 +197,6 @@ CREATE TABLE IF NOT EXISTS useradmin (
     updatedat TIMESTAMP,
     updatedid INTEGER
 );
-
 CREATE TABLE IF NOT EXISTS userpromoter (
     userpromoterid SERIAL PRIMARY KEY,
     email VARCHAR(255),
@@ -119,8 +206,8 @@ CREATE TABLE IF NOT EXISTS userpromoter (
     lastname VARCHAR(50),
     phone VARCHAR(50),
     address VARCHAR(255),
-    typedocument VARCHAR(50),
-    document VARCHAR(50),
+    documenttypeid INTEGER,
+    documentnumber VARCHAR(50),
     role VARCHAR(50),
     status VARCHAR(50),
     permission VARCHAR(50),
@@ -129,7 +216,6 @@ CREATE TABLE IF NOT EXISTS userpromoter (
     updatedat TIMESTAMP,
     updatedid INTEGER
 );
-
 CREATE TABLE IF NOT EXISTS userclient (
     userclientid SERIAL PRIMARY KEY,
     registertypeid INTEGER,
@@ -154,14 +240,8 @@ CREATE TABLE IF NOT EXISTS userclient (
     googleemail VARCHAR(255),
     username VARCHAR(50),
     status VARCHAR(50),
-    createdat TIMESTAMP,
-    CONSTRAINT fk_registertype_uc FOREIGN KEY (registertypeid) REFERENCES registertype(registertypeid),
-    CONSTRAINT fk_userlevel_uc FOREIGN KEY (userlevelid) REFERENCES userlevel(userlevelid),
-    CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid),
-    CONSTRAINT fk_gender_uc FOREIGN KEY (genderid) REFERENCES gender(genderid),
-    CONSTRAINT fk_documenttype_uc FOREIGN KEY (documenttypeid) REFERENCES documenttype(documenttypeid)
+    createdat TIMESTAMP
 );
-
 CREATE TABLE IF NOT EXISTS booking (
     bookingid SERIAL PRIMARY KEY,
     roomofferid INTEGER,
@@ -178,27 +258,16 @@ CREATE TABLE IF NOT EXISTS booking (
     daybookingend TIMESTAMP,
     checkin TIMESTAMP,
     checkout TIMESTAMP,
-    createdat TIMESTAMP,
-
-    CONSTRAINT fk_roomoffer FOREIGN KEY (roomofferid) REFERENCES roomoffer(roomofferid),
-    CONSTRAINT fk_bookingstate FOREIGN KEY (bookingstateid) REFERENCES bookingstate(bookingstateid),
-    CONSTRAINT fk_userclient FOREIGN KEY (userclientid) REFERENCES userclient(userclientid)
+    createdat TIMESTAMP
 );
-
 CREATE TABLE IF NOT EXISTS comfortbookingdetail (
     bookingid INTEGER,
-    comforttypeid INTEGER,
-    CONSTRAINT fk_booking_cb FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
-    CONSTRAINT fk_comfort_cb FOREIGN KEY (comforttypeid) REFERENCES comforttype(comforttypeid)
+    comforttypeid INTEGER
 );
-
 CREATE TABLE IF NOT EXISTS comfortservicedetail (
     roomofferid INTEGER,
-    comforttypeid INTEGER,
-    CONSTRAINT fk_roomoffer_cb FOREIGN KEY (roomofferid) REFERENCES roomoffer(roomofferid),
-    CONSTRAINT fk_comfort_cb FOREIGN KEY (comforttypeid) REFERENCES comforttype(comforttypeid)
+    comforttypeid INTEGER
 );
-
 CREATE TABLE IF NOT EXISTS finalcostumer (
     finalcostumerid SERIAL PRIMARY KEY,
     bookingid INTEGER,
@@ -206,17 +275,13 @@ CREATE TABLE IF NOT EXISTS finalcostumer (
     documentnumber VARCHAR(50),
     firstname VARCHAR(50),
     lastname VARCHAR(50),
-    yearold INTEGER,
-    CONSTRAINT fk_booking_fc FOREIGN KEY (bookingid) REFERENCES booking(bookingid)
+    yearold INTEGER
 );
-
 CREATE TABLE IF NOT EXISTS partnerpoints (
     partnerpointid SERIAL PRIMARY KEY,
     userclientid INTEGER,
-    points INTEGER,
-    CONSTRAINT fk_userclient_pp FOREIGN KEY (userclientid) REFERENCES userclient(userclientid)
+    points INTEGER
 );
-
 CREATE TABLE IF NOT EXISTS bookingincidents (
     roomincidentsid SERIAL PRIMARY KEY,
     bookingid INTEGER,
@@ -226,22 +291,8 @@ CREATE TABLE IF NOT EXISTS bookingincidents (
     observation VARCHAR(255),
     actionstake VARCHAR(255),
     createdat TIMESTAMP,
-    createdid INTEGER,
-    CONSTRAINT fk_booking_bi FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
-    CONSTRAINT fk_useradmin_bi FOREIGN KEY (useradminid) REFERENCES useradmin(useradminid)
+    createdid INTEGER
 );
-
-CREATE TABLE IF NOT EXISTS refusereason (
-    refusereasonid SERIAL PRIMARY KEY,
-    refusereasonname VARCHAR(255)
-);
-
-CREATE TABLE IF NOT EXISTS currencytype (
-    currencytypeid SERIAL PRIMARY KEY,
-    currencytypename VARCHAR(50),
-    currencytypedescription VARCHAR(255)
-);
-
 CREATE TABLE IF NOT EXISTS paymentbook (
     paymentbookid SERIAL PRIMARY KEY,
     bookingid INTEGER NOT NULL,
@@ -261,68 +312,32 @@ CREATE TABLE IF NOT EXISTS paymentbook (
     imagevoucher VARCHAR(150000),
     totalpoints INTEGER,
     paymentcomplete BOOLEAN,
-    pendingpay INTEGER DEFAULT 0,
-    CONSTRAINT fk_currencytype_pb FOREIGN KEY (currencytypeid) REFERENCES currencytype(currencytypeid),
-    CONSTRAINT fk_booking_pb FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
-    CONSTRAINT fk_paymentmethod_pb FOREIGN KEY (paymentmethodid) REFERENCES paymentmethod(paymentmethodid),
-    CONSTRAINT fk_paymentstate_pb FOREIGN KEY (paymentstateid) REFERENCES paymentstate(paymentstateid),
-    CONSTRAINT fk_paymenttype_pb FOREIGN KEY (paymenttypeid) REFERENCES paymenttype(paymenttypeid),
-    CONSTRAINT fk_paymentsubtype_pb FOREIGN KEY (paymentsubtypeid) REFERENCES paymentsubtype(paymentsubtypeid),
-    CONSTRAINT fk_userclient_pb FOREIGN KEY (userclientid) REFERENCES userclient(userclientid),
-    CONSTRAINT fk_refusereason_pb FOREIGN KEY (refusereasonid) REFERENCES refusereason(refusereasonid)
+    pendingpay INTEGER DEFAULT 0
 );
-
 CREATE TABLE IF NOT EXISTS paymenttoken (
     paymenttokenid SERIAL PRIMARY KEY,
     paymenttoken VARCHAR(255),
 	startdate TIMESTAMP,
 	enddate TIMESTAMP,
 	bookingid INTEGER NOT NULL,
-	paymentbookid INTEGER NOT NULL,
-    CONSTRAINT fk_booking_pb FOREIGN KEY (bookingid) REFERENCES booking(bookingid),
-	CONSTRAINT fk_paymentbook_pb FOREIGN KEY (paymentbookid) REFERENCES paymentbook(paymentbookid)
+	paymentbookid INTEGER NOT NULL
 );
-
 CREATE TABLE IF NOT EXISTS refusepayment (
     refusepaymentid SERIAL PRIMARY KEY,
     paymentbookid INTEGER,
     refusereasonid INTEGER,
-    detail VARCHAR(255),
-    CONSTRAINT fk_paymentbook_rp FOREIGN KEY (paymentbookid) REFERENCES paymentbook(paymentbookid),
-    CONSTRAINT fk_refusereason_rp FOREIGN KEY (refusereasonid) REFERENCES refusereason(refusereasonid)
+    detail VARCHAR(255)
 );
-
 CREATE TABLE IF NOT EXISTS comfortroomofferdetail (
     roomofferid INTEGER,
-    comforttypeid INTEGER,
-    CONSTRAINT fk_roomoffer_cr FOREIGN KEY (roomofferid) REFERENCES roomoffer(roomofferid),
-    CONSTRAINT fk_comfort_cr FOREIGN KEY (comforttypeid) REFERENCES comforttype(comforttypeid)
+    comforttypeid INTEGER
 );
-
-CREATE TABLE IF NOT EXISTS bedstype (
-    bedtypeid SERIAL PRIMARY KEY,
-    bedtypename VARCHAR(50),
-    bedtypedescription VARCHAR(255)
-);
-
 CREATE TABLE IF NOT EXISTS bedroom (
     bedroomid SERIAL PRIMARY KEY,
     roomid INTEGER,
     bedtypeid INTEGER,
-    quantity INTEGER,
-    CONSTRAINT fk_room_bed FOREIGN KEY (roomid) REFERENCES room(roomid),
-    CONSTRAINT fk_bedtype_bed FOREIGN KEY (bedtypeid) REFERENCES bedstype(bedtypeid)
+    quantity INTEGER
 );
-
-CREATE TABLE IF NOT EXISTS emaillog (
-    emaillogid SERIAL PRIMARY KEY,
-    recipient VARCHAR(255) NOT NULL,
-    subject VARCHAR(255) NOT NULL,
-    body TEXT NOT NULL,
-    sentdate TIMESTAMP NOT NULL,
-    status VARCHAR(50) NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS solicitude (
     solicitudeid SERIAL PRIMARY KEY,
     email VARCHAR(255),
@@ -334,130 +349,26 @@ CREATE TABLE IF NOT EXISTS solicitude (
     createdid INTEGER,
     createdat TIMESTAMP,
     responseid INTEGER,
-    responseat TIMESTAMP,
-    CONSTRAINT fk_createduser_s FOREIGN KEY (createdid) REFERENCES useradmin(useradminid),
-    CONSTRAINT fk_responseuser_s FOREIGN KEY (responseid) REFERENCES userclient(userclientid)
+    responseat TIMESTAMP
 );
-
-CREATE TABLE IF NOT EXISTS service (
-    serviceid SERIAL PRIMARY KEY,
-    servicedesc VARCHAR(255)
-);
-
 CREATE TABLE IF NOT EXISTS pointstype (
     pointstypeid SERIAL PRIMARY KEY,
     pointstypedesc VARCHAR(255),
-    statepointstypeid INTEGER,
-    CONSTRAINT fk_statepointstypeid_s FOREIGN KEY (statepointstypeid) REFERENCES statepointstype(statepointstypeid)
+    statepointstypeid INTEGER
 );
-
-CREATE TABLE IF NOT EXISTS statepointstype (
-    statepointstypeid SERIAL PRIMARY KEY,
-    statepointstypedesc VARCHAR(255)
-);
-
-CREATE TABLE IF NOT EXISTS exchangetype (
-    exchangetypeid SERIAL PRIMARY KEY,
-    exchangetypedesc VARCHAR(255)
-);
-
-CREATE TABLE IF NOT EXISTS requesttype (
-    requesttypeid SERIAL PRIMARY KEY,
-    requesttypedesc VARCHAR(255)
-);
-
-CREATE TABLE IF NOT EXISTS sendandreceive (
-    sendandreceiveid SERIAL PRIMARY KEY,
-    sendandreceivedesc VARCHAR(255)
-);
-
-CREATE TABLE IF NOT EXISTS pointstransfers (
-    pointstransferid SERIAL PRIMARY KEY,
-    senderid INTEGER REFERENCES userclient(userclientid),
-    requesttypeid INTEGER REFERENCES requesttype(requesttypeid),
-    datetransfer TIMESTAMP,
-    receiverid INTEGER REFERENCES userclient(userclientid),
-    pointstransfered DOUBLE PRECISION,
-    pointstypeid INTEGER REFERENCES pointstype(pointstypeid),
-    sendandreceiveid INTEGER REFERENCES sendandreceive(sendandreceiveid)
-);
-
-CREATE TABLE IF NOT EXISTS pointsexchange (
-    pointsexchangeid SERIAL PRIMARY KEY,
-    userclientid INTEGER REFERENCES userclient(userclientid),
-    echangetypeid INTEGER REFERENCES exchangetype(exchangetypeid),
-    dateuse TIMESTAMP,
-    exchangecode VARCHAR(255),
-    serviceid INTEGER REFERENCES service(serviceid),
-    description VARCHAR(255),
-    checkin TIMESTAMP,
-    checkout TIMESTAMP,
-    nights INTEGER,
-    pointsquantity DOUBLE PRECISION,
-    pointsused DOUBLE PRECISION,
-    pointstypeid INTEGER REFERENCES pointstype(pointstypeid),
-    bookingid INTEGER REFERENCES booking(bookingid)
-);
-
-CREATE TABLE IF NOT EXISTS country (
-    countryid SERIAL PRIMARY KEY,
-    countrydesc VARCHAR(255),
-    iso VARCHAR(255),
-    nicename VARCHAR(255),
-    iso3 VARCHAR(255),
-    numcode integer,
-    phonecode integer,
-    symbol VARCHAR(255),
-    courtesy VARCHAR(255),
-    icon VARCHAR(500)
-);
-
-CREATE TABLE IF NOT EXISTS gender (
-    genderid SERIAL PRIMARY KEY,
-    genderdesc VARCHAR(255)
-);
-
-CREATE TABLE IF NOT EXISTS areazone (
-    areazoneid SERIAL PRIMARY KEY,
-    areazonedesc VARCHAR(255)
-);
-
-CREATE TABLE IF NOT EXISTS nationality (
-    nationalityid SERIAL PRIMARY KEY,
-    nationalitydesc VARCHAR(255)
-);
-
-CREATE TABLE IF NOT EXISTS documenttype (
-    documenttypeid SERIAL PRIMARY KEY,
-    documenttypedesc VARCHAR(255)
-);
-
-CREATE TABLE IF NOT EXISTS termsversion (
-    versionid SERIAL PRIMARY KEY,
-    s3url VARCHAR(255),
-    createdat TIMESTAMP
-);
-
 CREATE TABLE IF NOT EXISTS userclientversion (
     userclientversionid SERIAL PRIMARY KEY,
     userclientid INTEGER,
     versionid INTEGER,
 	active BOOLEAN,
-	createdat TIMESTAMP,
-    CONSTRAINT fk_userclient_uv FOREIGN KEY (userclientid) REFERENCES userclient(userclientid),
-    CONSTRAINT fk_termsversion_uv FOREIGN KEY (versionid) REFERENCES termsversion(versionid)
+	createdat TIMESTAMP
 );
-
-
 CREATE TABLE IF NOT EXISTS paymenttype (
     paymenttypeid SERIAL PRIMARY KEY,
     paymenttypedesc VARCHAR(255),
     countryid INTEGER,
-    paymentmethodid INTEGER,
-    CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid),
-    CONSTRAINT fk_paymentmethod_uc FOREIGN KEY (paymentmethodid) REFERENCES paymentmethod(paymentmethodid)
+    paymentmethodid INTEGER
 );
-
 CREATE TABLE IF NOT EXISTS paymentsubtype (
     paymentsubtypeid SERIAL PRIMARY KEY,
     paymentsubtypedesc VARCHAR(255),
@@ -468,29 +379,16 @@ CREATE TABLE IF NOT EXISTS paymentsubtype (
     dollars DOUBLE PRECISION,
     percentage DOUBLE PRECISION,
     statussoles INTEGER,
-    statusdollars INTEGER,
-    CONSTRAINT fk_paymenttype_uc FOREIGN KEY (paymenttypeid) REFERENCES paymenttype(paymenttypeid)
+    statusdollars INTEGER
 );
-
-
-CREATE TABLE IF NOT EXISTS transactioncategory
-(
-    transactioncategoryid integer PRIMARY KEY,
-    name varchar(255)
-);
-
-CREATE TABLE IF NOT EXISTS typepointstransaction
-(
+CREATE TABLE IF NOT EXISTS typepointstransaction(
     typepointstransactionid integer PRIMARY KEY,
     description varchar(255),
     status integer,
     transactioncategoryid integer,
-    istransferbalanceavailable integer,
-    CONSTRAINT fk_transactioncategory FOREIGN KEY (transactioncategoryid) REFERENCES transactioncategory (transactioncategoryid)
+    istransferbalanceavailable integer
 );
-
-CREATE TABLE IF NOT EXISTS pointstransaction
-(
+CREATE TABLE IF NOT EXISTS pointstransaction(
     pointstransactionid SERIAL PRIMARY KEY,
     partnerpointid integer,
     typepointstransactionid integer,
@@ -499,19 +397,103 @@ CREATE TABLE IF NOT EXISTS pointstransaction
     isavailable integer,
     availabilitydate timestamp,
     referencedata varchar(255),
-    successfultransaction integer,
-    CONSTRAINT fk_partnerpoint FOREIGN KEY (partnerpointid) REFERENCES partnerpoints (partnerpointid),
-    CONSTRAINT fk_typepointstransaction FOREIGN KEY (typepointstransactionid) REFERENCES typepointstransaction (typepointstransactionid)
+    successfultransaction integer
 );
-
-CREATE TABLE IF NOT EXISTS tokenpointstransaction
-(
+CREATE TABLE IF NOT EXISTS tokenpointstransaction(
     tokenpointstransactionid SERIAL PRIMARY KEY,
     codigotoken VARCHAR(255),
     datecreated TIMESTAMP,
     expirationdate TIMESTAMP,
     partnerpointid INTEGER,
-    bookingid INTEGER,
-    CONSTRAINT fk_partnerpoint FOREIGN KEY (partnerpointid) REFERENCES partnerpoints (partnerpointid),
-    CONSTRAINT fk_booking FOREIGN KEY (bookingid) REFERENCES booking (bookingid)
+    bookingid INTEGER
 );
+
+/*
+ALTER TABLE pointstransfers ADD CONSTRAINT fk_sender_pt FOREIGN KEY (senderid) REFERENCES userclient(userclientid);
+ALTER TABLE pointstransfers ADD CONSTRAINT fk_requesttype_pt FOREIGN KEY (requesttypeid) REFERENCES requesttype(requesttypeid);
+ALTER TABLE pointstransfers ADD CONSTRAINT fk_receiver_pt FOREIGN KEY (receiverid) REFERENCES userclient(userclientid);
+ALTER TABLE pointstransfers ADD CONSTRAINT fk_pointstype_pt FOREIGN KEY (pointstypeid) REFERENCES pointstype(pointstypeid);
+ALTER TABLE pointstransfers ADD CONSTRAINT fk_sendandreceive_pt FOREIGN KEY (sendandreceiveid) REFERENCES sendandreceive(sendandreceiveid);
+
+ALTER TABLE pointsexchange ADD CONSTRAINT fk_userclient_pe FOREIGN KEY (userclientid) REFERENCES userclient(userclientid);
+ALTER TABLE pointsexchange ADD CONSTRAINT fk_exchangetype_pe FOREIGN KEY (exchangetypeid) REFERENCES exchangetype(exchangetypeid);
+ALTER TABLE pointsexchange ADD CONSTRAINT fk_service_pe FOREIGN KEY (serviceid) REFERENCES service(serviceid);
+ALTER TABLE pointsexchange ADD CONSTRAINT fk_pointstype_pe FOREIGN KEY (pointstypeid) REFERENCES pointstype(pointstypeid);
+ALTER TABLE pointsexchange ADD CONSTRAINT fk_booking_pe FOREIGN KEY (bookingid) REFERENCES booking(bookingid);
+
+ALTER TABLE tokenpointstransaction ADD CONSTRAINT fk_partnerpoint FOREIGN KEY (partnerpointid) REFERENCES partnerpoints (partnerpointid);
+ALTER TABLE tokenpointstransaction ADD CONSTRAINT fk_booking FOREIGN KEY (bookingid) REFERENCES booking (bookingid);
+
+ALTER TABLE pointstransaction ADD CONSTRAINT fk_partnerpoint FOREIGN KEY (partnerpointid) REFERENCES partnerpoints (partnerpointid);
+ALTER TABLE pointstransaction ADD CONSTRAINT fk_typepointstransaction FOREIGN KEY (typepointstransactionid) REFERENCES typepointstransaction (typepointstransactionid);
+
+ALTER TABLE typepointstransaction ADD CONSTRAINT fk_transactioncategory FOREIGN KEY (transactioncategoryid) REFERENCES transactioncategory (transactioncategoryid);
+
+ALTER TABLE paymentsubtype ADD CONSTRAINT fk_paymenttype_uc FOREIGN KEY (paymenttypeid) REFERENCES paymenttype(paymenttypeid);
+
+ALTER TABLE paymenttype ADD CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid);
+ALTER TABLE paymenttype ADD CONSTRAINT fk_paymentmethod_uc FOREIGN KEY (paymentmethodid) REFERENCES paymentmethod(paymentmethodid);
+
+ALTER TABLE userclientversion ADD CONSTRAINT fk_userclient_uv FOREIGN KEY (userclientid) REFERENCES userclient(userclientid);
+ALTER TABLE userclientversion ADD CONSTRAINT fk_termsversion_uv FOREIGN KEY (versionid) REFERENCES termsversion(versionid);
+
+ALTER TABLE pointstype ADD CONSTRAINT fk_statepointstypeid_s FOREIGN KEY (statepointstypeid) REFERENCES statepointstype(statepointstypeid);
+
+ALTER TABLE solicitude ADD CONSTRAINT fk_createduser_s FOREIGN KEY (createdid) REFERENCES useradmin(useradminid);
+ALTER TABLE solicitude ADD CONSTRAINT fk_responseuser_s FOREIGN KEY (responseid) REFERENCES userclient(userclientid);
+
+ALTER TABLE bedroom ADD CONSTRAINT fk_room_bed FOREIGN KEY (roomid) REFERENCES room(roomid);
+ALTER TABLE bedroom ADD CONSTRAINT fk_bedtype_bed FOREIGN KEY (bedtypeid) REFERENCES bedstype(bedtypeid);
+
+ALTER TABLE comfortroomofferdetail ADD CONSTRAINT fk_roomoffer_cr FOREIGN KEY (roomofferid) REFERENCES roomoffer(roomofferid);
+ALTER TABLE comfortroomofferdetail ADD CONSTRAINT fk_comfort_cr FOREIGN KEY (comforttypeid) REFERENCES comforttype(comforttypeid);
+
+ALTER TABLE refusepayment ADD CONSTRAINT fk_paymentbook_rp FOREIGN KEY (paymentbookid) REFERENCES paymentbook(paymentbookid);
+ALTER TABLE refusepayment ADD CONSTRAINT fk_refusereason_rp FOREIGN KEY (refusereasonid) REFERENCES refusereason(refusereasonid);
+
+ALTER TABLE paymenttoken ADD CONSTRAINT fk_booking_pb FOREIGN KEY (bookingid) REFERENCES booking(bookingid);
+ALTER TABLE paymenttoken ADD CONSTRAINT fk_paymentbook_pb FOREIGN KEY (paymentbookid) REFERENCES paymentbook(paymentbookid);
+
+ALTER TABLE paymentbook ADD CONSTRAINT fk_currencytype_pb FOREIGN KEY (currencytypeid) REFERENCES currencytype(currencytypeid);
+ALTER TABLE paymentbook ADD CONSTRAINT fk_booking_pb FOREIGN KEY (bookingid) REFERENCES booking(bookingid);
+ALTER TABLE paymentbook ADD CONSTRAINT fk_paymentmethod_pb FOREIGN KEY (paymentmethodid) REFERENCES paymentmethod(paymentmethodid);
+ALTER TABLE paymentbook ADD CONSTRAINT fk_paymentstate_pb FOREIGN KEY (paymentstateid) REFERENCES paymentstate(paymentstateid);
+ALTER TABLE paymentbook ADD CONSTRAINT fk_paymenttype_pb FOREIGN KEY (paymenttypeid) REFERENCES paymenttype(paymenttypeid);
+ALTER TABLE paymentbook ADD CONSTRAINT fk_paymentsubtype_pb FOREIGN KEY (paymentsubtypeid) REFERENCES paymentsubtype(paymentsubtypeid);
+ALTER TABLE paymentbook ADD CONSTRAINT fk_userclient_pb FOREIGN KEY (userclientid) REFERENCES userclient(userclientid);
+ALTER TABLE paymentbook ADD CONSTRAINT fk_refusereason_pb FOREIGN KEY (refusereasonid) REFERENCES refusereason(refusereasonid);
+
+ALTER TABLE bookingincidents ADD CONSTRAINT fk_booking_bi FOREIGN KEY (bookingid) REFERENCES booking(bookingid);
+ALTER TABLE bookingincidents ADD CONSTRAINT fk_useradmin_bi FOREIGN KEY (useradminid) REFERENCES useradmin(useradminid);
+
+ALTER TABLE partnerpoints ADD CONSTRAINT fk_userclient_pp FOREIGN KEY (userclientid) REFERENCES userclient(userclientid);
+
+ALTER TABLE finalcostumer ADD CONSTRAINT fk_booking_fc FOREIGN KEY (bookingid) REFERENCES booking(bookingid);
+
+ALTER TABLE comfortservicedetail ADD CONSTRAINT fk_roomoffer_cb FOREIGN KEY (roomofferid) REFERENCES roomoffer(roomofferid);
+ALTER TABLE comfortservicedetail ADD CONSTRAINT fk_comfort_cb FOREIGN KEY (comforttypeid) REFERENCES comforttype(comforttypeid);
+
+ALTER TABLE roomoffer ADD CONSTRAINT fk_room_ro FOREIGN KEY (roomid) REFERENCES room(roomid);
+ALTER TABLE roomoffer ADD CONSTRAINT fk_offertype_ro FOREIGN KEY (offertypeid) REFERENCES offertype(offertypeid);
+
+ALTER TABLE useradmin ADD CONSTRAINT fk_documenttype_uc FOREIGN KEY (documenttypeid) REFERENCES documenttype(documenttypeid);
+
+ALTER TABLE userpromoter ADD CONSTRAINT fk_documenttype_uc FOREIGN KEY (documenttypeid) REFERENCES documenttype(documenttypeid);
+
+ALTER TABLE userclient ADD CONSTRAINT fk_registertype_uc FOREIGN KEY (registertypeid) REFERENCES registertype(registertypeid);
+ALTER TABLE userclient ADD CONSTRAINT fk_userlevel_uc FOREIGN KEY (userlevelid) REFERENCES userlevel(userlevelid);
+ALTER TABLE userclient ADD CONSTRAINT fk_country_uc FOREIGN KEY (countryid) REFERENCES country(countryid);
+ALTER TABLE userclient ADD CONSTRAINT fk_gender_uc FOREIGN KEY (genderid) REFERENCES gender(genderid);
+ALTER TABLE userclient ADD CONSTRAINT fk_documenttype_uc FOREIGN KEY (documenttypeid) REFERENCES documenttype(documenttypeid);
+
+ALTER TABLE booking ADD CONSTRAINT fk_roomoffer FOREIGN KEY (roomofferid) REFERENCES roomoffer(roomofferid);
+ALTER TABLE booking ADD CONSTRAINT fk_bookingstate FOREIGN KEY (bookingstateid) REFERENCES bookingstate(bookingstateid);
+ALTER TABLE booking ADD CONSTRAINT fk_userclient FOREIGN KEY (userclientid) REFERENCES userclient(userclientid);
+
+ALTER TABLE comfortbookingdetail ADD CONSTRAINT fk_booking_cb FOREIGN KEY (bookingid) REFERENCES booking(bookingid);
+ALTER TABLE comfortbookingdetail ADD CONSTRAINT fk_comfort_cb FOREIGN KEY (comforttypeid) REFERENCES comforttype(comforttypeid);
+
+ALTER TABLE room ADD CONSTRAINT fk_roomtype_r FOREIGN KEY (roomtypeid) REFERENCES roomtype(roomtypeid);
+ALTER TABLE room ADD CONSTRAINT fk_stateroom_r FOREIGN KEY (stateroomid) REFERENCES stateroom(stateroomid);
+ALTER TABLE room ADD CONSTRAINT fk_roomdetail_r FOREIGN KEY (roomdetailid) REFERENCES roomdetail(roomdetailid);
+*/

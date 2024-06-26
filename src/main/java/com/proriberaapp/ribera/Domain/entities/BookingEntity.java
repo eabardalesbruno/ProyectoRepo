@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Domain.entities;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
 import io.r2dbc.spi.Parameter;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,6 +12,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -46,4 +48,18 @@ public class BookingEntity {
     private Timestamp checkout;
     @Column("createdat")
     private Timestamp createdAt;
+
+    public static BookingEntity createBookingEntity(Integer userClientId, BookingSaveRequest bookingSaveRequest, Integer numberOfDays) {
+        return BookingEntity.builder()
+                .roomOfferId(bookingSaveRequest.getRoomOfferId())
+                .bookingStateId(3)
+                .userClientId(userClientId)
+                .numberAdults(bookingSaveRequest.getNumberAdult())
+                .numberChildren(bookingSaveRequest.getNumberChild())
+                .numberBabies(bookingSaveRequest.getNumberBaby())
+                .dayBookingInit(Timestamp.valueOf(bookingSaveRequest.getDayBookingInit().atStartOfDay()))
+                .dayBookingEnd(Timestamp.valueOf(bookingSaveRequest.getDayBookingEnd().atStartOfDay()))
+                .createdAt(Timestamp.valueOf(LocalDateTime.now()))
+                .build();
+    }
 }

@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
+import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
@@ -12,6 +13,7 @@ import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.PartnerPointsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.http.codec.multipart.FilePart;
@@ -158,24 +160,15 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest) {
 
+        if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
+            return Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"La fecha de inicio no puede ser anterior al día actual"));
+        }
+        
         Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
-        log.info("numberOfDays: {}", numberOfDays);
+
         Mono<RoomOfferEntity> roomOfferEntityMono = roomOfferRespository.findById(bookingSaveRequest.getRoomOfferId());
 
-        BookingEntity bookingEntity = BookingEntity.builder()
-                .roomOfferId(bookingSaveRequest.getRoomOfferId())
-                .bookingStateId(3)
-                .userClientId(userClientId)
-                //.detail(bookingSaveRequest.getDetail())
-                .numberAdults(bookingSaveRequest.getNumberAdult())
-                .numberChildren(bookingSaveRequest.getNumberChild())
-                .numberBabies(bookingSaveRequest.getNumberBaby())
-
-                .dayBookingInit(Timestamp.valueOf(bookingSaveRequest.getDayBookingInit().atStartOfDay()))
-                .dayBookingEnd(Timestamp.valueOf(bookingSaveRequest.getDayBookingEnd().atStartOfDay()))
-
-                .createdAt(new Timestamp(System.currentTimeMillis()))
-                .build();
+        BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId, bookingSaveRequest, numberOfDays);
 
         return bookingRepository.findExistingBookings(
                         bookingEntity.getRoomOfferId(),
@@ -183,7 +176,7 @@ public class BookingServiceImpl implements BookingService {
                         bookingEntity.getDayBookingEnd())
                 .hasElements()
                 .flatMap(exists -> exists
-                        ? Mono.error(new IllegalArgumentException("Booking already exists"))
+                        ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"La reserva ya existe para las fechas seleccionadas"))
                         : Mono.just(bookingEntity)
                         .flatMap(bookingEntity1 -> roomOfferEntityMono
                                 .map(roomOfferEntity -> {

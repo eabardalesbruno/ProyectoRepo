@@ -29,6 +29,7 @@ public class RiberaApplication {
 
 		return initializer;
 	}
+
 	public static void main(String[] args) {
 		SpringApplication.run(RiberaApplication.class, args);
 	}

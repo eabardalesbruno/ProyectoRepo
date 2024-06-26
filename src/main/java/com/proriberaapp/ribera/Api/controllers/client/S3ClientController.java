@@ -12,7 +12,9 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1/s3-client")
 @RequiredArgsConstructor
 public class S3ClientController {
+
     private final S3ClientService s3ClientService;
+
     @PostMapping(
             value = "upload",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,

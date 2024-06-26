@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.services.admin.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
-import com.proriberaapp.ribera.Api.controllers.admin.exception.CustomException;
+import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
 import com.proriberaapp.ribera.Domain.enums.StatesUser;
@@ -49,7 +49,7 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
 
         String username = registerRequest.firstName().toUpperCase() + " " + registerRequest.lastName().toUpperCase();
 
-        return userAdminRepository.findByUsernameOrEmailOrDocument(username , registerRequest.email(), registerRequest.document()).hasElement()
+        return userAdminRepository.findByUsernameOrEmailOrDocumentNumber(username , registerRequest.email(), registerRequest.document()).hasElement()
                 .flatMap(exists -> exists ?
                         Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "username or email or document already in use"))
                         : userAdminRepository.save(userCreate))
@@ -75,8 +75,8 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
                     user.setLastName(updateUserAdminRequest.lastName().toUpperCase());
                     user.setPhone(updateUserAdminRequest.phone());
                     user.setAddress(updateUserAdminRequest.address().toUpperCase());
-                    user.setTypeDocument(updateUserAdminRequest.typeDocument());//TODO: revisar
-                    user.setDocument(updateUserAdminRequest.document());//TODO: revisar
+                    user.setDocumenttypeId(updateUserAdminRequest.typeDocument());//TODO: revisar
+                    user.setDocumentNumber(updateUserAdminRequest.document());//TODO: revisar
                     user.setRole(updateUserAdminRequest.role());
                     user.setStatus(user.getStatus());
                     user.setPermission(updateUserAdminRequest.permission());
@@ -137,7 +137,7 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
 
     @Override
     public Mono<UserResponse> requestUpdatePassword(RequestUpdateUserAdminRequest requestUpdateRequest) {
-        return userAdminRepository.findByEmailAndDocument(requestUpdateRequest.email(), requestUpdateRequest.document())
+        return userAdminRepository.findByEmailAndDocumentNumber(requestUpdateRequest.email(), requestUpdateRequest.document())
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NO_CONTENT, "user not found")))
                 .filter(user -> user.getStatus() == StatesUser.ACTIVE)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "user is not active")))

@@ -34,7 +34,7 @@ public class JwtProvider {
 
                 .setSubject(userDetails.getUsername())
 
-                .claim("document", userDetails.getDocument())
+                .claim("document", userDetails.getDocumentNumber())
                 .claim("roles", userDetails.getAuthorities())
                 .claim("permissions", userDetails.getPermission())
                 .claim("state", userDetails.getStatus())
@@ -56,7 +56,7 @@ public class JwtProvider {
 
                 .setSubject(userDetails.getUsername())
 
-                .claim("document", userDetails.getDocument())
+                .claim("document", userDetails.getDocumentNumber())
                 .claim("roles", userDetails.getAuthorities())
                 .claim("permissions", userDetails.getPermission())
                 .claim("state", userDetails.getStatus())

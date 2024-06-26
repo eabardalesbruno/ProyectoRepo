@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.admin.dto;
 
+import com.proriberaapp.ribera.Domain.entities.DocumentTypeEntity;
 import com.proriberaapp.ribera.Domain.enums.Permission;
 import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.Domain.enums.TypeDocument;
@@ -13,7 +14,7 @@ public record UpdateUserAdminRequest(
         String lastName,
         String phone,
         String address,
-        TypeDocument typeDocument,
+        Integer typeDocument,
         String document,
         Role role,
         List<Permission> permission

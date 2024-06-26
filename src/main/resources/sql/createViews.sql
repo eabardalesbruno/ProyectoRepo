@@ -1,8 +1,9 @@
-
 CREATE OR REPLACE VIEW ViewBedsType AS
 SELECT
     b.bookingid AS bookingId,
-    bt.*
+    bt.bedtypeid,
+    bt.bedtypename,
+    bt.bedtypedescription
 FROM
     booking b
 JOIN
@@ -19,7 +20,10 @@ JOIN
 CREATE OR REPLACE VIEW viewcomfortdata AS
 SELECT
     b.bookingid AS bookingId,
-    ct.*
+    ct.comforttypeid,
+    ct.comforttypename,
+    ct.comforttypedescription,
+    ct.active
 FROM
     booking b
 JOIN
@@ -288,7 +292,7 @@ SELECT
     r.capacity AS capacity,
     b.daybookinginit AS dayBookingInit,
     b.daybookingend AS dayBookingEnd,
-    ro.cost AS price,
+    b.costfinal AS price,
     ro.inresortpoints AS pointsInResort,
     ro.riberapoints AS pointsRibera
 FROM
@@ -303,3 +307,79 @@ JOIN
     roomdetail rd ON r.roomdetailid = rd.roomdetailid
 JOIN
     bookingstate bs ON b.bookingstateid = bs.bookingstateid;
+
+
+
+CREATE OR REPLACE VIEW viewservicereturn
+ AS
+ SELECT ro.roomofferid,
+    ro.roomid,
+    r.roomname,
+    rt.roomtypename,
+    r.capacity,
+    ro.cost AS costweekly,
+    ro.cost AS costweekend,
+    ro.riberapoints AS riberapointweekly,
+    ro.riberapoints AS riberapointweekend,
+    ro.inresortpoints AS inresortpointweekly,
+    ro.inresortpoints AS inresortpointweekend,
+    rd.squaremeters,
+    rd.bedrooms,
+    rd.oceanviewbalcony,
+    rd.balconyoverlookingpool,
+    r.image,
+    sr.stateroomname
+   FROM roomoffer ro
+     JOIN room r ON ro.roomid = r.roomid
+     JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
+     JOIN roomdetail rd ON r.roomdetailid = rd.roomdetailid
+     JOIN stateroom sr ON r.stateroomid = sr.stateroomid;
+
+
+
+CREATE OR REPLACE VIEW public.viewbedroomreturn
+ AS
+ SELECT br.bedroomid,
+    br.roomid,
+    bt.bedtypename,
+    br.quantity
+   FROM bedroom br
+     JOIN bedstype bt ON br.bedtypeid = bt.bedtypeid;
+
+
+
+CREATE OR REPLACE VIEW public.viewservicecomfortreturn
+ AS
+ SELECT csd.roomofferid,
+    ct.comforttypeid,
+    ct.comforttypename,
+    ct.comforttypedescription,
+    ct.active
+   FROM comfortservicedetail csd
+     JOIN comforttype ct ON csd.comforttypeid = ct.comforttypeid;
+
+
+
+CREATE OR REPLACE VIEW public.viewroomreturn
+ AS
+ SELECT r.roomid,
+    rt.roomtypename,
+    rd.information,
+    rt.roomtypedescription,
+    sr.stateroomname
+   FROM room r
+     JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
+     JOIN roomdetail rd ON r.roomdetailid = rd.roomdetailid
+     JOIN stateroom sr ON r.stateroomid = sr.stateroomid;
+
+
+
+CREATE OR REPLACE VIEW public.viewcomfortreturn
+ AS
+ SELECT crod.roomofferid,
+    ct.comforttypeid,
+    ct.comforttypename,
+    ct.comforttypedescription,
+    ct.active
+   FROM comfortroomofferdetail crod
+     JOIN comforttype ct ON crod.comforttypeid = ct.comforttypeid;

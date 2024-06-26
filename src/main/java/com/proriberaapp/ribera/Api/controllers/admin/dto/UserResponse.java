@@ -19,7 +19,7 @@ public record UserResponse(
                 users.getUsername(),
                 users.getFirstName(),
                 users.getLastName(),
-                users.getDocument()
+                users.getDocumentNumber()
         );
     }
 
@@ -30,7 +30,7 @@ public record UserResponse(
                 users.getUsername(),
                 users.getFirstName(),
                 users.getLastName(),
-                users.getDocument()
+                users.getDocumentNumber()
         );
     }
 
