@@ -12,6 +12,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Builder
 @Table("refusepayment")
 public class RefusePaymentEntity {
+
     @Id
     @Column("refusepaymentid")
     private Integer refusePaymentId;
