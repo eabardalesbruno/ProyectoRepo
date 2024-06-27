@@ -234,31 +234,27 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest) {
         if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
-            return Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"La fecha de inicio no puede ser anterior al día actual"));
+            return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La fecha de inicio no puede ser anterior al día actual"));
         }
 
         Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
         Mono<RoomOfferEntity> roomOfferEntityMono = roomOfferRespository.findById(bookingSaveRequest.getRoomOfferId());
 
-        BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId, bookingSaveRequest, numberOfDays);
+        return roomOfferEntityMono.flatMap(roomOfferEntity -> {
+            BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId, bookingSaveRequest, numberOfDays);
+            bookingEntity.setCostFinal(roomOfferEntity.getCost().multiply(BigDecimal.valueOf(numberOfDays)));
 
-        return bookingRepository.findExistingBookings(
-                        bookingEntity.getRoomOfferId(),
-                        bookingEntity.getDayBookingInit(),
-                        bookingEntity.getDayBookingEnd())
-                .hasElements()
-                .flatMap(exists -> exists
-                        ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"La reserva ya existe para las fechas seleccionadas"))
-                        : Mono.just(bookingEntity)
-                        .flatMap(bookingEntity1 -> roomOfferEntityMono
-                                .map(roomOfferEntity -> {
-                                    bookingEntity1.setCostFinal(roomOfferEntity.getCost().multiply(BigDecimal.valueOf(numberOfDays)));
-                                    return bookingEntity1;
-                                })
-                        )
-                        .flatMap(bookingRepository::save)
-                        .flatMap(savedBooking -> sendBookingConfirmationEmail(savedBooking))
-                );
+            return bookingRepository.findExistingBookings(
+                            bookingEntity.getRoomOfferId(),
+                            bookingEntity.getDayBookingInit(),
+                            bookingEntity.getDayBookingEnd())
+                    .hasElements()
+                    .flatMap(exists -> exists
+                            ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La reserva ya existe para las fechas seleccionadas"))
+                            : bookingRepository.save(bookingEntity)
+                            .flatMap(savedBooking -> sendBookingConfirmationEmail(savedBooking))
+                    );
+        });
     }
 
     private Mono<BookingEntity> sendBookingConfirmationEmail(BookingEntity bookingEntity) {
