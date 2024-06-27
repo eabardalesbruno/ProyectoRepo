@@ -10,6 +10,7 @@ import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.BookingService;
+import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.PartnerPointsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +40,8 @@ import java.util.List;
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
-
+    private final UserClientRepository userClientRepository;
+    private final EmailService emailService;
     private final PartnerPointsService partnerPointsService;
     private final ComfortTypeRepository comfortTypeRepository;
     private final RoomOfferRepository roomOfferRespository;
@@ -57,6 +59,8 @@ public class BookingServiceImpl implements BookingService {
 
     public BookingServiceImpl(
             BookingRepository bookingRepository,
+            UserClientRepository userClientRepository,
+            EmailService emailService,
             PartnerPointsService partnerPointsService,
             ComfortTypeRepository comfortTypeRepository,
             BedsTypeRepository bedsTypeRepository,
@@ -64,11 +68,24 @@ public class BookingServiceImpl implements BookingService {
             //WebClient.Builder webClientBuilder
     ) {
         this.bookingRepository = bookingRepository;
+        this.userClientRepository = userClientRepository;
+        this.emailService = emailService;
         this.partnerPointsService = partnerPointsService;
         this.comfortTypeRepository = comfortTypeRepository;
         this.bedsTypeRepository = bedsTypeRepository;
         this.roomOfferRespository = roomOfferRespository;
         //this.webClient = webClientBuilder.baseUrl(uploadDir).build();
+    }
+
+    private String generateEmailBody(BookingEntity bookingEntity) {
+        return "Estimado usuario,\n\n" +
+                "Enviamos su reserva:\n" +
+                "Booking ID: " + bookingEntity.getBookingId() + "\n" +
+                "Room Offer ID: " + bookingEntity.getRoomOfferId() + "\n" +
+                "Costo: " + bookingEntity.getCostFinal() + "\n" +
+                "Fecha de inicio: " + bookingEntity.getDayBookingInit() + "\n" +
+                "Fecha de fin: " + bookingEntity.getDayBookingEnd() + "\n\n" +
+                "Gracias por su confianza. Atentamente. Jefito y su equipo.";
     }
 
     @Override
@@ -157,6 +174,7 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.findAllCalendarDate(id);
     }
 
+    /*
     @Override
     public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest) {
 
@@ -185,6 +203,44 @@ public class BookingServiceImpl implements BookingService {
                                 })
                         )
                         .flatMap(bookingRepository::save)
+                );
+    }
+     */
+
+    @Override
+    public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest) {
+        if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
+            return Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"La fecha de inicio no puede ser anterior al día actual"));
+        }
+
+        Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
+        Mono<RoomOfferEntity> roomOfferEntityMono = roomOfferRespository.findById(bookingSaveRequest.getRoomOfferId());
+
+        BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId, bookingSaveRequest, numberOfDays);
+
+        return bookingRepository.findExistingBookings(
+                        bookingEntity.getRoomOfferId(),
+                        bookingEntity.getDayBookingInit(),
+                        bookingEntity.getDayBookingEnd())
+                .hasElements()
+                .flatMap(exists -> exists
+                        ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"La reserva ya existe para las fechas seleccionadas"))
+                        : Mono.just(bookingEntity)
+                        .flatMap(bookingEntity1 -> roomOfferEntityMono
+                                .map(roomOfferEntity -> {
+                                    bookingEntity1.setCostFinal(roomOfferEntity.getCost().multiply(BigDecimal.valueOf(numberOfDays)));
+                                    return bookingEntity1;
+                                })
+                        )
+                        .flatMap(bookingRepository::save)
+                        .flatMap(savedBooking ->
+                                userClientRepository.findByUserClientId(userClientId)
+                                        .flatMap(userClient -> {
+                                            String emailBody = generateEmailBody(savedBooking);
+                                            return emailService.sendEmail(userClient.getEmail(), "Booking Confirmation", emailBody)
+                                                    .thenReturn(savedBooking);
+                                        })
+                        )
                 );
     }
 
