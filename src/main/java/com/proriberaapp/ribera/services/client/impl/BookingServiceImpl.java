@@ -227,39 +227,53 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest) {
+        // Validar que la fecha de inicio no sea anterior al día actual
         if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
             return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La fecha de inicio no puede ser anterior al día actual"));
         }
 
+        // Calcular el número de días entre la fecha de inicio y fin
         Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
-        Mono<RoomOfferEntity> roomOfferEntityMono = roomOfferRespository.findById(bookingSaveRequest.getRoomOfferId());
 
-        return roomOfferEntityMono.flatMap(roomOfferEntity -> {
-            BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId, bookingSaveRequest, numberOfDays);
-            bookingEntity.setCostFinal(roomOfferEntity.getCost().multiply(BigDecimal.valueOf(numberOfDays)));
+        // Obtener la oferta de habitación
+        return roomOfferRespository.findById(bookingSaveRequest.getRoomOfferId())
+                .flatMap(roomOfferEntity -> {
+                    // Crear la entidad de reserva con los datos proporcionados
+                    BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId, bookingSaveRequest, numberOfDays);
+                    bookingEntity.setCostFinal(roomOfferEntity.getCost().multiply(BigDecimal.valueOf(numberOfDays)));
 
-            return bookingRepository.findExistingBookings(
-                            bookingEntity.getRoomOfferId(),
-                            bookingEntity.getDayBookingInit(),
-                            bookingEntity.getDayBookingEnd())
-                    .hasElements()
-                    .flatMap(exists -> exists
-                            ? Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La reserva ya existe para las fechas seleccionadas"))
-                            : bookingRepository.save(bookingEntity)
-                            .flatMap(savedBooking -> sendBookingConfirmationEmail(savedBooking))
-                    );
-        });
+                    // Verificar si ya existe una reserva para las fechas seleccionadas
+                    return bookingRepository.findExistingBookings(
+                                    bookingEntity.getRoomOfferId(),
+                                    bookingEntity.getDayBookingInit(),
+                                    bookingEntity.getDayBookingEnd())
+                            .hasElements()
+                            .flatMap(exists -> {
+                                if (exists) {
+                                    // Si la reserva ya existe, lanzar una excepción
+                                    return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La reserva ya existe para las fechas seleccionadas"));
+                                } else {
+                                    // Si la reserva no existe, guardarla en la base de datos
+                                    return bookingRepository.save(bookingEntity)
+                                            .flatMap(savedBooking -> sendBookingConfirmationEmail(savedBooking));
+                                }
+                            });
+                });
     }
 
+    // Método para enviar el correo de confirmación de reserva
     private Mono<BookingEntity> sendBookingConfirmationEmail(BookingEntity bookingEntity) {
         return userClientRepository.findByUserClientId(bookingEntity.getUserClientId())
                 .flatMap(userClient -> {
+                    // Generar el cuerpo del correo electrónico
                     String emailBody = generateEmailBody(bookingEntity);
+                    // Enviar el correo electrónico utilizando el servicio de correo
                     return emailService.sendEmail(userClient.getEmail(), "Confirmación de Reserva", emailBody)
                             .thenReturn(bookingEntity);
                 });
     }
 
+    // Método para calcular el número de días entre dos fechas
     private Integer calculateDaysBetween(LocalDate dayBookingInit, LocalDate dayBookingEnd) {
         return (int) ChronoUnit.DAYS.between(dayBookingInit, dayBookingEnd) + 1;
     }
