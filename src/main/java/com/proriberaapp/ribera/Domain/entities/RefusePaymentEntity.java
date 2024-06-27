@@ -16,8 +16,8 @@ public class RefusePaymentEntity {
     @Column("refusepaymentid")
     private Integer refusePaymentId;
 
-    @Column("paymentstateid")
-    private Integer paymentStateId;
+    @Column("paymentbookid")
+    private Integer paymentBookId;
 
     @Column("refusereasonid")
     private Integer refuseReasonId;
