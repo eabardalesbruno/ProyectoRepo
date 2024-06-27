@@ -408,6 +408,20 @@ CREATE TABLE IF NOT EXISTS tokenpointstransaction(
     bookingid INTEGER
 );
 
+CREATE TABLE IF NOT EXISTS public.implements_apartment
+(
+    implements_apartment_id SERIAL PRIMARY KEY,
+    implements_apartment_name VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS public.implements_comfort
+(
+    implements_apartment_id integer,
+    comforttypeid integer,
+    cuantity integer
+);
+
+
 /*
 ALTER TABLE pointstransfers ADD CONSTRAINT fk_sender_pt FOREIGN KEY (senderid) REFERENCES userclient(userclientid);
 ALTER TABLE pointstransfers ADD CONSTRAINT fk_requesttype_pt FOREIGN KEY (requesttypeid) REFERENCES requesttype(requesttypeid);

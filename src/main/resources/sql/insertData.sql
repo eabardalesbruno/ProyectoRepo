@@ -41,14 +41,14 @@ INSERT INTO public.roomtype (roomtypename,roomtypedescription) VALUES
 ----STATE_ROOM----
 INSERT INTO public.stateroom (stateroomname) VALUES
 	 ('LIMPIANDO'),
-	 ('LISTO_PARA_LLEGADA'),
-	 ('OCUPADO_HUESPED'),
-	 ('EN_MANTENIMIENTO'),
-	 ('REQUIERE_LIMPIEZA_PROFUNDA'),
-	 ('EN_RENOVACION'),
-	 ('LISTO_PARA_OCUPAR'),
-	 ('SIN_DISPONIBILIDAD'),
-	 ('SIN_MANTENIMIENTO'),
+	 ('LISTO PARA LLEGADA'),
+	 ('OCUPADO HUESPED'),
+	 ('EN MANTENIMIENTO'),
+	 ('REQUIERE LIMPIEZA PROFUNDA'),
+	 ('EN RENOVACION'),
+	 ('LISTO PARA OCUPAR'),
+	 ('SIN DISPONIBILIDAD'),
+	 ('SIN MANTENIMIENTO'),
 	 ('RESERVADO');
 
 
@@ -76,23 +76,25 @@ La tarifa  NO es REEMBOLSABLE',2,'71.22',true,false);
 
 ----ROOM----
 INSERT INTO public.room (roomtypeid,stateroomid,roomdetailid,roomname,roomnumber,image,capacity) VALUES
+	 (1,2,2,'Departamento con vista al río','202','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/feb6ae4a-75dd-4db9-8d31-a0ba9a462c22-resized_IMG_7568.jpg',2),
+	 (1,2,2,'Departamento con vista al río','302','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/30ff668b-ee83-4d4a-814d-2904352e3573-resized_IMG_7593.jpg',2),
+	 (1,2,4,'Departamento con vista al río','204','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/909b1d71-a92b-4a6e-bce9-6cbc1cac6574-resized_IMG_7577.jpg',2),
+	 (2,2,4,'Departamento con vista al río','304','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/78f3ee93-8845-41d3-a0c8-1063d014507b-resized_IMG_7567.jpg',4),
+	 (2,2,6,'Departamento con vista al río','206','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/a8b6adaa-4191-4a17-ba04-e46a134aef96-resized_IMG_7582.jpg',4),
+	 (2,2,6,'Departamento con vista al río','306','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/909b1d71-a92b-4a6e-bce9-6cbc1cac6574-resized_IMG_7577.jpg',4),
+
+	 (3,2,1,'Departamento con vista al jardín','201','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/080b7545-d1a1-415b-9f94-79d1699d017c-compressed_IMG_1384.JPEG',2),
 	 (3,2,1,'Departamento con vista al jardín','301','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/a8b6adaa-4191-4a17-ba04-e46a134aef96-resized_IMG_7582.jpg',2),
 	 (3,2,3,'Departamento con vista al jardín','203','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/56dc5341-1f57-4729-b4d2-03101b0ccb6e-resized_IMG_7534.JPG',2),
 	 (3,2,3,'Departamento con vista al jardín','303','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/77bb88db-250d-47ce-bd4a-fea99328c43e-resized_IMG_7535.jpg',2),
 	 (4,2,5,'Departamento con vista al jardín','205','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/d06fee02-dc0b-44c8-81e7-1e0f2499b78b-resized_IMG_7498.jpg',4),
 	 (4,2,5,'Departamento con vista al jardín','305','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/e5ce87b8-5903-46c9-805b-583f9247173e-IMG_1425.JPEG',4),
 	 (4,2,7,'Departamento con vista al jardín','307','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/d0427e0c-c636-4e77-89bb-258eb9d3a7e6-IMG_1426.JPEG',4),
-	 (1,2,2,'Departamento con vista al río','202','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/feb6ae4a-75dd-4db9-8d31-a0ba9a462c22-resized_IMG_7568.jpg',2),
-	 (1,2,2,'Departamento con vista al río','302','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/30ff668b-ee83-4d4a-814d-2904352e3573-resized_IMG_7593.jpg',2),
-	 (1,2,4,'Departamento con vista al río','204','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/909b1d71-a92b-4a6e-bce9-6cbc1cac6574-resized_IMG_7577.jpg',2),
-	 (2,2,4,'Departamento con vista al río','304','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/78f3ee93-8845-41d3-a0c8-1063d014507b-resized_IMG_7567.jpg',4),
 	 (4,2,7,'Departamento con vista al jardín','207','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/ba64568f-a82e-4a8b-a71e-c3886e7c67d4-resized_IMG_7531.JPG',4),
-	 (2,2,6,'Departamento con vista al río','206','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/a8b6adaa-4191-4a17-ba04-e46a134aef96-resized_IMG_7582.jpg',4),
-	 (2,2,6,'Departamento con vista al río','306','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/909b1d71-a92b-4a6e-bce9-6cbc1cac6574-resized_IMG_7577.jpg',4),
+
 	 (5,2,8,'Departamento con vista doble','208','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/78f3ee93-8845-41d3-a0c8-1063d014507b-resized_IMG_7567.jpg',2),
 	 (5,2,8,'Departamento con vista doble','308','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/67abc9bf-d956-4646-8904-9d03f364247c-resized_IMG_7492.jpg',2),
 	 (6,2,9,'Departamento con vista doble','309','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/7a3e8902-7b84-4353-8c80-4070af79d4b2-resized_IMG_7522.JPG',4),
-	 (3,2,1,'Departamento con vista al jardín','201','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/080b7545-d1a1-415b-9f94-79d1699d017c-compressed_IMG_1384.JPEG',2),
 	 (6,2,9,'Departamento con vista doble','209','https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/ef6104fe-b20b-4765-806e-dea8ec6a7a76-compressed_IMG_1436.JPEG',4);
 
 
@@ -151,37 +153,6 @@ INSERT INTO public.paymentsubtype (paymentsubtypedesc,accountsoles,accountdollar
 	 ('Cajero Provincia','19390445695-0-85','191-2616687-1-90',1,100.0,0.0,10.0,1,0),
 	 ('Cajero Provincia','191-2606708-0-82','191-2616687-1-90',1,100.0,0.0,10.0,1,0);
 
-----COMFORT----
-INSERT INTO public.comforttype (comforttypename,comforttypedescription,active) VALUES
-	 ('Wi-Fi gratis','Conexión a internet gratuita en todas las áreas del resort.',true),
-	 ('Servicio de habitaciones','Disfrute de la comodidad de solicitar comida y bebida en la intimidad de su habitación.',true),
-	 ('Aire acondicionado','Ambientes frescos y confortables durante todo el año.',true),
-	 ('TV de pantalla plana','Entretenimiento con una amplia selección de canales en alta definición.',true),
-	 ('Baño privado','Baño exclusivo para mayor privacidad y comodidad.',true),
-	 ('Mini bar','Bebidas y aperitivos disponibles en la habitación para disfrutar en cualquier momento.',true),
-	 ('Caja de seguridad','Mantenga sus objetos de valor seguros durante su estancia.',true),
-	 ('Secador de pelo','Facilidad para el secado del cabello después de la ducha.',true),
-	 ('Plancha y tabla de planchar','Para mantener su ropa impecable durante su viaje.',true),
-	 ('Zona de estar','Espacio adicional para relajarse y disfrutar de la comodidad de su habitación.',true),
-	 ('Escritorio','Área de trabajo conveniente para aquellos que necesitan mantenerse productivos durante su estancia.',true),
-	 ('Vistas al mar','Disfrute de impresionantes vistas al océano desde la comodidad de su habitación.',true),
-	 ('Jacuzzi privado','Relájese y rejuvenezca con un jacuzzi privado en su habitación.',true),
-	 ('Terraza privada','Espacio al aire libre exclusivo para disfrutar del clima y las vistas circundantes.',true),
-	 ('Cama King-size','Descanse cómodamente en una espaciosa cama King-size durante su estadía.',true),
-	 ('Cama Queen-size','Confort y amplitud en una cama Queen-size para una noche de sueño reparador.',true),
-	 ('Cama doble','Espacio adicional en una cama doble para aquellos que prefieren más espacio para dormir.',true),
-	 ('Camas individuales','Perfecto para amigos o familiares que prefieren dormir en camas separadas.',true),
-	 ('Piscina privada','Disfrute de la exclusividad de su propia piscina privada durante su estancia.',true),
-	 ('Gimnasio en el resort','Manténgase activo y en forma con acceso gratuito a un gimnasio totalmente equipado.',true),
-	 ('Spa en el resort','Relájese y rejuvenezca con una amplia gama de tratamientos en nuestro spa de lujo.',true),
-	 ('Restaurante gourmet','Deléitese con exquisitos platos preparados por chefs expertos en nuestro restaurante de primera categoría.',true),
-	 ('Club de playa privado','Exclusividad y comodidad en nuestro club de playa privado con servicio de bebidas y comidas.',true),
-	 ('Servicio de conserjería','Asistencia personalizada para satisfacer todas sus necesidades y deseos durante su estancia.',true),
-	 ('Servicio de transporte','Traslados convenientes desde y hacia el aeropuerto o lugares de interés locales.',true),
-	 ('Actividades de entretenimiento','Una variedad de actividades emocionantes para toda la familia, desde deportes acuáticos hasta excursiones guiadas.',true),
-	 ('Servicio de niñera','Disfrute de un momento de tranquilidad sabiendo que sus hijos están en buenas manos con nuestro servicio de niñera.',true);
-
-
 
 ----BOOKING_STATUS----
 INSERT INTO public.bookingstate (bookingstatename) VALUES
@@ -192,6 +163,78 @@ INSERT INTO public.bookingstate (bookingstatename) VALUES
 	 ('FINALIZADO'),
 	 ('EN USO');
 
+
+----COMFORT----
+INSERT INTO public.comforttype (comforttypename,comforttypedescription,active) VALUES
+
+---Habitacion matrimonial
+	 ('Cama Queen',NULL,true),
+	 ('Juego de sabanas para cama queen',NULL,true),
+	 ('Cobertor para cama queen',NULL,true),
+	 ('Almohadas',NULL,true),
+	 ('Fundas de almohadas',NULL,true),
+	 ('Duvet o plumoon queen',NULL,true),
+	 ('Pie de cama',NULL,true),
+	 ('Telefono',NULL,true),
+	 ('Televisor  (43" pulgadas)',NULL,true),
+---Baño de habitacion doble/duplex
+---Baño de habitacion matrimonial
+	 ('Secadora',NULL,true),
+	 ('Toalla blanca de cuerpo',NULL,true),
+	 ('Toalla blanca de cara',NULL,true),
+	 ('Toalla azul de pisicna',NULL,true),
+	 ('Dispensadores de jabon',NULL,true),
+	 ('Dispensador de shampoo',NULL,true),
+---Habitacion Doble / Duplex
+	 ('Cama de 2 plazas',NULL,true),
+	 ('Juego de sabanas para cama de 2 plazas',NULL,true),
+	 ('Cobertor para cama de 2 plazas',NULL,true),
+	 ('Lampara',NULL,true),
+
+---Kitchenette
+	 ('Frigobar (con bebidas)',NULL,true),
+	 ('Microondas',NULL,true),
+	 ('Waflera',NULL,true),
+	 ('Vinera',NULL,true),
+	 ('Sillas de madera alta',NULL,true),
+	 ('Dispensador de lava vajilla',NULL,true),
+	 ('Esponja lava vajilla',NULL,true),
+	 ('Mueble sofa cama',NULL,true),
+---Menaje
+	 ('Cubiertos ( cuchara, cucharita, tenedor, cuchillo)',NULL,true),
+	 ('Copas de vino',NULL,true),
+	 ('Saca corcho',NULL,true),
+	 ('Tazas',NULL,true),
+	 ('Platos tendidos grande',NULL,true),
+	 ('Platos de tendido mediano',NULL,true),
+	 ('Platos hondos',NULL,true),
+	 ('Platos de taza',NULL,true),
+---Sala
+	 ('Mesa de centro de ceramico grande',NULL,true),
+	 ('Mesa de centro de ceramico pequeña',NULL,true),
+	 ('Televisor (55" pulgadas )',NULL,true),
+	 ('Telefono (intercominicador)',NULL,true),
+	 ('Luminarias colgantes',NULL,true),
+	 ('Macetas con plantas',NULL,true),
+---Amenities de frigobar
+	 ('Jugo en caja',NULL,true),
+	 ('Energizante',NULL,true),
+	 ('Cervezas',NULL,true),
+	 ('Botella de agua',NULL,true),
+	 ('Botella de vino',NULL,true),
+	 ('Botella de champagne',NULL,true);
+
+----IMPLEMENTS_APARTMENT----
+INSERT INTO public.implements_apartment(implements_apartment_name) VALUES
+	('Habitacion matrimonial'),
+	('Baño de habitacion matrimonial'),
+	('Habitacion Doble / Duplex'),
+	('Baño de habitacion doble/duplex'),
+	('Kitchenette'),
+	('Menaje'),
+	('Sala'),
+	('Amenities de frigobar');
+
 ----BEDS_TYPE----
 INSERT INTO public.bedstype (bedtypename,bedtypedescription) VALUES
 	 ('King','Cama King-size para una experiencia de lujo y espacio amplio para dormir cómodamente.'),
@@ -199,3 +242,63 @@ INSERT INTO public.bedstype (bedtypename,bedtypedescription) VALUES
 	 ('Double','Cama Doble, ofreciendo espacio adicional para una persona que prefiere más espacio.'),
 	 ('Twin','Dos camas individuales, perfectas para amigos o familiares que prefieren dormir separados.'),
 	 ('Waterbed','Cama de agua que proporciona una sensación de flotación y alivio del estrés, perfecta para una experiencia de sueño relajante.');
+
+----BEDROOM----
+INSERT INTO public.bedroom (roomid,bedtypeid,quantity) VALUES
+	 (1,2,1), (2,2,1), (3,2,1),
+     (4,3,2), (5,3,2), (6,3,2),
+     (7,2,1), (8,2,1), (9,2,1), (10,2,1),
+	 (11,3,2), (12,3,2), (13,3,2), (14,3,2),
+	 (15,2,1), (16,2,1),
+	 (17,3,2), (18,3,2);
+
+----COMFORT_SERVICE_DETAIL----
+INSERT INTO public.implements_comfort(implements_apartment_id, comforttypeid, cuantity) VALUES
+	(1, 1, 1),(1, 2, 1),(1, 3, 1),(1, 4, 4),(1, 5, 4),(1, 6, 1),(1, 7, 1),(1, 8, 1),(1, 9, 1),
+	(2, 10, 1),(2, 11, 1),(2, 12, 1),(2, 13, 1),(2, 14, 2),(2, 15, 2),
+	(3, 16, 2),(3, 17, 2),(3, 18, 2),(3, 19, 1),
+	(4, 10, 1),(4, 11, 1),(4, 12, 1),(4, 13, 1),(4, 14, 2),(4, 15, 2),
+	(5, 20, 1),(5, 21, 1),(5, 22, 1),(5, 23, 1),(5, 24, 6),(5, 25, 1),(5, 26, 1),(5, 27, 1),
+	(6, 28, 6),(6, 29, 2),(6, 30, 1),(6, 31, 6),(6, 32, 6),(6, 33, 6),(6, 34, 6),(6, 35, 6),(6, 36, 6),
+	(7, 37, 1),(7, 38, 1),(7, 39, 1),(7, 40, 1),(7, 41, 3),(7, 42, 2),
+	(8, 43, 1),(8, 44, 1),(8, 45, 1),(8, 46, 1),(8, 47, 1),(8, 48, 1);
+
+----COMFORT_ROOM_OFFER_DETAIL----
+INSERT INTO public.comfortroomofferdetail (roomofferid,comforttypeid) VALUES
+---Habitacion matrimonial
+     (1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),(1,11),(1,12),(1,13),(1,14),(1,15),
+     (2,1),(2,2),(2,3),(2,4),(2,5),(2,6),(2,7),(2,8),(2,9),(2,10),(2,11),(2,12),(2,13),(2,14),(2,15),
+     (3,1),(3,2),(3,3),(3,4),(3,5),(3,6),(3,7),(3,8),(3,9),(3,10),(3,11),(3,12),(3,13),(3,14),(3,15),
+
+---Habitacion Doble / Duplex
+
+---Habitacion matrimonial
+     (4,4),(4,3),(4,8),(4,9),(4,16),(4,17),(4,18),(4,19),(4,10),(4,11),(4,12),(4,13),(4,14),(4,15),
+     (5,1),(5,2),(5,3),(5,4),(5,5),(5,6),(5,7),(5,8),(5,9),(5,10),(5,11),(5,12),(5,13),(5,14),(5,15),
+     (6,1),(6,2),(6,3),(6,4),(6,5),(6,6),(6,7),(6,8),(6,9),(6,10),(6,11),(6,12),(6,13),(6,14),(6,15),
+
+
+	 (2,2),
+
+	 (2,2),
+	 (3,2),
+
+	 (4,3),
+	 (5,3),
+	 (6,3),
+
+	 (7,2),
+	 (8,2),
+	 (9,2),
+	 (10,2),
+
+	 (11,3),
+	 (12,3),
+	 (13,3),
+	 (14,3),
+
+	 (15,2),
+	 (16,2),
+
+	 (17,3),
+	 (18,3);
