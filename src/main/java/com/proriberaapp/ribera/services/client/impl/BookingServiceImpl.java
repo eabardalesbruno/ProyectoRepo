@@ -99,7 +99,7 @@ public class BookingServiceImpl implements BookingService {
         body += "<h3 style='text-align: center;'>Descripcion: Reserva de Habitacion</h3>";
         body += "<h2 style='text-align: center;'>Detalles de la reserva:</h2>";
         body += "<p style='text-align: center;'>Habitación: ";
-        body += getRoomName(bookingEntity.getRoomOfferId()).block(); // Aquí obtienes de manera sincrónica, asegúrate de gestionar correctamente la asincronía
+        body += getRoomName(bookingEntity.getRoomOfferId()).block();
         body += "</p>";
         body += "<p style='text-align: center;'>Costo: " + bookingEntity.getCostFinal() + "</p>";
         body += "<p style='text-align: center;'>Fecha de inicio: " + bookingEntity.getDayBookingInit() + "</p>";
