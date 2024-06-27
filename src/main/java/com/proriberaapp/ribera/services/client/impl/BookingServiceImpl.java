@@ -78,14 +78,38 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private String generateEmailBody(BookingEntity bookingEntity) {
-        return "Estimado usuario,\n\n" +
-                "Enviamos su reserva:\n" +
-                "Booking ID: " + bookingEntity.getBookingId() + "\n" +
-                "Room Offer ID: " + bookingEntity.getRoomOfferId() + "\n" +
-                "Costo: " + bookingEntity.getCostFinal() + "\n" +
-                "Fecha de inicio: " + bookingEntity.getDayBookingInit() + "\n" +
-                "Fecha de fin: " + bookingEntity.getDayBookingEnd() + "\n\n" +
-                "Gracias por su confianza. Atentamente. Jefito y su equipo.";
+        String body = "<html><head><title></title></head><body style='color:black'>";
+        body += "<div style='width: 100%'>";
+        body += "<div style='display:flex;'>";
+        body += "</div>";
+        body += "<img style='width: 100%' src='http://www.inresorts.club/Views/img/fondo.png'>";
+        body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>"
+                + "Bienvenido </h1>";
+        body += "<h3 style='text-align: center;'>Producto por Adquirir: Reserva</h3>";
+        body += "<h3 style='text-align: center;'>Descripción: Reserva de Habitación</h3>";
+        body += "<h2 style='text-align: center;'>Detalles de la reserva:</h2>";
+        body += "<p style='text-align: center;'>Booking ID: " + bookingEntity.getBookingId() + "</p>";
+        body += "<p style='text-align: center;'>Room Offer ID: " + bookingEntity.getRoomOfferId() + "</p>";
+        body += "<p style='text-align: center;'>Costo: " + bookingEntity.getCostFinal() + "</p>";
+        body += "<p style='text-align: center;'>Fecha de inicio: " + bookingEntity.getDayBookingInit() + "</p>";
+        body += "<p style='text-align: center;'>Fecha de fin: " + bookingEntity.getDayBookingEnd() + "</p>";
+        body += "<center><p style='margin-left: 10%; margin-right: 10%;'>Muy pronto formarás parte de la familia inResorts. Estamos a la espera de que proceses tu pago a través del siguiente portal:</p></center>";
+        body += "<center><div style='width: 100%'>";
+        body += "<p style='margin-left: 10%; margin-right: 10%;'>Click en el botón para pagar:</p>";
+        body += "<a style='text-decoration: none;'>";
+        body += "<center><div style='background: #0d80ea; border-radius: 10px; width: 158px; height: 30px; font-size: 16px; color: white; font-weight: bold; padding: 4px; padding-top: 10px; cursor: pointer; text-align: center; margin: 23px;'>Validar pago<div></center>";
+        body += "</a></div></center>";
+        body += "<center><div style='width: 100%'>";
+        body += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
+        body += "<center>Recuerda que el pago lo puedes realizar mediante los medios de pago disponibles en el portal.</center>";
+        body += "</div></center>";
+        body += "<center><div style='width: 100%'>";
+        body += "<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>";
+        body += "</div></center>";
+        body += "</div></center>";
+        body += "</body></html>";
+
+        return body;
     }
 
     @Override
