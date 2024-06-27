@@ -30,6 +30,7 @@ public class SecurityConfig {
                         .pathMatchers(OPTIONS).permitAll()
 
                         .pathMatchers("/api/v1/admin/login",
+                                "/api/v1/users/login",
                                 "/api/v1/users/**",
                                 "/api/v1/s3-client/**",
                                 "/api/v1/password-reset/**",

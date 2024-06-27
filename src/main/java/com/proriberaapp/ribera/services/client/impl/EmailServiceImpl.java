@@ -47,7 +47,7 @@ public class EmailServiceImpl implements EmailService {
                         .status("SENT")
                         .build();
 
-                emailLogRepository.save(emailLog).block();
+                emailLogRepository.save(emailLog).subscribe();
             } catch (MessagingException e) {
                 EmailLogEntity emailLog = EmailLogEntity.builder()
                         .recipient(to)
@@ -57,7 +57,7 @@ public class EmailServiceImpl implements EmailService {
                         .status("FAILED")
                         .build();
 
-                emailLogRepository.save(emailLog).block();
+                emailLogRepository.save(emailLog).subscribe();
             }
         }).then();
     }
