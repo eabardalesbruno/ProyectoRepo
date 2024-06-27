@@ -233,15 +233,17 @@ public class BookingServiceImpl implements BookingService {
                                 })
                         )
                         .flatMap(bookingRepository::save)
-                        .flatMap(savedBooking ->
-                                userClientRepository.findByUserClientId(userClientId)
-                                        .flatMap(userClient -> {
-                                            String emailBody = generateEmailBody(savedBooking);
-                                            return emailService.sendEmail(userClient.getEmail(), "Booking Confirmation", emailBody)
-                                                    .thenReturn(savedBooking);
-                                        })
-                        )
+                        .flatMap(savedBooking -> sendBookingConfirmationEmail(savedBooking))
                 );
+    }
+
+    private Mono<BookingEntity> sendBookingConfirmationEmail(BookingEntity bookingEntity) {
+        return userClientRepository.findByUserClientId(bookingEntity.getUserClientId())
+                .flatMap(userClient -> {
+                    String emailBody = generateEmailBody(bookingEntity);
+                    return emailService.sendEmail(userClient.getEmail(), "Confirmación de Reserva", emailBody)
+                            .thenReturn(bookingEntity);
+                });
     }
 
     private Integer calculateDaysBetween(LocalDate dayBookingInit, LocalDate dayBookingEnd) {
