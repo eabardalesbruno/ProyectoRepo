@@ -7,6 +7,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
+import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.BookingService;
@@ -47,7 +48,7 @@ public class BookingServiceImpl implements BookingService {
     private final RoomOfferRepository roomOfferRespository;
 
     private final BedsTypeRepository bedsTypeRepository;
-
+    private final RoomRepository roomRepository;
     //private final WebClient webClient;
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -64,7 +65,8 @@ public class BookingServiceImpl implements BookingService {
             PartnerPointsService partnerPointsService,
             ComfortTypeRepository comfortTypeRepository,
             BedsTypeRepository bedsTypeRepository,
-            RoomOfferRepository roomOfferRespository
+            RoomOfferRepository roomOfferRespository,
+            RoomRepository roomRepository
             //WebClient.Builder webClientBuilder
     ) {
         this.bookingRepository = bookingRepository;
@@ -74,7 +76,15 @@ public class BookingServiceImpl implements BookingService {
         this.comfortTypeRepository = comfortTypeRepository;
         this.bedsTypeRepository = bedsTypeRepository;
         this.roomOfferRespository = roomOfferRespository;
+        this.roomRepository = roomRepository;
         //this.webClient = webClientBuilder.baseUrl(uploadDir).build();
+    }
+
+    private Mono<String> getRoomName(Integer roomOfferId) {
+        return roomOfferRespository.findById(roomOfferId)
+                .flatMap(roomOfferEntity -> roomRepository.findById(roomOfferEntity.getRoomId()))
+                .map(RoomEntity::getRoomName)
+                .switchIfEmpty(Mono.just("Nombre de habitación no encontrado"));
     }
 
     private String generateEmailBody(BookingEntity bookingEntity) {
@@ -88,8 +98,9 @@ public class BookingServiceImpl implements BookingService {
         body += "<h3 style='text-align: center;'>Producto por Adquirir: Reserva</h3>";
         body += "<h3 style='text-align: center;'>Descripcion: Reserva de Habitacion</h3>";
         body += "<h2 style='text-align: center;'>Detalles de la reserva:</h2>";
-        body += "<p style='text-align: center;'>Booking ID: " + bookingEntity.getBookingId() + "</p>";
-        body += "<p style='text-align: center;'>Room Offer ID: " + bookingEntity.getRoomOfferId() + "</p>";
+        body += "<p style='text-align: center;'>Habitación: ";
+        body += getRoomName(bookingEntity.getRoomOfferId()).block(); // Aquí obtienes de manera sincrónica, asegúrate de gestionar correctamente la asincronía
+        body += "</p>";
         body += "<p style='text-align: center;'>Costo: " + bookingEntity.getCostFinal() + "</p>";
         body += "<p style='text-align: center;'>Fecha de inicio: " + bookingEntity.getDayBookingInit() + "</p>";
         body += "<p style='text-align: center;'>Fecha de fin: " + bookingEntity.getDayBookingEnd() + "</p>";
