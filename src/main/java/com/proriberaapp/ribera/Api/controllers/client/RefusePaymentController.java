@@ -15,6 +15,7 @@ public class RefusePaymentController {
 
     private final RefusePaymentService refusePaymentService;
 
+    @Autowired
     public RefusePaymentController(RefusePaymentService refusePaymentService) {
         this.refusePaymentService = refusePaymentService;
     }
