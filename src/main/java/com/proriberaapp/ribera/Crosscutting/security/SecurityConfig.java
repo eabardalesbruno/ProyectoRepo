@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 "/api/v1/points/**",
                                 "/api/v1/booking/**",
                                 "/api/v1/email/**",
+                                "/api/v1/refuse-payments/**",
                                 "/swagger-doc/**"
                         ).permitAll()
 
