@@ -84,38 +84,36 @@ public class BookingServiceImpl implements BookingService {
         return roomOfferRespository.findById(roomOfferId)
                 .flatMap(roomOfferEntity -> roomRepository.findById(roomOfferEntity.getRoomId()))
                 .map(RoomEntity::getRoomName)
-                .switchIfEmpty(Mono.just("Nombre de habitación no encontrado"));
+                .switchIfEmpty(Mono.just("Habitación no encontrada"));
     }
 
-    private Mono<String> generateEmailBody(BookingEntity bookingEntity) {
-        return getRoomName(bookingEntity.getRoomOfferId())
-                .map(roomName -> {
-                    String body = "<html><head><title></title></head><body style='color:black'>";
-                    body += "<div style='width: 100%'>";
-                    body += "<div style='display:flex;'>";
-                    body += "</div>";
-                    body += "<img style='width: 100%' src='http://www.inresorts.club/Views/img/fondo.png'>";
-                    body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>"
-                            + "Bienvenido </h1>";
-                    body += "<h3 style='text-align: center;'>Producto por Adquirir: Reserva</h3>";
-                    body += "<h3 style='text-align: center;'>Descripcion: Reserva de Habitacion</h3>";
-                    body += "<h2 style='text-align: center;'>Detalles de la reserva:</h2>";
-                    body += "<p style='text-align: center;'>Habitación: " + roomName + "</p>";
-                    body += "<p style='text-align: center;'>Costo: " + bookingEntity.getCostFinal() + "</p>";
-                    body += "<p style='text-align: center;'>Fecha de inicio: " + bookingEntity.getDayBookingInit() + "</p>";
-                    body += "<p style='text-align: center;'>Fecha de fin: " + bookingEntity.getDayBookingEnd() + "</p>";
-                    body += "<center><div style='width: 100%'>";
-                    body += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
-                    body += "<center>Recuerda que el pago lo puedes realizar mediante los medios de pago disponibles en el portal.</center>";
-                    body += "</div></center>";
-                    body += "<center><div style='width: 100%'>";
-                    body += "<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>";
-                    body += "</div></center>";
-                    body += "</div></center>";
-                    body += "</body></html>";
+    private String generateEmailBody(BookingEntity bookingEntity) {
+        StringBuilder body = new StringBuilder("<html><head><title></title></head><body style='color:black'>");
+        body.append("<div style='width: 100%'>");
+        body.append("<div style='display:flex;'>");
+        body.append("</div>");
+        body.append("<img style='width: 100%' src='http://www.inresorts.club/Views/img/fondo.png'>");
+        body.append("<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>Bienvenido </h1>");
+        body.append("<h3 style='text-align: center;'>Producto por Adquirir: Reserva</h3>");
+        body.append("<h3 style='text-align: center;'>Descripcion: Reserva de Habitacion</h3>");
+        body.append("<h2 style='text-align: center;'>Detalles de la reserva:</h2>");
+        body.append("<p style='text-align: center;'>Habitación: ");
+        body.append(getRoomName(bookingEntity.getRoomOfferId()).block());
+        body.append("</p>");
+        body.append("<p style='text-align: center;'>Costo: ").append(bookingEntity.getCostFinal()).append("</p>");
+        body.append("<p style='text-align: center;'>Fecha de inicio: ").append(bookingEntity.getDayBookingInit()).append("</p>");
+        body.append("<p style='text-align: center;'>Fecha de fin: ").append(bookingEntity.getDayBookingEnd()).append("</p>");
+        body.append("<center><div style='width: 100%'>");
+        body.append("<p style='margin-left: 10%; margin-right: 10%;'></p>");
+        body.append("<center>Recuerda que el pago lo puedes realizar mediante los medios de pago disponibles en el portal.</center>");
+        body.append("</div></center>");
+        body.append("<center><div style='width: 100%'>");
+        body.append("<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>");
+        body.append("</div></center>");
+        body.append("</div></center>");
+        body.append("</body></html>");
 
-                    return body;
-                });
+        return body.toString();
     }
 
     @Override
@@ -278,7 +276,7 @@ public class BookingServiceImpl implements BookingService {
         return userClientRepository.findByUserClientId(bookingEntity.getUserClientId())
                 .flatMap(userClient -> {
                     // Generar el cuerpo del correo electrónico
-                    String emailBody = String.valueOf(generateEmailBody(bookingEntity));
+                    String emailBody = generateEmailBody(bookingEntity);
                     // Enviar el correo electrónico utilizando el servicio de correo
                     return emailService.sendEmail(userClient.getEmail(), "Confirmación de Reserva", emailBody)
                             .thenReturn(bookingEntity);
