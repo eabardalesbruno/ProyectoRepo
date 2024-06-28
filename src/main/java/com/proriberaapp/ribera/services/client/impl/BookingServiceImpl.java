@@ -7,9 +7,11 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
+import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.BookingService;
+import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.PartnerPointsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,13 +41,14 @@ import java.util.List;
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
-
+    private final UserClientRepository userClientRepository;
+    private final EmailService emailService;
     private final PartnerPointsService partnerPointsService;
     private final ComfortTypeRepository comfortTypeRepository;
     private final RoomOfferRepository roomOfferRespository;
 
     private final BedsTypeRepository bedsTypeRepository;
-
+    private final RoomRepository roomRepository;
     //private final WebClient webClient;
     @Value("${app.upload.dir}")
     private String uploadDir;
@@ -57,18 +60,60 @@ public class BookingServiceImpl implements BookingService {
 
     public BookingServiceImpl(
             BookingRepository bookingRepository,
+            UserClientRepository userClientRepository,
+            EmailService emailService,
             PartnerPointsService partnerPointsService,
             ComfortTypeRepository comfortTypeRepository,
             BedsTypeRepository bedsTypeRepository,
-            RoomOfferRepository roomOfferRespository
+            RoomOfferRepository roomOfferRespository,
+            RoomRepository roomRepository
             //WebClient.Builder webClientBuilder
     ) {
         this.bookingRepository = bookingRepository;
+        this.userClientRepository = userClientRepository;
+        this.emailService = emailService;
         this.partnerPointsService = partnerPointsService;
         this.comfortTypeRepository = comfortTypeRepository;
         this.bedsTypeRepository = bedsTypeRepository;
         this.roomOfferRespository = roomOfferRespository;
+        this.roomRepository = roomRepository;
         //this.webClient = webClientBuilder.baseUrl(uploadDir).build();
+    }
+
+    private Mono<String> getRoomName(Integer roomOfferId) {
+        return roomOfferRespository.findById(roomOfferId)
+                .flatMap(roomOfferEntity -> roomRepository.findById(roomOfferEntity.getRoomId()))
+                .map(RoomEntity::getRoomName)
+                .switchIfEmpty(Mono.just("Habitación no encontrada"));
+    }
+
+    // Método para generar el cuerpo del correo electrónico con el nombre de la habitación
+    private String generateEmailBody(BookingEntity bookingEntity, String roomName) {
+        String body = "<html><head><title></title></head><body style='color:black'>";
+        body += "<div style='width: 100%'>";
+        body += "<div style='display:flex;'>";
+        body += "</div>";
+        body += "<img style='width: 100%' src='http://www.inresorts.club/Views/img/fondo.png'>";
+        body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>"
+                + "Bienvenido </h1>";
+        body += "<h3 style='text-align: center;'>Producto por Adquirir: Reserva</h3>";
+        body += "<h3 style='text-align: center;'>Descripcion: Reserva de Habitacion</h3>";
+        body += "<h2 style='text-align: center;'>Detalles de la reserva:</h2>";
+        body += "<p style='text-align: center;'>Habitacion: " + roomName + "</p>";
+        body += "<p style='text-align: center;'>Costo: " + bookingEntity.getCostFinal() + "</p>";
+        body += "<p style='text-align: center;'>Fecha de inicio: " + bookingEntity.getDayBookingInit() + "</p>";
+        body += "<p style='text-align: center;'>Fecha de fin: " + bookingEntity.getDayBookingEnd() + "</p>";
+        body += "<center><div style='width: 100%'>";
+        body += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
+        body += "<center>Recuerda que el pago lo puedes realizar mediante los medios de pago disponibles en el portal.</center>";
+        body += "</div></center>";
+        body += "<center><div style='width: 100%'>";
+        body += "<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>";
+        body += "</div></center>";
+        body += "</div></center>";
+        body += "</body></html>";
+
+        return body;
     }
 
     @Override
@@ -157,6 +202,7 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.findAllCalendarDate(id);
     }
 
+    /*
     @Override
     public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest) {
 
@@ -187,7 +233,62 @@ public class BookingServiceImpl implements BookingService {
                         .flatMap(bookingRepository::save)
                 );
     }
+     */
 
+    @Override
+    public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest) {
+        // Validar que la fecha de inicio no sea anterior al día actual
+        if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
+            return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La fecha de inicio no puede ser anterior al día actual"));
+        }
+
+        // Calcular el número de días entre la fecha de inicio y fin
+        Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
+
+        // Obtener el nombre de la habitación
+        return getRoomName(bookingSaveRequest.getRoomOfferId())
+                .flatMap(roomName -> {
+                    // Obtener la oferta de habitación
+                    return roomOfferRespository.findById(bookingSaveRequest.getRoomOfferId())
+                            .flatMap(roomOfferEntity -> {
+                                // Crear la entidad de reserva con los datos proporcionados
+                                BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId, bookingSaveRequest, numberOfDays);
+                                bookingEntity.setCostFinal(roomOfferEntity.getCost().multiply(BigDecimal.valueOf(numberOfDays)));
+
+                                // Verificar si ya existe una reserva para las fechas seleccionadas
+                                return bookingRepository.findExistingBookings(
+                                                bookingEntity.getRoomOfferId(),
+                                                bookingEntity.getDayBookingInit(),
+                                                bookingEntity.getDayBookingEnd())
+                                        .hasElements()
+                                        .flatMap(exists -> {
+                                            if (exists) {
+                                                // Si la reserva ya existe, lanzar una excepción
+                                                return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La reserva ya existe para las fechas seleccionadas"));
+                                            } else {
+                                                // Si la reserva no existe, guardarla en la base de datos
+                                                return bookingRepository.save(bookingEntity)
+                                                        .flatMap(savedBooking -> sendBookingConfirmationEmail(savedBooking, roomName));
+                                            }
+                                        });
+                            });
+                });
+    }
+
+
+    // Método para enviar el correo de confirmación de reserva con el nombre de la habitación
+    private Mono<BookingEntity> sendBookingConfirmationEmail(BookingEntity bookingEntity, String roomName) {
+        return userClientRepository.findByUserClientId(bookingEntity.getUserClientId())
+                .flatMap(userClient -> {
+                    // Generar el cuerpo del correo electrónico con el nombre de la habitación
+                    String emailBody = generateEmailBody(bookingEntity, roomName);
+                    // Enviar el correo electrónico utilizando el servicio de correo
+                    return emailService.sendEmail(userClient.getEmail(), "Confirmación de Reserva", emailBody)
+                            .thenReturn(bookingEntity);
+                });
+    }
+
+    // Método para calcular el número de días entre dos fechas
     private Integer calculateDaysBetween(LocalDate dayBookingInit, LocalDate dayBookingEnd) {
         return (int) ChronoUnit.DAYS.between(dayBookingInit, dayBookingEnd) + 1;
     }

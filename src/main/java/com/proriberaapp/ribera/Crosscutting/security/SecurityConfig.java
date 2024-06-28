@@ -29,10 +29,9 @@ public class SecurityConfig {
                 .authorizeExchange(auth -> auth
                         .pathMatchers(OPTIONS).permitAll()
 
-                        .pathMatchers(
-                                "/api/v1/admin/login",
+                        .pathMatchers("/api/v1/admin/login",
+                                "/api/v1/users/login",
                                 "/api/v1/users/**",
-                                "/api/v1/countries/**",
                                 "/api/v1/s3-client/**",
                                 "/api/v1/password-reset/**",
                                 "/api/documenttype/**",
@@ -48,6 +47,7 @@ public class SecurityConfig {
                                 "/api/v1/points/**",
                                 "/api/v1/booking/**",
                                 "/api/v1/email/**",
+                                "/api/v1/refuse-payments/**",
                                 "/swagger-doc/**"
                         ).permitAll()
 

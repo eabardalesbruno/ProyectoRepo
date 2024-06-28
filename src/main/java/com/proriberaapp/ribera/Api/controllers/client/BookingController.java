@@ -47,6 +47,7 @@ public class BookingController {
         return bookingService.findByIdAndIdUserAdmin(idUserAdmin, bookingId);
     }
 
+    /*
     @PostMapping("/save")
     public Mono<BookingEntity> saveBooking(
             @RequestBody BookingSaveRequest bookingSaveRequest,
@@ -56,7 +57,19 @@ public class BookingController {
         log.info("bookingSaveRequest: {}", bookingSaveRequest);
         return bookingService.save(userClientId, bookingSaveRequest);
     }
-
+     */
+    @PostMapping("/save")
+    public Mono<BookingEntity> saveBooking(
+            @RequestBody BookingSaveRequest bookingSaveRequest,
+            @RequestHeader("Authorization") String token) {
+        return Mono.fromCallable(() -> {
+                    Integer userClientId = jtp.getIdFromToken(token);
+                    log.info("userClientId: {}", userClientId);
+                    log.info("bookingSaveRequest: {}", bookingSaveRequest);
+                    return userClientId;
+                })
+                .flatMap(userClientId -> bookingService.save(userClientId, bookingSaveRequest));
+    }
 
     @GetMapping("/{bookingId}/costfinal")
     public Mono<ResponseEntity<BigDecimal>> getCostFinalByBookingId(@PathVariable Integer bookingId) {

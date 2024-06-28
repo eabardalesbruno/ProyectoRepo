@@ -21,26 +21,22 @@ public class RefusePaymentController {
     }
 
     @GetMapping
-    public ResponseEntity<Flux<RefusePaymentEntity>> getAllRefusePayments() {
-        Flux<RefusePaymentEntity> refusePayments = refusePaymentService.getAllRefusePayments();
-        return ResponseEntity.status(HttpStatus.OK).body(refusePayments);
+    public Flux<RefusePaymentEntity> getAllRefusePayments() {
+        return refusePaymentService.getAllRefusePayments();
+    }
+
+    @GetMapping("/{id}")
+    public Mono<RefusePaymentEntity> getRefusePaymentById(@PathVariable Integer id) {
+        return refusePaymentService.getRefusePaymentById(id);
     }
 
     @PostMapping
-    public ResponseEntity<Mono<RefusePaymentEntity>> createRefusePayment(@RequestBody RefusePaymentEntity refusePaymentEntity) {
-        Mono<RefusePaymentEntity> createdRefusePayment = refusePaymentService.createRefusePayment(refusePaymentEntity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdRefusePayment);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Mono<RefusePaymentEntity>> updateRefusePayment(@PathVariable("id") Integer id, @RequestBody RefusePaymentEntity refusePaymentEntity) {
-        Mono<RefusePaymentEntity> updatedRefusePayment = refusePaymentService.updateRefusePayment(id, refusePaymentEntity);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedRefusePayment);
+    public Mono<RefusePaymentEntity> createRefusePayment(@RequestBody RefusePaymentEntity refusePayment) {
+        return refusePaymentService.saveRefusePayment(refusePayment);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Mono<Void>> deleteRefusePayment(@PathVariable("id") Integer id) {
-        Mono<Void> result = refusePaymentService.deleteRefusePayment(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(result);
+    public Mono<Void> deleteRefusePayment(@PathVariable Integer id) {
+        return refusePaymentService.deleteRefusePayment(id);
     }
 }

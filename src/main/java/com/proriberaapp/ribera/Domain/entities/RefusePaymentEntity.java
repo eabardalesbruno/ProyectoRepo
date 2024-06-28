@@ -12,12 +12,13 @@ import org.springframework.data.relational.core.mapping.Table;
 @Builder
 @Table("refusepayment")
 public class RefusePaymentEntity {
+
     @Id
     @Column("refusepaymentid")
     private Integer refusePaymentId;
 
-    @Column("paymentstateid")
-    private Integer paymentStateId;
+    @Column("paymentbookid")
+    private Integer paymentBookId;
 
     @Column("refusereasonid")
     private Integer refuseReasonId;
