@@ -10,7 +10,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/countries")
+@RequestMapping("/api/v1/countries")
 public class CountryController {
 
     private final CountryService countryService;

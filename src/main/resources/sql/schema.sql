@@ -408,14 +408,11 @@ CREATE TABLE IF NOT EXISTS tokenpointstransaction(
     bookingid INTEGER
 );
 
-CREATE TABLE IF NOT EXISTS public.implements_apartment
-(
+CREATE TABLE IF NOT EXISTS public.implements_apartment(
     implements_apartment_id SERIAL PRIMARY KEY,
     implements_apartment_name VARCHAR(255)
 );
-
-CREATE TABLE IF NOT EXISTS public.implements_comfort
-(
+CREATE TABLE IF NOT EXISTS public.implements_comfort(
     implements_apartment_id integer,
     comforttypeid integer,
     cuantity integer
