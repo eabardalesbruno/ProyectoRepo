@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
+import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.UserApiClient;
 import com.proriberaapp.ribera.services.client.UserClientService;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,8 @@ public class UserClientServiceImpl implements UserClientService {
     private final JwtProvider jwtUtil;
     @Autowired
     private UserApiClient userApiClient;
-
+    @Autowired
+    private EmailService emailService;
     /*
     @Override
     public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
@@ -45,6 +47,7 @@ public class UserClientServiceImpl implements UserClientService {
 
      */
 
+    /* 01072024 REGISTRO DE USUARIO SIN EMAIL
     public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
         // Obtener la fecha y hora actual
         long currentTimeMillis = System.currentTimeMillis();
@@ -84,10 +87,80 @@ public class UserClientServiceImpl implements UserClientService {
                 .flatMap(userClientRepository::save);
     }
 
+     */
+
+    public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
+        long currentTimeMillis = System.currentTimeMillis();
+        Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
+        userClient.setCreatedat(currentTimestamp);
+
+        return userClientRepository.findByEmail(userClient.getEmail())
+                .flatMap(existingUser -> {
+                    if ("1".equals(userClient.getGoogleAuth())) {
+                        if (existingUser.getPassword() != null) {
+                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
+                        } else {
+                            return Mono.just(existingUser);
+                        }
+                    } else {
+                        if (existingUser.getPassword() != null) {
+                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
+                        } else {
+                            return Mono.just(existingUser);
+                        }
+                    }
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    if (!"1".equals(userClient.getGoogleAuth())) {
+                        validatePassword(userClient.getPassword());
+                    }
+                    return userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
+                            .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
+                            .then(Mono.just(userClient));
+                }))
+                .map(userToSave -> {
+                    if (!"1".equals(userToSave.getGoogleAuth())) {
+                        userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
+                    }
+                    return userToSave;
+                })
+                .flatMap(userClientRepository::save)
+                .flatMap(savedUser -> {
+                    // Generar el cuerpo del correo de confirmación
+                    String emailBody = generateUserRegistrationEmailBody(savedUser);
+                    // Enviar el correo de confirmación
+                    return emailService.sendEmail(savedUser.getEmail(), "Confirmación de Registro", emailBody)
+                            .thenReturn(savedUser);
+                });
+    }
+
     private void validatePassword(String password) {
         if (!password.matches("^(?=.*[0-9])(?=.*[a-zA-Z]).{8,}$")) {
             throw new RuntimeException("La contraseña debe contener al menos una letra y un número, y tener una longitud mínima de 8 caracteres");
         }
+    }
+
+    private String generateUserRegistrationEmailBody(UserClientEntity userClient) {
+        String body = "<html><head><title></title></head><body style='color:black'>";
+        body += "<div style='width: 100%'>";
+        body += "<div style='display:flex;'>";
+        body += "</div>";
+        body += "<img style='width: 100%' src='http://www.inresorts.club/Views/img/fondo.png'>";
+        body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>"
+                + "Bienvenido, " + userClient.getFirstName() + "!</h1>";
+        body += "<h3 style='text-align: center;'>Gracias por registrarte en nuestra plataforma</h3>";
+        body += "<p style='text-align: center;'>Email: " + userClient.getEmail() + "</p>";
+        body += "<center><div style='width: 100%'>";
+        body += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
+        body += "<center>Disfruta de nuestros servicios y promociones exclusivas.</center>";
+        body += "</div></center>";
+        body += "<center><div style='width: 100%'>";
+        body += "<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>";
+        body += "</div></center>";
+        body += "</div></center>";
+        body += "</body></html>";
+
+        return body;
     }
 
     @Override
