@@ -146,7 +146,7 @@ public class UserController {
 
     @PostMapping("/register")
     public Mono<Object> registerUser(@RequestBody RegisterRequest request) {
-        if (request.email() == null || request.firstName() == null || request.lastName() == null) {
+        if (request.email() == null) {
             return Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
         }
 
