@@ -146,8 +146,8 @@ public class UserController {
 
     @PostMapping("/register")
     public Mono<Object> registerUser(@RequestBody RegisterRequest request) {
-        if (request.email() == null) {
-            return Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+        if (request.email() == null || request.firstName() == null || request.lastName() == null) {
+            return Mono.just(new ResponseEntity<>("Required fields are missing", HttpStatus.BAD_REQUEST));
         }
 
         return userClientService.findByEmail(request.email())
@@ -181,16 +181,22 @@ public class UserController {
 
                     return userClientService.registerUser(user)
                             .flatMap(savedUser -> {
-                                if (request.googleAuth().toString() == "1" && (request.password() == null || request.password().isEmpty())) {
+                                if (request.googleAuth() == "1" && (request.password() == null || request.password().isEmpty())) {
                                     return userClientService.loginWithGoogle(request.email())
-                                            .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK));
+                                            .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
+                                            .doOnError(e -> System.out.println("Login with Google failed: " + e.getMessage()));
                                 } else {
                                     return userClientService.login(request.email(), request.password())
-                                            .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK));
+                                            .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
+                                            .doOnError(e -> System.out.println("Standard login failed: " + e.getMessage()));
                                 }
-                            });
+                            })
+                            .doOnError(e -> System.out.println("User registration failed: " + e.getMessage()));
                 }))
-                .onErrorResume(e -> Mono.just(new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST)));
+                .onErrorResume(e -> {
+                    System.out.println("Error occurred: " + e.getMessage());
+                    return Mono.just(new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST));
+                });
     }
 
     @PostMapping("/login")
