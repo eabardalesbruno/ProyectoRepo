@@ -166,7 +166,11 @@ public class UserClientServiceImpl implements UserClientService {
                             .then(Mono.just(userClient));
                 }))
                 .map(userToSave -> {
-                    if (!"1".equals(userToSave.getGoogleAuth())) {
+                    if ("1".equals(userToSave.getGoogleAuth()) && (userToSave.getPassword() == null || userToSave.getPassword().isEmpty())) {
+                        // Si googleAuth es "1" y no hay contraseña, establecer la contraseña como null para evitar el cifrado vacío
+                        userToSave.setPassword(null);
+                    } else if (!"1".equals(userToSave.getGoogleAuth())) {
+                        // Cifrar la contraseña si no es una autenticación de Google
                         userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
                     }
                     return userToSave;
