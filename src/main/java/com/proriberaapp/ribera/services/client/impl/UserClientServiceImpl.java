@@ -88,7 +88,7 @@ public class UserClientServiceImpl implements UserClientService {
     }
 
      */
-
+/* 02072024
     public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
         long currentTimeMillis = System.currentTimeMillis();
         Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
@@ -129,6 +129,51 @@ public class UserClientServiceImpl implements UserClientService {
                     // Generar el cuerpo del correo de confirmación
                     String emailBody = generateUserRegistrationEmailBody(savedUser);
                     // Enviar el correo de confirmación
+                    return emailService.sendEmail(savedUser.getEmail(), "Confirmación de Registro", emailBody)
+                            .thenReturn(savedUser);
+                });
+    }
+
+ */
+
+    public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
+        long currentTimeMillis = System.currentTimeMillis();
+        Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
+        userClient.setCreatedat(currentTimestamp);
+
+        return userClientRepository.findByEmail(userClient.getEmail())
+                .flatMap(existingUser -> {
+                    if ("1".equals(userClient.getGoogleAuth())) {
+                        if (existingUser.getPassword() != null) {
+                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
+                        } else {
+                            return Mono.just(existingUser);
+                        }
+                    } else {
+                        if (existingUser.getPassword() != null) {
+                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
+                        } else {
+                            return Mono.just(existingUser);
+                        }
+                    }
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    if (!"1".equals(userClient.getGoogleAuth())) {
+                        validatePassword(userClient.getPassword());
+                    }
+                    return userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
+                            .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
+                            .then(Mono.just(userClient));
+                }))
+                .map(userToSave -> {
+                    if (!"1".equals(userToSave.getGoogleAuth())) {
+                        userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
+                    }
+                    return userToSave;
+                })
+                .flatMap(userClientRepository::save)
+                .flatMap(savedUser -> {
+                    String emailBody = generateUserRegistrationEmailBody(savedUser);
                     return emailService.sendEmail(savedUser.getEmail(), "Confirmación de Registro", emailBody)
                             .thenReturn(savedUser);
                 });

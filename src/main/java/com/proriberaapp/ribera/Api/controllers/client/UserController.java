@@ -152,33 +152,32 @@ public class UserController {
         }
 
         return userClientService.findByEmail(request.email())
-                .flatMap(existingUser -> {
-                    return Mono.error(new RuntimeException("El correo electrónico ya está registrado"));
-                })
+                .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .switchIfEmpty(Mono.defer(() -> {
-                    UserClientEntity user = UserClientEntity.builder().build();
-                    user.setEmail(request.email());
-                    user.setPassword(request.password());
-                    user.setFirstName(request.firstName());
-                    user.setLastName(request.lastName());
-                    user.setRegisterTypeId(request.registerTypeId());
-                    user.setUserLevelId(request.userLevelId());
-                    user.setCodeUser(request.codeUser());
-                    user.setCountryId(request.countryId());
-                    user.setDocumenttypeId(request.documenttypeId());
-                    user.setDocumentNumber(request.documentNumber());
-                    user.setBirthDate(request.birthDate());
-                    user.setGenderId(request.genderId());
-                    user.setRole(request.role());
-                    user.setCivilStatus(request.civilStatus());
-                    user.setCity(request.city());
-                    user.setAddress(request.address());
-                    user.setCellNumber(request.cellNumber());
-                    user.setGoogleAuth(request.googleAuth());
-                    user.setGoogleId(request.googleId());
-                    user.setGoogleEmail(request.googleEmail());
-                    user.setUsername(request.username());
-                    user.setCreatedat(request.createdat());
+                    UserClientEntity user = UserClientEntity.builder()
+                            .email(request.email())
+                            .password(request.password())
+                            .firstName(request.firstName())
+                            .lastName(request.lastName())
+                            .registerTypeId(request.registerTypeId())
+                            .userLevelId(request.userLevelId())
+                            .codeUser(request.codeUser())
+                            .countryId(request.countryId())
+                            .documenttypeId(request.documenttypeId())
+                            .documentNumber(request.documentNumber())
+                            .birthDate(request.birthDate())
+                            .genderId(request.genderId())
+                            .role(request.role())
+                            .civilStatus(request.civilStatus())
+                            .city(request.city())
+                            .address(request.address())
+                            .cellNumber(request.cellNumber())
+                            .googleAuth(request.googleAuth())
+                            .googleId(request.googleId())
+                            .googleEmail(request.googleEmail())
+                            .username(request.username())
+                            .createdat(request.createdat())
+                            .build();
 
                     return userClientService.registerUser(user)
                             .flatMap(savedUser -> {
