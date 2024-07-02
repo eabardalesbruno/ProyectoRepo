@@ -181,7 +181,7 @@ public class UserController {
 
                     return userClientService.registerUser(user)
                             .flatMap(savedUser -> {
-                                if (request.googleAuth() == "1" && (request.password() == null || request.password().isEmpty())) {
+                                if ("1".equals(request.googleAuth()) && (request.password() == null || request.password().isEmpty())) {
                                     return userClientService.loginWithGoogle(request.email())
                                             .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK));
                                 } else {
