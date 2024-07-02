@@ -119,7 +119,7 @@ public class UserClientServiceImpl implements UserClientService {
                             .then(Mono.just(userClient));
                 }))
                 .map(userToSave -> {
-                    if (!"1".equals(userToSave.getGoogleAuth())) {
+                    if (!"2".equals(userToSave.getGoogleAuth())) {
                         userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
                     }
                     return userToSave;
