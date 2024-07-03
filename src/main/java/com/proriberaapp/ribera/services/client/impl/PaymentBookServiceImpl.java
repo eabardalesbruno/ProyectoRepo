@@ -26,7 +26,6 @@ import java.time.ZoneId;
 import java.util.UUID;
 
 @Service
-@Transactional(readOnly = true)
 public class PaymentBookServiceImpl implements PaymentBookService {
     /*ANTES DEL CORREO
     private final PaymentBookRepository paymentBookRepository;
