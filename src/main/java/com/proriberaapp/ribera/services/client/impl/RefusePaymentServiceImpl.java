@@ -18,7 +18,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
 
     @Override
     public Flux<RefusePaymentEntity> getAllRefusePayments() {
-        return refusePaymentRepository.findAll();
+        return refusePaymentRepository.findAllWhereRefuseReasonIdNotEqualToOne();
     }
 
     @Override
