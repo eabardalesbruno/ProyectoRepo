@@ -347,7 +347,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         return paymentBookRepository.findById(id);
     }
 
-
+    @Override
     public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails() {
         return paymentBookRepository.findAll()
                 .flatMap(paymentBook ->

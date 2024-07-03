@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,5 +24,6 @@ public interface PaymentBookService {
     Mono<Void> deletePaymentBook(Integer id);
     Mono<Void> updateBookingStateIfRequired(Integer bookingId);
     Mono<PaymentBookEntity> findById(Integer id);
+    Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails();
 
 }
