@@ -12,6 +12,7 @@ import com.proriberaapp.ribera.services.client.PaymentBookService;
 import com.proriberaapp.ribera.services.client.S3Uploader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,6 +26,7 @@ import java.time.ZoneId;
 import java.util.UUID;
 
 @Service
+@Transactional(readOnly = true)
 public class PaymentBookServiceImpl implements PaymentBookService {
     /*ANTES DEL CORREO
     private final PaymentBookRepository paymentBookRepository;

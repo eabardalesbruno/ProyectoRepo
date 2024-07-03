@@ -54,7 +54,7 @@ public class PaymentBookController {
     }
 
     @GetMapping
-    public Flux<PaymentBookDetailsDTO> getAllPaymentBooks() {
+    public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails() {
         return paymentBookService.getAllPaymentBookDetails();
     }
 
