@@ -15,6 +15,7 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 
 @EnableWebFlux
 @SpringBootApplication
+
 public class RiberaApplication {
 
 	@Bean
