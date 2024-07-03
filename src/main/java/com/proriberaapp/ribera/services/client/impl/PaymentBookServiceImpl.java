@@ -1,7 +1,7 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
-import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
+import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentMethodRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentStateRepository;
@@ -360,38 +360,44 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                 paymentMethodRepository.findById(paymentBook.getPaymentMethodId()),
                                 paymentStateRepository.findById(paymentBook.getPaymentStateId())
                         ).map(tuple -> {
-                            PaymentBookDetailsDTO.PaymentBookDetailsDTOBuilder builder = PaymentBookDetailsDTO.builder()
-                                    .paymentBookId(paymentBook.getPaymentBookId())
-                                    .bookingId(paymentBook.getBookingId())
-                                    .userClientId(paymentBook.getUserClientId())
-                                    .paymentMethodId(paymentBook.getPaymentMethodId())
-                                    .paymentStateId(paymentBook.getPaymentStateId())
-                                    .refuseReasonId(paymentBook.getRefuseReasonId())
-                                    .paymentTypeId(paymentBook.getPaymentTypeId())
-                                    .paymentSubTypeId(paymentBook.getPaymentSubTypeId())
-                                    .currencyTypeId(paymentBook.getCurrencyTypeId())
-                                    .amount(paymentBook.getAmount())
-                                    .description(paymentBook.getDescription())
-                                    .paymentDate(paymentBook.getPaymentDate())
-                                    .operationCode(paymentBook.getOperationCode())
-                                    .note(paymentBook.getNote())
-                                    .totalCost(paymentBook.getTotalCost())
-                                    .imageVoucher(paymentBook.getImageVoucher())
-                                    .totalPoints(paymentBook.getTotalPoints())
-                                    .paymentComplete(paymentBook.getPaymentComplete())
-                                    .pendingPay(paymentBook.getPendingpay());
+                            PaymentBookEntity paymentBookEntity = tuple.getT1();
+                            UserClientEntity userClient = tuple.getT2();
+                            BookingEntity booking = tuple.getT3();
+                            PaymentMethodEntity paymentMethod = tuple.getT4();
+                            PaymentStateEntity paymentState = tuple.getT5();
 
-                            if (tuple.getT2() != null) {
-                                builder.userClientName(tuple.getT2().getFirstName());
+                            PaymentBookDetailsDTO.PaymentBookDetailsDTOBuilder builder = PaymentBookDetailsDTO.builder()
+                                    .paymentBookId(paymentBookEntity.getPaymentBookId())
+                                    .bookingId(paymentBookEntity.getBookingId())
+                                    .userClientId(paymentBookEntity.getUserClientId())
+                                    .paymentMethodId(paymentBookEntity.getPaymentMethodId())
+                                    .paymentStateId(paymentBookEntity.getPaymentStateId())
+                                    .refuseReasonId(paymentBookEntity.getRefuseReasonId())
+                                    .paymentTypeId(paymentBookEntity.getPaymentTypeId())
+                                    .paymentSubTypeId(paymentBookEntity.getPaymentSubTypeId())
+                                    .currencyTypeId(paymentBookEntity.getCurrencyTypeId())
+                                    .amount(paymentBookEntity.getAmount())
+                                    .description(paymentBookEntity.getDescription())
+                                    .paymentDate(paymentBookEntity.getPaymentDate())
+                                    .operationCode(paymentBookEntity.getOperationCode())
+                                    .note(paymentBookEntity.getNote())
+                                    .totalCost(paymentBookEntity.getTotalCost())
+                                    .imageVoucher(paymentBookEntity.getImageVoucher())
+                                    .totalPoints(paymentBookEntity.getTotalPoints())
+                                    .paymentComplete(paymentBookEntity.getPaymentComplete())
+                                    .pendingPay(paymentBookEntity.getPendingpay());
+
+                            if (userClient != null) {
+                                builder.userClientName(userClient.getFirstName());
                             }
-                            if (tuple.getT3() != null) {
-                                builder.bookingName(tuple.getT3().getDetail());
+                            if (booking != null) {
+                                builder.bookingName(booking.getDetail());
                             }
-                            if (tuple.getT4() != null) {
-                                builder.paymentMethod(tuple.getT4().getDescription());
+                            if (paymentMethod != null) {
+                                builder.paymentMethod(paymentMethod.getDescription());
                             }
-                            if (tuple.getT5() != null) {
-                                builder.paymentState(tuple.getT5().getPaymentStateName());
+                            if (paymentState != null) {
+                                builder.paymentState(paymentState.getPaymentStateName());
                             }
 
                             return builder.build();
