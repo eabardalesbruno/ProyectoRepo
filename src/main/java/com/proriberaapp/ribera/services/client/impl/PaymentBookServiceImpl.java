@@ -357,32 +357,43 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                 bookingService.findById(paymentBook.getBookingId()),
                                 paymentMethodRepository.findById(paymentBook.getPaymentMethodId()),
                                 paymentStateRepository.findById(paymentBook.getPaymentStateId())
-                        ).map(tuple -> PaymentBookDetailsDTO.builder()
-                                .paymentBookId(paymentBook.getPaymentBookId())
-                                .bookingId(paymentBook.getBookingId())
-                                .userClientId(paymentBook.getUserClientId())
-                                .userClientName(tuple.getT2().getFirstName())
-                                .bookingName(tuple.getT3().getDetail())
-                                .paymentMethodId(paymentBook.getPaymentMethodId())
-                                .paymentMethod(tuple.getT4().getDescription())
-                                .paymentStateId(paymentBook.getPaymentStateId())
-                                .paymentState(tuple.getT5().getPaymentStateName())
-                                .refuseReasonId(paymentBook.getRefuseReasonId())
-                                .paymentTypeId(paymentBook.getPaymentTypeId())
-                                .paymentSubTypeId(paymentBook.getPaymentSubTypeId())
-                                .currencyTypeId(paymentBook.getCurrencyTypeId())
-                                .amount(paymentBook.getAmount())
-                                .description(paymentBook.getDescription())
-                                .paymentDate(paymentBook.getPaymentDate())
-                                .operationCode(paymentBook.getOperationCode())
-                                .note(paymentBook.getNote())
-                                .totalCost(paymentBook.getTotalCost())
-                                .imageVoucher(paymentBook.getImageVoucher())
-                                .totalPoints(paymentBook.getTotalPoints())
-                                .paymentComplete(paymentBook.getPaymentComplete())
-                                .pendingPay(paymentBook.getPendingpay())
-                                .build()
-                        )
+                        ).map(tuple -> {
+                            PaymentBookDetailsDTO.PaymentBookDetailsDTOBuilder builder = PaymentBookDetailsDTO.builder()
+                                    .paymentBookId(paymentBook.getPaymentBookId())
+                                    .bookingId(paymentBook.getBookingId())
+                                    .userClientId(paymentBook.getUserClientId())
+                                    .paymentMethodId(paymentBook.getPaymentMethodId())
+                                    .paymentStateId(paymentBook.getPaymentStateId())
+                                    .refuseReasonId(paymentBook.getRefuseReasonId())
+                                    .paymentTypeId(paymentBook.getPaymentTypeId())
+                                    .paymentSubTypeId(paymentBook.getPaymentSubTypeId())
+                                    .currencyTypeId(paymentBook.getCurrencyTypeId())
+                                    .amount(paymentBook.getAmount())
+                                    .description(paymentBook.getDescription())
+                                    .paymentDate(paymentBook.getPaymentDate())
+                                    .operationCode(paymentBook.getOperationCode())
+                                    .note(paymentBook.getNote())
+                                    .totalCost(paymentBook.getTotalCost())
+                                    .imageVoucher(paymentBook.getImageVoucher())
+                                    .totalPoints(paymentBook.getTotalPoints())
+                                    .paymentComplete(paymentBook.getPaymentComplete())
+                                    .pendingPay(paymentBook.getPendingpay());
+
+                            if (tuple.getT2() != null) {
+                                builder.userClientName(tuple.getT2().getFirstName());
+                            }
+                            if (tuple.getT3() != null) {
+                                builder.bookingName(tuple.getT3().getDetail());
+                            }
+                            if (tuple.getT4() != null) {
+                                builder.paymentMethod(tuple.getT4().getDescription());
+                            }
+                            if (tuple.getT5() != null) {
+                                builder.paymentState(tuple.getT5().getPaymentStateName());
+                            }
+
+                            return builder.build();
+                        })
                 );
     }
 
