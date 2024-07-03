@@ -3,6 +3,8 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.PaymentMethodRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.PaymentStateRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
@@ -244,18 +246,24 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     private final BookingService bookingService;
     private final S3Uploader s3Uploader;
     private final EmailService emailService;
+    private final PaymentMethodRepository paymentMethodRepository;
+    private final PaymentStateRepository paymentStateRepository;
 
     @Autowired
     public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository,
                                   UserClientRepository userClientRepository,
                                   BookingService bookingService,
                                   S3Uploader s3Uploader,
-                                  EmailService emailService) {
+                                  EmailService emailService,
+                                  PaymentMethodRepository paymentMethodRepository,
+                                  PaymentStateRepository paymentStateRepository) {
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
         this.bookingService = bookingService;
         this.s3Uploader = s3Uploader;
         this.emailService = emailService;
+        this.paymentMethodRepository = paymentMethodRepository;
+        this.paymentStateRepository = paymentStateRepository;
     }
 
     @Override
@@ -339,35 +347,42 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         return paymentBookRepository.findById(id);
     }
 
+
     public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails() {
         return paymentBookRepository.findAll()
                 .flatMap(paymentBook ->
-                        userClientRepository.findById(paymentBook.getUserClientId())
-                                .flatMap(userClient ->
-                                        bookingService.findById(paymentBook.getBookingId())
-                                                .map(booking -> PaymentBookDetailsDTO.builder()
-                                                        .paymentBookId(paymentBook.getPaymentBookId())
-                                                        .bookingId(paymentBook.getBookingId())
-                                                        .userClientId(paymentBook.getUserClientId())
-                                                        .refuseReasonId(paymentBook.getRefuseReasonId())
-                                                        .paymentMethodId(paymentBook.getPaymentMethodId())
-                                                        .paymentStateId(paymentBook.getPaymentStateId())
-                                                        .paymentTypeId(paymentBook.getPaymentTypeId())
-                                                        .paymentSubTypeId(paymentBook.getPaymentSubTypeId())
-                                                        .currencyTypeId(paymentBook.getCurrencyTypeId())
-                                                        .amount(paymentBook.getAmount())
-                                                        .description(paymentBook.getDescription())
-                                                        .paymentDate(paymentBook.getPaymentDate())
-                                                        .operationCode(paymentBook.getOperationCode())
-                                                        .note(paymentBook.getNote())
-                                                        .totalCost(paymentBook.getTotalCost())
-                                                        .imageVoucher(paymentBook.getImageVoucher())
-                                                        .totalPoints(paymentBook.getTotalPoints())
-                                                        .paymentComplete(paymentBook.getPaymentComplete())
-                                                        .pendingPay(paymentBook.getPendingpay())
-                                                        .build()
-                                                )
-                                )
+                        Mono.zip(
+                                Mono.just(paymentBook),
+                                userClientRepository.findById(paymentBook.getUserClientId()),
+                                bookingService.findById(paymentBook.getBookingId()),
+                                paymentMethodRepository.findById(paymentBook.getPaymentMethodId()),
+                                paymentStateRepository.findById(paymentBook.getPaymentStateId())
+                        ).map(tuple -> PaymentBookDetailsDTO.builder()
+                                .paymentBookId(paymentBook.getPaymentBookId())
+                                .bookingId(paymentBook.getBookingId())
+                                .userClientId(paymentBook.getUserClientId())
+                                .userClientName(tuple.getT2().getFirstName())
+                                .bookingName(tuple.getT3().getDetail())
+                                .paymentMethodId(paymentBook.getPaymentMethodId())
+                                .paymentMethod(tuple.getT4().getDescription())
+                                .paymentStateId(paymentBook.getPaymentStateId())
+                                .paymentState(tuple.getT5().getPaymentStateName())
+                                .refuseReasonId(paymentBook.getRefuseReasonId())
+                                .paymentTypeId(paymentBook.getPaymentTypeId())
+                                .paymentSubTypeId(paymentBook.getPaymentSubTypeId())
+                                .currencyTypeId(paymentBook.getCurrencyTypeId())
+                                .amount(paymentBook.getAmount())
+                                .description(paymentBook.getDescription())
+                                .paymentDate(paymentBook.getPaymentDate())
+                                .operationCode(paymentBook.getOperationCode())
+                                .note(paymentBook.getNote())
+                                .totalCost(paymentBook.getTotalCost())
+                                .imageVoucher(paymentBook.getImageVoucher())
+                                .totalPoints(paymentBook.getTotalPoints())
+                                .paymentComplete(paymentBook.getPaymentComplete())
+                                .pendingPay(paymentBook.getPendingpay())
+                                .build()
+                        )
                 );
     }
 
