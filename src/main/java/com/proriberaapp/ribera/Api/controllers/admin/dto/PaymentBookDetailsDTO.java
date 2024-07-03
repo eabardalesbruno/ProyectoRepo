@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.admin.dto;
 
+import io.r2dbc.spi.Parameter;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -14,13 +15,9 @@ public class PaymentBookDetailsDTO {
     private Integer paymentBookId;
     private Integer bookingId;
     private Integer userClientId;
-    private String userClientName;
-    private String bookingName;
-    private Integer paymentMethodId;
-    private String paymentMethod;
-    private Integer paymentStateId;
-    private String paymentState;
     private Integer refuseReasonId;
+    private Integer paymentMethodId;
+    private Integer paymentStateId;
     private Integer paymentTypeId;
     private Integer paymentSubTypeId;
     private Integer currencyTypeId;
@@ -34,4 +31,12 @@ public class PaymentBookDetailsDTO {
     private Integer totalPoints;
     private Boolean paymentComplete;
     private Integer pendingPay;
+
+    private String userClientName;
+    private String bookingName;
+    private String paymentMethod;
+    private String paymentState;
+    private String paymentType;
+    private String paymentSubtype;
+    private String currencyType;
 }

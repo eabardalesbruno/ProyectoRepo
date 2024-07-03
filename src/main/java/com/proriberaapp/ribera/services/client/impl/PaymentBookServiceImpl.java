@@ -2,10 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
 import com.proriberaapp.ribera.Domain.entities.*;
-import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.PaymentMethodRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.PaymentStateRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.PaymentBookService;
@@ -249,6 +246,12 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     private final EmailService emailService;
     private final PaymentMethodRepository paymentMethodRepository;
     private final PaymentStateRepository paymentStateRepository;
+    private final PaymentTypeRepository paymentTypeRepository;
+    private final PaymentSubtypeRepository paymentSubtypeRepository;
+
+    private final CurrencyTypeRepository currencyTypeRepository;
+
+
 
     @Autowired
     public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository,
@@ -257,7 +260,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                   S3Uploader s3Uploader,
                                   EmailService emailService,
                                   PaymentMethodRepository paymentMethodRepository,
-                                  PaymentStateRepository paymentStateRepository) {
+                                  PaymentStateRepository paymentStateRepository,PaymentTypeRepository paymentTypeRepository,PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository) {
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
         this.bookingService = bookingService;
@@ -265,6 +268,10 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         this.emailService = emailService;
         this.paymentMethodRepository = paymentMethodRepository;
         this.paymentStateRepository = paymentStateRepository;
+        this.paymentTypeRepository = paymentTypeRepository;
+        this.paymentSubtypeRepository = paymentSubtypeRepository;
+        this.currencyTypeRepository = currencyTypeRepository;
+
     }
 
     @Override
@@ -357,13 +364,19 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                 userClientRepository.findById(paymentBook.getUserClientId()),
                                 bookingService.findById(paymentBook.getBookingId()),
                                 paymentMethodRepository.findById(paymentBook.getPaymentMethodId()),
-                                paymentStateRepository.findById(paymentBook.getPaymentStateId())
+                                paymentStateRepository.findById(paymentBook.getPaymentStateId()),
+                                paymentTypeRepository.findById(paymentBook.getPaymentTypeId()),
+                                paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId()),
+                                currencyTypeRepository.findById(paymentBook.getCurrencyTypeId())
                         ).map(tuple -> {
                             PaymentBookEntity paymentBookEntity = tuple.getT1();
                             UserClientEntity userClient = tuple.getT2();
                             BookingEntity booking = tuple.getT3();
                             PaymentMethodEntity paymentMethod = tuple.getT4();
                             PaymentStateEntity paymentState = tuple.getT5();
+                            PaymentTypeEntity paymentType = tuple.getT6();
+                            PaymentSubtypeEntity paymentSubtype = tuple.getT7();
+                            CurrencyTypeEntity currencyType = tuple.getT8();
 
                             PaymentBookDetailsDTO.PaymentBookDetailsDTOBuilder builder = PaymentBookDetailsDTO.builder()
                                     .paymentBookId(paymentBookEntity.getPaymentBookId())
@@ -397,6 +410,15 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                             }
                             if (paymentState != null) {
                                 builder.paymentState(paymentState.getPaymentStateName());
+                            }
+                            if (paymentType != null) {
+                                builder.paymentType(paymentType.getPaymentTypeDesc());
+                            }
+                            if (paymentSubtype != null) {
+                                builder.paymentSubtype(paymentSubtype.getPaymentSubtypeDesc());
+                            }
+                            if (currencyType != null) {
+                                builder.currencyType(currencyType.getCurrencyTypeDescription());
                             }
 
                             return builder.build();
