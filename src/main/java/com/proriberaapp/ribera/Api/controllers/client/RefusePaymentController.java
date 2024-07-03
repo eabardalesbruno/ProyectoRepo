@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
+import com.proriberaapp.ribera.Domain.entities.RefuseEntity;
 import com.proriberaapp.ribera.Domain.entities.RefusePaymentEntity;
 import com.proriberaapp.ribera.services.client.RefusePaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,11 @@ public class RefusePaymentController {
     @GetMapping
     public Flux<RefusePaymentEntity> getAllRefusePayments() {
         return refusePaymentService.getAllRefusePayments();
+    }
+
+    @GetMapping("/reason")
+    public Flux<RefuseEntity> getRefuseReason() {
+        return refusePaymentService.getAllRefuseReason();
     }
 
     @GetMapping("/{id}")

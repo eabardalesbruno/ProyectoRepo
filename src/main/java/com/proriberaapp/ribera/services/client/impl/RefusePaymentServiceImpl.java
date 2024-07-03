@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Domain.entities.RefuseEntity;
 import com.proriberaapp.ribera.Domain.entities.RefusePaymentEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RefusePaymentRepository;
 import com.proriberaapp.ribera.services.client.RefusePaymentService;
@@ -18,6 +19,11 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
 
     @Override
     public Flux<RefusePaymentEntity> getAllRefusePayments() {
+        return refusePaymentRepository.findAll();
+    }
+
+    @Override
+    public Flux<RefuseEntity> getAllRefuseReason() {
         return refusePaymentRepository.findAllWhereRefuseReasonIdNotEqualToOne();
     }
 
