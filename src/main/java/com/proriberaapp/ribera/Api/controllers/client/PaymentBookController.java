@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.services.client.PaymentBookService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,8 +54,8 @@ public class PaymentBookController {
     }
 
     @GetMapping
-    public Flux<PaymentBookEntity> getAllPaymentBooks() {
-        return paymentBookService.getAllPaymentBooks();
+    public Flux<PaymentBookDetailsDTO> getAllPaymentBooks() {
+        return paymentBookService.getAllPaymentBookDetails();
     }
 
     @GetMapping("/user-client/{userClientId}")
