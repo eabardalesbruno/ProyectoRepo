@@ -336,9 +336,9 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
     @Override
     public Mono<Void> updateBookingStateIfRequired(Integer bookingId) {
-        return bookingService.updateBookingStatePay(bookingId, 3) // Aquí verificas y actualizas el estado a 3
-                .filter(booking -> booking.getBookingStateId() == 2) // Verifica si el estado es 2
-                .flatMap(booking -> bookingService.updateBookingStatePay(bookingId, 2)) // Si es 2, lo actualizas
+        return bookingService.updateBookingStatePay(bookingId, 3)
+                .filter(booking -> booking.getBookingStateId() == 2)
+                .flatMap(booking -> bookingService.updateBookingStatePay(bookingId, 2))
                 .then();
     }
 
