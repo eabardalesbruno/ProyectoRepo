@@ -8,6 +8,8 @@ import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.PaymentBookService;
 import com.proriberaapp.ribera.services.client.S3Uploader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -355,9 +357,83 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         return paymentBookRepository.findById(id);
     }
 
+    /*
     @Override
     public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails() {
         return paymentBookRepository.findAll()
+                .flatMap(paymentBook ->
+                        Mono.zip(
+                                Mono.just(paymentBook),
+                                userClientRepository.findById(paymentBook.getUserClientId()),
+                                bookingService.findById(paymentBook.getBookingId()),
+                                paymentMethodRepository.findById(paymentBook.getPaymentMethodId()),
+                                paymentStateRepository.findById(paymentBook.getPaymentStateId()),
+                                paymentTypeRepository.findById(paymentBook.getPaymentTypeId()),
+                                paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId()),
+                                currencyTypeRepository.findById(paymentBook.getCurrencyTypeId())
+                        ).map(tuple -> {
+                            PaymentBookEntity paymentBookEntity = tuple.getT1();
+                            UserClientEntity userClient = tuple.getT2();
+                            BookingEntity booking = tuple.getT3();
+                            PaymentMethodEntity paymentMethod = tuple.getT4();
+                            PaymentStateEntity paymentState = tuple.getT5();
+                            PaymentTypeEntity paymentType = tuple.getT6();
+                            PaymentSubtypeEntity paymentSubtype = tuple.getT7();
+                            CurrencyTypeEntity currencyType = tuple.getT8();
+
+                            PaymentBookDetailsDTO.PaymentBookDetailsDTOBuilder builder = PaymentBookDetailsDTO.builder()
+                                    .paymentBookId(paymentBookEntity.getPaymentBookId())
+                                    .bookingId(paymentBookEntity.getBookingId())
+                                    .userClientId(paymentBookEntity.getUserClientId())
+                                    .paymentMethodId(paymentBookEntity.getPaymentMethodId())
+                                    .paymentStateId(paymentBookEntity.getPaymentStateId())
+                                    .refuseReasonId(paymentBookEntity.getRefuseReasonId())
+                                    .paymentTypeId(paymentBookEntity.getPaymentTypeId())
+                                    .paymentSubTypeId(paymentBookEntity.getPaymentSubTypeId())
+                                    .currencyTypeId(paymentBookEntity.getCurrencyTypeId())
+                                    .amount(paymentBookEntity.getAmount())
+                                    .description(paymentBookEntity.getDescription())
+                                    .paymentDate(paymentBookEntity.getPaymentDate())
+                                    .operationCode(paymentBookEntity.getOperationCode())
+                                    .note(paymentBookEntity.getNote())
+                                    .totalCost(paymentBookEntity.getTotalCost())
+                                    .imageVoucher(paymentBookEntity.getImageVoucher())
+                                    .totalPoints(paymentBookEntity.getTotalPoints())
+                                    .paymentComplete(paymentBookEntity.getPaymentComplete())
+                                    .pendingPay(paymentBookEntity.getPendingpay());
+
+                            if (userClient != null) {
+                                builder.userClientName(userClient.getFirstName());
+                            }
+                            if (booking != null) {
+                                builder.bookingName(booking.getDetail());
+                            }
+                            if (paymentMethod != null) {
+                                builder.paymentMethod(paymentMethod.getDescription());
+                            }
+                            if (paymentState != null) {
+                                builder.paymentState(paymentState.getPaymentStateName());
+                            }
+                            if (paymentType != null) {
+                                builder.paymentType(paymentType.getPaymentTypeDesc());
+                            }
+                            if (paymentSubtype != null) {
+                                builder.paymentSubtype(paymentSubtype.getPaymentSubtypeDesc());
+                            }
+                            if (currencyType != null) {
+                                builder.currencyType(currencyType.getCurrencyTypeDescription());
+                            }
+
+                            return builder.build();
+                        })
+                );
+    }
+     */
+
+    @Override
+    public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return paymentBookRepository.findAllByRefuseReasonIdAndPendingPay(1, 0, pageable)
                 .flatMap(paymentBook ->
                         Mono.zip(
                                 Mono.just(paymentBook),
