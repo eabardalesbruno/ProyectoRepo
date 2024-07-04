@@ -120,7 +120,7 @@ private final RefusePaymentRepository refusePaymentRepository;
         body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>"
                 + "Hola, " + userClient.getFirstName() + "!</h1>";
         body += "<h3 style='text-align: center;'>Lamentamos informarte que tu pago ha sido rechazado</h3>";
-        body += "<p style='text-align: center;'>Razón del rechazo: " + refusePayment.getRefuseReasonId() + "</p>";
+        body += "<p style='text-align: center;'>Razón del rechazo: " + refusePayment.getDetail() + "</p>";
         body += "<center><div style='width: 100%'>";
         body += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
         body += "<center>Por favor, contacta con nuestro soporte para más información.</center>";
