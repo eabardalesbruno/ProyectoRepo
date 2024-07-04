@@ -32,9 +32,20 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
         return refusePaymentRepository.findById(id);
     }
 
+    /* ANTES
     @Override
     public Mono<RefusePaymentEntity> saveRefusePayment(RefusePaymentEntity refusePayment) {
         return refusePaymentRepository.save(refusePayment);
+    }
+     */
+
+    @Override
+    public Mono<RefusePaymentEntity> saveRefusePayment(RefusePaymentEntity refusePayment) {
+        return refusePaymentRepository.save(refusePayment)
+                .flatMap(savedRefusePayment -> {
+                    savedRefusePayment.setRefuseReasonId(refusePayment.getRefuseReasonId());
+                    return refusePaymentRepository.save(savedRefusePayment);
+                });
     }
 
     @Override
