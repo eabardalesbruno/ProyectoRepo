@@ -133,4 +133,44 @@ private final RefusePaymentRepository refusePaymentRepository;
 
         return body;
     }
+
+    @Override
+    public Mono<Void> updatePendingPayAndSendConfirmation(Integer paymentBookId) {
+        return paymentBookRepository.findById(paymentBookId)
+                .flatMap(paymentBook -> {
+                    if (paymentBook.getPendingpay() == 0) {
+                        paymentBook.setPendingpay(1);
+                        return paymentBookRepository.save(paymentBook)
+                                .then(userClientRepository.findById(paymentBook.getUserClientId())
+                                        .flatMap(userClient -> {
+                                            String emailBody = generatePaymentConfirmationEmailBody(userClient);
+                                            return emailService.sendEmail(userClient.getEmail(), "Confirmación de Pago Aceptado", emailBody);
+                                        })
+                                );
+                    }
+                    return Mono.empty();
+                });
+    }
+
+    private String generatePaymentConfirmationEmailBody(UserClientEntity userClient) {
+        String body = "<html><head><title></title></head><body style='color:black'>";
+        body += "<div style='width: 100%'>";
+        body += "<div style='display:flex;'>";
+        body += "</div>";
+        body += "<img style='width: 100%' src='http://www.inresorts.club/Views/img/fondo.png'>";
+        body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>"
+                + "Hola, " + userClient.getFirstName() + "!</h1>";
+        body += "<h3 style='text-align: center;'>Tu pago ha sido aceptado con éxito</h3>";
+        body += "<center><div style='width: 100%'>";
+        body += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
+        body += "<center>Gracias por tu pago. Si tienes alguna duda, por favor contacta con nuestro soporte.</center>";
+        body += "</div></center>";
+        body += "<center><div style='width: 100%'>";
+        body += "<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>";
+        body += "</div></center>";
+        body += "</div></center>";
+        body += "</body></html>";
+
+        return body;
+    }
 }

@@ -41,6 +41,11 @@ public class RefusePaymentController {
         return refusePaymentService.saveRefusePayment(refusePayment);
     }
 
+    @PostMapping("/approved")
+    public Mono<Void> updatePendingPay(@RequestParam Integer paymentBookId) {
+        return refusePaymentService.updatePendingPayAndSendConfirmation(paymentBookId);
+    }
+
     @DeleteMapping("/{id}")
     public Mono<Void> deleteRefusePayment(@PathVariable Integer id) {
         return refusePaymentService.deleteRefusePayment(id);

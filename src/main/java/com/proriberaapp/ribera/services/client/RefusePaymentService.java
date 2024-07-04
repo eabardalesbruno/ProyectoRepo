@@ -12,4 +12,6 @@ public interface RefusePaymentService {
     Mono<RefusePaymentEntity> getRefusePaymentById(Integer id);
     Mono<RefusePaymentEntity> saveRefusePayment(RefusePaymentEntity refusePayment);
     Mono<Void> deleteRefusePayment(Integer id);
+    Mono<Void> updatePendingPayAndSendConfirmation(Integer paymentBookId);
+
 }
