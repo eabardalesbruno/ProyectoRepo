@@ -432,8 +432,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
     @Override
     public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return paymentBookRepository.findAllByRefuseReasonIdAndPendingPay(1, 0, pageable)
+        int offset = page * size;
+        return paymentBookRepository.findAllByRefuseReasonIdAndPendingPay(1, 0, size, offset)
                 .flatMap(paymentBook ->
                         Mono.zip(
                                 Mono.just(paymentBook),
