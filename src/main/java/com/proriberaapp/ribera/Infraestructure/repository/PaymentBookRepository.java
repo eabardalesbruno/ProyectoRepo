@@ -10,6 +10,6 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
     Flux<PaymentBookEntity> findAll();
     Flux<PaymentBookEntity> findByUserClientId(Integer userClientId);
     Mono<PaymentBookEntity> findById(Integer id);
-    @Query("SELECT userclientid FROM paymentbook WHERE id = :paymentBookId")
-    Mono<Integer> findUserClientIdByPaymentBookId(Integer paymentBookId);
+    @Query("SELECT userclientid FROM paymentbook WHERE paymentbookid = :id")
+    Mono<Integer> findUserClientIdByPaymentBookId(Integer id);
 }
