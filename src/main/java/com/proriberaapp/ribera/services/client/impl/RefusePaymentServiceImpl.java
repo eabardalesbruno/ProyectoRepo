@@ -160,7 +160,7 @@ private final RefusePaymentRepository refusePaymentRepository;
         body += "<img style='width: 100%' src='http://www.inresorts.club/Views/img/fondo.png'>";
         body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>"
                 + "Hola, " + userClient.getFirstName() + "!</h1>";
-        body += "<h3 style='text-align: center;'>Tu pago ha sido aceptado con éxito</h3>";
+        body += "<h3 style='text-align: center;'>Su pago ha sido aceptado con exito</h3>";
         body += "<center><div style='width: 100%'>";
         body += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
         body += "<center>Gracias por tu pago. Si tienes alguna duda, por favor contacta con nuestro soporte.</center>";
