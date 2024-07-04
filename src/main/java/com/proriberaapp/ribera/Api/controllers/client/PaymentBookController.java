@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
+import com.proriberaapp.ribera.Api.controllers.client.dto.PaginationRequest;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.services.client.PaymentBookService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,11 @@ public class PaymentBookController {
             @RequestParam int page,
             @RequestParam int size) {
         return paymentBookService.getAllPaymentBookDetails(page, size);
+    }
+
+    @PostMapping("/paged")
+    public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails(@RequestBody PaginationRequest paginationRequest) {
+        return paymentBookService.getAllPaymentBookDetails(paginationRequest.getPage(), paginationRequest.getSize());
     }
 
     @GetMapping("/user-client/{userClientId}")
