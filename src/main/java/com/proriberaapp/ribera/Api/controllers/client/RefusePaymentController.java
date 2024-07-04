@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.CustomResponse;
 import com.proriberaapp.ribera.Domain.entities.RefuseEntity;
 import com.proriberaapp.ribera.Domain.entities.RefusePaymentEntity;
 import com.proriberaapp.ribera.services.client.RefusePaymentService;
@@ -44,12 +45,13 @@ public class RefusePaymentController {
     }
 
     @PostMapping("/approved")
-    public Mono<Void> updatePendingPay(@RequestBody Map<String, Integer> request) {
+    public Mono<CustomResponse> updatePendingPay(@RequestBody Map<String, Integer> request) {
         Integer paymentBookId = request.get("paymentBookId");
         if (paymentBookId == null) {
             return Mono.error(new IllegalArgumentException("PaymentBookId is required"));
         }
-        return refusePaymentService.updatePendingPayAndSendConfirmation(paymentBookId);
+        return refusePaymentService.updatePendingPayAndSendConfirmation(paymentBookId)
+                .then(Mono.just(new CustomResponse("El pago ha sido aprobado exitosamente", request)));
     }
 
     @DeleteMapping("/{id}")
