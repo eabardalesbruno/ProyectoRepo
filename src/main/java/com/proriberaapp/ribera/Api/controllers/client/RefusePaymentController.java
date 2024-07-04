@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/refuse-payments")
 public class RefusePaymentController {
@@ -42,7 +44,11 @@ public class RefusePaymentController {
     }
 
     @PostMapping("/approved")
-    public Mono<Void> updatePendingPay(@RequestParam Integer paymentBookId) {
+    public Mono<Void> updatePendingPay(@RequestBody Map<String, Integer> request) {
+        Integer paymentBookId = request.get("paymentBookId");
+        if (paymentBookId == null) {
+            return Mono.error(new IllegalArgumentException("PaymentBookId is required"));
+        }
         return refusePaymentService.updatePendingPayAndSendConfirmation(paymentBookId);
     }
 
