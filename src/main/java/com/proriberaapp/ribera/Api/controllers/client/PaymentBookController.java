@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
+import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginationRequest;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.services.client.PaymentBookService;
@@ -54,15 +55,24 @@ public class PaymentBookController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    /*
     @GetMapping
     public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails(
             @RequestParam int page,
             @RequestParam int size) {
         return paymentBookService.getAllPaymentBookDetails(page, size);
     }
+     */
 
+    /*
     @PostMapping("/paged")
     public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails(@RequestBody PaginationRequest paginationRequest) {
+        return paymentBookService.getAllPaymentBookDetails(paginationRequest.getPage(), paginationRequest.getSize());
+    }
+     */
+
+    @PostMapping("/paged")
+    public Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetails(@RequestBody PaginationRequest paginationRequest) {
         return paymentBookService.getAllPaymentBookDetails(paginationRequest.getPage(), paginationRequest.getSize());
     }
 
