@@ -8,9 +8,9 @@ import org.springframework.data.relational.core.mapping.Table;
 @Getter
 @Setter
 @Builder
-@Table("paymentstate")
+@Table("refusereason")
 public class RefuseEntity {
-    private Integer refuseId;
-    private String refuseName;
+    private Integer refusereasonid;
+    private String refusereasonname;
 
 }
