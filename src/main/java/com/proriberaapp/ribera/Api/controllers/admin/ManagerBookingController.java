@@ -2,22 +2,18 @@ package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
+import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
+import com.proriberaapp.ribera.services.admin.BookingManagerService;
 import com.proriberaapp.ribera.services.client.BookingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import javax.print.attribute.standard.Media;
-import java.io.File;
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/admin/manager/booking")
@@ -26,6 +22,8 @@ public class ManagerBookingController extends BaseManagerController<BookingEntit
 
     @Autowired
     private BookingService bookingService;
+    @Autowired
+    private BookingManagerService bookingManagerService;
 
     @PostMapping(
             value = "load/boucher",
@@ -43,5 +41,10 @@ public class ManagerBookingController extends BaseManagerController<BookingEntit
     public Flux<CalendarDate> downloadBoucher(
             @RequestParam("roomOfferId") Integer id) {
         return bookingService.calendarDate(id);
+    }
+
+    @GetMapping("/{id}")
+    public Mono<ViewBookingReturn> getBooking(@PathVariable("id") Integer bookingId) {
+        return bookingManagerService.getBooking(bookingId);
     }
 }

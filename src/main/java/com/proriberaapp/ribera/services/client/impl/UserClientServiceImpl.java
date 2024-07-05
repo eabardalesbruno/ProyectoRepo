@@ -7,6 +7,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.UserApiClient;
 import com.proriberaapp.ribera.services.client.UserClientService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserClientServiceImpl implements UserClientService {
@@ -77,6 +79,7 @@ public class UserClientServiceImpl implements UserClientService {
                 }))
                 .map(userToSave -> {
                     if (!"1".equals(userToSave.getGoogleAuth())) {
+                        log.info("Cifrar contraseña");
                         userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
                     }
                     return userToSave;
