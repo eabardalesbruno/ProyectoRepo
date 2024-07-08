@@ -1,9 +1,6 @@
 package com.proriberaapp.ribera.services;
 
 import com.proriberaapp.ribera.Api.controllers.payme.dto.*;
-import com.proriberaapp.ribera.Infraestructure.repository.CountryRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.DocumentTypeRepository;
-import com.proriberaapp.ribera.services.client.UserClientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,56 +24,53 @@ public class PaymeService {
     @Value("${pay_me.client_secret}")
     private String CLIENT_SECRET;
 
-    @Value("${pay_me.url.token}")
-    private String URL_TOKEN;
-    @Value("${pay_me.url.tokenize}")
-    private String URL_TOKENIZE;
-    @Value("${pay_me.url.charges}")
-    private String URL_CHARGES;
+    @Value("${pay_me.url.access_token}")
+    private String URL_ACCESS_TOKEN;
     @Value("${pay_me.url.nonce}")
     private String URL_NONCE;
 
-    @Value("${pay_me.username}")
-    private String USERNAME;
-    @Value("${pay_me.password}")
-    private String PASSWORD;
-    @Value("${pay_me.audience}")
+    @Value("${pay_me.url.audience}")
     private String AUDIENCE;
+    @Value("${pay_me.url.ALG-API-VERSION}")
+    private String ALG_API_VERSION;
 
     private Mono<AuthorizeResponse> getToken() {
         WebClient webClient = WebClient.create();
         AuthorizeRequest body = new AuthorizeRequest(
                 "authorize", "password",
-                USERNAME, PASSWORD,
                 AUDIENCE,
                 CLIENT_ID, CLIENT_SECRET,
                 "create:token post:charges offline_access"
         );
         return webClient.post()
-                .uri(URL_TOKEN)
-                .header("Content-Type", "application/json")
-                .header("ALG-API-VERSION", "1618440906")
+                .uri(URL_ACCESS_TOKEN)
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("ALG-API-VERSION", ALG_API_VERSION)
                 .body(BodyInserters.fromValue(body))
                 .retrieve()
                 .bodyToMono(AuthorizeResponse.class)
-                .onErrorResume(e -> Mono.error(new HttpStatusCodeException(HttpStatus.BAD_REQUEST, e.getMessage()) {
+                .onErrorResume(e -> Mono.error(new HttpStatusCodeException(HttpStatus.BAD_REQUEST, "Error getting token") {
                 }));
     }
 
     public Mono<NonceResponse> getNonce() {
-        NonceRequest nonceRequest = new NonceRequest("create.nonce", USERNAME, "https://api.dev.alignet.io", CLIENT_ID, "create:token post:charges");
+        NonceRequest nonceRequest = new NonceRequest(
+                "create.nonce",
+                AUDIENCE,
+                CLIENT_ID,
+                "create:token post:charges");
         WebClient webClient = WebClient.create();
         return getToken()
                 .flatMap(authorizeResponse ->
                         webClient.post()
                                 .uri(URL_NONCE)
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .header("ALG-API-VERSION", "1618440906")
-                                .header("Authorization", "Bearer " + authorizeResponse.getAccessToken())
+                                .header("ALG-API-VERSION", ALG_API_VERSION)
+                                .header("Authorization", authorizeResponse.getTokenType() + " " + authorizeResponse.getAccessToken())
                                 .body(BodyInserters.fromValue(nonceRequest))
                                 .retrieve()
                                 .bodyToMono(NonceResponse.class)
-                                .onErrorResume(e -> Mono.error(new HttpStatusCodeException(HttpStatus.BAD_REQUEST, e.getMessage()) {
+                                .onErrorResume(e -> Mono.error(new HttpStatusCodeException(HttpStatus.BAD_REQUEST, "Error getting nonce") {
                                 }))
                 );
     }

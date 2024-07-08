@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("payment")
+@Table("pay_me")
 public class PaymentEntity {
     @Id
     private Integer idPayment;
@@ -18,9 +18,6 @@ public class PaymentEntity {
     private String token;
     private String cardHolderName;
     private String expirationDate;
-    private Boolean active;
     private Boolean expired;
-
-    public PaymentEntity(Object o, Integer idUser, Mono<TokenizationResponse> userId, String numberCard, String holderCard, String expirationDate, boolean b, boolean b1) {
-    }
+    private Boolean active;
 }

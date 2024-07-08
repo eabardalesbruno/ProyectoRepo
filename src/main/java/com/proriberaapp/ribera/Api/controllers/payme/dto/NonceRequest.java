@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NonceRequest {
     private String action;
-    private String username;
+    //private String username;
     private String audience;
     @JsonProperty("client_id")
     private String clientId;

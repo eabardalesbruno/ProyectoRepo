@@ -12,8 +12,8 @@ public class AuthorizeRequest {
     private String action;
     @JsonProperty("grant_type")
     private String grantType;
-    private String username;
-    private String password;
+    //private String username;
+    //private String password;
     private String audience;
     @JsonProperty("client_id")
     private String clientId;

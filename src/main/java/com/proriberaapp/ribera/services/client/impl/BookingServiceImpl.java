@@ -3,12 +3,12 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.FinalCostumer;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
-import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
@@ -29,9 +29,8 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 
 import java.sql.Timestamp;
-import java.time.Duration;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Period;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -45,7 +44,8 @@ public class BookingServiceImpl implements BookingService {
     private final EmailService emailService;
     private final PartnerPointsService partnerPointsService;
     private final ComfortTypeRepository comfortTypeRepository;
-    private final RoomOfferRepository roomOfferRespository;
+    private final RoomOfferRepository roomOfferRepository;
+    private final FinalCostumerRepository finalCostumerRepository;
 
     private final BedsTypeRepository bedsTypeRepository;
     private final RoomRepository roomRepository;
@@ -65,7 +65,7 @@ public class BookingServiceImpl implements BookingService {
             PartnerPointsService partnerPointsService,
             ComfortTypeRepository comfortTypeRepository,
             BedsTypeRepository bedsTypeRepository,
-            RoomOfferRepository roomOfferRespository,
+            RoomOfferRepository roomOfferRepository, FinalCostumerRepository finalCostumerRepository,
             RoomRepository roomRepository
             //WebClient.Builder webClientBuilder
     ) {
@@ -75,13 +75,14 @@ public class BookingServiceImpl implements BookingService {
         this.partnerPointsService = partnerPointsService;
         this.comfortTypeRepository = comfortTypeRepository;
         this.bedsTypeRepository = bedsTypeRepository;
-        this.roomOfferRespository = roomOfferRespository;
+        this.roomOfferRepository = roomOfferRepository;
+        this.finalCostumerRepository = finalCostumerRepository;
         this.roomRepository = roomRepository;
         //this.webClient = webClientBuilder.baseUrl(uploadDir).build();
     }
 
     private Mono<String> getRoomName(Integer roomOfferId) {
-        return roomOfferRespository.findById(roomOfferId)
+        return roomOfferRepository.findById(roomOfferId)
                 .flatMap(roomOfferEntity -> roomRepository.findById(roomOfferEntity.getRoomId()))
                 .map(RoomEntity::getRoomName)
                 .switchIfEmpty(Mono.just("Habitación no encontrada"));
@@ -209,6 +210,12 @@ public class BookingServiceImpl implements BookingService {
         if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
             return Mono.error(new CustomException(HttpStatus.BAD_REQUEST,"La fecha de inicio no puede ser anterior al día actual"));
         }
+        assert bookingSaveRequest.getNumberBaby() != null;
+        assert bookingSaveRequest.getNumberChild() != null;
+        assert bookingSaveRequest.getNumberAdult() != null;
+        if(bookingSaveRequest.getNumberBaby()+bookingSaveRequest.getNumberChild()+bookingSaveRequest.getNumberAdult() == 0){
+            return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Debe seleccionar al menos un huésped"));
+        }
         
         Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
 
@@ -245,11 +252,12 @@ public class BookingServiceImpl implements BookingService {
         // Calcular el número de días entre la fecha de inicio y fin
         Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
 
+
         // Obtener el nombre de la habitación
         return getRoomName(bookingSaveRequest.getRoomOfferId())
                 .flatMap(roomName -> {
                     // Obtener la oferta de habitación
-                    return roomOfferRespository.findById(bookingSaveRequest.getRoomOfferId())
+                    return roomOfferRepository.findById(bookingSaveRequest.getRoomOfferId())
                             .flatMap(roomOfferEntity -> {
                                 // Crear la entidad de reserva con los datos proporcionados
                                 BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId, bookingSaveRequest, numberOfDays);
@@ -270,11 +278,39 @@ public class BookingServiceImpl implements BookingService {
                                                 return bookingRepository.save(bookingEntity)
                                                         .flatMap(savedBooking -> sendBookingConfirmationEmail(savedBooking, roomName));
                                             }
+                                        })
+                                        .map(bookingEntity1 -> {
+                                            if (bookingSaveRequest.getFinalCostumer() != null) {
+                                                // Guardar los datos de los huéspedes finales
+                                                bookingSaveRequest.getFinalCostumer().stream()
+                                                        .map(finalCostumer ->
+                                                                finalCostumerRepository.save(FinalCostumer.toFinalCostumerEntity(bookingEntity1.getBookingId(), finalCostumer))
+                                                        );
+                                            } else {
+                                                userClientRepository.findById(userClientId)
+                                                        .map(userClient -> {
+                                                            FinalCostumer finalCostumer = FinalCostumer.builder()
+                                                                    .firstName(userClient.getFirstName())
+                                                                    .lastName(userClient.getLastName())
+                                                                    .documentType(userClient.getDocumenttypeId() == 1 ? "DNI" : "PAS")
+                                                                    .documentNumber(userClient.getDocumentNumber())
+                                                                    .yearOld(calculateAge(userClient.getBirthDate()))
+                                                                    .build();
+                                                            finalCostumerRepository.save(FinalCostumer.toFinalCostumerEntity(bookingEntity1.getBookingId(), finalCostumer));
+                                                            return finalCostumer;
+                                                        });
+                                            }
+                                            return bookingEntity1;
                                         });
                             });
                 });
     }
 
+    public Integer calculateAge(Timestamp birthDate) {
+        LocalDate birthDateLocal = birthDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate currentDate = LocalDate.now();
+        return Period.between(birthDateLocal, currentDate).getYears();
+    }
 
     // Método para enviar el correo de confirmación de reserva con el nombre de la habitación
     private Mono<BookingEntity> sendBookingConfirmationEmail(BookingEntity bookingEntity, String roomName) {
@@ -390,16 +426,6 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Mono<BookingEntity> findByIdAndIdUserAdmin(Integer idUserAdmin, Integer bookingId) {
         return bookingRepository.findByBookingIdAndUserClientId(idUserAdmin, bookingId);
-    }
-
-    private MultiValueMap buildMultipartData(String folderNumber, byte[] imageBytes) {
-        MultipartBodyBuilder builder = new MultipartBodyBuilder();
-        builder.part("file", imageBytes)
-                .filename("image.jpg")
-                .contentType(MediaType.IMAGE_JPEG)
-                .header("Content-Disposition", "form-data; name=\"file\"; filename=\"image.jpg\"");
-        builder.part("folderNumber", folderNumber);
-        return builder.build();
     }
 
 }

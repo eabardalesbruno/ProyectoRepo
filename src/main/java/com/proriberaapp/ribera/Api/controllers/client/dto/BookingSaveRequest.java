@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.client.dto;
 
+import com.proriberaapp.ribera.Domain.entities.FinalCostumerEntity;
 import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Getter;
@@ -8,6 +9,7 @@ import lombok.Setter;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -25,5 +27,8 @@ public class BookingSaveRequest {
 
     private LocalDate dayBookingInit;
     private LocalDate dayBookingEnd;
+
+    @Nullable
+    private List<FinalCostumer> finalCostumer;
 
 }

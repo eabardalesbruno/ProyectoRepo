@@ -11,10 +11,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NonceResponse {
-    private String action;
+    //private String action;
     private Boolean success;
     private String nonce;
-    private String scope;
+    //private String scope;
     @JsonProperty("expires_in")
     private Integer expiresIn;
 }
