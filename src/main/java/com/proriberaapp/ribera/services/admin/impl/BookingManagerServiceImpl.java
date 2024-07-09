@@ -4,9 +4,9 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.*;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewAdminBookingAvailabilityReturn;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewAdminBookingInventoryReturn;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewAdminBookingReturn;
-import com.proriberaapp.ribera.Infraestructure.repository.OfferTypeRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.RoomTypeRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.StateRoomRepository;
+import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
+import com.proriberaapp.ribera.Domain.entities.BookingEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.Infraestructure.viewRepository.BookingViewRepository;
 import com.proriberaapp.ribera.services.admin.BookingManagerService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +24,9 @@ public class BookingManagerServiceImpl implements BookingManagerService {
     private final RoomTypeRepository roomTypeRepository;
     private final StateRoomRepository stateRoomRepository;
     private final OfferTypeRepository offerTypeRepository;
+    private final BookingRepository bookingRepository;
+    private final ComfortTypeRepository comfortTypeRepository;
+    private final BedsTypeRepository bedsTypeRepository;
 
     @Override
     public Flux<ViewAdminBookingReturn> viewAdminBookingReturn(SearchFiltersBooking filters) {
@@ -54,6 +57,25 @@ public class BookingManagerServiceImpl implements BookingManagerService {
                                                         .build()
                                                 )
                                 )
+                );
+    }
+
+    @Override
+    public Mono<ViewBookingReturn> getBooking(Integer id) {
+        return bookingRepository.findAllViewBookingReturnByBookingId(id)
+                .flatMap(viewBookingReturn ->
+                        comfortTypeRepository.findAllByViewComfortType(viewBookingReturn.getBookingId())
+                                .collectList().map(comfortTypeEntity -> {
+                                    viewBookingReturn.setListComfortType(comfortTypeEntity);
+                                    return viewBookingReturn;
+                                })
+                )
+                .flatMap(viewBookingReturn ->
+                        bedsTypeRepository.findAllByViewBedsType(viewBookingReturn.getBookingId())
+                                .collectList().map(bedsTypeEntity -> {
+                                    viewBookingReturn.setListBedsType(bedsTypeEntity);
+                                    return viewBookingReturn;
+                                })
                 );
     }
 
