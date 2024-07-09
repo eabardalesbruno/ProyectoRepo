@@ -27,6 +27,8 @@ public class PaymentBookEntity {
 
     @Column("refusereasonid")
     private Integer refuseReasonId;
+    @Column("cancelreasonid")
+    private Integer cancelReasonId;
 
     @Column("paymentmethodid")
     private Integer paymentMethodId;
