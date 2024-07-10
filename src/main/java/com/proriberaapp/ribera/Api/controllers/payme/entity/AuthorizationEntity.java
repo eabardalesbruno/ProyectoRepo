@@ -26,6 +26,7 @@ public class AuthorizationEntity {
     private String action;
     private String id;
     private boolean success;
+
     private Transaction transaction;
 
 

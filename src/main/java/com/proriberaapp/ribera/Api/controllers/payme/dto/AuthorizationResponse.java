@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.payme.dto;
 
 import com.proriberaapp.ribera.Api.controllers.payme.entity.AuthorizationEntity;
+import com.proriberaapp.ribera.Api.controllers.payme.entity.PayMeAuthorization;
 import com.proriberaapp.ribera.Domain.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,35 +23,21 @@ public class AuthorizationResponse {
     private boolean success;
     private Transaction transaction;
 
-    public static AuthorizationEntity create(Integer idUser, Role role, AuthorizationResponse authorizationResponse) {
-        AuthorizationEntity entity = new AuthorizationEntity();
+    public static PayMeAuthorization create(Integer idUser, Role role, AuthorizationResponse authorizationResponse) {
+        PayMeAuthorization entity = new PayMeAuthorization();
         entity.setIdUser(idUser);
         entity.setRole(role);
         entity.setAction(authorizationResponse.getAction());
         entity.setId(authorizationResponse.getId());
         entity.setSuccess(authorizationResponse.isSuccess());
-        entity.setTransaction(
-                new AuthorizationEntity.Transaction(
-                        authorizationResponse.getTransaction().getCurrency(),
-                        authorizationResponse.getTransaction().getAmount(),
-                        new AuthorizationEntity.Meta(
-                                authorizationResponse.getTransaction().getMeta().getInternal_operation_number(),
-                                authorizationResponse.getTransaction().getMeta().getDescription(),
-                                new AuthorizationEntity.Processor(
-                                        new AuthorizationEntity.Authorization(
-                                                authorizationResponse.getTransaction().getMeta().getProcessor().getAuthorization().getCode()
-                                        )
-                                ),
-                                authorizationResponse.getTransaction().getMeta().getAdditional_fields(),
-                                new AuthorizationEntity.Status(
-                                        authorizationResponse.getTransaction().getMeta().getStatus().getCode(),
-                                        Collections.singletonList(new AuthorizationEntity.MessageI18n(
-                                                authorizationResponse.getTransaction().getMeta().getStatus().getMessage_ilgn().get(0).getLocale(),
-                                                authorizationResponse.getTransaction().getMeta().getStatus().getMessage_ilgn().get(0).getValue()
-                                        ))
-                                )
-                        )
-                ));
+        entity.setCurrency(authorizationResponse.getTransaction().getCurrency());
+        entity.setAmount(authorizationResponse.getTransaction().getAmount());
+        entity.setInternalOperationNumber(authorizationResponse.getTransaction().getMeta().getInternal_operation_number());
+        entity.setDescription(authorizationResponse.getTransaction().getMeta().getDescription());
+        entity.setProcessorAuthorizationCode(authorizationResponse.getTransaction().getMeta().getProcessor().getAuthorization().getCode());
+        entity.setAdditionalFields(authorizationResponse.getTransaction().getMeta().getAdditional_fields().toString());
+        entity.setStatusCode(authorizationResponse.getTransaction().getMeta().getStatus().getCode());
+        entity.setMessageI18n(authorizationResponse.getTransaction().getMeta().getStatus().getMessage_ilgn().toString());
         return entity;
     }
 

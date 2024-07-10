@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.services;
 import com.proriberaapp.ribera.Api.controllers.payme.AuthorizationRepository;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.*;
 import com.proriberaapp.ribera.Api.controllers.payme.entity.AuthorizationEntity;
+import com.proriberaapp.ribera.Api.controllers.payme.entity.PayMeAuthorization;
 import com.proriberaapp.ribera.Api.controllers.payme.entity.TokenizeEntity;
 import com.proriberaapp.ribera.Domain.enums.Role;
 import lombok.RequiredArgsConstructor;
@@ -85,9 +86,9 @@ public class PayMeService {
     }
 
     public Mono<TransactionNecessaryResponse> savePayment(Integer idUser, AuthorizationResponse authorizationResponse) {
-        AuthorizationEntity authorizationEntity = AuthorizationResponse.create(idUser, Role.ROLE_USER, authorizationResponse);
+        PayMeAuthorization payMeAuthorization = AuthorizationResponse.create(idUser, Role.ROLE_USER, authorizationResponse);
 
-        return authorizationRepository.save(authorizationEntity)
+        return authorizationRepository.save(payMeAuthorization)
                 .map(paymentEntity1 -> new TransactionNecessaryResponse(true));
     }
 }
