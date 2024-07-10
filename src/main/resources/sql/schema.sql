@@ -418,6 +418,24 @@ CREATE TABLE IF NOT EXISTS public.implements_comfort(
     cuantity integer
 );
 
+CREATE TABLE IF NOT EXISTS public.pay_me_authorizations (
+    idAuthorization SERIAL PRIMARY KEY,
+    idUser INTEGER NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    action VARCHAR(255),
+    id VARCHAR(255),
+    success BOOLEAN,
+    currency VARCHAR(255),
+    amount VARCHAR(255),
+    internal_operation_number VARCHAR(255),
+    description TEXT,
+    processor_authorization_code VARCHAR(255),
+    additional_fields TEXT, -- Assuming JSON format or similar for simplicity
+    status_code VARCHAR(255),
+    message_ilgn TEXT -- Assuming JSON format for list of messages
+);
+
+
 
 /*
 ALTER TABLE pointstransfers ADD CONSTRAINT fk_sender_pt FOREIGN KEY (senderid) REFERENCES userclient(userclientid);
