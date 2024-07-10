@@ -12,9 +12,11 @@ public class TransactionNecessaryRequest {
     private Integer idUser;
     private Integer idBooking;
     private Integer idCard;
+
     private Currency currency; //PEN, USD
     private String holderCard;
     private String email;
+
     private EmitterCard emitterCard;
     private String numberCard;
     private String expirationDate;

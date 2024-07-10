@@ -1,6 +1,10 @@
 package com.proriberaapp.ribera.services;
 
+import com.proriberaapp.ribera.Api.controllers.payme.AuthorizationRepository;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.*;
+import com.proriberaapp.ribera.Api.controllers.payme.entity.AuthorizationEntity;
+import com.proriberaapp.ribera.Api.controllers.payme.entity.TokenizeEntity;
+import com.proriberaapp.ribera.Domain.enums.Role;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +22,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class PayMeService {
     private final PayMeRepository paymeRepository;
+    private final AuthorizationRepository authorizationRepository;
 
     @Value("${pay_me.client_id}")
     private String CLIENT_ID;
@@ -75,7 +80,14 @@ public class PayMeService {
                 );
     }
 
-    public Flux<PaymentEntity> getPayments(Integer idUser) {
+    public Flux<TokenizeEntity> getPayments(Integer idUser) {
         return paymeRepository.findByIdUser(idUser);
+    }
+
+    public Mono<TransactionNecessaryResponse> savePayment(Integer idUser, AuthorizationResponse authorizationResponse) {
+        AuthorizationEntity authorizationEntity = AuthorizationResponse.create(idUser, Role.ROLE_USER, authorizationResponse);
+
+        return authorizationRepository.save(authorizationEntity)
+                .map(paymentEntity1 -> new TransactionNecessaryResponse(true));
     }
 }

@@ -1,7 +1,9 @@
 package com.proriberaapp.ribera.Api.controllers.payme;
 
+import com.proriberaapp.ribera.Api.controllers.payme.dto.AuthorizationResponse;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.NonceResponse;
-import com.proriberaapp.ribera.Api.controllers.payme.dto.PaymentEntity;
+import com.proriberaapp.ribera.Api.controllers.payme.entity.TokenizeEntity;
+import com.proriberaapp.ribera.Api.controllers.payme.dto.TransactionNecessaryResponse;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.services.PayMeService;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +29,17 @@ public class PayMeController {
         return paymeService.getNonce();
     }
 
+    @PostMapping("save-authorize")
+    public Mono<TransactionNecessaryResponse> savePayment(
+            @RequestHeader("Authorization") String token,
+            @RequestBody AuthorizationResponse authorizationResponse
+    ) {
+        Integer idUser = jtp.getIdFromToken(token);
+        return paymeService.savePayment(idUser, authorizationResponse);
+    }
+
     @GetMapping
-    public Flux<PaymentEntity> getPayments(
+    public Flux<TokenizeEntity> getPayments(
             @RequestHeader("Authorization") String token
     ) {
         Integer idUser = jtp.getIdFromToken(token);

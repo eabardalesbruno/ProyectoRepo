@@ -1,19 +1,20 @@
-package com.proriberaapp.ribera.Api.controllers.payme.dto;
+package com.proriberaapp.ribera.Api.controllers.payme.entity;
 
+import com.proriberaapp.ribera.Domain.enums.Role;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
-import reactor.core.publisher.Mono;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("pay_me")
-public class PaymentEntity {
+@Table("pay_me_tokenize")
+public class TokenizeEntity {
     @Id
     private Integer idPayment;
     private Integer idUser;
+    private Role role;
 
     private String token;
     private String bin;
