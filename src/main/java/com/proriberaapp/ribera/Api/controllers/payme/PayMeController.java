@@ -3,7 +3,7 @@ package com.proriberaapp.ribera.Api.controllers.payme;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.NonceResponse;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.PaymentEntity;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
-import com.proriberaapp.ribera.services.PaymeService;
+import com.proriberaapp.ribera.services.PayMeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +14,9 @@ import reactor.core.publisher.Mono;
 @RequestMapping("${url.client}/payme")
 @RequiredArgsConstructor
 @Slf4j
-public class PaymeController {
+public class PayMeController {
 
-    private final PaymeService paymeService;
+    private final PayMeService paymeService;
     private final JwtProvider jtp;
 
     @PostMapping("create-nonce")

@@ -16,8 +16,8 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PaymeService {
-    private final PaymeRepository paymeRepository;
+public class PayMeService {
+    private final PayMeRepository paymeRepository;
 
     @Value("${pay_me.client_id}")
     private String CLIENT_ID;

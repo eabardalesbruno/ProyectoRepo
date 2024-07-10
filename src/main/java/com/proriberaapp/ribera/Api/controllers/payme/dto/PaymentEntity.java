@@ -16,8 +16,10 @@ public class PaymentEntity {
     private Integer idUser;
 
     private String token;
-    private String cardHolderName;
-    private String expirationDate;
-    private Boolean expired;
+    private String bin;
+    private String last_pan;
+    private String brand;
+    private String issuer;
+
     private Boolean active;
 }
