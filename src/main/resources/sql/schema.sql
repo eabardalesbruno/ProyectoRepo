@@ -130,6 +130,16 @@ CREATE TABLE IF NOT EXISTS refusereason (
     refusereasonid SERIAL PRIMARY KEY,
     refusereasonname VARCHAR(255)
 );
+CREATE TABLE IF NOT EXISTS cancelreason (
+    cancelreasonid SERIAL PRIMARY KEY,
+    cancelreasonname VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS cancelpayment (
+    cancelpaymentid SERIAL PRIMARY KEY,
+    paymentbookid INTEGER,
+    cancelreasonid INTEGER,
+    detail VARCHAR(255)
+);
 CREATE TABLE IF NOT EXISTS currencytype (
     currencytypeid SERIAL PRIMARY KEY,
     currencytypename VARCHAR(50),
@@ -298,6 +308,7 @@ CREATE TABLE IF NOT EXISTS paymentbook (
     bookingid INTEGER NOT NULL,
     userclientid INTEGER NOT NULL,
     refusereasonid INTEGER NOT NULL,
+    cancelreasonid INTEGER,
     paymentmethodid INTEGER,
     paymentstateid INTEGER,
     paymenttypeid INTEGER,
@@ -491,6 +502,10 @@ ALTER TABLE paymentbook ADD CONSTRAINT fk_paymenttype_pb FOREIGN KEY (paymenttyp
 ALTER TABLE paymentbook ADD CONSTRAINT fk_paymentsubtype_pb FOREIGN KEY (paymentsubtypeid) REFERENCES paymentsubtype(paymentsubtypeid);
 ALTER TABLE paymentbook ADD CONSTRAINT fk_userclient_pb FOREIGN KEY (userclientid) REFERENCES userclient(userclientid);
 ALTER TABLE paymentbook ADD CONSTRAINT fk_refusereason_pb FOREIGN KEY (refusereasonid) REFERENCES refusereason(refusereasonid);
+ALTER TABLE paymentbook ADD CONSTRAINT fk_cancelreason_pb FOREIGN KEY (cancelreasonid) REFERENCES cancelreason(cancelreasonid);
+
+ALTER TABLE cancelpayment ADD CONSTRAINT fk_paymentbook_rp FOREIGN KEY (paymentbookid) REFERENCES paymentbook(paymentbookid);
+ALTER TABLE cancelpayment ADD CONSTRAINT fk_cancelreason_rp FOREIGN KEY (cancelreasonid) REFERENCES cancelreason(cancelreasonid);
 
 ALTER TABLE bookingincidents ADD CONSTRAINT fk_booking_bi FOREIGN KEY (bookingid) REFERENCES booking(bookingid);
 ALTER TABLE bookingincidents ADD CONSTRAINT fk_useradmin_bi FOREIGN KEY (useradminid) REFERENCES useradmin(useradminid);
