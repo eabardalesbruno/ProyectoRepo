@@ -20,8 +20,8 @@ BEGIN
         	createdat
         )
         VALUES (
-            v_email,
-            crypt(v_password, gen_salt('bf')),
+            'super_admin@ribera.com',
+            '$2a$12$L0PWzwt3zDiskWI82RPCcuG6L/nBE771iuj4Rr278RgXD4XLgQtCq',
             'ROLE_SUPER_ADMIN',
             'ACTIVE',
             'READ,WRITE,CREATE,DELETE',
