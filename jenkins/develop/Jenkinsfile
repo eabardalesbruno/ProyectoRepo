@@ -11,10 +11,10 @@ pipeline {
             steps {
                 script {
                     def remoteCommands = [
-                        "/home/eperez/intech/ribera-scripts/docker/pro-ribera-app.sh.sh --branch ${BRANCH} --version ${VERSION} --action build",
-                        "/home/eperez/intech/ribera-scripts/docker/pro-ribera-app.sh.sh --branch ${BRANCH} --version ${VERSION} --action stop",
-                        "/home/eperez/intech/ribera-scripts/docker/pro-ribera-app.sh.sh --branch ${BRANCH} --version ${VERSION} --action remove",
-                        "/home/eperez/intech/ribera-scripts/docker/pro-ribera-app.sh.sh --branch ${BRANCH} --version ${VERSION} --action run"
+                        "/home/eperez/intech/ribera-scripts/docker/pro-ribera-app.sh --branch ${BRANCH} --version ${VERSION} --action build",
+                        "/home/eperez/intech/ribera-scripts/docker/pro-ribera-app.sh --branch ${BRANCH} --version ${VERSION} --action stop",
+                        "/home/eperez/intech/ribera-scripts/docker/pro-ribera-app.sh --branch ${BRANCH} --version ${VERSION} --action remove",
+                        "/home/eperez/intech/ribera-scripts/docker/pro-ribera-app.sh --branch ${BRANCH} --version ${VERSION} --action run"
                     ]
                     
                     sshagent(['ssh-agent']) {
