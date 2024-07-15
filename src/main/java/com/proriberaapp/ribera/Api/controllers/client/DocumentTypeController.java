@@ -12,7 +12,7 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/documenttype")
+@RequestMapping("/api/v1/documenttype")
 public class DocumentTypeController {
 
     private final DocumentTypeService documentTypeService;
