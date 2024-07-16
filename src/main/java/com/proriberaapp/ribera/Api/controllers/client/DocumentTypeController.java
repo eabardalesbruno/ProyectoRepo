@@ -27,6 +27,7 @@ public class DocumentTypeController {
         documentTypeService.createDocumentTypeTable();
     }
 
+
     @GetMapping("/all")
     public Flux<DocumentTypeEntity> getAllDocumentTypes() {
         return documentTypeService.getAllDocumentTypes();
