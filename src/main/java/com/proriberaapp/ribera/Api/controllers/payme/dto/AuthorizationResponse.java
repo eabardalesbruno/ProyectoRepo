@@ -37,7 +37,8 @@ public class AuthorizationResponse {
         entity.setProcessorAuthorizationCode(authorizationResponse.getTransaction().getMeta().getProcessor().getAuthorization().getCode());
         entity.setAdditionalFields(authorizationResponse.getTransaction().getMeta().getAdditional_fields().toString());
         entity.setStatusCode(authorizationResponse.getTransaction().getMeta().getStatus().getCode());
-        entity.setMessageI18n(authorizationResponse.getTransaction().getMeta().getStatus().getMessage_ilgn().toString());
+        //entity.setMessageI18n(authorizationResponse.getTransaction().getMeta().getStatus().getMessage_ilgn().toString());
+        entity.setMessageI18n(null);
         return entity;
     }
 
