@@ -8,7 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/genders")
+@RequestMapping("/api/v1/genders")
 public class GenderController {
 
     private final GenderService genderService;
