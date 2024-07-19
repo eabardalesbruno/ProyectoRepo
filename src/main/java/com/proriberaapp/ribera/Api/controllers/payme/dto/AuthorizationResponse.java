@@ -18,6 +18,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class AuthorizationResponse {
 
+    private Integer idBooking;
     private String action;
     private String id;
     private boolean success;
@@ -25,6 +26,7 @@ public class AuthorizationResponse {
 
     public static PayMeAuthorization create(Integer idUser, Role role, AuthorizationResponse authorizationResponse) {
         PayMeAuthorization entity = new PayMeAuthorization();
+        entity.setIdBooking(authorizationResponse.getIdBooking());
         entity.setIdUser(idUser);
         entity.setRole(role);
         entity.setAction(authorizationResponse.getAction());
@@ -38,7 +40,7 @@ public class AuthorizationResponse {
         entity.setAdditionalFields(authorizationResponse.getTransaction().getMeta().getAdditional_fields().toString());
         entity.setStatusCode(authorizationResponse.getTransaction().getMeta().getStatus().getCode());
         //entity.setMessageI18n(authorizationResponse.getTransaction().getMeta().getStatus().getMessage_ilgn().toString());
-        entity.setMessageI18n(null);
+        entity.setMessageI18n(authorizationResponse.getTransaction().getMeta().getStatus().getMessage_ilgn().get(0).getValue());
         return entity;
     }
 

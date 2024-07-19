@@ -23,6 +23,8 @@ public class PayMeAuthorization {
     @Column("idAuthorization")
     private Integer idAuthorization;
 
+    private Integer idBooking;
+
     @Column("idUser")
     private Integer idUser;
 

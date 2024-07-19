@@ -431,6 +431,7 @@ CREATE TABLE IF NOT EXISTS public.implements_comfort(
 
 CREATE TABLE IF NOT EXISTS public.pay_me_authorizations (
     idAuthorization SERIAL PRIMARY KEY,
+    idBooking INTEGER NOT NULL,
     idUser INTEGER NOT NULL,
     role VARCHAR(255) NOT NULL,
     action VARCHAR(255),
