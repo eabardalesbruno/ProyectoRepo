@@ -40,5 +40,6 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
 
     @Query("SELECT bookingid, roomofferid, daybookinginit, daybookingend FROM booking WHERE roomofferid = :roomOfferId AND dayBookingEnd >= CURRENT_DATE")
     Flux<CalendarDate> findAllCalendarDate(@Param("roomofferid") Integer roomOfferId);
+    Mono<BookingEntity> findByBookingId(Integer bookingId);
 
 }

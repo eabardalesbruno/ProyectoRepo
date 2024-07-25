@@ -21,6 +21,7 @@ public class AuthorizationEntity {
     @Id
     private Integer idAuthorization;
     private Integer idUser;
+    private Integer idBooking;
     private Role role;
 
     private String action;

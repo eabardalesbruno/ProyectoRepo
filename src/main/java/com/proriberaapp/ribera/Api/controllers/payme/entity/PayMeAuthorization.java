@@ -9,8 +9,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.Map;
-import java.util.List;
 
 @Getter
 @Setter
@@ -22,6 +20,9 @@ public class PayMeAuthorization {
     @Id
     @Column("idAuthorization")
     private Integer idAuthorization;
+
+    @Column("idBooking")
+    private Integer idBooking;
 
     @Column("idUser")
     private Integer idUser;

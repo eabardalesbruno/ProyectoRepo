@@ -32,9 +32,11 @@ public class PayMeController {
     @PostMapping("save-authorize")
     public Mono<TransactionNecessaryResponse> savePayment(
             @RequestHeader("Authorization") String token,
-            @RequestBody AuthorizationResponse authorizationResponse
+            @RequestBody AuthorizationResponse authorizationResponse,
+            @RequestHeader("IdBooking") Integer idBooking
     ) {
         Integer idUser = jtp.getIdFromToken(token);
+        authorizationResponse.setIdBooking(idBooking);
         return paymeService.savePayment(idUser, authorizationResponse);
     }
 
