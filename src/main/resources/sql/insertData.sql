@@ -4,34 +4,33 @@ INSERT INTO public.registertype (registertypename) VALUES
 	 ('GOOGLE'),
 	 ('USUARIO');
 
-
-----USER_ADMIN----
-INSERT INTO public.useradmin (email,"password",username,firstname,lastname,phone,address,documenttypeid,documentnumber,"role",status,"permission",createdat,createdid,updatedat,updatedid) VALUES
-	 ('super_admin@ribera.com','$2a$12$Pl.AmYKBj3y4jh3DwNNmFOr8y2f0kAvdhTBsNv3OUmuLOxXaOBMvm',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'ROLE_SUPER_ADMIN','ACTIVE','READ,WRITE,CREATE,DELETE',now(),NULL,NULL,NULL);
-
-
 ----ROOM_TYPE----
 INSERT INTO public.roomtype (roomtypename,roomtypedescription) VALUES
 	 ('Departamento vista al río con habitacion matrimonial','Amplio departamento que cuenta con :
 - Una kitchenette totalmente equipada, incluyendo cubiertos, utensilios de cocina y frigobar.
 - La sala está equipada con un televisor de 55 pulgadas y tiene acceso a un balcón.
 - El departamento cuenta con dos dormitorios, cada uno con su propio baño completo. Uno de los dormitorios tiene dos camas matrimoniales y un armario, mientras que el otro cuenta con una cama queen, armario y también acceso al balcón'),
+
 	 ('Departamento vista al río con habitacion doble','Amplio departamento que cuenta con :
 - Una kitchenette totalmente equipada, incluyendo cubiertos, utensilios de cocina y frigobar.
 - La sala está equipada con un televisor de 55 pulgadas y tiene acceso a un balcón.
 - El departamento cuenta con dos dormitorios, cada uno con su propio baño completo. Uno de los dormitorios tiene dos camas matrimoniales y un armario, mientras que el otro cuenta con una cama queen, armario y también acceso al balcón'),
+
 	 ('Departamento con vista al jardín con habitacion matrimonial','Amplio departamento que cuenta con :
 - Una kitchenette totalmente equipada, incluyendo cubiertos, utensilios de cocina y frigobar.
 - La sala está equipada con un televisor de 55 pulgadas y tiene acceso a un balcón.
 - El departamento cuenta con dos dormitorios, cada uno con su propio baño completo. Uno de los dormitorios tiene dos camas matrimoniales y un armario, mientras que el otro cuenta con una cama queen, armario y también acceso al balcón'),
+
 	 ('Departamento con vista al jardín con habitacion doble','Amplio departamento que cuenta con :
 - Una kitchenette totalmente equipada, incluyendo cubiertos, utensilios de cocina y frigobar.
 - La sala está equipada con un televisor de 55 pulgadas y tiene acceso a un balcón.
 - El departamento cuenta con dos dormitorios, cada uno con su propio baño completo. Uno de los dormitorios tiene dos camas matrimoniales y un armario, mientras que el otro cuenta con una cama queen, armario y también acceso al balcón'),
+
 	 ('Departamento con vista doble con habitacion matrimonial','Amplio departamento que cuenta con :
 - Una kitchenette totalmente equipada, incluyendo cubiertos, utensilios de cocina y frigobar.
 - La sala está equipada con un televisor de 55 pulgadas y tiene acceso a un balcón.
 - El departamento cuenta con dos dormitorios, cada uno con su propio baño completo. Uno de los dormitorios tiene dos camas matrimoniales y un armario, mientras que el otro cuenta con una cama queen, armario y también acceso al balcón'),
+
 	 ('Departamento con vista doble con habitacion doble','Amplio departamento que cuenta con :
 - Una kitchenette totalmente equipada, incluyendo cubiertos, utensilios de cocina y frigobar.
 - La sala está equipada con un televisor de 55 pulgadas y tiene acceso a un balcón.
@@ -107,24 +106,29 @@ INSERT INTO public.offertype (offertypename,offertypedescription) VALUES
 
 ----ROOM_OFFER----
 INSERT INTO public.roomoffer (roomid,offertypeid,"cost",offertimeinit,offertimeend,offername,riberapoints,inresortpoints,points) VALUES
-	 (1 ,1,150.50,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,3,3,3),
-	 (2 ,2,220.75,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,4,5,4),
-	 (3 ,3,300.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,6,7,6),
-	 (4 ,1,400.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,8,10,8),
-	 (5 ,2,180.25,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,4,4,3),
+	 (1 ,1,225.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,3,3,3),
+	 (2 ,2,225.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,4,5,4),
+	 (3 ,3,225.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,6,7,6),
+
+	 (4 ,1,150.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,8,10,8),
+	 (5 ,2,150.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,4,4,3),
 	 (6 ,3,150.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,3,3,3),
-	 (8 ,1,280.75,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,6,7,5),
-	 (9 ,2,350.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,7,8,7),
-	 (10,3,350.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,7,8,7),
-	 (11,1,350.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,7,8,7),
-	 (12,2,200.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,4,5,4),
-	 (13,1,300.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5),
-	 (14,2,300.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5),
-	 (15,3,300.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5),
-	 (16,1,300.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5),
-	 (17,2,300.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5),
-	 (18,3,300.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5),
-	 (19,1,300.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5);
+
+	 (7 ,1,225.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,6,7,5),
+	 (8 ,2,225.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,7,8,7),
+	 (9,3,225.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,7,8,7),
+	 (10,1,225.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,7,8,7),
+
+	 (11,2,150.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,4,5,4),
+	 (12,1,150.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5),
+	 (13,2,150.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5),
+	 (14,3,150.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5),
+
+	 (15,1,225.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5),
+	 (16,2,225.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5),
+
+	 (17,3,150.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5),
+	 (18,1,150.00,'2024-01-01 00:00:00','2025-01-01 00:00:00',NULL,5,5,5);
 
 ----PAYMENT_METHOD----
 INSERT INTO public.paymentmethod (description,state) VALUES
@@ -288,7 +292,7 @@ INSERT INTO public.comfortroomofferdetail (roomofferid,comforttypeid) VALUES
 	 (14,3),(14,3),(14,8),(14,9),(14,16),(14,17),(14,18),(14,19),(14,10),(14,11),(14,12),(14,13),(14,14),(14,15),
 
 	 (17,3),(17,3),(17,8),(17,9),(17,16),(17,17),(17,18),(17,19),(17,10),(17,11),(17,12),(17,13),(17,14),(17,15),
-	 (18,3),(18,3),(18,8),(18,9),(18,16),(18,17),(18,18),(18,19),(18,10),(18,11),(18,12),(18,13),(18,14),(18,15);
+	 (18,3),(18,3),(18,8),(18,9),(18,16),(18,17),(18,18),(18,19),(18,10),(18,11),(18,12),(18,13),(18,14),(18,15),
 
 
 ---Habitacion matrimonial
@@ -315,3 +319,4 @@ INSERT INTO public.comfortroomofferdetail (roomofferid,comforttypeid) VALUES
 
 	 (17,16),(17,17),(17,18),(17,19),(17,20),(17,21),(17,22),(17,23),(17,24),(17,25),(17,26),(17,27),(17,28),(17,29),(17,30),(17,31),(17,32),(17,33),(17,34),(17,35),(17,36),(17,37),(17,38),(17,39),(17,40),(17,41),(17,42),(17,43),(17,44),(17,45),(17,46),(17,47),
 	 (18,16),(18,17),(18,18),(18,19),(18,20),(18,21),(18,22),(18,23),(18,24),(18,25),(18,26),(18,27),(18,28),(18,29),(18,30),(18,31),(18,32),(18,33),(18,34),(18,35),(18,36),(18,37),(18,38),(18,39),(18,40),(18,41),(18,42),(18,43),(18,44),(18,45),(18,46),(18,47);
+
