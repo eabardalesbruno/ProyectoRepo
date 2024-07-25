@@ -470,7 +470,7 @@ public class PayMeService {
                                 .flatMap(userClient -> sendErrorEmail(userClient.getEmail(), e.getMessage()))
                                 .then(Mono.error(e))
                 );
-    }
+    }jo
 
     private Mono<Void> sendSuccessEmail(String email) {
         String emailBody = generateSuccessEmailBody();
