@@ -1,8 +1,9 @@
-----REGISTER_TYPE----
-INSERT INTO public.registertype (registertypename) VALUES
-	 ('MANUAL'),
-	 ('GOOGLE'),
-	 ('USUARIO');
+----USER_LEVEL----
+INSERT INTO public.userlevel(levelname, leveldescription) VALUES
+    ('SILVER', 'Nivel inicial para nuevos usuarios'),
+	('GOLD', 'Usuarios que han realizado compras regulares'),
+	('PREMIUM', 'Usuarios que han realizado compras frecuentes y significativas');
+
 
 ----ROOM_TYPE----
 INSERT INTO public.roomtype (roomtypename,roomtypedescription) VALUES
@@ -157,6 +158,37 @@ INSERT INTO public.paymentsubtype (paymentsubtypedesc,accountsoles,accountdollar
 	 ('Cajero Provincia','19390445695-0-85','191-2616687-1-90',1,100.0,0.0,10.0,1,0),
 	 ('Cajero Provincia','191-2606708-0-82','191-2616687-1-90',1,100.0,0.0,10.0,1,0);
 
+----gender----
+INSERT INTO public.gender (genderdesc) VALUES
+	 ('MASCUINO'),
+     ('FEMENINO');
+
+----transactioncategory----
+INSERT INTO public.transactioncategory (transactioncategoryid, name) VALUES
+	 (1, 'Pago');
+
+----termsversion----
+INSERT INTO public.termsversion (s3url, createdat) VALUES
+	 ('https://www.google.com', now());
+
+----refusereason----
+INSERT INTO public.refusereason (refusereasonname) VALUES
+	 ('Sin rechazo'),
+	 ('La imagen o captura esta borrosa. No se visualiza'),
+	 ('El codigo de operacion es invalido o no existe');
+
+----REGISTER_TYPE----
+INSERT INTO public.registertype (registertypename) VALUES
+	 ('MANUAL'),
+	 ('GOOGLE'),
+	 ('USUARIO');
+
+----pay me state----
+INSERT INTO public.paymentstate (paymentstatename) VALUES
+	 ('PENDIENTE'),
+	 ('ACEPTADO'),
+     ('RECHAZADO'),
+     ('ANULADO');
 
 ----BOOKING_STATUS----
 INSERT INTO public.bookingstate (bookingstatename) VALUES
