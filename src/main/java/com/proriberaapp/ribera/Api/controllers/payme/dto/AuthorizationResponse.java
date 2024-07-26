@@ -6,7 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.relational.core.mapping.Column;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +28,7 @@ public class AuthorizationResponse {
         PayMeAuthorization entity = new PayMeAuthorization();
         entity.setIdBooking(authorizationResponse.getIdBooking());
         entity.setIdUser(idUser);
+        entity.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         entity.setRole(role);
         entity.setAction(authorizationResponse.getAction());
         entity.setId(authorizationResponse.getId());

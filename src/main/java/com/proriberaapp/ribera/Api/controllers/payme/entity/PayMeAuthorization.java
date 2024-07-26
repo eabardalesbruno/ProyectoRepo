@@ -9,6 +9,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.sql.Timestamp;
+
 
 @Getter
 @Setter
@@ -29,6 +31,9 @@ public class PayMeAuthorization {
 
     @Column("role")
     private Role role; // Consider changing to an Enum if applicable
+
+    @Column("createdAt")
+    private Timestamp createdAt;
 
     @Column("action")
     private String action;

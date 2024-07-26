@@ -434,6 +434,7 @@ CREATE TABLE IF NOT EXISTS public.pay_me_authorizations (
     idBooking INTEGER NOT NULL,
     idUser INTEGER NOT NULL,
     role VARCHAR(255) NOT NULL,
+    createdAt TIMESTAMP NOT NULL,
     action VARCHAR(255),
     id VARCHAR(255),
     success BOOLEAN,
