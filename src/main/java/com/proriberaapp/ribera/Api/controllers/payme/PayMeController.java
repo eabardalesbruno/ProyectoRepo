@@ -38,7 +38,7 @@ public class PayMeController {
         Integer idUser = jtp.getIdFromToken(token);
         authorizationResponse.setIdBooking(idBooking);
         try {
-            return paymeService.savePayment2(idUser, authorizationResponse);
+            return paymeService.savePayment(idUser, authorizationResponse);
         } catch (Exception e) {
             log.error("Error al guardar el pago", e);
             return Mono.error(e);
