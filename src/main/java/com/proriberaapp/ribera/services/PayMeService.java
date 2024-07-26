@@ -507,4 +507,33 @@ public class PayMeService {
         body += "</body></html>";
         return body;
     }
+
+
+
+    public Mono<TransactionNecessaryResponse> savePayment2(Integer idUser, AuthorizationResponse authorizationResponse) {
+        PayMeAuthorization payMeAuthorization = AuthorizationResponse.create(idUser, Role.ROLE_USER, authorizationResponse);
+
+        return authorizationRepository.save(payMeAuthorization)
+                .flatMap(savedAuthorization ->
+                        userClientRepository.findById(idUser)
+                                .flatMap(userClient ->
+                                        bookingRepository.findByBookingId(savedAuthorization.getIdBooking())
+                                                .flatMap(booking -> {
+                                                    if (booking.getBookingStateId() == 3) {
+                                                        booking.setBookingStateId(2);
+                                                        return bookingRepository.save(booking);
+                                                    } else {
+                                                        return Mono.just(booking);
+                                                    }
+                                                })
+                                                .flatMap(updatedBooking -> sendSuccessEmail(userClient.getEmail()))
+                                                .thenReturn(new TransactionNecessaryResponse(true))
+                                )
+                )
+                .onErrorResume(e ->
+                        userClientRepository.findById(idUser)
+                                .flatMap(userClient -> sendErrorEmail(userClient.getEmail(), e.getMessage()))
+                                .then(Mono.error(e))
+                );
+    }
 }
