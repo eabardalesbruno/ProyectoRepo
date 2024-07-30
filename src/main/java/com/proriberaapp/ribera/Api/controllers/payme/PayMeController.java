@@ -32,10 +32,17 @@ public class PayMeController {
     @PostMapping("save-authorize")
     public Mono<TransactionNecessaryResponse> savePayment(
             @RequestHeader("Authorization") String token,
-            @RequestBody AuthorizationResponse authorizationResponse
+            @RequestBody AuthorizationResponse authorizationResponse,
+            @RequestHeader("IdBooking") Integer idBooking
     ) {
         Integer idUser = jtp.getIdFromToken(token);
-        return paymeService.savePayment(idUser, authorizationResponse);
+        authorizationResponse.setIdBooking(idBooking);
+        try {
+            return paymeService.savePayment(idUser, authorizationResponse);
+        } catch (Exception e) {
+            log.error("Error al guardar el pago", e);
+            return Mono.error(e);
+        }
     }
 
     @GetMapping

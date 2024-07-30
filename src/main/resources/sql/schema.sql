@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS roomdetail (
 );
 CREATE TABLE IF NOT EXISTS roomtype (
     roomtypeid SERIAL PRIMARY KEY,
-    roomtypename VARCHAR(50),
-    roomtypedescription VARCHAR(255)
+    roomtypename VARCHAR(150),
+    roomtypedescription VARCHAR(555)
 );
 CREATE TABLE IF NOT EXISTS stateroom (
     stateroomid SERIAL PRIMARY KEY,
@@ -434,8 +434,10 @@ CREATE TABLE IF NOT EXISTS public.implements_comfort(
 
 CREATE TABLE IF NOT EXISTS public.pay_me_authorizations (
     idAuthorization SERIAL PRIMARY KEY,
+    idBooking INTEGER NOT NULL,
     idUser INTEGER NOT NULL,
     role VARCHAR(255) NOT NULL,
+    createdAt TIMESTAMP NOT NULL,
     action VARCHAR(255),
     id VARCHAR(255),
     success BOOLEAN,

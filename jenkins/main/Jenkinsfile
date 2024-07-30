@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+    
+    environment {
+        BRANCH = 'main'
+        VERSION = '1.0.0'
+    }
+
+    stages {
+        stage('Run SSH Commands') {
+            steps {
+                script {
+                    def remoteCommands = [
+                        "/home/eperez/intech/ribera-scripts/docker/pro-ribera-app.sh --branch ${BRANCH} --version ${VERSION} --action build",
+                        "/home/eperez/intech/ribera-scripts/docker/pro-ribera-app.sh --branch ${BRANCH} --version ${VERSION} --action stop",
+                        "/home/eperez/intech/ribera-scripts/docker/pro-ribera-app.sh --branch ${BRANCH} --version ${VERSION} --action remove",
+                        "/home/eperez/intech/ribera-scripts/docker/pro-ribera-app.sh --branch ${BRANCH} --version ${VERSION} --action run"
+                    ]
+                    
+                    sshagent(['ssh-agent']) {
+                        for (def command in remoteCommands) {
+                            echo "Executing command: $command"
+                            def sshOutput = sh(
+                                script: "ssh -o StrictHostKeyChecking=no eperez@185.185.82.98 '$command'",
+                                returnStdout: true
+                            )
+                            echo "Command output:\n$sshOutput"
+                            def errorTypes = ['error', 'exception', 'failure', 'failed', 'fatal', 'conflict', 'timeout']
+                            def errorFound = false
+                            
+                            for (def errorType in errorTypes) {
+                                def regex = "(?i)\\b${errorType}\\b"
+                                if (sshOutput =~ regex) {
+                                    error("Command failed with error:\n$sshOutput")
+                                    errorFound = true
+                                }
+                            }
+                            
+                            if (errorFound) {
+                                currentBuild.result = 'FAILURE'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline executed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
+}
