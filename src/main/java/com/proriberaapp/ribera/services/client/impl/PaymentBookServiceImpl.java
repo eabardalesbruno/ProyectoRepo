@@ -585,6 +585,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         return emailService.sendEmail(email, "Confirmación de Pago", emailBody);
     }
 
+    /*
     private String generatePaymentConfirmationEmailBody(PaymentBookEntity paymentBook) {
         String body = "<html><head><title></title></head><body style='color:black'>";
         body += "<div style='width: 100%'>";
@@ -599,6 +600,36 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         body += "</ul>";
         body += "<p>Gracias por su confianza.</p>";
         body += "</div>";
+        body += "</body></html>";
+        return body;
+    }
+
+     */
+
+    private String generatePaymentConfirmationEmailBody(PaymentBookEntity paymentBook) {
+        String body = "<html><head><title></title></head><body style='color:black'>";
+        body += "<div style='width: 100%'>";
+        body += "<div style='display:flex;'>";
+        body += "</div>";
+        body += "<img style='width: 100%' src='http://www.inresorts.club/Views/img/fondo.png'>";
+        body += "<h1 style='text-align: center;'>Confirmacion de Pago</h1>";
+        body += "<p>Estimado cliente,</p>";
+        body += "<p>Su pago ha sido recibido con exito.</p>";
+        body += "<p>Detalles del pago:</p>";
+        body += "<ul>";
+        body += "<li>Reserva: " + paymentBook.getBookingId() + "</li>";
+        body += "<li>Monto: " + paymentBook.getAmount() + "</li>";
+        body += "<li>Fecha de pago: " + paymentBook.getPaymentDate() + "</li>";
+        body += "</ul>";
+        body += "<p>Gracias por su confianza.</p>";
+        body += "<center><div style='width: 100%'>";
+        body += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
+        body += "<center>Disfruta de nuestros servicios y promociones exclusivas.</center>";
+        body += "</div></center>";
+        body += "<center><div style='width: 100%'>";
+        body += "<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>";
+        body += "</div></center>";
+        body += "</div></center>";
         body += "</body></html>";
         return body;
     }
