@@ -52,8 +52,7 @@ public class BookingServiceImpl implements BookingService {
     //private final WebClient webClient;
     @Value("${app.upload.dir}")
     private String uploadDir;
-    @Value("${app.upload.folderDir}")
-    private String folderDir;
+
     @Value("${room.offer.ratio.base}")
     private Integer RATIO_BASE;
 
