@@ -119,3 +119,53 @@ FROM
     JOIN roomtype rt ON rt.roomtypeid = r.roomtypeid
     JOIN bookingstate bks ON bks.bookingstateid = bk.bookingstateid
     LEFT JOIN pay_me ON pay_me.idbooking = bk.bookingid;
+
+
+
+SELECT ro.roomofferid,
+    r.roomid,
+	r.roomname,
+	r.roomnumber,
+    r.roomnumber AS numberroom,
+    r.roomname AS typeroom,
+    r.image,
+    r.capacity,
+
+	ro.offername,
+
+    rt.roomtypeid,
+	rt.roomtypename,
+
+	ot.offertypeid,
+	ot.offertypename,
+
+    row_number() OVER (ORDER BY ro.roomofferid) AS item,
+    ro.offertimeinit,
+    ro.offertimeend,
+    concat('Inicio: ', to_char(ro.offertimeinit, 'DD/MM/YYYY'::text), '<br>', 'Fin: ', to_char(ro.offertimeend, 'DD/MM/YYYY'::text)) AS offertimestring,
+    rd.information AS description,
+    rd.bedrooms,
+    rd.squaremeters,
+    rd.oceanviewbalcony,
+    rd.balconyoverlookingpool,
+    ro.cost AS costregular,
+    ro.cost AS costtotal,
+    ro.cost AS costexchange,
+    ro.cost AS costtotalexchange,
+    ro.riberapoints AS pointribera,
+    ro.inresortpoints AS pointinresort,
+    concat('S/', ro.cost) AS costregularstring,
+    concat('S/', ro.cost) AS costtotalstring,
+    concat('S/', ro.cost) AS costexchangestring,
+    concat('S/', ro.cost) AS costtotalexchangestring,
+    concat(ro.riberapoints, ' pts Inresorts') AS pointriberastring,
+    concat(ro.inresortpoints, ' pts Ribera') AS pointinresortstring,
+
+	ro.numberdays,
+	ro.numbernights
+
+   FROM roomoffer ro
+     JOIN offertype ot ON ot.offertypeid = ro.offertypeid
+     JOIN room r ON r.roomid = ro.roomid
+     JOIN roomtype rt ON rt.roomtypeid = r.roomtypeid
+     JOIN roomdetail rd ON r.roomdetailid = rd.roomdetailid;

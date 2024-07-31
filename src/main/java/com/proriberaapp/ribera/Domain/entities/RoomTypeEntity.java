@@ -15,8 +15,27 @@ public class RoomTypeEntity {
     @Id
     @Column("roomtypeid")
     private Integer roomTypeId;
+    @Column("roomtype")
+    private RoomType roomType;
     @Column("roomtypename")
     private String roomTypeName;
     @Column("roomtypedescription")
     private String roomTypeDescription;
+
+    @Getter
+    public enum RoomType {
+        DEPARTAMENTO("Departamento"),
+        HABITACION("Habitación");
+
+        private final String value;
+
+        RoomType(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return value;
+        }
+    }
 }

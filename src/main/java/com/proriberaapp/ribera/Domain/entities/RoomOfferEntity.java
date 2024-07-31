@@ -38,6 +38,4 @@ public class RoomOfferEntity {
     private Integer numberDays;
     @Column("numbernights")
     private Integer numberNights;
-    @Column("ispackage")
-    private Boolean isPackage;
 }
