@@ -617,9 +617,9 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         body += "<p>Su pago ha sido recibido con exito.</p>";
         body += "<p>Detalles del pago:</p>";
         body += "<ul>";
-        body += "<li>Booking ID: " + paymentBook.getBookingId() + "</li>";
-        body += "<li>Amount: " + paymentBook.getAmount() + "</li>";
-        body += "<li>Payment Date: " + paymentBook.getPaymentDate() + "</li>";
+        body += "<li>Reserva: " + paymentBook.getBookingId() + "</li>";
+        body += "<li>Monto: " + paymentBook.getAmount() + "</li>";
+        body += "<li>Fecha de pago: " + paymentBook.getPaymentDate() + "</li>";
         body += "</ul>";
         body += "<p>Gracias por su confianza.</p>";
         body += "<center><div style='width: 100%'>";
