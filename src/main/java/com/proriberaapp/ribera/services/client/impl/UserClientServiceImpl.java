@@ -297,7 +297,7 @@ public class UserClientServiceImpl implements UserClientService {
         return userClientRepository.findByEmailOrGoogleIdOrGoogleEmail(email, email, email)
                 .filter(user -> "1".equals(user.getGoogleAuth()))
                 .flatMap(user -> Mono.just(jwtUtil.generateToken(user)))
-                .switchIfEmpty(Mono.error(new RuntimeException("Usuario no encontrado o no autorizado")));
+                .switchIfEmpty(Mono.error(new RuntimeException("")));
     }
 
     @Override
