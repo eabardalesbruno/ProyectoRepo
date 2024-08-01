@@ -419,6 +419,9 @@ CREATE TABLE IF NOT EXISTS tokenpointstransaction(
     bookingid INTEGER
 );
 
+CREATE TABLE IF NOT EXISTS documenttype( documenttypedesc)
+	VALUES ('DNI'),('RUC');
+
 CREATE TABLE IF NOT EXISTS public.implements_apartment(
     implements_apartment_id SERIAL PRIMARY KEY,
     implements_apartment_name VARCHAR(255)

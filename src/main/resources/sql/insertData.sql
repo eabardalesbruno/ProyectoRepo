@@ -37,6 +37,15 @@ INSERT INTO public.roomtype (roomtypename,roomtypedescription) VALUES
 - La sala está equipada con un televisor de 55 pulgadas y tiene acceso a un balcón.
 - El departamento cuenta con dos dormitorios, cada uno con su propio baño completo. Uno de los dormitorios tiene dos camas matrimoniales y un armario, mientras que el otro cuenta con una cama queen, armario y también acceso al balcón');
 
+INSERT INTO public.roomtype(
+	roomtypeid, roomtypename, roomtype)
+	VALUES
+	(7,'Habitación Duplex con vista al rio', 'Habitación'),
+	(8,'Habitación Duplex con vista al jardin', 'Habitación'),
+	(9,'Habitación Duplex con doble vista', 'Habitación'),
+	(10,'Habitación Matrimonial con vista al rio', 'Habitación'),
+	(11,'Habitación Matrimonial con vista al jardin', 'Habitación'),
+	(12,'Habitación Matrimonial doble vista', 'Habitación');
 
 ----STATE_ROOM----
 INSERT INTO public.stateroom (stateroomname) VALUES
@@ -103,6 +112,10 @@ INSERT INTO public.offertype (offertypename,offertypedescription) VALUES
 	 ('Departamento vista piscina',''),
 	 ('Departamento vista jardín',''),
 	 ('Departamento vista rio','');
+
+INSERT INTO public.offertype(
+	offertypename, offertypedescription)
+	VALUES ('Camping', 'Paquete'),('Eventos', 'Paquete');
 
 
 ----ROOM_OFFER----

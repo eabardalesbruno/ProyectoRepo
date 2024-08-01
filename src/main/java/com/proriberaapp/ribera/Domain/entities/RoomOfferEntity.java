@@ -34,4 +34,8 @@ public class RoomOfferEntity {
     @Column("inresortpoints")
     private Integer inResortPoints;
     private Integer points;
+    @Column("numberdays")
+    private Integer numberDays;
+    @Column("numbernights")
+    private Integer numberNights;
 }

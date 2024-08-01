@@ -16,8 +16,10 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Slf4j
 public class S3ClientService {
+
     @Value("${app.upload.dir}")
     private String uploadDir;
+
     public Mono<S3UploadResponse> upload(Mono<FilePart> file, Integer folderNumber, String token) {
         return file.flatMap(f -> {
             WebClient webClient = WebClient.create();

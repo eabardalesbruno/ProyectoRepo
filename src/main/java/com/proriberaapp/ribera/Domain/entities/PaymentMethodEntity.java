@@ -21,8 +21,8 @@ public class PaymentMethodEntity {
 
     @Column("state")
     private StatePaymentMethod state;
-}
 
-enum StatePaymentMethod {
-    ACTIVE, INACTIVE
+    public enum StatePaymentMethod {
+        ACTIVE, INACTIVE
+    }
 }
