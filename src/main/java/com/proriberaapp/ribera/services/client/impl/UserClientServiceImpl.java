@@ -293,6 +293,13 @@ public class UserClientServiceImpl implements UserClientService {
                 .switchIfEmpty(Mono.error(new RuntimeException("Usuario no encontrado")));
     }
 
+    public Mono<String> checkAndGenerateToken(String email) {
+        return userClientRepository.findByEmailOrGoogleIdOrGoogleEmail(email, email, email)
+                .filter(user -> "1".equals(user.getGoogleAuth()))
+                .flatMap(user -> Mono.just(jwtUtil.generateToken(user)))
+                .switchIfEmpty(Mono.error(new RuntimeException("Usuario no encontrado o no autorizado")));
+    }
+
     @Override
     public UserDataDTO searchUser(String username) {
         // Llamar al cliente API para buscar el usuario por username

@@ -221,6 +221,13 @@ public class UserController {
         return userClientService.findAll();
     }
 
+    @GetMapping("/check-email")
+    public Mono<ResponseEntity<LoginResponse>> checkEmail(@RequestParam String email) {
+        return userClientService.checkAndGenerateToken(email)
+                .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
+                .onErrorResume(e -> Mono.just(new ResponseEntity<>(new LoginResponse(e.getMessage()), HttpStatus.BAD_REQUEST)));
+    }
+
     @GetMapping("/{id}")
     public Mono<ResponseEntity<UserClientEntity>> getUserClientById(@PathVariable Integer id) {
         return userClientService.findById(id)

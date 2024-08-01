@@ -24,6 +24,6 @@ public interface UserClientService {
 
     Mono<UserClientEntity> updatePassword(UserClientEntity user, String newPassword);
 
-
+    Mono<String> checkAndGenerateToken(String email);
 
 }
