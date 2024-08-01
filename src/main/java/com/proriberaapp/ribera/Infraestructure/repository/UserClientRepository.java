@@ -17,7 +17,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
     Mono<Void> deleteById(Integer id);
     Mono<UserClientEntity> findByUserClientId(Integer userClientId);
 
-    @Query("SELECT * FROM userclient WHERE email = :email OR google_id = :googleId OR google_email = :googleEmail")
+    @Query("SELECT * FROM userclient WHERE email = :email OR googleid = :googleId OR googleemail = :googleEmail")
     Mono<UserClientEntity> findByEmailOrGoogleIdOrGoogleEmail(String email, String googleId, String googleEmail);
 
 }
