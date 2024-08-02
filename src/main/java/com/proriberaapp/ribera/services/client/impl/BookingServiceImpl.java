@@ -89,17 +89,22 @@ public class BookingServiceImpl implements BookingService {
 
     // Método para generar el cuerpo del correo electrónico con el nombre de la habitación
     private String generateEmailBody(BookingEntity bookingEntity, String roomName) {
-        String body = "<html><head><title></title></head><body style='color:black'>";
-        body += "<div style='width: 100%'>";
-        body += "<div style='display:flex;'>";
+        String body = "<html><head><title>Confirmación de Reserva</title></head><body style='color:black'>";
+        body += "<div style='width: 100%;'>";
+        body += "<div style='display: flex; align-items: center; justify-content: space-between;'>";
+        body += "<img style='width: 100px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453907774_2238863976459404_4409148998166454890_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=1p66qBQN6IYQ7kNvgEnxiv2&_nc_ht=scontent.flim1-2.fna&oh=00_AYACRHyTnMSMkClEmGFw8OmSBT2T_U4LGusY0F3KX0OBVQ&oe=66B1E966' alt='Logo Izquierda'>";
+        body += "<div style='display: flex;'>";
+        body += "<img style='width: 80px; margin-right: 10px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453503393_2238863839792751_3678586622785113323_n.jpg?stp=cp0_dst-jpg&_nc_cat=108&ccb=1-7&_nc_sid=127cfc&_nc_ohc=OMKWsE877hcQ7kNvgHnzNGq&_nc_ht=scontent.flim1-2.fna&oh=00_AYBSmgM6SVV33fWdVeqn9sUMleFSdtOGZPcc0m-USS93bg&oe=66B20925' alt='Logo 1'>";
+        body += "<img style='width: 80px; margin-right: 10px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453501437_2238863739792761_5553627034492335729_n.jpg?stp=cp0_dst-jpg&_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=fcEltLDDNeMQ7kNvgFNAsL6&_nc_ht=scontent.flim1-2.fna&oh=00_AYBD75zTjdsLuKmtk3vPYR7fBfCg5U2aVQ_tYm8679ZFCQ&oe=66B1FF76' alt='Logo 2'>";
+        body += "<img style='width: 80px;' src='https://scontent.flim1-1.fna.fbcdn.net/v/t39.30808-6/453497633_2238863526459449_291281439279005519_n.jpg?stp=cp0_dst-jpg&_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=vMzblHxFzGUQ7kNvgHhI3YO&_nc_ht=scontent.flim1-1.fna&oh=00_AYAEn_ThdeZSWqvo7RurNrnoAulbgxM7V5YzJc_CGsYACg&oe=66B1E905' alt='Logo 3'>";
         body += "</div>";
-        body += "<img style='width: 100%' src='http://www.inresorts.club/Views/img/fondo.png'>";
-        body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>"
-                + "Bienvenido </h1>";
+        body += "</div>";
+        body += "<img style='width: 100%; margin-top: 20px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453514514_2238864093126059_4377276491425541120_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=127cfc&_nc_ohc=r0fzgelec-UQ7kNvgFL0EDI&_nc_ht=scontent.flim1-2.fna&oh=00_AYAJLos7io5zNmz08RwyK1pc5ZGwN5Cn8jt8Eg17N73CQQ&oe=66B1E807' alt='Confirmación de Reserva'>";
+        body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>Bienvenido</h1>";
         body += "<h3 style='text-align: center;'>Producto por Adquirir: Reserva</h3>";
-        body += "<h3 style='text-align: center;'>Descripcion: Reserva de Habitacion</h3>";
+        body += "<h3 style='text-align: center;'>Descripción: Reserva de Habitación</h3>";
         body += "<h2 style='text-align: center;'>Detalles de la reserva:</h2>";
-        body += "<p style='text-align: center;'>Habitacion: " + roomName + "</p>";
+        body += "<p style='text-align: center;'>Habitación: " + roomName + "</p>";
         body += "<p style='text-align: center;'>Costo: " + bookingEntity.getCostFinal() + "</p>";
         body += "<p style='text-align: center;'>Fecha de inicio: " + bookingEntity.getDayBookingInit() + "</p>";
         body += "<p style='text-align: center;'>Fecha de fin: " + bookingEntity.getDayBookingEnd() + "</p>";
