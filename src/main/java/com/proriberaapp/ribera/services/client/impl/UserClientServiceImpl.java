@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
@@ -380,11 +381,20 @@ public class UserClientServiceImpl implements UserClientService {
                 .switchIfEmpty(Mono.error(new RuntimeException("Usuario no encontrado")));
     }
 
+    /*
     public Mono<String> checkAndGenerateToken(String email) {
         return userClientRepository.findByEmailOrGoogleIdOrGoogleEmail(email, email, email)
                 .filter(user -> "1".equals(user.getGoogleAuth()))
                 .flatMap(user -> Mono.just(jwtUtil.generateToken(user)))
                 .switchIfEmpty(Mono.error(new RuntimeException("")));
+    }
+     */
+
+    public Mono<TokenResult> checkAndGenerateToken(String email) {
+        return userClientRepository.findByEmailOrGoogleIdOrGoogleEmail(email, email, email)
+                .filter(user -> "1".equals(user.getGoogleAuth()))
+                .flatMap(user -> Mono.just(new TokenResult(jwtUtil.generateToken(user), "tokenizado")))
+                .switchIfEmpty(Mono.just(new TokenResult("", "sin token")));
     }
 
     @Override

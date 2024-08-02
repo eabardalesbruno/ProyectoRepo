@@ -183,10 +183,10 @@ public class UserController {
                             .flatMap(savedUser -> {
                                 if ("1".equals(request.googleAuth()) && (request.password() == null || request.password().isEmpty())) {
                                     return userClientService.loginWithGoogle(request.email())
-                                            .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK));
+                                            .map(token -> new ResponseEntity<>(new LoginResponse(token,""), HttpStatus.OK));
                                 } else {
                                     return userClientService.login(request.email(), request.password())
-                                            .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK));
+                                            .map(token -> new ResponseEntity<>(new LoginResponse(token,""), HttpStatus.OK));
                                 }
                             });
                 }))
@@ -197,7 +197,7 @@ public class UserController {
     @PostMapping("/login")
     public Mono<ResponseEntity<LoginResponse>> loginUser(@RequestBody LoginRequest request) {
         return userClientService.login(request.email(), request.password())
-                .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
+                .map(token -> new ResponseEntity<>(new LoginResponse(token,"tokenizado"), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
 
@@ -221,11 +221,24 @@ public class UserController {
         return userClientService.findAll();
     }
 
+    /*
     @GetMapping("/check-email")
     public Mono<ResponseEntity<LoginResponse>> checkEmail(@RequestParam String email) {
         return userClientService.checkAndGenerateToken(email)
                 .map(token -> new ResponseEntity<>(new LoginResponse(token), HttpStatus.OK))
                 .onErrorResume(e -> Mono.just(new ResponseEntity<>(new LoginResponse(e.getMessage()), HttpStatus.BAD_REQUEST)));
+    }
+     */
+
+    @GetMapping("/check-email")
+    public Mono<ResponseEntity<LoginResponse>> checkEmail(@RequestParam String email) {
+        return userClientService.checkAndGenerateToken(email)
+                .map(tokenResult -> {
+                    String message = tokenResult.getToken().isEmpty() ? "sin token" : "tokenizado";
+                    HttpStatus status = tokenResult.getToken().isEmpty() ? HttpStatus.BAD_REQUEST : HttpStatus.OK;
+                    return new ResponseEntity<>(new LoginResponse(tokenResult.getToken(), message), status);
+                })
+                .onErrorResume(e -> Mono.just(new ResponseEntity<>(new LoginResponse("", "sin token"), HttpStatus.BAD_REQUEST)));
     }
 
     @GetMapping("/{id}")

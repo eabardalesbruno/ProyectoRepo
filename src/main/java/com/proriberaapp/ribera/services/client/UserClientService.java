@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import reactor.core.publisher.Flux;
@@ -24,6 +25,5 @@ public interface UserClientService {
 
     Mono<UserClientEntity> updatePassword(UserClientEntity user, String newPassword);
 
-    Mono<String> checkAndGenerateToken(String email);
-
+    Mono<TokenResult> checkAndGenerateToken(String email);
 }
