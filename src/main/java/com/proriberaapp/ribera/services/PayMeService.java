@@ -570,15 +570,15 @@ public class PayMeService {
                 "        <div class=\"content\">\n" +
                 "            <h1 style='text-align: center;'>Pago exitoso</h1>\n" +
                 "            <p>Estimado cliente,</p>\n" +
-                "            <p>Su pago ha sido procesado con éxito.</p>\n" +
+                "            <p>Su pago ha sido procesado con exito.</p>\n" +
                 "            <p>Gracias por su confianza.</p>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
                 "\n" +
                 "    <!-- Sección de ayuda -->\n" +
                 "    <div class=\"help-section\">\n" +
-                "        <h3>¿Necesitas ayuda?</h3>\n" +
-                "        <p>Comunicate con nosotros a través de los siguientes medios:</p>\n" +
+                "        <h3>Necesitas ayuda?</h3>\n" +
+                "        <p>Comunicate con nosotros a traves de los siguientes medios:</p>\n" +
                 "        <p>Correo: informesyreservas@cieneguilladelrio.com</p>\n" +
                 "    </div>\n" +
                 "</body>\n" +
