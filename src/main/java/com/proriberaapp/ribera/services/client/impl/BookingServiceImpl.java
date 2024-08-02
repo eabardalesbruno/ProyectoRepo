@@ -182,20 +182,20 @@ public class BookingServiceImpl implements BookingService {
                 "            <p>Se completo exitosamente el registro de su reserva de: <strong>" + roomName + "</strong>. Por favor, no se olvide de pagar su reserva.</p>\n" +
                 "            <div style=\"background-color: #e0e0e0; padding: 10px; border-radius: 5px;\">\n" +
                 "                <p><strong>Los datos de tu reserva</strong></p>\n" +
-                "                <p>Habitación: " + roomName + "</p>\n" +
+                "                <p>Habitacion: " + roomName + "</p>\n" +
                 "                <p>Costo: " + bookingEntity.getCostFinal() + "</p>\n" +
                 "                <p>Fecha de inicio: " + bookingEntity.getDayBookingInit() + "</p>\n" +
                 "                <p>Fecha de fin: " + bookingEntity.getDayBookingEnd() + "</p>\n" +
                 "            </div>\n" +
                 "            <a href=\"http://www.cieneguillariberadelrio.com/reservas\" class=\"button\">Pagar ahora</a>\n" +
-                "            <p>Recuerde que el pago lo puede realizar mediante depósito en nuestra cuenta a través de agente BCP, agencias o cualquier método de pago dentro de la plataforma usando este enlace: <a href=\"http://www.riberadelrio/reservas\">www.riberadelrio/reservas</a></p>\n" +
+                "            <p>Recuerde que el pago lo puede realizar mediante deposito en nuestra cuenta a traves de agente BCP, agencias o cualquier metodo de pago dentro de la plataforma usando este enlace: <a href=\"http://www.cieneguillariberadelrio.com/reservas\">www.cieneguillariberadelrio.com/reservas</a></p>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
                 "\n" +
                 "    <!-- Sección de ayuda -->\n" +
                 "    <div class=\"help-section\">\n" +
-                "        <h3>¿Necesitas ayuda?</h3>\n" +
-                "        <p>Envie sus comentarios e información de errores a <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">informesyreservas@cieneguilladelrio.com</a></p>\n" +
+                "        <h3>Necesitas ayuda?</h3>\n" +
+                "        <p>Envie sus comentarios e informacion de errores a <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">informesyreservas@cieneguilladelrio.com</a></p>\n" +
                 "    </div>\n" +
                 "</body>\n" +
                 "</html>";
