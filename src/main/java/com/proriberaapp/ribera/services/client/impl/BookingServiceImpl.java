@@ -177,9 +177,9 @@ public class BookingServiceImpl implements BookingService {
                 "    <!-- Contenedor con el contenido del mensaje -->\n" +
                 "    <div class=\"container\">\n" +
                 "        <div class=\"content\">\n" +
-                "            <h1>¡Gracias por su preferencia!</h1>\n" +
+                "            <h1>Gracias por su preferencia!</h1>\n" +
                 "            <h3>Estimado cliente</h3>\n" +
-                "            <p>Se completó exitosamente el registro de su reserva de: <strong>" + roomName + "</strong>. Por favor, no se olvide de pagar su reserva.</p>\n" +
+                "            <p>Se completo exitosamente el registro de su reserva de: <strong>" + roomName + "</strong>. Por favor, no se olvide de pagar su reserva.</p>\n" +
                 "            <div style=\"background-color: #e0e0e0; padding: 10px; border-radius: 5px;\">\n" +
                 "                <p><strong>Los datos de tu reserva</strong></p>\n" +
                 "                <p>Habitación: " + roomName + "</p>\n" +
@@ -187,7 +187,7 @@ public class BookingServiceImpl implements BookingService {
                 "                <p>Fecha de inicio: " + bookingEntity.getDayBookingInit() + "</p>\n" +
                 "                <p>Fecha de fin: " + bookingEntity.getDayBookingEnd() + "</p>\n" +
                 "            </div>\n" +
-                "            <a href=\"http://www.riberadelrio/reservas\" class=\"button\">Pagar ahora</a>\n" +
+                "            <a href=\"http://www.cieneguillariberadelrio.com/reservas\" class=\"button\">Pagar ahora</a>\n" +
                 "            <p>Recuerde que el pago lo puede realizar mediante depósito en nuestra cuenta a través de agente BCP, agencias o cualquier método de pago dentro de la plataforma usando este enlace: <a href=\"http://www.riberadelrio/reservas\">www.riberadelrio/reservas</a></p>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
