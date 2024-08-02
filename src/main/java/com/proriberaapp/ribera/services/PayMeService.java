@@ -478,22 +478,112 @@ public class PayMeService {
     }
 
     private String generateSuccessEmailBody() {
-        String body = "<html><head><title>Pago Exitoso</title></head><body style='color:black'>";
-        body += "<div style='width: 100%;'>";
-        body += "<div style='display: flex; align-items: center; justify-content: space-between;'>";
-        body += "<img style='width: 100px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453907774_2238863976459404_4409148998166454890_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=1p66qBQN6IYQ7kNvgEnxiv2&_nc_ht=scontent.flim1-2.fna&oh=00_AYACRHyTnMSMkClEmGFw8OmSBT2T_U4LGusY0F3KX0OBVQ&oe=66B1E966' alt='Logo Izquierda'>";
-        body += "<div style='display: flex;'>";
-        body += "<img style='width: 80px; margin-right: 10px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453503393_2238863839792751_3678586622785113323_n.jpg?stp=cp0_dst-jpg&_nc_cat=108&ccb=1-7&_nc_sid=127cfc&_nc_ohc=OMKWsE877hcQ7kNvgHnzNGq&_nc_ht=scontent.flim1-2.fna&oh=00_AYBSmgM6SVV33fWdVeqn9sUMleFSdtOGZPcc0m-USS93bg&oe=66B20925' alt='Logo 1'>";
-        body += "<img style='width: 80px; margin-right: 10px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453501437_2238863739792761_5553627034492335729_n.jpg?stp=cp0_dst-jpg&_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=fcEltLDDNeMQ7kNvgFNAsL6&_nc_ht=scontent.flim1-2.fna&oh=00_AYBD75zTjdsLuKmtk3vPYR7fBfCg5U2aVQ_tYm8679ZFCQ&oe=66B1FF76' alt='Logo 2'>";
-        body += "<img style='width: 80px;' src='https://scontent.flim1-1.fna.fbcdn.net/v/t39.30808-6/453497633_2238863526459449_291281439279005519_n.jpg?stp=cp0_dst-jpg&_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=vMzblHxFzGUQ7kNvgHhI3YO&_nc_ht=scontent.flim1-1.fna&oh=00_AYAEn_ThdeZSWqvo7RurNrnoAulbgxM7V5YzJc_CGsYACg&oe=66B1E905' alt='Logo 3'>";
-        body += "</div>";
-        body += "</div>";
-        body += "<h1 style='text-align: center;'>Pago Exitoso</h1>";
-        body += "<p>Estimado cliente,</p>";
-        body += "<p>Su pago ha sido procesado con éxito.</p>";
-        body += "<p>Gracias por su confianza.</p>";
-        body += "</div>";
-        body += "</body></html>";
+        String body = "<html>\n" +
+                "<head>\n" +
+                "    <title>Bienvenido</title>\n" +
+                "    <style>\n" +
+                "        body {\n" +
+                "            font-family: Arial, sans-serif;\n" +
+                "            margin: 0;\n" +
+                "            padding: 0;\n" +
+                "            color: black;\n" +
+                "            background-color: white; /* Color de fondo */\n" +
+                "        }\n" +
+                "        .header {\n" +
+                "            width: 100%;\n" +
+                "            position: relative;\n" +
+                "            background-color: white; /* Color de fondo del encabezado */\n" +
+                "            padding: 20px 0; /* Espaciado superior e inferior para el encabezado */\n" +
+                "        }\n" +
+                "        .logos-right {\n" +
+                "            position: absolute;\n" +
+                "            top: 10px;\n" +
+                "            right: 10px;\n" +
+                "            display: flex;\n" +
+                "            gap: 5px;\n" +
+                "        }\n" +
+                "        .logos-right img {\n" +
+                "            width: 30px;\n" +
+                "            height: 30px;\n" +
+                "        }\n" +
+                "        .logo-left {\n" +
+                "            width: 50px;\n" +
+                "            position: absolute;\n" +
+                "            top: 10px;\n" +
+                "            left: 10px;\n" +
+                "        }\n" +
+                "        .banner {\n" +
+                "            width: 540px;\n" +
+                "            border-top-left-radius: 20px;\n" +
+                "            border-top-right-radius: 20px;\n" +
+                "            display: block;\n" +
+                "            margin: 0 auto;\n" +
+                "        }\n" +
+                "        .container {\n" +
+                "            width: 500px;\n" +
+                "            background-color: #f4f4f4; /* Fondo blanco del contenido */\n" +
+                "            margin: 0 auto;\n" +
+                "            padding: 20px;\n" +
+                "            border-bottom-left-radius: 10px;\n" +
+                "            border-bottom-right-radius: 10px;\n" +
+                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "        }\n" +
+                "        .content {\n" +
+                "            text-align: center;\n" +
+                "            padding: 20px;\n" +
+                "        }\n" +
+                "        .content h1 {\n" +
+                "            margin-top: 20px;\n" +
+                "            font-weight: bold;\n" +
+                "            font-style: italic;\n" +
+                "        }\n" +
+                "        .content h3, .content p {\n" +
+                "            margin: 10px 0;\n" +
+                "        }\n" +
+                "        .footer {\n" +
+                "            width: 100%;\n" +
+                "            text-align: center;\n" +
+                "            margin: 20px 0;\n" +
+                "        }\n" +
+                "        .help-section {\n" +
+                "            width: 500px;\n" +
+                "            background-color: #f4f4f4; /* Fondo blanco del contenido */\n" +
+                "            margin: 20px auto;\n" +
+                "            padding: 20px;\n" +
+                "            border-radius: 10px;\n" +
+                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "            text-align: center;\n" +
+                "        }\n" +
+                "    </style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <div class=\"header\">\n" +
+                "        <!-- Encabezado con logos -->\n" +
+                "        <img class=\"logo-left\" src=\"https://bit.ly/4d7FuGX\" alt=\"Logo Izquierda\">\n" +
+                "    </div>\n" +
+                "\n" +
+                "    <!-- Imagen de banner -->\n" +
+                "    <img class=\"banner\" src=\"https://bit.ly/46vO7sq\" alt=\"Bienvenido\">\n" +
+                "\n" +
+                "    <!-- Contenedor blanco con el contenido del mensaje -->\n" +
+                "    <div class=\"container\">\n" +
+                "        <div class=\"content\">\n" +
+                "            <h1 style='text-align: center;'>Pago exitoso</h1>\n" +
+                "            <p>Estimado cliente,</p>\n" +
+                "            <p>Su pago ha sido procesado con éxito.</p>\n" +
+                "            <p>Gracias por su confianza.</p>\n" +
+                "        </div>\n" +
+                "    </div>\n" +
+                "\n" +
+                "    <!-- Sección de ayuda -->\n" +
+                "    <div class=\"help-section\">\n" +
+                "        <h3>¿Necesitas ayuda?</h3>\n" +
+                "        <p>Comunicate con nosotros a través de los siguientes medios:</p>\n" +
+                "        <p>Correo: informesyreservas@cieneguilladelrio.com</p>\n" +
+                "    </div>\n" +
+                "</body>\n" +
+                "</html>";
+
         return body;
     }
 
@@ -503,24 +593,112 @@ public class PayMeService {
     }
 
     private String generateErrorEmailBody(String errorMessage) {
-        String body = "<html><head><title>Error en el Pago</title></head><body style='color:black'>";
-        body += "<div style='width: 100%;'>";
-        body += "<div style='display: flex; align-items: center; justify-content: space-between;'>";
-        body += "<img style='width: 100px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453907774_2238863976459404_4409148998166454890_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=1p66qBQN6IYQ7kNvgEnxiv2&_nc_ht=scontent.flim1-2.fna&oh=00_AYACRHyTnMSMkClEmGFw8OmSBT2T_U4LGusY0F3KX0OBVQ&oe=66B1E966' alt='Logo Izquierda'>";
-        body += "<div style='display: flex;'>";
-        body += "<img style='width: 80px; margin-right: 10px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453503393_2238863839792751_3678586622785113323_n.jpg?stp=cp0_dst-jpg&_nc_cat=108&ccb=1-7&_nc_sid=127cfc&_nc_ohc=OMKWsE877hcQ7kNvgHnzNGq&_nc_ht=scontent.flim1-2.fna&oh=00_AYBSmgM6SVV33fWdVeqn9sUMleFSdtOGZPcc0m-USS93bg&oe=66B20925' alt='Logo 1'>";
-        body += "<img style='width: 80px; margin-right: 10px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453501437_2238863739792761_5553627034492335729_n.jpg?stp=cp0_dst-jpg&_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=fcEltLDDNeMQ7kNvgFNAsL6&_nc_ht=scontent.flim1-2.fna&oh=00_AYBD75zTjdsLuKmtk3vPYR7fBfCg5U2aVQ_tYm8679ZFCQ&oe=66B1FF76' alt='Logo 2'>";
-        body += "<img style='width: 80px;' src='https://scontent.flim1-1.fna.fbcdn.net/v/t39.30808-6/453497633_2238863526459449_291281439279005519_n.jpg?stp=cp0_dst-jpg&_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=vMzblHxFzGUQ7kNvgHhI3YO&_nc_ht=scontent.flim1-1.fna&oh=00_AYAEn_ThdeZSWqvo7RurNrnoAulbgxM7V5YzJc_CGsYACg&oe=66B1E905' alt='Logo 3'>";
-        body += "</div>";
-        body += "</div>";
-        body += "<h1 style='text-align: center;'>Error en el Pago</h1>";
-        body += "<p>Estimado cliente,</p>";
-        body += "<p>Ha ocurrido un error durante el procesamiento de su pago.</p>";
-        body += "<p>Detalles del error:</p>";
-        body += "<p>" + errorMessage + "</p>";
-        body += "<p>Por favor, póngase en contacto con soporte.</p>";
-        body += "</div>";
-        body += "</body></html>";
+        String body = "<html>\n" +
+                "<head>\n" +
+                "    <title>Bienvenido</title>\n" +
+                "    <style>\n" +
+                "        body {\n" +
+                "            font-family: Arial, sans-serif;\n" +
+                "            margin: 0;\n" +
+                "            padding: 0;\n" +
+                "            color: black;\n" +
+                "            background-color: white; /* Color de fondo */\n" +
+                "        }\n" +
+                "        .header {\n" +
+                "            width: 100%;\n" +
+                "            position: relative;\n" +
+                "            background-color: white; /* Color de fondo del encabezado */\n" +
+                "            padding: 20px 0; /* Espaciado superior e inferior para el encabezado */\n" +
+                "        }\n" +
+                "        .logos-right {\n" +
+                "            position: absolute;\n" +
+                "            top: 10px;\n" +
+                "            right: 10px;\n" +
+                "            display: flex;\n" +
+                "            gap: 5px;\n" +
+                "        }\n" +
+                "        .logos-right img {\n" +
+                "            width: 30px;\n" +
+                "            height: 30px;\n" +
+                "        }\n" +
+                "        .logo-left {\n" +
+                "            width: 50px;\n" +
+                "            position: absolute;\n" +
+                "            top: 10px;\n" +
+                "            left: 10px;\n" +
+                "        }\n" +
+                "        .banner {\n" +
+                "            width: 540px;\n" +
+                "            border-top-left-radius: 20px;\n" +
+                "            border-top-right-radius: 20px;\n" +
+                "            display: block;\n" +
+                "            margin: 0 auto;\n" +
+                "        }\n" +
+                "        .container {\n" +
+                "            width: 500px;\n" +
+                "            background-color: #f4f4f4; /* Fondo blanco del contenido */\n" +
+                "            margin: 0 auto;\n" +
+                "            padding: 20px;\n" +
+                "            border-bottom-left-radius: 10px;\n" +
+                "            border-bottom-right-radius: 10px;\n" +
+                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "        }\n" +
+                "        .content {\n" +
+                "            text-align: center;\n" +
+                "            padding: 20px;\n" +
+                "        }\n" +
+                "        .content h1 {\n" +
+                "            margin-top: 20px;\n" +
+                "            font-weight: bold;\n" +
+                "            font-style: italic;\n" +
+                "        }\n" +
+                "        .content h3, .content p {\n" +
+                "            margin: 10px 0;\n" +
+                "        }\n" +
+                "        .footer {\n" +
+                "            width: 100%;\n" +
+                "            text-align: center;\n" +
+                "            margin: 20px 0;\n" +
+                "        }\n" +
+                "        .help-section {\n" +
+                "            width: 500px;\n" +
+                "            background-color: #f4f4f4; /* Fondo blanco del contenido */\n" +
+                "            margin: 20px auto;\n" +
+                "            padding: 20px;\n" +
+                "            border-radius: 10px;\n" +
+                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "            text-align: center;\n" +
+                "        }\n" +
+                "    </style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <div class=\"header\">\n" +
+                "        <!-- Encabezado con logos -->\n" +
+                "        <img class=\"logo-left\" src=\"https://bit.ly/4d7FuGX\" alt=\"Logo Izquierda\">\n" +
+                "    </div>\n" +
+                "\n" +
+                "    <!-- Imagen de banner -->\n" +
+                "    <img class=\"banner\" src=\"https://bit.ly/46vO7sq\" alt=\"Bienvenido\">\n" +
+                "\n" +
+                "    <!-- Contenedor blanco con el contenido del mensaje -->\n" +
+                "    <div class=\"container\">\n" +
+                "        <div class=\"content\">\n" +
+                "            <p>Estimado cliente,</p>\n" +
+                "            <p>Ha ocurrido un error durante el procesamiento de su pago.</p>\n" +
+                "            <p>Detalles del error:</p>\n" +
+                "            <p>" + errorMessage + "</p>\n" +
+                "        </div>\n" +
+                "    </div>\n" +
+                "\n" +
+                "    <!-- Sección de ayuda -->\n" +
+                "    <div class=\"help-section\">\n" +
+                "        <h3>¿Necesitas ayuda?</h3>\n" +
+                "        <p>Comunicate con nosotros a través de los siguientes medios:</p>\n" +
+                "        <p>Correo: informesyreservas@cieneguilladelrio.com</p>\n" +
+                "    </div>\n" +
+                "</body>\n" +
+                "</html>";
+
         return body;
     }
 
