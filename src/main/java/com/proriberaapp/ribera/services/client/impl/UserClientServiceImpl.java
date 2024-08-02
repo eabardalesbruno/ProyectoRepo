@@ -195,8 +195,6 @@ public class UserClientServiceImpl implements UserClientService {
     private String generateUserRegistrationEmailBody(UserClientEntity userClient) {
         String body = "<html><head><title>Bienvenido</title></head><body style='color:black; margin: 0; padding: 0;'>";
         body += "<div style='width: 100%; position: relative;'>";
-        body += "<img style='width: 100%; margin-top: 20px; border-top-left-radius: 20px; border-top-right-radius: 20px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453514514_2238864093126059_4377276491425541120_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=127cfc&_nc_ohc=r0fzgelec-UQ7kNvgFL0EDI&_nc_ht=scontent.flim1-2.fna&oh=00_AYAJLos7io5zNmz08RwyK1pc5ZGwN5Cn8jt8Eg17N73CQQ&oe=66B1E807' alt='Bienvenido'>";
-
 // Contenedor para logos
         body += "<div style='position: absolute; top: 10px; right: 10px; display: flex;'>";
         body += "<img style='width: 10px; height: 10px; margin-left: 5px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453503393_2238863839792751_3678586622785113323_n.jpg?stp=cp0_dst-jpg&_nc_cat=108&ccb=1-7&_nc_sid=127cfc&_nc_ohc=OMKWsE877hcQ7kNvgHnzNGq&_nc_ht=scontent.flim1-2.fna&oh=00_AYBSmgM6SVV33fWdVeqn9sUMleFSdtOGZPcc0m-USS93bg&oe=66B20925' alt='Logo 1'>";
@@ -206,17 +204,25 @@ public class UserClientServiceImpl implements UserClientService {
 
 // Logo izquierdo
         body += "<img style='width: 50px; position: absolute; top: 10px; left: 10px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453907774_2238863976459404_4409148998166454890_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=1p66qBQN6IYQ7kNvgEnxiv2&_nc_ht=scontent.flim1-2.fna&oh=00_AYACRHyTnMSMkClEmGFw8OmSBT2T_U4LGusY0F3KX0OBVQ&oe=66B1E966' alt='Logo Izquierda'>";
+        body += "<img style='width: 100%; margin-top: 20px; border-top-left-radius: 20px; border-top-right-radius: 20px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453514514_2238864093126059_4377276491425541120_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=127cfc&_nc_ohc=r0fzgelec-UQ7kNvgFL0EDI&_nc_ht=scontent.flim1-2.fna&oh=00_AYAJLos7io5zNmz08RwyK1pc5ZGwN5Cn8jt8Eg17N73CQQ&oe=66B1E807' alt='Bienvenido'>";
 
-        body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>Bienvenido, " + userClient.getFirstName() + "!</h1>";
-        body += "<h3 style='text-align: center;'>Gracias por registrarte en nuestra plataforma</h3>";
-        body += "<p style='text-align: center;'>Email: " + userClient.getEmail() + "</p>";
-        body += "<center><div style='width: 100%'>";
-        body += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
-        body += "<center>Disfruta de nuestros servicios y promociones exclusivas.</center>";
-        body += "</div></center>";
-        body += "<center><div style='width: 100%'>";
-        body += "<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>";
-        body += "</div></center>";
+// Contenido del mensaje
+        body += "<div style='text-align: center; padding: 20px;'>";
+        body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>¡Aviso de deuda pendiente!</h1>";
+        body += "<p>Hola " + userClient.getFirstName() + ",</p>";
+        body += "<p>Este correo es para recordarte de que mantienes un pago pendiente de tu reserva de [Tipo de Departamento] vista [vista]. Tienes plazo de realizar tu pago 4 horas. Pasado este límite se anulará tu reserva.</p>";
+        body += "<button style='padding: 10px 20px; background-color: green; color: white; border: none; border-radius: 5px;'>Pagar ahora</button>";
+        body += "<p>Si tienes alguna consulta o deseas agendar alguna cita extra, envíanos tu consulta por correo o canal de whatsapp. Recuerda que el pago lo puedes realizar de manera virtual ingresando a nuestra cuenta de pagos desde la app de BCP, agencias y cualquier medio de pagos directo de la plataforma web.</p>";
+        body += "</div>";
+
+// Sección de ayuda
+        body += "<div style='width: 100%; text-align: center; margin: 20px 0;'>";
+        body += "<h3>¿Necesitas ayuda?</h3>";
+        body += "<p>Comunícate con nosotros a través de los siguientes medios:</p>";
+        body += "<p>Correo: [Email de ayuda]</p>";
+        body += "<p>Teléfono: [Número de teléfono]</p>";
+        body += "</div>";
+
         body += "</body></html>";
 
         return body;
