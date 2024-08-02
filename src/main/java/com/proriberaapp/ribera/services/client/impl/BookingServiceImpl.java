@@ -89,8 +89,10 @@ public class BookingServiceImpl implements BookingService {
 
     // Método para generar el cuerpo del correo electrónico con el nombre de la habitación
     private String generateEmailBody(BookingEntity bookingEntity, String roomName) {
-        String body = "<html>\n" +
+        String body = "<!DOCTYPE html>\n" +
+                "<html lang=\"es\">\n" +
                 "<head>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
                 "    <title>Bienvenido</title>\n" +
                 "    <style>\n" +
                 "        body {\n" +
@@ -98,24 +100,13 @@ public class BookingServiceImpl implements BookingService {
                 "            margin: 0;\n" +
                 "            padding: 0;\n" +
                 "            color: black;\n" +
-                "            background-color: white; /* Color de fondo */\n" +
+                "            background-color: white;\n" +
                 "        }\n" +
                 "        .header {\n" +
                 "            width: 100%;\n" +
                 "            position: relative;\n" +
-                "            background-color: white; /* Color de fondo del encabezado */\n" +
-                "            padding: 20px 0; /* Espaciado superior e inferior para el encabezado */\n" +
-                "        }\n" +
-                "        .logos-right {\n" +
-                "            position: absolute;\n" +
-                "            top: 10px;\n" +
-                "            right: 10px;\n" +
-                "            display: flex;\n" +
-                "            gap: 5px;\n" +
-                "        }\n" +
-                "        .logos-right img {\n" +
-                "            width: 30px;\n" +
-                "            height: 30px;\n" +
+                "            background-color: white;\n" +
+                "            padding: 20px 0;\n" +
                 "        }\n" +
                 "        .logo-left {\n" +
                 "            width: 50px;\n" +
@@ -124,32 +115,39 @@ public class BookingServiceImpl implements BookingService {
                 "            left: 10px;\n" +
                 "        }\n" +
                 "        .banner {\n" +
-                "            width: 540px;\n" +
-                "            border-top-left-radius: 20px;\n" +
-                "            border-top-right-radius: 20px;\n" +
+                "            width: 100%;\n" +
                 "            display: block;\n" +
                 "            margin: 0 auto;\n" +
                 "        }\n" +
                 "        .container {\n" +
                 "            width: 500px;\n" +
-                "            background-color: #f4f4f4; /* Fondo blanco del contenido */\n" +
-                "            margin: 0 auto;\n" +
+                "            background-color: #f4f4f4;\n" +
+                "            margin: 20px auto;\n" +
                 "            padding: 20px;\n" +
-                "            border-bottom-left-radius: 10px;\n" +
-                "            border-bottom-right-radius: 10px;\n" +
+                "            border-radius: 10px;\n" +
                 "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "            text-align: center;\n" +
                 "        }\n" +
                 "        .content {\n" +
-                "            text-align: center;\n" +
+                "            text-align: left;\n" +
                 "            padding: 20px;\n" +
                 "        }\n" +
-                "        .content h1 {\n" +
-                "            margin-top: 20px;\n" +
-                "            font-weight: bold;\n" +
-                "            font-style: italic;\n" +
-                "        }\n" +
-                "        .content h3, .content p {\n" +
+                "        .content h3 {\n" +
                 "            margin: 10px 0;\n" +
+                "        }\n" +
+                "        .content p {\n" +
+                "            margin: 10px 0;\n" +
+                "        }\n" +
+                "        .button {\n" +
+                "            display: block;\n" +
+                "            width: 200px;\n" +
+                "            margin: 20px auto;\n" +
+                "            padding: 10px;\n" +
+                "            background-color: green;\n" +
+                "            color: white;\n" +
+                "            text-align: center;\n" +
+                "            border-radius: 5px;\n" +
+                "            text-decoration: none;\n" +
                 "        }\n" +
                 "        .footer {\n" +
                 "            width: 100%;\n" +
@@ -158,7 +156,7 @@ public class BookingServiceImpl implements BookingService {
                 "        }\n" +
                 "        .help-section {\n" +
                 "            width: 500px;\n" +
-                "            background-color: #f4f4f4; /* Fondo blanco del contenido */\n" +
+                "            background-color: #f4f4f4;\n" +
                 "            margin: 20px auto;\n" +
                 "            padding: 20px;\n" +
                 "            border-radius: 10px;\n" +
@@ -169,31 +167,35 @@ public class BookingServiceImpl implements BookingService {
                 "</head>\n" +
                 "<body>\n" +
                 "    <div class=\"header\">\n" +
-                "        <!-- Encabezado con logos -->\n" +
+                "        <!-- Encabezado con logo -->\n" +
                 "        <img class=\"logo-left\" src=\"https://bit.ly/4d7FuGX\" alt=\"Logo Izquierda\">\n" +
                 "    </div>\n" +
                 "\n" +
                 "    <!-- Imagen de banner -->\n" +
                 "    <img class=\"banner\" src=\"https://bit.ly/46vO7sq\" alt=\"Bienvenido\">\n" +
                 "\n" +
-                "    <!-- Contenedor blanco con el contenido del mensaje -->\n" +
+                "    <!-- Contenedor con el contenido del mensaje -->\n" +
                 "    <div class=\"container\">\n" +
                 "        <div class=\"content\">\n" +
-                "            <h3 style='text-align: center;'>Producto por Adquirir: Reserva</h3>\n" +
-                "            <h3 style='text-align: center;'>Descripción: Reserva de Habitación</h3>\n" +
-                "            <h2 style='text-align: center;'>Detalles de la reserva:</h2>\n" +
-                "            <p style='text-align: center;'>Habitación: " + roomName + "</p>\n" +
-                "            <p style='text-align: center;'>Costo: " + bookingEntity.getCostFinal() + "</p>\n" +
-                "            <p style='text-align: center;'>Fecha de inicio: " + bookingEntity.getDayBookingInit() + "</p>\n" +
-                "            <p style='text-align: center;'>Fecha de fin: " + bookingEntity.getDayBookingEnd() + "</p>\n" +
+                "            <h1>¡Gracias por su preferencia!</h1>\n" +
+                "            <h3>Estimado cliente</h3>\n" +
+                "            <p>Se completó exitosamente el registro de su reserva de: <strong>" + roomName + "</strong>. Por favor, no se olvide de pagar su reserva.</p>\n" +
+                "            <div style=\"background-color: #e0e0e0; padding: 10px; border-radius: 5px;\">\n" +
+                "                <p><strong>Los datos de tu reserva</strong></p>\n" +
+                "                <p>Habitación: " + roomName + "</p>\n" +
+                "                <p>Costo: " + bookingEntity.getCostFinal() + "</p>\n" +
+                "                <p>Fecha de inicio: " + bookingEntity.getDayBookingInit() + "</p>\n" +
+                "                <p>Fecha de fin: " + bookingEntity.getDayBookingEnd() + "</p>\n" +
+                "            </div>\n" +
+                "            <a href=\"http://www.riberadelrio/reservas\" class=\"button\">Pagar ahora</a>\n" +
+                "            <p>Recuerde que el pago lo puede realizar mediante depósito en nuestra cuenta a través de agente BCP, agencias o cualquier método de pago dentro de la plataforma usando este enlace: <a href=\"http://www.riberadelrio/reservas\">www.riberadelrio/reservas</a></p>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
                 "\n" +
                 "    <!-- Sección de ayuda -->\n" +
                 "    <div class=\"help-section\">\n" +
                 "        <h3>¿Necesitas ayuda?</h3>\n" +
-                "        <p>Comunicate con nosotros a través de los siguientes medios:</p>\n" +
-                "        <p>Correo: informesyreservas@cieneguilladelrio.com</p>\n" +
+                "        <p>Envie sus comentarios e información de errores a <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">informesyreservas@cieneguilladelrio.com</a></p>\n" +
                 "    </div>\n" +
                 "</body>\n" +
                 "</html>";
