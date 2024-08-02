@@ -607,14 +607,22 @@ public class PaymentBookServiceImpl implements PaymentBookService {
      */
 
     private String generatePaymentConfirmationEmailBody(PaymentBookEntity paymentBook) {
-        String body = "<html><head><title></title></head><body style='color:black'>";
-        body += "<div style='width: 100%'>";
-        body += "<div style='display:flex;'>";
+        String body = "<html><head><title>Confirmación de Pago</title></head><body style='color:black'>";
+        body += "<div style='width: 100%;'>";
+        body += "<div style='display: flex; align-items: center; justify-content: space-between;'>";
+        body += "<img style='width: 100px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453907774_2238863976459404_4409148998166454890_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=1p66qBQN6IYQ7kNvgEnxiv2&_nc_ht=scontent.flim1-2.fna&oh=00_AYACRHyTnMSMkClEmGFw8OmSBT2T_U4LGusY0F3KX0OBVQ&oe=66B1E966' alt='Logo Izquierda'>";
+        body += "<div style='display: flex;'>";
+        body += "<img style='width: 80px; margin-right: 10px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453503393_2238863839792751_3678586622785113323_n.jpg?stp=cp0_dst-jpg&_nc_cat=108&ccb=1-7&_nc_sid=127cfc&_nc_ohc=OMKWsE877hcQ7kNvgHnzNGq&_nc_ht=scontent.flim1-2.fna&oh=00_AYBSmgM6SVV33fWdVeqn9sUMleFSdtOGZPcc0m-USS93bg&oe=66B20925' alt='Logo 1'>";
+        body += "<img style='width: 80px; margin-right: 10px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453501437_2238863739792761_5553627034492335729_n.jpg?stp=cp0_dst-jpg&_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=fcEltLDDNeMQ7kNvgFNAsL6&_nc_ht=scontent.flim1-2.fna&oh=00_AYBD75zTjdsLuKmtk3vPYR7fBfCg5U2aVQ_tYm8679ZFCQ&oe=66B1FF76' alt='Logo 2'>";
+        body += "<img style='width: 80px;' src='https://scontent.flim1-1.fna.fbcdn.net/v/t39.30808-6/453497633_2238863526459449_291281439279005519_n.jpg?stp=cp0_dst-jpg&_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=vMzblHxFzGUQ7kNvgHhI3YO&_nc_ht=scontent.flim1-1.fna&oh=00_AYAEn_ThdeZSWqvo7RurNrnoAulbgxM7V5YzJc_CGsYACg&oe=66B1E905' alt='Logo 3'>";
         body += "</div>";
-        body += "<img style='width: 100%' src='http://www.inresorts.club/Views/img/fondo.png'>";
-        body += "<h1 style='text-align: center;'>Confirmacion de Pago</h1>";
+        body += "</div>";
+        body += "<div style='display: flex; margin-top: 20px;'>";
+        body += "<img style='width: 100%' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453514514_2238864093126059_4377276491425541120_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=127cfc&_nc_ohc=r0fzgelec-UQ7kNvgFL0EDI&_nc_ht=scontent.flim1-2.fna&oh=00_AYAJLos7io5zNmz08RwyK1pc5ZGwN5Cn8jt8Eg17N73CQQ&oe=66B1E807' alt='Banner'>";
+        body += "</div>";
+        body += "<h2 style='text-align: center;'>Confirmación de Pago</h2>";
         body += "<p>Estimado cliente,</p>";
-        body += "<p>Su pago ha sido recibido con exito.</p>";
+        body += "<p>Su pago ha sido recibido con éxito.</p>";
         body += "<p>Detalles del pago:</p>";
         body += "<ul>";
         body += "<li>Reserva: " + paymentBook.getBookingId() + "</li>";
@@ -622,14 +630,10 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         body += "<li>Fecha de pago: " + paymentBook.getPaymentDate() + "</li>";
         body += "</ul>";
         body += "<p>Gracias por su confianza.</p>";
-        body += "<center><div style='width: 100%'>";
-        body += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
-        body += "<center>Disfruta de nuestros servicios y promociones exclusivas.</center>";
-        body += "</div></center>";
-        body += "<center><div style='width: 100%'>";
+        body += "<div style='text-align: center;'>";
+        body += "<p style='margin-left: 10%; margin-right: 10%;'>Disfruta de nuestros servicios y promociones exclusivas.</p>";
         body += "<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>";
-        body += "</div></center>";
-        body += "</div></center>";
+        body += "</div>";
         body += "</body></html>";
         return body;
     }
