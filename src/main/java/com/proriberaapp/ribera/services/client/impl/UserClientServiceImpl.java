@@ -193,37 +193,113 @@ public class UserClientServiceImpl implements UserClientService {
     }
 
     private String generateUserRegistrationEmailBody(UserClientEntity userClient) {
-        String body = "<html><head><title>Bienvenido</title></head><body style='color:black; margin: 0; padding: 0;'>";
-        body += "<div style='width: 100%; position: relative;'>";
-// Contenedor para logos
-        body += "<div style='position: absolute; top: 10px; right: 10px; display: flex;'>";
-        body += "<img style='width: 10px; height: 10px; margin-left: 5px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453503393_2238863839792751_3678586622785113323_n.jpg?stp=cp0_dst-jpg&_nc_cat=108&ccb=1-7&_nc_sid=127cfc&_nc_ohc=OMKWsE877hcQ7kNvgHnzNGq&_nc_ht=scontent.flim1-2.fna&oh=00_AYBSmgM6SVV33fWdVeqn9sUMleFSdtOGZPcc0m-USS93bg&oe=66B20925' alt='Logo 1'>";
-        body += "<img style='width: 10px; height: 10px; margin-left: 5px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453501437_2238863739792761_5553627034492335729_n.jpg?stp=cp0_dst-jpg&_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=fcEltLDDNeMQ7kNvgFNAsL6&_nc_ht=scontent.flim1-2.fna&oh=00_AYBD75zTjdsLuKmtk3vPYR7fBfCg5U2aVQ_tYm8679ZFCQ&oe=66B1FF76' alt='Logo 2'>";
-        body += "<img style='width: 10px; height: 10px; margin-left: 5px;' src='https://scontent.flim1-1.fna.fbcdn.net/v/t39.30808-6/453497633_2238863526459449_291281439279005519_n.jpg?stp=cp0_dst-jpg&_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=vMzblHxFzGUQ7kNvgHhI3YO&_nc_ht=scontent.flim1-1.fna&oh=00_AYAEn_ThdeZSWqvo7RurNrnoAulbgxM7V5YzJc_CGsYACg&oe=66B1E905' alt='Logo 3'>";
-        body += "</div>";
-
-// Logo izquierdo
-        body += "<img style='width: 50px; position: absolute; top: 10px; left: 10px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453907774_2238863976459404_4409148998166454890_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=1p66qBQN6IYQ7kNvgEnxiv2&_nc_ht=scontent.flim1-2.fna&oh=00_AYACRHyTnMSMkClEmGFw8OmSBT2T_U4LGusY0F3KX0OBVQ&oe=66B1E966' alt='Logo Izquierda'>";
-        body += "<img style='width: 100%; margin-top: 20px; border-top-left-radius: 20px; border-top-right-radius: 20px;' src='https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453514514_2238864093126059_4377276491425541120_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=127cfc&_nc_ohc=r0fzgelec-UQ7kNvgFL0EDI&_nc_ht=scontent.flim1-2.fna&oh=00_AYAJLos7io5zNmz08RwyK1pc5ZGwN5Cn8jt8Eg17N73CQQ&oe=66B1E807' alt='Bienvenido'>";
-
-// Contenido del mensaje
-        body += "<div style='text-align: center; padding: 20px;'>";
-        body += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>¡Aviso de deuda pendiente!</h1>";
-        body += "<p>Hola " + userClient.getFirstName() + ",</p>";
-        body += "<p>Este correo es para recordarte de que mantienes un pago pendiente de tu reserva de [Tipo de Departamento] vista [vista]. Tienes plazo de realizar tu pago 4 horas. Pasado este límite se anulará tu reserva.</p>";
-        body += "<button style='padding: 10px 20px; background-color: green; color: white; border: none; border-radius: 5px;'>Pagar ahora</button>";
-        body += "<p>Si tienes alguna consulta o deseas agendar alguna cita extra, envíanos tu consulta por correo o canal de whatsapp. Recuerda que el pago lo puedes realizar de manera virtual ingresando a nuestra cuenta de pagos desde la app de BCP, agencias y cualquier medio de pagos directo de la plataforma web.</p>";
-        body += "</div>";
-
-// Sección de ayuda
-        body += "<div style='width: 100%; text-align: center; margin: 20px 0;'>";
-        body += "<h3>¿Necesitas ayuda?</h3>";
-        body += "<p>Comunícate con nosotros a través de los siguientes medios:</p>";
-        body += "<p>Correo: [Email de ayuda]</p>";
-        body += "<p>Teléfono: [Número de teléfono]</p>";
-        body += "</div>";
-
-        body += "</body></html>";
+        String body = "<html>\n" +
+                "  <head>\n" +
+                "    <title>Bienvenido</title>\n" +
+                "    <style>\n" +
+                "      body {\n" +
+                "        font-family: Arial, sans-serif;\n" +
+                "        margin: 0;\n" +
+                "        padding: 0;\n" +
+                "        color: black;\n" +
+                "        background-color: #f4f4f4; /* Color de fondo */\n" +
+                "      }\n" +
+                "      .header {\n" +
+                "        width: 100%;\n" +
+                "        position: relative;\n" +
+                "        background-color: #f4f4f4; /* Color de fondo del encabezado */\n" +
+                "        padding: 20px 0; /* Espaciado superior e inferior para el encabezado */\n" +
+                "      }\n" +
+                "      .logos-right {\n" +
+                "        position: absolute;\n" +
+                "        top: 10px;\n" +
+                "        right: 10px;\n" +
+                "        display: flex;\n" +
+                "      }\n" +
+                "      .logos-right img {\n" +
+                "        width: 10px;\n" +
+                "        height: 10px;\n" +
+                "        margin-left: 5px;\n" +
+                "      }\n" +
+                "      .logo-left {\n" +
+                "        width: 50px;\n" +
+                "        position: absolute;\n" +
+                "        top: 10px;\n" +
+                "        left: 10px;\n" +
+                "      }\n" +
+                "      .banner {\n" +
+                "        width: 540px;\n" +
+                "        border-top-left-radius: 20px;\n" +
+                "        border-top-right-radius: 20px;\n" +
+                "        display: block;\n" +
+                "        margin: 0 auto;\n" +
+                "      }\n" +
+                "      .container {\n" +
+                "        width: 500px;\n" +
+                "        background-color: white; /* Fondo blanco del contenido */\n" +
+                "        margin: 0 auto;\n" +
+                "        padding: 20px;\n" +
+                "        border-bottom-left-radius: 10px;\n" +
+                "        border-bottom-right-radius: 10px;\n" +
+                "        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "      }\n" +
+                "      .content {\n" +
+                "        text-align: center;\n" +
+                "        padding: 20px;\n" +
+                "      }\n" +
+                "      .content h1 {\n" +
+                "        margin-top: 20px;\n" +
+                "        font-weight: bold;\n" +
+                "        font-style: italic;\n" +
+                "      }\n" +
+                "      .content h3, .content p {\n" +
+                "        margin: 10px 0;\n" +
+                "      }\n" +
+                "      .footer {\n" +
+                "        width: 100%;\n" +
+                "        text-align: center;\n" +
+                "        margin: 20px 0;\n" +
+                "      }\n" +
+                "      .help-section {\n" +
+                "        width: 500px;\n" +
+                "        background-color: white; /* Fondo blanco del contenido */\n" +
+                "        margin: 20px auto;\n" +
+                "        padding: 20px;\n" +
+                "        border-radius: 10px;\n" +
+                "        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "        text-align: center;\n" +
+                "      }\n" +
+                "    </style>\n" +
+                "  </head>\n" +
+                "  <body>\n" +
+                "    <div class=\"header\">\n" +
+                "      <!-- Encabezado con logos -->\n" +
+                "      <img class=\"logo-left\" src=\"https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453907774_2238863976459404_4409148998166454890_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=1p66qBQN6IYQ7kNvgEnxiv2&_nc_ht=scontent.flim1-2.fna&oh=00_AYACRHyTnMSMkClEmGFw8OmSBT2T_U4LGusY0F3KX0OBVQ&oe=66B1E966\" alt=\"Logo Izquierda\">\n" +
+                "      <div class=\"logos-right\">\n" +
+                "        <img src=\"https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453503393_2238863839792751_3678586622785113323_n.jpg?stp=cp0_dst-jpg&_nc_cat=108&ccb=1-7&_nc_sid=127cfc&_nc_ohc=OMKWsE877hcQ7kNvgHnzNGq&_nc_ht=scontent.flim1-2.fna&oh=00_AYBSmgM6SVV33fWdVeqn9sUMleFSdtOGZPcc0m-USS93bg&oe=66B20925\" alt=\"Logo 1\">\n" +
+                "        <img src=\"https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453501437_2238863739792761_5553627034492335729_n.jpg?stp=cp0_dst-jpg&_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=fcEltLDDNeMQ7kNvgFNAsL6&_nc_ht=scontent.flim1-2.fna&oh=00_AYBD75zTjdsLuKmtk3vPYR7fBfCg5U2aVQ_tYm8679ZFCQ&oe=66B1FF76\" alt=\"Logo 2\">\n" +
+                "        <img src=\"https://scontent.flim1-1.fna.fbcdn.net/v/t39.30808-6/453497633_2238863526459449_291281439279005519_n.jpg?stp=cp0_dst-jpg&_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=vMzblHxFzGUQ7kNvgHhI3YO&_nc_ht=scontent.flim1-1.fna&oh=00_AYAEn_ThdeZSWqvo7RurNrnoAulbgxM7V5YzJc_CGsYACg&oe=66B1E905\" alt=\"Logo 3\">\n" +
+                "      </div>\n" +
+                "    </div>\n" +
+                "    <!-- Imagen de banner -->\n" +
+                "    <img class=\"banner\" src=\"https://scontent.flim1-2.fna.fbcdn.net/v/t39.30808-6/453514514_2238864093126059_4377276491425541120_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=127cfc&_nc_ohc=r0fzgelec-UQ7kNvgFL0EDI&_nc_ht=scontent.flim1-2.fna&oh=00_AYAJLos7io5zNmz08RwyK1pc5ZGwN5Cn8jt8Eg17N73CQQ&oe=66B1E807\" alt=\"Bienvenido\">\n" +
+                "    <!-- Contenedor blanco con el contenido del mensaje -->\n" +
+                "    <div class=\"container\">\n" +
+                "      <div class=\"content\">\n" +
+                "        <h1>¡Registro exitoso!</h1>\n" +
+                "        <p>Hola " + userClient.getFirstName() + ",</p>\n" +
+                "        <p>Gracias por registrarte a la plataforma. Su correo registrado es " + userClient.getEmail() + ".</p>\n" +
+                "        <p>Si tienes alguna consulta, envíanos tu consulta por correo.</p>\n" +
+                "      </div>\n" +
+                "    </div>\n" +
+                "    <!-- Sección de ayuda -->\n" +
+                "    <div class=\"help-section\">\n" +
+                "      <h3>¿Necesitas ayuda?</h3>\n" +
+                "      <p>Comunícate con nosotros a través de los siguientes medios:</p>\n" +
+                "      <p>Correo: informesyreservas@cieneguilladelrio.com</p>\n" +
+                "    </div>\n" +
+                "  </body>\n" +
+                "</html>";
 
         return body;
     }
