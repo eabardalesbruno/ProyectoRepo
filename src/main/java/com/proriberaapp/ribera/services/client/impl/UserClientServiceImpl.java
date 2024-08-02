@@ -289,8 +289,8 @@ public class UserClientServiceImpl implements UserClientService {
                 "    <div class=\"container\">\n" +
                 "        <div class=\"content\">\n" +
                 "            <h1>Registro exitoso!</h1>\n" +
-                "            <p>Hola userClient.getFirstName(),</p>\n" +
-                "            <p>Gracias por registrarte a la plataforma. Su correo registrado es userClient.getEmail().</p>\n" +
+                "            <p>Hola "+ userClient.getFirstName()+",</p>\n" +
+                "            <p>Gracias por registrarte a la plataforma. Su correo registrado es "+ userClient.getEmail()+".</p>\n" +
                 "            <p>Si tienes alguna consulta, envianos tu consulta por correo.</p>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
