@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.PointsRequest;
 import com.proriberaapp.ribera.Domain.entities.TokenPointsTransaction;
 import com.proriberaapp.ribera.services.PDFGeneratorService;
 import com.proriberaapp.ribera.services.S3UploadService;
+import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.TokenPointsTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 /*
@@ -63,14 +68,18 @@ public class TokenPointsTransactionController {
     private final TokenPointsTransactionService tokenPointsTransactionService;
     private final PDFGeneratorService pdfGeneratorService;
     private final S3UploadService s3UploadService;
+    private final BookingService bookingService; // Servicio para obtener puntos pagados
+
 
     @Autowired
     public TokenPointsTransactionController(TokenPointsTransactionService tokenPointsTransactionService,
                                             PDFGeneratorService pdfGeneratorService,
-                                            S3UploadService s3UploadService) {
+                                            S3UploadService s3UploadService,
+                                            BookingService bookingService) {
         this.tokenPointsTransactionService = tokenPointsTransactionService;
         this.pdfGeneratorService = pdfGeneratorService;
         this.s3UploadService = s3UploadService;
+        this.bookingService = bookingService;
     }
 
     @PostMapping("/create")
@@ -79,6 +88,7 @@ public class TokenPointsTransactionController {
                 .map(token -> token.getCodigoToken());
     }
 
+    /*
     @PostMapping("/send")
     public Mono<ResponseEntity<Map<String, String>>> createTokenAndSendEmail(@RequestBody CreateTokenRequest request) {
         return tokenPointsTransactionService.createTokenAndSendEmail(request.getPartnerPointId(), request.getBookingId())
@@ -90,7 +100,7 @@ public class TokenPointsTransactionController {
 
                     try {
                         String pdfFileName = token.getCodigoToken() + ".pdf";
-                        File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response), pdfFileName);
+                        File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response, points), pdfFileName);
 
                         // Aquí se debe pasar el folderNumber adecuadamente
                         int folderNumber = 13; // Ajusta este valor según tus necesidades
@@ -111,7 +121,7 @@ public class TokenPointsTransactionController {
 
                                 try {
                                     String pdfFileName = token.getCodigoToken() + ".pdf";
-                                    File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response), pdfFileName);
+                                    File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response, points), pdfFileName);
 
                                     // Aquí se debe pasar el folderNumber adecuadamente
                                     int folderNumber = 13; // Ajusta este valor según tus necesidades
@@ -124,6 +134,63 @@ public class TokenPointsTransactionController {
                             });
                 });
     }
+     */
+
+    @PostMapping("/send")
+    public Mono<ResponseEntity<Map<String, String>>> createTokenAndSendEmail(@RequestBody CreateTokenRequest request) {
+        return tokenPointsTransactionService.createTokenAndSendEmail(request.getPartnerPointId(), request.getBookingId())
+                .flatMap(token -> {
+                    // Obtener puntos pagados
+                    return bookingService.getRiberaPointsByBookingId(request.getBookingId())
+                            .flatMap(points -> {
+                                Map<String, String> response = new HashMap<>();
+                                response.put("token", token.getCodigoToken());
+                                response.put("linkPayment", "https://ribera-dev.inclub.world/payment-validation?token=" + token.getCodigoToken());
+                                response.put("mensaje", "Enviado");
+
+                                try {
+                                    String pdfFileName = token.getCodigoToken() + ".pdf";
+                                    File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response, points), pdfFileName);
+
+                                    // Aquí se debe pasar el folderNumber adecuadamente
+                                    int folderNumber = 13; // Ajusta este valor según tus necesidades
+                                    return s3UploadService.uploadPdf(pdfFile, folderNumber)
+                                            .map(s3Url -> ResponseEntity.ok(response))
+                                            .defaultIfEmpty(ResponseEntity.badRequest().build());
+                                } catch (Exception e) {
+                                    return Mono.error(e);
+                                }
+                            });
+                })
+                .onErrorResume(e -> {
+                    return tokenPointsTransactionService.createToken(request.getPartnerPointId(), request.getBookingId())
+                            .flatMap(token -> {
+                                return bookingService.getRiberaPointsByBookingId(request.getBookingId())
+                                        .flatMap(points -> {
+                                            Map<String, String> response = new HashMap<>();
+                                            response.put("token", token.getCodigoToken());
+                                            response.put("linkPayment", "https://ribera-dev.inclub.world/payment-validation?token=" + token.getCodigoToken());
+                                            response.put("mensaje", "Enviado (sin email)");
+
+                                            try {
+                                                String pdfFileName = token.getCodigoToken() + ".pdf";
+                                                File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response, points), pdfFileName);
+
+                                                // Aquí se debe pasar el folderNumber adecuadamente
+                                                int folderNumber = 13; // Ajusta este valor según tus necesidades
+                                                return s3UploadService.uploadPdf(pdfFile, folderNumber)
+                                                        .map(s3Url -> ResponseEntity.ok(response))
+                                                        .defaultIfEmpty(ResponseEntity.badRequest().build());
+                                            } catch (Exception ex) {
+                                                return Mono.error(ex);
+                                            }
+                                        });
+                            });
+                });
+    }
+
+
+    /*
     private String buildEmailBody(Map<String, String> response) {
         String emailBody = "<html><head><title></title></head><body style='color:black'>";
         emailBody += "<div style='width: 100%;'>";
@@ -146,7 +213,36 @@ public class TokenPointsTransactionController {
 
         return emailBody;
     }
-/*
+     */
+
+
+    private String buildEmailBody(Map<String, String> response, BigDecimal riberaPoints) {
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("America/Lima"));
+        String dateFormatted = now.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss a"));
+
+        String emailBody = "<html><head><title></title></head><body style='color:black'>";
+        emailBody += "<div style='width: 100%;'>";
+        emailBody += "<div style='display:flex;'>";
+        emailBody += "<img style='width: 100%;' src='http://www.inresorts.club/Views/img/fondo.png' />";
+        emailBody += "</div>";
+        emailBody += "<h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>Voucher de Pago con Puntos</h1>";
+        emailBody += "<h3 style='text-align: center;'>Fecha de Pago: " + dateFormatted + "</h3>";
+        emailBody += "<h3 style='text-align: center;'>Puntos Pagados: " + riberaPoints.toString() + "</h3>";
+        emailBody += "<center><p style='margin-left: 10%; margin-right: 10%;'>Cod Transaccion: " + response.get("token") + "</p></center>";
+        emailBody += "<center><p style='margin-left: 10%; margin-right: 10%;'>Gracias por su pago </p></center>";
+        emailBody += "<center><div style='width: 100%;'>";
+        emailBody += "<p style='margin-left: 10%; margin-right: 10%;'></p>";
+        emailBody += "<center>Recuerde que el pago lo puede realizar mediante los medios de pagos que se encuentran en el portal.</center>";
+        emailBody += "</div></center>";
+        emailBody += "<center><div style='width: 100%;'>";
+        emailBody += "<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>";
+        emailBody += "</div></center>";
+        emailBody += "</div></body></html>";
+
+        return emailBody;
+    }
+
+    /*
     private String buildEmailBody(Map<String, String> response) {
         String emailBody = "<html><body>";
         emailBody += "<h1>Token: " + response.get("token") + "</h1>";

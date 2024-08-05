@@ -80,6 +80,17 @@ public class BookingServiceImpl implements BookingService {
         //this.webClient = webClientBuilder.baseUrl(uploadDir).build();
     }
 
+    @Override
+    public Mono<BigDecimal> getRiberaPointsByBookingId(Integer bookingId) {
+        return bookingRepository.findById(bookingId)
+                .flatMap(booking -> roomOfferRepository.findById(booking.getRoomOfferId()))
+                .map(roomOffer -> {
+                    // Convert Integer to BigDecimal
+                    Integer riberaPoints = roomOffer.getRiberaPoints();
+                    return riberaPoints != null ? BigDecimal.valueOf(riberaPoints) : BigDecimal.ZERO;
+                });
+    }
+
     private Mono<String> getRoomName(Integer roomOfferId) {
         return roomOfferRepository.findById(roomOfferId)
                 .flatMap(roomOfferEntity -> roomRepository.findById(roomOfferEntity.getRoomId()))
