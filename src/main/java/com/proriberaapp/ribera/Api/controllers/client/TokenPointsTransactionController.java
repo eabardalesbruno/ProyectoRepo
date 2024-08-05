@@ -148,7 +148,6 @@ public class TokenPointsTransactionController {
                 .flatMap(token -> {
                     return bookingService.getRiberaPointsByBookingId(request.getBookingId())
                             .flatMap(points -> {
-                                // Obtain userClientId using the bookingId
                                 return bookingService.getUserClientIdByBookingId(request.getBookingId())
                                         .flatMap(userClientId -> {
                                             Map<String, String> response = new HashMap<>();
@@ -157,15 +156,12 @@ public class TokenPointsTransactionController {
                                             response.put("mensaje", "Enviado");
 
                                             try {
-                                                // Generate PDF file
                                                 String pdfFileName = token.getCodigoToken() + ".pdf";
                                                 File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response, points), pdfFileName);
 
-                                                // Upload PDF file to S3
-                                                int folderNumber = 13; // Adjust this value as needed
+                                                int folderNumber = 13;
                                                 return s3UploadService.uploadPdf(pdfFile, folderNumber)
                                                         .flatMap(s3Url -> {
-                                                            // Create and save PaymentBookEntity
                                                             PaymentBookEntity paymentBook = PaymentBookEntity.builder()
                                                                     .bookingId(request.getBookingId())
                                                                     .userClientId(userClientId)
