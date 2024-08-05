@@ -530,7 +530,6 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                     PaymentSubtypeEntity paymentSubtype = tuple.getT7();
                                     CurrencyTypeEntity currencyType = tuple.getT8();
 
-
                                     PaymentBookDetailsDTO.PaymentBookDetailsDTOBuilder builder = PaymentBookDetailsDTO.builder()
                                             .paymentBookId(paymentBookEntity.getPaymentBookId())
                                             .bookingId(paymentBookEntity.getBookingId())
