@@ -125,6 +125,7 @@ public class TokenPointsTransactionController {
                 });
     }
     private String buildEmailBody(Map<String, String> response) {
+        /*
         String emailBody = "<html><head><title></title></head><body style='color:black'>";
         emailBody += "<div style='width: 100%;'>";
         emailBody += "<div style='display:flex;'>";
@@ -143,6 +144,118 @@ public class TokenPointsTransactionController {
         emailBody += "<p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>";
         emailBody += "</div></center>";
         emailBody += "</div></body></html>";
+         */
+
+        String emailBody = "<!DOCTYPE html>\n" +
+                "<html lang=\"es\">\n" +
+                "<head>\n" +
+                "    <meta charset=\"UTF-8\">\n" +
+                "    <title>Voucher de Pago con Puntos</title>\n" +
+                "    <style>\n" +
+                "        body {\n" +
+                "            font-family: Arial, sans-serif;\n" +
+                "            margin: 0;\n" +
+                "            padding: 0;\n" +
+                "            color: black;\n" +
+                "            background-color: white;\n" +
+                "        }\n" +
+                "        .header {\n" +
+                "            width: 100%;\n" +
+                "            position: relative;\n" +
+                "            background-color: white;\n" +
+                "            padding: 20px 0;\n" +
+                "        }\n" +
+                "        .logo-left {\n" +
+                "            width: 50px;\n" +
+                "            position: absolute;\n" +
+                "            top: 10px;\n" +
+                "            left: 10px;\n" +
+                "        }\n" +
+                "        .banner {\n" +
+                "            width: 100%;\n" +
+                "            display: block;\n" +
+                "            margin: 0 auto;\n" +
+                "        }\n" +
+                "        .container {\n" +
+                "            width: 500px;\n" +
+                "            background-color: #f4f4f4;\n" +
+                "            margin: 20px auto;\n" +
+                "            padding: 20px;\n" +
+                "            border-radius: 10px;\n" +
+                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "            text-align: center;\n" +
+                "        }\n" +
+                "        .content {\n" +
+                "            text-align: left;\n" +
+                "            padding: 20px;\n" +
+                "        }\n" +
+                "        .content h3 {\n" +
+                "            margin: 10px 0;\n" +
+                "        }\n" +
+                "        .content p {\n" +
+                "            margin: 10px 0;\n" +
+                "        }\n" +
+                "        .button {\n" +
+                "            display: block;\n" +
+                "            width: 200px;\n" +
+                "            margin: 20px auto;\n" +
+                "            padding: 10px;\n" +
+                "            background-color: green;\n" +
+                "            color: white;\n" +
+                "            text-align: center;\n" +
+                "            border-radius: 5px;\n" +
+                "            text-decoration: none;\n" +
+                "        }\n" +
+                "        .footer {\n" +
+                "            width: 100%;\n" +
+                "            text-align: center;\n" +
+                "            margin: 20px 0;\n" +
+                "        }\n" +
+                "        .help-section {\n" +
+                "            width: 500px;\n" +
+                "            background-color: #f4f4f4;\n" +
+                "            margin: 20px auto;\n" +
+                "            padding: 20px;\n" +
+                "            border-radius: 10px;\n" +
+                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "            text-align: center;\n" +
+                "        }\n" +
+                "    </style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <div class=\"header\">\n" +
+                "        <!-- Encabezado con logo -->\n" +
+                "        <img class=\"logo-left\" src=\"https://bit.ly/4d7FuGX\" alt=\"Logo\">\n" +
+                "    </div>\n" +
+                "\n" +
+                "    <!-- Imagen de banner -->\n" +
+                "    <img class=\"banner\" src=\"https://bit.ly/46vO7sq\" alt=\"Banner\">\n" +
+                "\n" +
+                "    <!-- Contenedor con el contenido del mensaje -->\n" +
+                "    <div class=\"container\">\n" +
+                "        <div class=\"content\">\n" +
+                "            <h1 style='margin-top: 2px; text-align: center; font-weight: bold; font-style: italic;'>Voucher de Pago con Puntos</h1>\n" +
+                "            <h3 style='text-align: center;'>Fecha de Pago: 04-08-2024 04:55:00 pm</h3>\n" +
+                "            <h3 style='text-align: center;'>Puntos Pagados: 50</h3>\n" +
+                "            <center><p style='margin-left: 10%; margin-right: 10%;'>Cod Transaccion: " + response.get("token") + "</p></center>\n" +
+                "            <center><p style='margin-left: 10%; margin-right: 10%;'>Gracias por su pago</p></center>\n" +
+                "            <center><div style='width: 100%;'>\n" +
+                "                <p style='margin-left: 10%; margin-right: 10%;'></p>\n" +
+                "                <center>Recuerde que el pago lo puede realizar mediante los medios de pagos que se encuentran en el portal.</center>\n" +
+                "            </div></center>\n" +
+                "            <center><div style='width: 100%;'>\n" +
+                "                <p style='margin-left: 10%; margin-right: 10%;'>-------------- o --------------</p>\n" +
+                "            </div></center>\n" +
+                "        </div>\n" +
+                "    </div>\n" +
+                "\n" +
+                "    <!-- Sección de ayuda -->\n" +
+                "    <div class=\"help-section\">\n" +
+                "        <h3>¿Necesitas ayuda?</h3>\n" +
+                "        <p>Envie sus comentarios e información de errores a <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">informesyreservas@cieneguilladelrio.com</a></p>\n" +
+                "    </div>\n" +
+                "</body>\n" +
+                "</html>";
 
         return emailBody;
     }
