@@ -40,7 +40,20 @@ public class S3UploadService {
                     requestEntity,
                     String.class
             );
-            return response.getBody();
+            //return response.getBody(); ANTES DE PAGO VOUCHER CON PUNTOS
+            String responseBody = response.getBody();
+            if (responseBody != null) {
+                String dataPrefix = "\"data\":\"";
+                int startIndex = responseBody.indexOf(dataPrefix) + dataPrefix.length();
+                int endIndex = responseBody.indexOf("\"", startIndex);
+                if (startIndex > dataPrefix.length() - 1 && endIndex > startIndex) {
+                    return responseBody.substring(startIndex, endIndex);
+                } else {
+                    throw new IOException("Error: sin URL");
+                }
+            } else {
+                throw new IOException("Error: VACIO");
+            }
         });
     }
 }
