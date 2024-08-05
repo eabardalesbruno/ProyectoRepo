@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -149,43 +150,24 @@ public class TokenPointsTransactionController {
                                 response.put("mensaje", "Enviado");
 
                                 try {
+                                    // Generar archivo PDF
                                     String pdfFileName = token.getCodigoToken() + ".pdf";
                                     File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response, points), pdfFileName);
 
-                                    // Aquí se debe pasar el folderNumber adecuadamente
+                                    // Subir archivo PDF a S3
                                     int folderNumber = 13; // Ajusta este valor según tus necesidades
                                     return s3UploadService.uploadPdf(pdfFile, folderNumber)
                                             .map(s3Url -> ResponseEntity.ok(response))
-                                            .defaultIfEmpty(ResponseEntity.badRequest().build());
+                                            .defaultIfEmpty(ResponseEntity.status(500).body(Map.of("error", "Error al subir el archivo PDF a S3")));
+                                } catch (IOException e) {
+                                    return Mono.just(ResponseEntity.status(500).body(Map.of("error", "Error al generar el archivo PDF")));
                                 } catch (Exception e) {
-                                    return Mono.error(e);
+                                    return Mono.just(ResponseEntity.status(500).body(Map.of("error", "Error interno del servidor")));
                                 }
                             });
                 })
                 .onErrorResume(e -> {
-                    return tokenPointsTransactionService.createToken(request.getPartnerPointId(), request.getBookingId())
-                            .flatMap(token -> {
-                                return bookingService.getRiberaPointsByBookingId(request.getBookingId())
-                                        .flatMap(points -> {
-                                            Map<String, String> response = new HashMap<>();
-                                            response.put("token", token.getCodigoToken());
-                                            response.put("linkPayment", "https://ribera-dev.inclub.world/payment-validation?token=" + token.getCodigoToken());
-                                            response.put("mensaje", "Enviado (sin email)");
-
-                                            try {
-                                                String pdfFileName = token.getCodigoToken() + ".pdf";
-                                                File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response, points), pdfFileName);
-
-                                                // Aquí se debe pasar el folderNumber adecuadamente
-                                                int folderNumber = 13; // Ajusta este valor según tus necesidades
-                                                return s3UploadService.uploadPdf(pdfFile, folderNumber)
-                                                        .map(s3Url -> ResponseEntity.ok(response))
-                                                        .defaultIfEmpty(ResponseEntity.badRequest().build());
-                                            } catch (Exception ex) {
-                                                return Mono.error(ex);
-                                            }
-                                        });
-                            });
+                    return Mono.just(ResponseEntity.status(500).body(Map.of("error", "Error en el servicio de token")));
                 });
     }
 
