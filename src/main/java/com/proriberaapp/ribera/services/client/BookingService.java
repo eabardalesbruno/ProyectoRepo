@@ -29,4 +29,6 @@ public interface BookingService extends BaseService<BookingEntity,BookingEntity>
 
     Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest);
     Mono<BigDecimal> getRiberaPointsByBookingId(Integer bookingId);
+    Mono<Integer> getUserClientIdByBookingId(Integer bookingId);
+
 }

@@ -7,6 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.File;
+import java.math.BigDecimal;
 
 public interface PaymentBookService {
 
@@ -27,5 +28,6 @@ public interface PaymentBookService {
     Mono<PaymentBookEntity> findById(Integer id);
     //Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails(int page, int size);
     Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetails(int page, int size);
+    Mono<PaymentBookEntity> savePaymentBook(PaymentBookEntity paymentBook);
 
 }

@@ -606,6 +606,11 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
      */
 
+    @Override
+    public Mono<PaymentBookEntity> savePaymentBook(PaymentBookEntity paymentBook) {
+        return paymentBookRepository.save(paymentBook);
+    }
+
     private String generatePaymentConfirmationEmailBody(PaymentBookEntity paymentBook) {
         String body = "<html>\n" +
                 "<head>\n" +

@@ -2,10 +2,12 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.CreateTokenRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PointsRequest;
+import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.Domain.entities.TokenPointsTransaction;
 import com.proriberaapp.ribera.services.PDFGeneratorService;
 import com.proriberaapp.ribera.services.S3UploadService;
 import com.proriberaapp.ribera.services.client.BookingService;
+import com.proriberaapp.ribera.services.client.PaymentBookService;
 import com.proriberaapp.ribera.services.client.TokenPointsTransactionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import reactor.core.publisher.Mono;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -70,17 +73,19 @@ public class TokenPointsTransactionController {
     private final PDFGeneratorService pdfGeneratorService;
     private final S3UploadService s3UploadService;
     private final BookingService bookingService; // Servicio para obtener puntos pagados
-
+    private final PaymentBookService paymentBookService;
 
     @Autowired
     public TokenPointsTransactionController(TokenPointsTransactionService tokenPointsTransactionService,
                                             PDFGeneratorService pdfGeneratorService,
                                             S3UploadService s3UploadService,
-                                            BookingService bookingService) {
+                                            BookingService bookingService,
+                                            PaymentBookService paymentBookService) {
         this.tokenPointsTransactionService = tokenPointsTransactionService;
         this.pdfGeneratorService = pdfGeneratorService;
         this.s3UploadService = s3UploadService;
         this.bookingService = bookingService;
+        this.paymentBookService = paymentBookService;
     }
 
     @PostMapping("/create")
@@ -141,29 +146,58 @@ public class TokenPointsTransactionController {
     public Mono<ResponseEntity<Map<String, String>>> createTokenAndSendEmail(@RequestBody CreateTokenRequest request) {
         return tokenPointsTransactionService.createTokenAndSendEmail(request.getPartnerPointId(), request.getBookingId())
                 .flatMap(token -> {
-                    // Obtener puntos pagados
                     return bookingService.getRiberaPointsByBookingId(request.getBookingId())
                             .flatMap(points -> {
-                                Map<String, String> response = new HashMap<>();
-                                response.put("token", token.getCodigoToken());
-                                response.put("linkPayment", "https://ribera-dev.inclub.world/payment-validation?token=" + token.getCodigoToken());
-                                response.put("mensaje", "Enviado");
+                                // Obtain userClientId using the bookingId
+                                return bookingService.getUserClientIdByBookingId(request.getBookingId())
+                                        .flatMap(userClientId -> {
+                                            Map<String, String> response = new HashMap<>();
+                                            response.put("token", token.getCodigoToken());
+                                            response.put("linkPayment", "https://ribera-dev.inclub.world/payment-validation?token=" + token.getCodigoToken());
+                                            response.put("mensaje", "Enviado");
 
-                                try {
-                                    // Generar archivo PDF
-                                    String pdfFileName = token.getCodigoToken() + ".pdf";
-                                    File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response, points), pdfFileName);
+                                            try {
+                                                // Generate PDF file
+                                                String pdfFileName = token.getCodigoToken() + ".pdf";
+                                                File pdfFile = pdfGeneratorService.generatePDFFile(buildEmailBody(response, points), pdfFileName);
 
-                                    // Subir archivo PDF a S3
-                                    int folderNumber = 13; // Ajusta este valor según tus necesidades
-                                    return s3UploadService.uploadPdf(pdfFile, folderNumber)
-                                            .map(s3Url -> ResponseEntity.ok(response))
-                                            .defaultIfEmpty(ResponseEntity.status(500).body(Map.of("error", "Error al subir el archivo PDF a S3")));
-                                } catch (IOException e) {
-                                    return Mono.error(new RuntimeException("Error al generar el archivo PDF", e));
-                                } catch (Exception e) {
-                                    return Mono.error(new RuntimeException("Error interno del servidor", e));
-                                }
+                                                // Upload PDF file to S3
+                                                int folderNumber = 13; // Adjust this value as needed
+                                                return s3UploadService.uploadPdf(pdfFile, folderNumber)
+                                                        .flatMap(s3Url -> {
+                                                            // Create and save PaymentBookEntity
+                                                            PaymentBookEntity paymentBook = PaymentBookEntity.builder()
+                                                                    .bookingId(request.getBookingId())
+                                                                    .userClientId(userClientId)
+                                                                    .refuseReasonId(1)
+                                                                    .cancelReasonId(1)
+                                                                    .paymentMethodId(2)
+                                                                    .paymentStateId(1)
+                                                                    .paymentTypeId(1)
+                                                                    .paymentSubTypeId(3)
+                                                                    .currencyTypeId(1)
+                                                                    .amount(BigDecimal.ZERO)
+                                                                    .description("Puntos")
+                                                                    .paymentDate(new Timestamp(System.currentTimeMillis()))
+                                                                    .operationCode(token.getCodigoToken())
+                                                                    .note("Voucher con puntos")
+                                                                    .totalCost(BigDecimal.ZERO)
+                                                                    .imageVoucher(s3Url)
+                                                                    .totalPoints(points.intValue())
+                                                                    .paymentComplete(true)
+                                                                    .pendingpay(0)
+                                                                    .build();
+
+                                                            return paymentBookService.savePaymentBook(paymentBook)
+                                                                    .thenReturn(ResponseEntity.ok(response));
+                                                        })
+                                                        .defaultIfEmpty(ResponseEntity.status(500).body(Map.of("error", "Error al subir el archivo PDF a S3")));
+                                            } catch (IOException e) {
+                                                return Mono.just(ResponseEntity.status(500).body(Map.of("error", "Error al generar el archivo PDF")));
+                                            } catch (Exception e) {
+                                                return Mono.just(ResponseEntity.status(500).body(Map.of("error", "Error interno del servidor")));
+                                            }
+                                        });
                             });
                 })
                 .onErrorResume(e -> {

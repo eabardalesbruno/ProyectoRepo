@@ -91,6 +91,12 @@ public class BookingServiceImpl implements BookingService {
                 });
     }
 
+    @Override
+    public Mono<Integer> getUserClientIdByBookingId(Integer bookingId) {
+        return bookingRepository.findById(bookingId)
+                .map(booking -> booking.getUserClientId());
+    }
+
     private Mono<String> getRoomName(Integer roomOfferId) {
         return roomOfferRepository.findById(roomOfferId)
                 .flatMap(roomOfferEntity -> roomRepository.findById(roomOfferEntity.getRoomId()))
