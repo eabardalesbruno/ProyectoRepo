@@ -160,14 +160,15 @@ public class TokenPointsTransactionController {
                                             .map(s3Url -> ResponseEntity.ok(response))
                                             .defaultIfEmpty(ResponseEntity.status(500).body(Map.of("error", "Error al subir el archivo PDF a S3")));
                                 } catch (IOException e) {
-                                    return Mono.just(ResponseEntity.status(500).body(Map.of("error", "Error al generar el archivo PDF")));
+                                    return Mono.error(new RuntimeException("Error al generar el archivo PDF", e));
                                 } catch (Exception e) {
-                                    return Mono.just(ResponseEntity.status(500).body(Map.of("error", "Error interno del servidor")));
+                                    return Mono.error(new RuntimeException("Error interno del servidor", e));
                                 }
                             });
                 })
                 .onErrorResume(e -> {
-                    return Mono.just(ResponseEntity.status(500).body(Map.of("error", "Error en el servicio de token")));
+                    String errorMessage = e.getMessage();
+                    return Mono.just(ResponseEntity.status(500).body(Map.of("error", "Error: " + errorMessage)));
                 });
     }
 
