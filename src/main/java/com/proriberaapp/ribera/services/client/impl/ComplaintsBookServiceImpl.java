@@ -42,11 +42,9 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "            margin: 0;\n" +
                 "            padding: 0;\n" +
                 "            color: black;\n" +
-                "            background-color: white; /* Color de fondo */\n" +
                 "        }\n" +
                 "        .container {\n" +
                 "            width: 500px;\n" +
-                "            background-color: white; /* Fondo blanco del contenido */\n" +
                 "            margin: 0 auto;\n" +
                 "            padding: 20px;\n" +
                 "            border-radius: 10px;\n" +
