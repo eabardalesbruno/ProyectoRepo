@@ -70,7 +70,7 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "            <p><strong>RUC:</strong> " + complaint.getRuc() + "</p>\n" +
                 "            <p><strong>Nombre:</strong> " + complaint.getFirstname() + "</p>\n" +
                 "            <p><strong>Apellido:</strong> " + complaint.getLastname() + "</p>\n" +
-                "            <p><strong>Telefono:</strong> " + complaint.getPhonenumber() + "</p>\n" +
+                "            <p><strong>Telefono:</strong> " + complaint.getPhone() + "</p>\n" +
                 "            <p><strong>Email:</strong> " + complaint.getEmail() + "</p>\n" +
                 "            <p><strong>Adulto:</strong> " + (complaint.getIsadult() ? "Si" : "No") + "</p>\n" +
                 "            <p><strong>Direccion:</strong> " + complaint.getAddress() + "</p>\n" +

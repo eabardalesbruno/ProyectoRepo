@@ -20,7 +20,7 @@ public class ComplaintsBookEntity {
     private String ruc;
     private String firstname;
     private String lastname;
-    private String phonenumber;
+    private String phone;
     private String email;
     private Boolean isadult;
     private String address;
