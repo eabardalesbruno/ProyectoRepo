@@ -1,7 +1,8 @@
 package com.proriberaapp.ribera.services.client;
 
 import com.proriberaapp.ribera.Domain.entities.ComplaintsBookEntity;
+import reactor.core.publisher.Mono;
 
 public interface ComplaintsBookService {
-    ComplaintsBookEntity createComplaint(ComplaintsBookEntity complaint);
+    Mono<ComplaintsBookEntity> createComplaint(ComplaintsBookEntity complaint);
 }

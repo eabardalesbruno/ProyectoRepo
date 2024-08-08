@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.proriberaapp.ribera.Domain.entities.ComplaintsBookEntity;
 import com.proriberaapp.ribera.services.client.ComplaintsBookService;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/v1/complaints")
@@ -19,8 +20,9 @@ public class ComplaintsBookController {
     }
 
     @PostMapping
-    public ResponseEntity<ComplaintsBookEntity> createComplaint(@RequestBody ComplaintsBookEntity complaint) {
-        ComplaintsBookEntity savedComplaint = complaintsBookService.createComplaint(complaint);
-        return new ResponseEntity<>(savedComplaint, HttpStatus.CREATED);
+    public Mono<ResponseEntity<ComplaintsBookEntity>> createComplaint(@RequestBody ComplaintsBookEntity complaint) {
+        return complaintsBookService.createComplaint(complaint)
+                .map(savedComplaint -> ResponseEntity.status(HttpStatus.CREATED).body(savedComplaint))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
 }

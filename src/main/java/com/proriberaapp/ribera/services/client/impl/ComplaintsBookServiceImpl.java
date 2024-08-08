@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.proriberaapp.ribera.Infraestructure.repository.ComplaintsBookRepository;
 import com.proriberaapp.ribera.Domain.entities.ComplaintsBookEntity;
+import reactor.core.publisher.Mono;
 
 @Service
 public class ComplaintsBookServiceImpl implements ComplaintsBookService {
@@ -17,7 +18,7 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
     }
 
     @Override
-    public ComplaintsBookEntity createComplaint(ComplaintsBookEntity complaint) {
-        return complaintsBookRepository.save(complaint).block();
+    public Mono<ComplaintsBookEntity> createComplaint(ComplaintsBookEntity complaint) {
+        return complaintsBookRepository.save(complaint);
     }
 }
