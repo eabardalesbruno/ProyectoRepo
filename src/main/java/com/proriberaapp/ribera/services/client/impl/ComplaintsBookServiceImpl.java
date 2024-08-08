@@ -9,6 +9,8 @@ import com.proriberaapp.ribera.Domain.entities.ComplaintsBookEntity;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 @Service
 public class ComplaintsBookServiceImpl implements ComplaintsBookService {
     private final ComplaintsBookRepository complaintsBookRepository;
@@ -22,6 +24,9 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
 
     @Override
     public Mono<ComplaintsBookEntity> createComplaint(ComplaintsBookEntity complaint) {
+        // Establecer la fecha actual antes de guardar
+        complaint.setDateSaved(LocalDateTime.now());
+
         return complaintsBookRepository.save(complaint)
                 .flatMap(savedComplaint -> {
                     String subject = "Nuevo Reclamo Recibido";
@@ -29,7 +34,7 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                     String primaryRecipient = "reclamosriberadelrio@inresorts.club";
                     String userEmail = savedComplaint.getEmail();
 
-                    // Send the email to the primary recipient and a copy to the user's email
+                    // Enviar el correo al destinatario principal y una copia al email del usuario
                     return emailService.sendEmail(primaryRecipient, subject, body)
                             .then(emailService.sendEmail(userEmail, subject, body))
                             .thenReturn(savedComplaint);
@@ -37,7 +42,6 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
     }
 
     private String generateEmailBody(ComplaintsBookEntity complaint) {
-        // Construct the email body
         return "<html>\n" +
                 "<head>\n" +
                 "    <title>Reclamo Recibido</title>\n" +
