@@ -15,14 +15,14 @@ import org.springframework.data.relational.core.mapping.Table;
 public class ComplaintsBookEntity {
     @Id
     private Integer id;
-    private String personType;
-    private String businessName;
+    private String persontype;
+    private String businessname;
     private String ruc;
-    private String firstName;
-    private String lastName;
-    private String phoneNumber;
+    private String firstname;
+    private String lastname;
+    private String phonenumber;
     private String email;
-    private Boolean isAdult;
+    private Boolean isadult;
     private String address;
-    private Boolean acceptedTerms;
+    private Boolean acceptedterms;
 }
