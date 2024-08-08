@@ -33,6 +33,7 @@ public class SecurityConfig {
                                 "/api/v1/users/login",
                                 "/api/v1/users/check-email",
                                 "/api/v1/genders/**",
+                                "/api/v1/complaints/**",
                                 "/api/v1/countries/**",
                                 "/api/v1/users/**",
                                 "/api/v1/s3-client/**",
