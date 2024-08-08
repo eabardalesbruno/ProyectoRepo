@@ -77,7 +77,7 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "            <p><strong>Email:</strong> " + complaint.getEmail() + "</p>\n" +
                 "            <p><strong>Adulto:</strong> " + (complaint.getIsadult() ? "Si" : "No") + "</p>\n" +
                 "            <p><strong>Direccion:</strong> " + complaint.getAddress() + "</p>\n" +
-                "            <p><strong>Acepto terminos:</strong> " + (complaint.getAcceptedterms() ? "Sí" : "No") + "</p>\n" +
+                "            <p><strong>Acepto terminos:</strong> " + (complaint.getAcceptedterms() ? "Si" : "No") + "</p>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
                 "</body>\n" +
