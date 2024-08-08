@@ -419,6 +419,20 @@ CREATE TABLE IF NOT EXISTS tokenpointstransaction(
     bookingid INTEGER
 );
 
+CREATE TABLE complaintsbook (
+    id SERIAL PRIMARY KEY,
+    persontype VARCHAR(50) NOT NULL,
+    businessname VARCHAR(100),
+    ruc VARCHAR(20),
+    firstname VARCHAR(50) NOT NULL,
+    lastname VARCHAR(50) NOT NULL,
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    isadult BOOLEAN NOT NULL,
+    address VARCHAR(255),
+    acceptedterms BOOLEAN NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS documenttype( documenttypedesc)
 	VALUES ('DNI'),('RUC');
 
