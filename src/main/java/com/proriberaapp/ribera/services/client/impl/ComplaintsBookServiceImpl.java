@@ -50,7 +50,6 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "            margin: 0 auto;\n" +
                 "            padding: 20px;\n" +
                 "            border-radius: 10px;\n" +
-                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
                 "        }\n" +
                 "        .content {\n" +
                 "            text-align: center;\n" +
