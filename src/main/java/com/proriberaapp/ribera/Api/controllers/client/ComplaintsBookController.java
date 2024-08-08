@@ -21,10 +21,12 @@ public class ComplaintsBookController {
 
     @PostMapping
     public Mono<ResponseEntity<ComplaintsBookEntity>> createComplaint(@RequestBody ComplaintsBookEntity complaint) {
+        if (complaint.getPersonType() == null || complaint.getPersonType().isEmpty()) {
+            return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null));
+        }
+
         return complaintsBookService.createComplaint(complaint)
                 .map(savedComplaint -> ResponseEntity.status(HttpStatus.CREATED).body(savedComplaint))
-                .onErrorResume(e -> {
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
-                });
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
 }
