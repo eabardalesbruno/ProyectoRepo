@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.services.client.ComplaintsBookService;
+import com.proriberaapp.ribera.services.client.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.proriberaapp.ribera.Infraestructure.repository.ComplaintsBookRepository;
@@ -11,14 +12,75 @@ import reactor.core.publisher.Mono;
 public class ComplaintsBookServiceImpl implements ComplaintsBookService {
 
     private final ComplaintsBookRepository complaintsBookRepository;
+    private final EmailService emailService;
 
     @Autowired
-    public ComplaintsBookServiceImpl(ComplaintsBookRepository complaintsBookRepository) {
+    public ComplaintsBookServiceImpl(ComplaintsBookRepository complaintsBookRepository, EmailService emailService) {
         this.complaintsBookRepository = complaintsBookRepository;
+        this.emailService = emailService;
     }
 
     @Override
     public Mono<ComplaintsBookEntity> createComplaint(ComplaintsBookEntity complaint) {
-        return complaintsBookRepository.save(complaint);
+        return complaintsBookRepository.save(complaint)
+                .flatMap(savedComplaint -> {
+                    String subject = "Nuevo Reclamo Recibido";
+                    String body = generateEmailBody(savedComplaint);
+                    String recipient = "reclamosriberadelrio@inresorts.club";
+                    return emailService.sendEmail(recipient, subject, body)
+                            .thenReturn(savedComplaint);
+                });
+    }
+
+    private String generateEmailBody(ComplaintsBookEntity complaint) {
+        return "<html>\n" +
+                "<head>\n" +
+                "    <title>Queja Recibida</title>\n" +
+                "    <style>\n" +
+                "        body {\n" +
+                "            font-family: Arial, sans-serif;\n" +
+                "            margin: 0;\n" +
+                "            padding: 0;\n" +
+                "            color: black;\n" +
+                "            background-color: white; /* Color de fondo */\n" +
+                "        }\n" +
+                "        .container {\n" +
+                "            width: 500px;\n" +
+                "            background-color: #f4f4f4; /* Fondo blanco del contenido */\n" +
+                "            margin: 0 auto;\n" +
+                "            padding: 20px;\n" +
+                "            border-radius: 10px;\n" +
+                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "        }\n" +
+                "        .content {\n" +
+                "            text-align: center;\n" +
+                "        }\n" +
+                "        .content h1 {\n" +
+                "            margin: 20px 0;\n" +
+                "            font-weight: bold;\n" +
+                "        }\n" +
+                "        .content p {\n" +
+                "            margin: 10px 0;\n" +
+                "        }\n" +
+                "    </style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <div class=\"container\">\n" +
+                "        <div class=\"content\">\n" +
+                "            <h1>Nueva Queja Recibida</h1>\n" +
+                "            <p><strong>Tipo de Persona:</strong> " + complaint.getPersontype() + "</p>\n" +
+                "            <p><strong>Nombre de Negocio:</strong> " + complaint.getBusinessname() + "</p>\n" +
+                "            <p><strong>RUC:</strong> " + complaint.getRuc() + "</p>\n" +
+                "            <p><strong>Nombre:</strong> " + complaint.getFirstname() + "</p>\n" +
+                "            <p><strong>Apellido:</strong> " + complaint.getLastname() + "</p>\n" +
+                "            <p><strong>Teléfono:</strong> " + complaint.getPhonenumber() + "</p>\n" +
+                "            <p><strong>Email:</strong> " + complaint.getEmail() + "</p>\n" +
+                "            <p><strong>Adulto:</strong> " + (complaint.getIsadult() ? "Sí" : "No") + "</p>\n" +
+                "            <p><strong>Dirección:</strong> " + complaint.getAddress() + "</p>\n" +
+                "            <p><strong>Aceptó términos:</strong> " + (complaint.getAcceptedterms() ? "Sí" : "No") + "</p>\n" +
+                "        </div>\n" +
+                "    </div>\n" +
+                "</body>\n" +
+                "</html>";
     }
 }
