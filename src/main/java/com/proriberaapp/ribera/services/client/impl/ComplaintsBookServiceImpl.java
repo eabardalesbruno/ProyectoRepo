@@ -26,8 +26,12 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 .flatMap(savedComplaint -> {
                     String subject = "Nuevo Reclamo Recibido";
                     String body = generateEmailBody(savedComplaint);
-                    String recipient = "reclamosriberadelrio@inresorts.club";
-                    return emailService.sendEmail(recipient, subject, body)
+                    String primaryRecipient = "reclamosriberadelrio@inresorts.club";
+                    String userEmail = savedComplaint.getEmail();
+
+                    // Enviar el correo al destinatario principal y una copia al email del usuario
+                    return emailService.sendEmail(primaryRecipient, subject, body)
+                            .then(emailService.sendEmail(userEmail, subject, body))
                             .thenReturn(savedComplaint);
                 });
     }
