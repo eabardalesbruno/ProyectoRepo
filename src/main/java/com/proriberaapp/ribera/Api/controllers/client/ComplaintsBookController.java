@@ -23,6 +23,9 @@ public class ComplaintsBookController {
     public Mono<ResponseEntity<ComplaintsBookEntity>> createComplaint(@RequestBody ComplaintsBookEntity complaint) {
         return complaintsBookService.createComplaint(complaint)
                 .map(savedComplaint -> ResponseEntity.status(HttpStatus.CREATED).body(savedComplaint))
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+                .onErrorResume(e -> {
+                    // Log the error or perform additional error handling
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+                });
     }
 }

@@ -418,7 +418,14 @@ CREATE TABLE IF NOT EXISTS tokenpointstransaction(
     partnerpointid INTEGER,
     bookingid INTEGER
 );
-
+CREATE TABLE IF NOT EXISTS detailcomplaints (
+    detailcomplaintsid SERIAL PRIMARY KEY,
+    detailcomplaintsdesc VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS servicescomplaints (
+    servicescomplaintsid SERIAL PRIMARY KEY,
+    servicescomplaintsdesc VARCHAR(255)
+);
 CREATE TABLE complaintsbook (
     id SERIAL PRIMARY KEY,
     persontype VARCHAR(50) NOT NULL,
@@ -559,4 +566,11 @@ ALTER TABLE comfortbookingdetail ADD CONSTRAINT fk_comfort_cb FOREIGN KEY (comfo
 ALTER TABLE room ADD CONSTRAINT fk_roomtype_r FOREIGN KEY (roomtypeid) REFERENCES roomtype(roomtypeid);
 ALTER TABLE room ADD CONSTRAINT fk_stateroom_r FOREIGN KEY (stateroomid) REFERENCES stateroom(stateroomid);
 ALTER TABLE room ADD CONSTRAINT fk_roomdetail_r FOREIGN KEY (roomdetailid) REFERENCES roomdetail(roomdetailid);
+
+ALTER TABLE complaintsbook
+ADD COLUMN detailcomplaintsid INTEGER REFERENCES detailcomplaints(detailcomplaintsid),
+ADD COLUMN servicescomplaintsid INTEGER REFERENCES servicescomplaints(servicescomplaintsid),
+ADD COLUMN complaintsdescription VARCHAR(255),
+ADD COLUMN askingdescription VARCHAR(255),
+ADD COLUMN datesaved TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 */

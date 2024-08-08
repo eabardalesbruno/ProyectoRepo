@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.proriberaapp.ribera.Infraestructure.repository.ComplaintsBookRepository;
 import com.proriberaapp.ribera.Domain.entities.ComplaintsBookEntity;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 @Service
 public class ComplaintsBookServiceImpl implements ComplaintsBookService {
-
     private final ComplaintsBookRepository complaintsBookRepository;
     private final EmailService emailService;
 
@@ -29,7 +29,7 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                     String primaryRecipient = "reclamosriberadelrio@inresorts.club";
                     String userEmail = savedComplaint.getEmail();
 
-                    // Enviar el correo al destinatario principal y una copia al email del usuario
+                    // Send the email to the primary recipient and a copy to the user's email
                     return emailService.sendEmail(primaryRecipient, subject, body)
                             .then(emailService.sendEmail(userEmail, subject, body))
                             .thenReturn(savedComplaint);
@@ -37,6 +37,7 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
     }
 
     private String generateEmailBody(ComplaintsBookEntity complaint) {
+        // Construct the email body
         return "<html>\n" +
                 "<head>\n" +
                 "    <title>Reclamo Recibido</title>\n" +
@@ -69,16 +70,16 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "    <div class=\"container\">\n" +
                 "        <div class=\"content\">\n" +
                 "            <h1>Nuevo Reclamo Recibido</h1>\n" +
-                "            <p><strong>Tipo de Persona:</strong> " + complaint.getPersontype() + "</p>\n" +
-                "            <p><strong>Nombre de Negocio:</strong> " + complaint.getBusinessname() + "</p>\n" +
+                "            <p><strong>Tipo de Persona:</strong> " + complaint.getPersonType() + "</p>\n" +
+                "            <p><strong>Nombre de Negocio:</strong> " + complaint.getBusinessName() + "</p>\n" +
                 "            <p><strong>RUC:</strong> " + complaint.getRuc() + "</p>\n" +
-                "            <p><strong>Nombre:</strong> " + complaint.getFirstname() + "</p>\n" +
-                "            <p><strong>Apellido:</strong> " + complaint.getLastname() + "</p>\n" +
+                "            <p><strong>Nombre:</strong> " + complaint.getFirstName() + "</p>\n" +
+                "            <p><strong>Apellido:</strong> " + complaint.getLastName() + "</p>\n" +
                 "            <p><strong>Telefono:</strong> " + complaint.getPhone() + "</p>\n" +
                 "            <p><strong>Email:</strong> " + complaint.getEmail() + "</p>\n" +
-                "            <p><strong>Adulto:</strong> " + (complaint.getIsadult() ? "Si" : "No") + "</p>\n" +
+                "            <p><strong>Adulto:</strong> " + (complaint.getIsAdult() ? "Si" : "No") + "</p>\n" +
                 "            <p><strong>Direccion:</strong> " + complaint.getAddress() + "</p>\n" +
-                "            <p><strong>Acepto terminos:</strong> " + (complaint.getAcceptedterms() ? "Si" : "No") + "</p>\n" +
+                "            <p><strong>Acepto terminos:</strong> " + (complaint.getAcceptedTerms() ? "Si" : "No") + "</p>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
                 "</body>\n" +
