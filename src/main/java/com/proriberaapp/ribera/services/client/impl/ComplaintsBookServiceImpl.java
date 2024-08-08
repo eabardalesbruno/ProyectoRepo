@@ -35,7 +35,7 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
     private String generateEmailBody(ComplaintsBookEntity complaint) {
         return "<html>\n" +
                 "<head>\n" +
-                "    <title>Queja Recibida</title>\n" +
+                "    <title>Reclamo Recibido</title>\n" +
                 "    <style>\n" +
                 "        body {\n" +
                 "            font-family: Arial, sans-serif;\n" +
@@ -67,7 +67,7 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "<body>\n" +
                 "    <div class=\"container\">\n" +
                 "        <div class=\"content\">\n" +
-                "            <h1>Nueva Queja Recibida</h1>\n" +
+                "            <h1>Nuevo Reclamo Recibido</h1>\n" +
                 "            <p><strong>Tipo de Persona:</strong> " + complaint.getPersontype() + "</p>\n" +
                 "            <p><strong>Nombre de Negocio:</strong> " + complaint.getBusinessname() + "</p>\n" +
                 "            <p><strong>RUC:</strong> " + complaint.getRuc() + "</p>\n" +
