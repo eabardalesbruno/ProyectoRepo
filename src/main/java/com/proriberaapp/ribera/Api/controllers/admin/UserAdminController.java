@@ -6,25 +6,25 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v1/admin")
+@RequestMapping("${url.admin}")
 @RequiredArgsConstructor
 public class UserAdminController {
 
     private final UserAdminManagerService userAdminManagerService;
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public Mono<TokenDto> login(@RequestBody LoginRequest loginRequest) {
         return userAdminManagerService.login(loginRequest);
     }
 
     @PostMapping("/request/update/password")
-    public Mono<UserAdminResponse> requestUpdatePassword(
+    public Mono<UserResponse> requestUpdatePassword(
             @RequestBody RequestUpdateUserAdminRequest requestUpdateRequest) {
         return userAdminManagerService.requestUpdatePassword(requestUpdateRequest);
     }
 
     @PostMapping("/update/password")
-    public Mono<UserAdminResponse> updatePassword(
+    public Mono<UserResponse> updatePassword(
             @RequestParam String verificationCode,
             @RequestParam String newPassword) {
         return userAdminManagerService.updatePasswordByVerificationCode(verificationCode, newPassword);

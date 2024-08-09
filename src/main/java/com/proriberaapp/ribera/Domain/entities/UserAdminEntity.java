@@ -26,6 +26,7 @@ public class UserAdminEntity implements UserDetails {
     @Id
     @Column("useradminid")
     private Integer userAdminId;
+
     private String email;
     private String password;
     @Column("username")
@@ -36,9 +37,12 @@ public class UserAdminEntity implements UserDetails {
     private String lastName;
     private String phone;
     private String address;
-    @Column("typedocument")
-    private TypeDocument typeDocument;
-    private String document;
+
+    @Column("documenttypeid")
+    private Integer documenttypeId;
+    @Column("documentnumber")
+    private String documentNumber;
+
     private Role role;
     private StatesUser status;
     private List<Permission> permission;
@@ -50,6 +54,7 @@ public class UserAdminEntity implements UserDetails {
     private Timestamp updatedAt;
     @Column("updatedid")
     private Integer updatedId;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

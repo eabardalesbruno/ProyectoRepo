@@ -1,6 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
-import com.proriberaapp.ribera.Crosscutting.security.JwtTokenProvider;
+import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.enums.Permission;
 import com.proriberaapp.ribera.services.BaseService;
 import lombok.extern.slf4j.Slf4j;
@@ -9,14 +9,16 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+
 import java.util.List;
 
 @Slf4j
-abstract class BaseManagerController<R,T> {
+abstract class BaseManagerController<R, T> {
+
     @Autowired
-    private BaseService<R,T> service;
+    private BaseService<R, T> service;
     @Autowired
-    private JwtTokenProvider jtp;
+    private JwtProvider jtp;
 
     @GetMapping("find/all")
     public Flux<R> getAllEntity(
@@ -28,7 +30,7 @@ abstract class BaseManagerController<R,T> {
 
     @GetMapping("find")
     public Mono<R> getEntityById(@RequestParam Integer id,
-            @RequestHeader("Authorization") String token) {
+                                 @RequestHeader("Authorization") String token) {
         Integer idUserAdmin = jtp.getIdFromToken(token);
         List<Permission> permissions = jtp.getPermissionsFromToken(token);
         return permissions.contains(Permission.READ.name()) ? service.findById(id) : Mono.error(new Exception("No tienes permisos para leer"));

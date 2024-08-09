@@ -6,10 +6,10 @@ import com.proriberaapp.ribera.Domain.enums.StatePaymentMethod;
 public record PaymentMethodRequest(
         String description
 ) {
+
     public PaymentMethodEntity toEntity() {
         return PaymentMethodEntity.builder()
                 .description(description)
-                .state(StatePaymentMethod.ACTIVE)
                 .build();
     }
 }

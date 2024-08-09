@@ -6,18 +6,18 @@ import reactor.core.publisher.Mono;
 
 public interface UserAdminManagerService {
     Mono<TokenDto> login(LoginRequest loginRequest);
-    Mono<UserAdminResponse> register(Integer idUserAdmin, RegisterRequest userAdminEntity);
-    Mono<UserAdminResponse> update(Integer id, Integer idUserAdminUpdate, UpdateUserAdminRequest updateUserAdminRequest);
-    Mono<UserAdminResponse> updatePassword(Integer idUserAdmin, Integer idUserAdminUpdatePassword, String newPassword);
-    Mono<UserAdminResponse> updatePasswordBySolicitude(Integer idUserAdmin, Integer idUserAdminUpdatePassword, String newPassword, String oldPassword);
-    Mono<UserAdminResponse> updatePasswordByVerificationCode(String verificationCode, String newPassword);
-    Mono<UserAdminResponse> updatePasswordByVerificationCode(Integer idUserAdmin, String verificationCode, String newPassword);
-    Mono<UserAdminResponse> requestUpdatePassword(RequestUpdateUserAdminRequest requestUpdateRequest);
-    Mono<UserAdminResponse> findByEmail(String email);
-    Mono<UserAdminResponse> findById(Integer id);
-    Flux<UserAdminResponse> findAll();
-    Mono<UserAdminResponse> disable(Integer idUserAdmin, Integer idUserAdminUpdateStatus);
-    Mono<UserAdminResponse> enable(Integer idUserAdmin, Integer idUserAdminUpdateStatus);
-    Mono<UserAdminResponse> delete(Integer idUserAdmin, Integer idUserAdminDelete);
+    Mono<UserResponse> register(Integer idUserAdmin, RegisterRequest userAdminEntity);
+    Mono<UserResponse> update(Integer id, Integer idUserAdminUpdate, UpdateUserAdminRequest updateUserAdminRequest);
+    Mono<UserResponse> updatePassword(Integer idUserAdmin, Integer idUserAdminUpdatePassword, String newPassword);
+    Mono<UserResponse> updatePasswordBySolicitude(Integer idUserAdmin, Integer idUserAdminUpdatePassword, String newPassword, String oldPassword);
+    Mono<UserResponse> updatePasswordByVerificationCode(String verificationCode, String newPassword);
+    Mono<UserResponse> updatePasswordByVerificationCode(Integer idUserAdmin, String verificationCode, String newPassword);
+    Mono<UserResponse> requestUpdatePassword(RequestUpdateUserAdminRequest requestUpdateRequest);
+    Mono<UserResponse> findByEmail(String email);
+    Mono<UserResponse> findById(Integer id);
+    Flux<UserResponse> findAll();
+    Mono<UserResponse> disable(Integer idUserAdmin, Integer idUserAdminUpdateStatus);
+    Mono<UserResponse> enable(Integer idUserAdmin, Integer idUserAdminUpdateStatus);
+    Mono<UserResponse> delete(Integer idUserAdmin, Integer idUserAdminDelete);
 
 }
