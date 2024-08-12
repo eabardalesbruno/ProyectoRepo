@@ -52,12 +52,6 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "            padding: 0;\n" +
                 "            color: black;\n" +
                 "        }\n" +
-                "        .container {\n" +
-                "            width: 500px;\n" +
-                "            margin: 0 auto;\n" +
-                "            padding: 20px;\n" +
-                "            border-radius: 10px;\n" +
-                "        }\n" +
                 "        .content {\n" +
                 "            text-align: center;\n" +
                 "        }\n" +
@@ -71,8 +65,8 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "    </style>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "    <div class=\"container\">\n" +
-                "        <div class=\"content\">\n" +
+                "    <div>\n" +
+                "        <div>\n" +
                 "            <h1>Nuevo Reclamo Recibido</h1>\n" +
                 "            <p><strong>Tipo de Persona:</strong> " + complaint.getPersonType() + "</p>\n" +
                 "            <p><strong>Nombre de Negocio:</strong> " + complaint.getBusinessName() + "</p>\n" +
