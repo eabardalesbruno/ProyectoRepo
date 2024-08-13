@@ -85,4 +85,5 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "</body>\n" +
                 "</html>";
     }
+
 }
