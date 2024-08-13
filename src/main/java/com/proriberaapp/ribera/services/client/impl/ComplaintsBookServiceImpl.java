@@ -78,6 +78,8 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "            <p><strong>Adulto:</strong> " + (complaint.getIsAdult() ? "Si" : "No") + "</p>\n" +
                 "            <p><strong>Direccion:</strong> " + complaint.getAddress() + "</p>\n" +
                 "            <p><strong>Acepto terminos:</strong> " + (complaint.getAcceptedTerms() ? "Si" : "No") + "</p>\n" +
+                "            <p><strong>Reclamo:</strong> " + complaint.getComplaintsDescription() + "</p>\n" +
+                "            <p><strong>Solicitud del reclamo:</strong> " + complaint.getAskingDescription() + "</p>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
                 "</body>\n" +
