@@ -67,39 +67,7 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
     }
      */
 
-    /*
-    @Override
-    public Mono<CancelPaymentEntity> saveCancelPayment(CancelPaymentEntity cancelPayment) {
-        return cancelPaymentRepository.save(cancelPayment)
-                .flatMap(savedCancelPayment -> paymentBookRepository.findById(savedCancelPayment.getPaymentBookId())
-                        .flatMap(paymentBook -> {
-                            paymentBook.setCancelReasonId(savedCancelPayment.getCancelReasonId());
-                            return paymentBookRepository.save(paymentBook)
-                                    .flatMap(savedPaymentBook -> {
-                                        Integer bookingId = savedPaymentBook.getBookingId();
-                                        return bookingRepository.findByBookingId(bookingId)
-                                                .flatMap(booking -> {
-                                                    if (booking.getBookingStateId() == 3) {
-                                                        booking.setBookingStateId(2);
-                                                        return bookingRepository.save(booking);
-                                                    }
-                                                    return Mono.just(booking);
-                                                });
-                                    });
-                        })
-                        .then(paymentBookRepository.findUserClientIdByPaymentBookId(savedCancelPayment.getPaymentBookId())
-                                .flatMap(userClientId -> userClientRepository.findById(userClientId)
-                                        .flatMap(userClient -> {
-                                            String emailBody = generatePaymentRejectionEmailBody(userClient, savedCancelPayment);
-                                            return emailService.sendEmail(userClient.getEmail(), "Cancelacion de Pago", emailBody)
-                                                    .thenReturn(savedCancelPayment);
-                                        })
-                                )
-                        )
-                );
-    }
-     */
-
+/*
     @Override
     public Mono<CancelPaymentEntity> saveCancelPayment(CancelPaymentEntity cancelPayment) {
         return cancelPaymentRepository.save(cancelPayment)
@@ -113,6 +81,40 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
                                                     .flatMap(paymentBook -> {
                                                         paymentBook.setCancelReasonId(savedCancelPayment.getCancelReasonId());
                                                         return paymentBookRepository.save(paymentBook);
+                                                    });
+                                        });
+                            } else {
+                                return Mono.just(booking);
+                            }
+                        })
+                        .then(paymentBookRepository.findUserClientIdByPaymentBookId(savedCancelPayment.getPaymentBookId())
+                                .flatMap(userClientId -> userClientRepository.findById(userClientId)
+                                        .flatMap(userClient -> {
+                                            String emailBody = generatePaymentRejectionEmailBody(userClient, savedCancelPayment);
+                                            return emailService.sendEmail(userClient.getEmail(), "Cancelación de Pago", emailBody)
+                                                    .thenReturn(savedCancelPayment);
+                                        })
+                                )
+                        )
+                );
+    }
+ */
+
+    @Override
+    public Mono<CancelPaymentEntity> saveCancelPayment(CancelPaymentEntity cancelPayment) {
+        return cancelPaymentRepository.save(cancelPayment)
+                .flatMap(savedCancelPayment -> bookingRepository.findByBookingId(savedCancelPayment.getPaymentBookId())
+                        .flatMap(booking -> {
+                            if (booking.getBookingStateId() == 3) {
+                                booking.setBookingStateId(2);
+                                return bookingRepository.save(booking)
+                                        .flatMap(updatedBooking -> {
+                                            return paymentBookRepository.findById(savedCancelPayment.getPaymentBookId())
+                                                    .flatMap(paymentBook -> {
+                                                        paymentBook.setCancelReasonId(savedCancelPayment.getCancelReasonId());
+                                                        return paymentBookRepository.save(paymentBook)
+                                                                .then(bookingRepository.deleteById(updatedBooking.getBookingId()))
+                                                                .then(Mono.just(updatedBooking));
                                                     });
                                         });
                             } else {
