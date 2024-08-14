@@ -14,7 +14,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/v1/client/users")
 @Slf4j
 public class UserController {
     @Autowired
