@@ -3,7 +3,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/userso")
+@RequestMapping("/users")
 public class UserControllerBk {
     /*
     @Autowired
