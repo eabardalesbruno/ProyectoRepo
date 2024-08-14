@@ -41,6 +41,7 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 });
     }
 
+    /*
     private String generateEmailBody(ComplaintsBookEntity complaint) {
         return "<html>\n" +
                 "<head>\n" +
@@ -83,6 +84,137 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "        </div>\n" +
                 "    </div>\n" +
                 "</body>\n" +
+                "</html>";
+    }
+     */
+
+    private String generateEmailBody(ComplaintsBookEntity complaint) {
+        return "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "  <head>\n" +
+                "    <meta charset=\"UTF-8\" />\n" +
+                "    <title>Nuevo Reclamo</title>\n" +
+                "    <style>\n" +
+                "      html, body { background: #f8f8fc; }\n" +
+                "      .container { }\n" +
+                "      .header-social { margin: 0 196px; padding: 40px 48px; display: flex; justify-content: space-between; }\n" +
+                "      .red-social { display: flex; justify-content: center; align-items: center; gap: 16px; }\n" +
+                "      .container-body { margin: 21px 186px 0 186px; }\n" +
+                "      .bg-custom { display: flex; justify-content: center; flex-direction: column; }\n" +
+                "      .custom-img { border-radius: 8px 8px 0 0; }\n" +
+                "      .custom-body { background: #ffffff; margin-bottom: 16px; }\n" +
+                "      .title { margin: 40px 40px 25px 40px; }\n" +
+                "      .title-complains { font-family: 'Product Sans', sans-serif; font-size: 20px; font-weight: 700; line-height: 30px; text-align: left; color: #121a26; }\n" +
+                "      .description { display: flex; flex-direction: column; color: #384860; font-family: 'Product Sans', sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; text-align: left; margin: 0 40px; }\n" +
+                "      .description-complains .custom-apart { font-family: 'Product Sans', sans-serif; font-size: 16px; font-style: italic; font-weight: 700; line-height: 24px; text-align: left; }\n" +
+                "      .custom-detail { margin: 24px 40px; display: flex; gap: 24px; }\n" +
+                "      .data-complains { margin-bottom: 8px; font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 600; line-height: 24px; text-align: left; color: #1e1e1e; }\n" +
+                "      .custom-detail-data { background: #f9f9f9; padding: 24px; font-family: 'Poppins', sans-serif; line-height: 21px; text-align: left; font-size: 14px; flex: 0 0 calc(33.33% - 24px); }\n" +
+                "      .custom-detail-complains { background: #f9f9f9; padding: 24px; font-family: 'Poppins', sans-serif; line-height: 21px; text-align: left; font-size: 14px; flex: 0 0 calc(60.33% - 24px); }\n" +
+                "      .detail { display: flex; flex-direction: column; margin-bottom: 8px; }\n" +
+                "      .data { font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 400; line-height: 21px; text-align: left; color: #1e1e1e; }\n" +
+                "      .data-detail { font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 600; line-height: 21px; text-align: left; color: #1e1e1e; }\n" +
+                "      .custom-footer-help { background: #ffffff; margin-bottom: 16px; padding: 24px 40px; }\n" +
+                "      .custom-help { font-family: 'Product Sans', sans-serif; font-size: 16px; font-weight: 700; line-height: 24px; text-align: left; }\n" +
+                "      .custom-footer-info { margin: 0 196px; padding: 40px 48px; display: flex; font-family: 'Product Sans', sans-serif; font-size: 14px; font-weight: 400; line-height: 22.4px; color: #9D9D9D; }\n" +
+                "      .custom-info { display: flex; flex-direction: column; }\n" +
+                "    </style>\n" +
+                "  </head>\n" +
+                "  <body>\n" +
+                "    <div class=\"container\">\n" +
+                "      <div class=\"header-social\">\n" +
+                "        <img src=\"logo-ribera.svg\" alt=\"logo\" />\n" +
+                "        <div class=\"red-social\">\n" +
+                "          <a href=\"https://www.facebook.com/RiberaDelRioClubResort/?locale=es_LA\" target=\"_blank\">\n" +
+                "            <img src=\"facebook.svg\" alt=\"Facebook\" />\n" +
+                "          </a>\n" +
+                "          <a href=\"https://www.instagram.com/riberadelrioclubresort6/\" target=\"_blank\">\n" +
+                "            <img src=\"instagram.svg\" alt=\"Instagram\" />\n" +
+                "          </a>\n" +
+                "        </div>\n" +
+                "      </div>\n" +
+                "      <div class=\"container-body\">\n" +
+                "        <div class=\"bg-custom\">\n" +
+                "          <img src=\"bg-body.svg\" alt=\"Ribera\" class=\"custom-img\" />\n" +
+                "          <div class=\"custom-body\">\n" +
+                "            <div class=\"title\">\n" +
+                "              <p class=\"title-complains\">Nuevo Reclamo recibido</p>\n" +
+                "            </div>\n" +
+                "            <div class=\"description\">\n" +
+                "              <span class=\"description-name\">Estimado(a), " + complaint.getFirstName() + ".</span>\n" +
+                "              <p class=\"description-complains\">\n" +
+                "                El presente es para informar que se registro exitosamente el reclamo de su reserva\n" +
+                "                Nos contactamos por este medio o por nuestro canal de Whatsapp para comunicarle dicha solución.\n" +
+                "              </p>\n" +
+                "            </div>\n" +
+                "            <div class=\"custom-detail\">\n" +
+                "              <div class=\"custom-detail-data\">\n" +
+                "                <div class=\"data-complains\">\n" +
+                "                  <span>Datos del consumidor reclamante</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Nombre:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getFirstName() + "</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Apellido:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getLastName() + "</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Dirección:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getAddress() + "</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Celular o Teléfono:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getPhone() + "</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">N° de documento de identidad:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getRuc() + "</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Tipo de cliente:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getPersonType() + "</span>\n" +
+                "                </div>\n" +
+                "              </div>\n" +
+                "              <div class=\"custom-detail-complains\">\n" +
+                "                <div class=\"data-complains\">\n" +
+                "                  <span>Datos del reclamo</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Tipo de Reclamo:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getPersonType() + "</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Fecha del incidente:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getDateSaved() + "</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Descripción del Reclamo:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getComplaintsDescription() + "</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Pedido del Cliente:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getAskingDescription() + "</span>\n" +
+                "                </div>\n" +
+                "              </div>\n" +
+                "            </div>\n" +
+                "            <div class=\"custom-footer-help\">\n" +
+                "              <span class=\"custom-help\">\n" +
+                "                Nuestro equipo se contactará a la brevedad posible para ofrecer una solución.\n" +
+                "              </span>\n" +
+                "            </div>\n" +
+                "          </div>\n" +
+                "        </div>\n" +
+                "      </div>\n" +
+                "      <div class=\"custom-footer-info\">\n" +
+                "        <span class=\"custom-info\">\n" +
+                "          Este correo ha sido enviado a " + complaint.getEmail() + ".<br />\n" +
+                "          Si no solicitó este mensaje, por favor ignore este correo.\n" +
+                "        </span>\n" +
+                "      </div>\n" +
+                "    </div>\n" +
+                "  </body>\n" +
                 "</html>";
     }
 }
