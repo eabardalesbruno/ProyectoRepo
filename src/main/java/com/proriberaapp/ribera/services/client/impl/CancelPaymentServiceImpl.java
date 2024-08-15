@@ -142,13 +142,15 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
                         bookingRepository.findByBookingId(savedCancelPayment.getPaymentBookId())
                                 .flatMap(booking -> {
                                     if (booking.getBookingStateId() == 3 || booking.getBookingStateId() == 4) {
-                                        return paymentBookRepository.findById(savedCancelPayment.getPaymentBookId())
-                                                .flatMap(paymentBook -> {
-                                                    paymentBook.setCancelReasonId(savedCancelPayment.getCancelReasonId());
-                                                    return paymentBookRepository.save(paymentBook)
-                                                            .then(bookingRepository.deleteById(booking.getBookingId()))
-                                                            .thenReturn(savedCancelPayment);
-                                                });
+                                        // Eliminar el booking si el estado es 3 o 4
+                                        return bookingRepository.deleteById(booking.getBookingId())
+                                                .then(paymentBookRepository.findById(savedCancelPayment.getPaymentBookId())
+                                                        .flatMap(paymentBook -> {
+                                                            paymentBook.setCancelReasonId(savedCancelPayment.getCancelReasonId());
+                                                            return paymentBookRepository.save(paymentBook)
+                                                                    .thenReturn(savedCancelPayment);
+                                                        })
+                                                );
                                     } else {
                                         return Mono.just(savedCancelPayment);
                                     }
