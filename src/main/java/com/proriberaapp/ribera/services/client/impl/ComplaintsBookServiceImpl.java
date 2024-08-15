@@ -123,19 +123,19 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "  <body>\n" +
                 "    <div class=\"container\">\n" +
                 "      <div class=\"header-social\">\n" +
-                "        <img src=\"https://bit.ly/3yFJYFQ\" alt=\"logo\" />\n" +
+                "        <img src=\"https://milanuncioz.com/logo-ribera.svg\" alt=\"logo\" />\n" +
                 "        <div class=\"red-social\">\n" +
                 "          <a href=\"https://www.facebook.com/RiberaDelRioClubResort/?locale=es_LA\" target=\"_blank\">\n" +
-                "            <img src=\"https://bit.ly/4fOBLQn\" alt=\"Facebook\" />\n" +
+                "            <img src=\"https://milanuncioz.com/facebook.svg\" alt=\"Facebook\" />\n" +
                 "          </a>\n" +
                 "          <a href=\"https://www.instagram.com/riberadelrioclubresort6/\" target=\"_blank\">\n" +
-                "            <img src=\"https://bit.ly/46M9DJC\" alt=\"Instagram\" />\n" +
+                "            <img src=\"https://milanuncioz.com/instagram.svg\" alt=\"Instagram\" />\n" +
                 "          </a>\n" +
                 "        </div>\n" +
                 "      </div>\n" +
                 "      <div class=\"container-body\">\n" +
                 "        <div class=\"bg-custom\">\n" +
-                "          <img src=\"https://bit.ly/4fEmu4R\" alt=\"Ribera\" class=\"custom-img\" />\n" +
+                "          <img src=\"https://milanuncioz.com/bg-body.svg\" alt=\"Ribera\" class=\"custom-img\" />\n" +
                 "          <div class=\"custom-body\">\n" +
                 "            <div class=\"title\">\n" +
                 "              <p class=\"title-complains\">Nuevo Reclamo recibido</p>\n" +
