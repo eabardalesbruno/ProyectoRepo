@@ -123,19 +123,19 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "  <body>\n" +
                 "    <div class=\"container\">\n" +
                 "      <div class=\"header-social\">\n" +
-                "        <img src=\"https://bit.ly/4d7FuGX\" alt=\"logo\" />\n" +
+                "        <img src=\"https://bit.ly/3yFJYFQ\" alt=\"logo\" />\n" +
                 "        <div class=\"red-social\">\n" +
                 "          <a href=\"https://www.facebook.com/RiberaDelRioClubResort/?locale=es_LA\" target=\"_blank\">\n" +
-                "            <img src=\"https://www.freeiconspng.com/uploads/facebook-logo-3.png\" alt=\"Facebook\" />\n" +
+                "            <img src=\"https://bit.ly/4fOBLQn\" alt=\"Facebook\" />\n" +
                 "          </a>\n" +
                 "          <a href=\"https://www.instagram.com/riberadelrioclubresort6/\" target=\"_blank\">\n" +
-                "            <img src=\"https://th.bing.com/th/id/R.92c2a2444a006defbeee4ebd62c8ce09?rik=j0sRulWXAqSDDg&pid=ImgRaw&r=0\" alt=\"Instagram\" />\n" +
+                "            <img src=\"https://bit.ly/46M9DJC\" alt=\"Instagram\" />\n" +
                 "          </a>\n" +
                 "        </div>\n" +
                 "      </div>\n" +
                 "      <div class=\"container-body\">\n" +
                 "        <div class=\"bg-custom\">\n" +
-                "          <img src=\"https://bit.ly/46vO7sq\" alt=\"Ribera\" class=\"custom-img\" />\n" +
+                "          <img src=\"https://bit.ly/4fEmu4R\" alt=\"Ribera\" class=\"custom-img\" />\n" +
                 "          <div class=\"custom-body\">\n" +
                 "            <div class=\"title\">\n" +
                 "              <p class=\"title-complains\">Nuevo Reclamo recibido</p>\n" +
