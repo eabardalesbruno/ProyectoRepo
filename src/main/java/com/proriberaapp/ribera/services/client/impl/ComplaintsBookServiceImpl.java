@@ -268,11 +268,10 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "              <p class=\"title-complains\">Nuevo Reclamo recibido</p>\n" +
                 "            </div>\n" +
                 "            <div class=\"description\">\n" +
-                "              <span class=\"description-name\">Estimado(a), Fernando.</span>\n" +
+                "              <span class=\"description-name\">Estimado(a), " + complaint.getFirstName() + ".</span>\n" +
                 "              <p class=\"description-complains\">\n" +
-                "                El presente es para informar que se registro exitosamente el reclamo de su reserva de:\n" +
-                "                <span class=\"custom-apart\">Departamento estándar vista piscina.</span>\n" +
-                "                Nos contactamos por este medio o por nuestro canal de Whatsapp para comunicarle dicha solución.\n" +
+                "                El presente es para informar que se registro exitosamente el reclamo de su reserva \n" +
+                "                Nos contactamos por este medio o por nuestro canal de Whatsapp para comunicarle dicha solucion.\n" +
                 "              </p>\n" +
                 "            </div>\n" +
                 "            <div class=\"custom-detail\">\n" +
@@ -282,27 +281,27 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
                 "                  <span class=\"data\">Nombre:</span>\n" +
-                "                  <span class=\"data-detail\">Javier Alejandro</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getFirstName() + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
                 "                  <span class=\"data\">Apellido:</span>\n" +
-                "                  <span class=\"data-detail\">Olaza de la cruz</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getLastName() + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
-                "                  <span class=\"data\">Dirección:</span>\n" +
-                "                  <span class=\"data-detail\">San Borja 1234</span>\n" +
+                "                  <span class=\"data\">Direccion:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getAddress() + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
-                "                  <span class=\"data\">Celular o Teléfono:</span>\n" +
-                "                  <span class=\"data-detail\">+51 965412378</span>\n" +
+                "                  <span class=\"data\">Celular o Telefono:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getPhone() + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
-                "                  <span class=\"data\">N° de documento de identidad:</span>\n" +
-                "                  <span class=\"data-detail\">74859641</span>\n" +
+                "                  <span class=\"data\">Numero de documento de identidad:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getRuc() + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
                 "                  <span class=\"data\">Tipo de cliente:</span>\n" +
-                "                  <span class=\"data-detail\">Persona Natural</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getPersonType() + "</span>\n" +
                 "                </div>\n" +
                 "              </div>\n" +
                 "              <div class=\"custom-detail-complains\">\n" +
@@ -311,19 +310,19 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
                 "                  <span class=\"data\">Tipo:</span>\n" +
-                "                  <span class=\"data-detail\">Reclamo</span>\n" +
-                "                </div>\n" +
-                "                <div class=\"detail\">\n" +
-                "                  <span class=\"data\">Producto o servicio:</span>\n" +
-                "                  <span class=\"data-detail\">Apartamento de 2 dormitorios con vistas al jardín</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getPersonType() + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
                 "                  <span class=\"data\">Fecha de incidente:</span>\n" +
-                "                  <span class=\"data-detail\">12 agosto de 2024</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getDateSaved() + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
-                "                  <span class=\"data\">Descripción:</span>\n" +
-                "                  <span class=\"data-detail\">El aire acondicionado del apartamento no funcionaba correctamente y causó mucho inconveniente durante nuestra estadía.</span>\n" +
+                "                  <span class=\"data\">Descripción del Reclamo:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getComplaintsDescription() + "</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Pedido del Cliente:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getAskingDescription() + "</span>\n" +
                 "                </div>\n" +
                 "              </div>\n" +
                 "            </div>\n" +
@@ -331,14 +330,14 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "        </div>\n" +
                 "        <div class=\"custom-footer-help\">\n" +
                 "          <p class=\"custom-help\">Ayuda y Soporte</p>\n" +
-                "          <p>Para cualquier consulta, por favor contactarse con nuestro equipo de atención al cliente a través de contacto@riberadelrio.com</p>\n" +
+                "          <p>Para cualquier consulta, por favor contactarse con nuestro equipo de atencion al cliente a traves de contacto@riberadelrio.com</p>\n" +
                 "        </div>\n" +
                 "      </div>\n" +
                 "      <div class=\"custom-footer-info\">\n" +
                 "        <p>\n" +
-                "          Recibió este mensaje porque usted o alguien con acceso a esta dirección de correo electrónico se inscribió en la lista de contactos de Ribera del Rio.\n" +
+                "          Recibio este mensaje porque usted o alguien con acceso a esta direccion de correo electronico se inscribio en la lista de contactos de Ribera del Rio.\n" +
                 "          <br />\n" +
-                "          <a href=\"#\">Cancelar suscripción</a>\n" +
+                "          <a href=\"#\">Cancelar suscripcion</a>\n" +
                 "        </p>\n" +
                 "      </div>\n" +
                 "    </div>\n" +
