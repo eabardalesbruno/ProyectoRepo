@@ -142,7 +142,6 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
                         bookingRepository.findByBookingId(savedCancelPayment.getPaymentBookId())
                                 .flatMap(booking -> {
                                     if (booking.getBookingStateId() == 3 || booking.getBookingStateId() == 4) {
-                                        // Ya no se elimina el booking, solo actualiza el PaymentBook
                                         return paymentBookRepository.findById(savedCancelPayment.getPaymentBookId())
                                                 .flatMap(paymentBook -> {
                                                     paymentBook.setCancelReasonId(savedCancelPayment.getCancelReasonId());
