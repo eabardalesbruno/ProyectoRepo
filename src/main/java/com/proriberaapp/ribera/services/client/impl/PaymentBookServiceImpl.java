@@ -552,7 +552,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                             .pendingPay(paymentBookEntity.getPendingpay());
 
                                     if (userClient != null) {
-                                        builder.userClientName(userClient.getFirstName() + userClient.getLastName());
+                                        builder.userClientName(userClient.getFirstName());
+                                        builder.userClientLastName(userClient.getLastName());
                                     }
                                     if (booking != null) {
                                         builder.bookingName(booking.getDetail());
@@ -627,7 +628,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                             .pendingPay(paymentBookEntity.getPendingpay());
 
                                     if (userClient != null) {
-                                        builder.userClientName(userClient.getFirstName() + userClient.getLastName());
+                                        builder.userClientName(userClient.getFirstName());
+                                        builder.userClientLastName(userClient.getLastName());
                                     }
                                     if (booking != null) {
                                         builder.bookingName(booking.getDetail());

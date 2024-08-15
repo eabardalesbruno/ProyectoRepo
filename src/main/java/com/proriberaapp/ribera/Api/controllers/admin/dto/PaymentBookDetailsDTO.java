@@ -33,6 +33,7 @@ public class PaymentBookDetailsDTO {
     private Integer pendingPay;
 
     private String userClientName;
+    private String userClientLastName;
     private String bookingName;
     private String paymentMethod;
     private String paymentState;
