@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class ComplaintsBookServiceImpl implements ComplaintsBookService {
@@ -314,10 +315,10 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
                 "                  <span class=\"data\">Fecha de incidente:</span>\n" +
-                "                  <span class=\"data-detail\">" + complaint.getDateSaved() + "</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getDateSaved().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
-                "                  <span class=\"data\">Descripción del Reclamo:</span>\n" +
+                "                  <span class=\"data\">Descripcion del Reclamo:</span>\n" +
                 "                  <span class=\"data-detail\">" + complaint.getComplaintsDescription() + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
