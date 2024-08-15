@@ -143,12 +143,14 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
                                 .flatMap(booking -> {
                                     if (booking.getBookingStateId() == 3 || booking.getBookingStateId() == 4) {
                                         booking.setBookingStateId(4);
-                                        return paymentBookRepository.findById(savedCancelPayment.getPaymentBookId())
-                                                .flatMap(paymentBook -> {
-                                                    paymentBook.setCancelReasonId(savedCancelPayment.getCancelReasonId());
-                                                    return paymentBookRepository.save(paymentBook)
-                                                            .thenReturn(savedCancelPayment);
-                                                });
+                                        return bookingRepository.save(booking)
+                                                .then(paymentBookRepository.findById(savedCancelPayment.getPaymentBookId())
+                                                        .flatMap(paymentBook -> {
+                                                            paymentBook.setCancelReasonId(savedCancelPayment.getCancelReasonId());
+                                                            return paymentBookRepository.save(paymentBook)
+                                                                    .thenReturn(savedCancelPayment);
+                                                        })
+                                                );
                                     } else {
                                         return Mono.just(savedCancelPayment);
                                     }
