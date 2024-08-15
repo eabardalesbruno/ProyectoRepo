@@ -87,7 +87,7 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "</html>";
     }
      */
-
+/*
     private String generateEmailBody(ComplaintsBookEntity complaint) {
         return "<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -212,6 +212,134 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "          Este correo ha sido enviado a " + complaint.getEmail() + ".<br />\n" +
                 "          Si no solicitó este mensaje, por favor ignore este correo.\n" +
                 "        </span>\n" +
+                "      </div>\n" +
+                "    </div>\n" +
+                "  </body>\n" +
+                "</html>";
+    }*/
+    private String generateEmailBody(ComplaintsBookEntity complaint) {
+        return "<!DOCTYPE html>\n" +
+                "<html>\n" +
+                "  <head>\n" +
+                "    <meta charset=\"UTF-8\" />\n" +
+                "    <title>Nuevo Reclamo</title>\n" +
+                "    <style>\n" +
+                "      body { background: #f8f8fc; margin: 0; padding: 0; }\n" +
+                "      .container { width: 100%; max-width: 600px; margin: 0 auto; }\n" +
+                "      .header-social { padding: 40px 48px; display: flex; justify-content: space-between; align-items: center; }\n" +
+                "      .red-social { display: flex; align-items: center; gap: 16px; }\n" +
+                "      .container-body { margin: 21px auto; padding: 0 16px; }\n" +
+                "      .bg-custom { background: #ffffff; border-radius: 8px; overflow: hidden; }\n" +
+                "      .custom-img { width: 100%; display: block; }\n" +
+                "      .custom-body { padding: 40px; }\n" +
+                "      .title-complains { font-family: 'Product Sans', sans-serif; font-size: 20px; font-weight: 700; line-height: 30px; color: #121a26; margin-bottom: 25px; }\n" +
+                "      .description { color: #384860; font-family: 'Product Sans', sans-serif; font-size: 16px; font-weight: 400; line-height: 24px; text-align: left; margin-bottom: 24px; }\n" +
+                "      .description-complains .custom-apart { font-style: italic; font-weight: 700; }\n" +
+                "      .custom-detail { margin-bottom: 24px; display: flex; flex-wrap: wrap; }\n" +
+                "      .data-complains { margin-bottom: 8px; font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 600; line-height: 24px; color: #1e1e1e; }\n" +
+                "      .custom-detail-data, .custom-detail-complains { background: #f9f9f9; padding: 24px; font-family: 'Poppins', sans-serif; line-height: 21px; font-size: 14px; flex: 1; }\n" +
+                "      .detail { margin-bottom: 8px; }\n" +
+                "      .data { font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 400; line-height: 21px; color: #1e1e1e; }\n" +
+                "      .data-detail { font-weight: 600; }\n" +
+                "      .custom-footer-help { background: #ffffff; padding: 24px 40px; text-align: left; }\n" +
+                "      .custom-help { font-family: 'Product Sans', sans-serif; font-size: 16px; font-weight: 700; line-height: 24px; }\n" +
+                "      .custom-footer-info { padding: 40px 48px; font-family: 'Product Sans', sans-serif; font-size: 14px; line-height: 22.4px; color: #9D9D9D; text-align: center; }\n" +
+                "      .custom-footer-info a { color: #9D9D9D; text-decoration: none; }\n" +
+                "    </style>\n" +
+                "  </head>\n" +
+                "  <body>\n" +
+                "    <div class=\"container\">\n" +
+                "      <div class=\"header-social\">\n" +
+                "        <img src=\"https://bit.ly/3WORXbG\" alt=\"logo\" />\n" +
+                "        <div class=\"red-social\">\n" +
+                "          <a href=\"https://www.facebook.com/RiberaDelRioClubResort/?locale=es_LA\" target=\"_blank\">\n" +
+                "            <img src=\"https://bit.ly/3yHM4Fk\" alt=\"Facebook\" />\n" +
+                "          </a>\n" +
+                "          <a href=\"https://www.instagram.com/riberadelrioclubresort6/\" target=\"_blank\">\n" +
+                "            <img src=\"https://bit.ly/3SPkLQ5\" alt=\"Instagram\" />\n" +
+                "          </a>\n" +
+                "        </div>\n" +
+                "      </div>\n" +
+                "      <div class=\"container-body\">\n" +
+                "        <div class=\"bg-custom\">\n" +
+                "          <img src=\"https://bit.ly/3WMBi8T\" alt=\"Ribera\" class=\"custom-img\" />\n" +
+                "          <div class=\"custom-body\">\n" +
+                "            <div class=\"title\">\n" +
+                "              <p class=\"title-complains\">Nuevo Reclamo recibido</p>\n" +
+                "            </div>\n" +
+                "            <div class=\"description\">\n" +
+                "              <span class=\"description-name\">Estimado(a), Fernando.</span>\n" +
+                "              <p class=\"description-complains\">\n" +
+                "                El presente es para informar que se registro exitosamente el reclamo de su reserva de:\n" +
+                "                <span class=\"custom-apart\">Departamento estándar vista piscina.</span>\n" +
+                "                Nos contactamos por este medio o por nuestro canal de Whatsapp para comunicarle dicha solución.\n" +
+                "              </p>\n" +
+                "            </div>\n" +
+                "            <div class=\"custom-detail\">\n" +
+                "              <div class=\"custom-detail-data\">\n" +
+                "                <div class=\"data-complains\">\n" +
+                "                  <span>Datos del consumidor reclamante</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Nombre:</span>\n" +
+                "                  <span class=\"data-detail\">Javier Alejandro</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Apellido:</span>\n" +
+                "                  <span class=\"data-detail\">Olaza de la cruz</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Dirección:</span>\n" +
+                "                  <span class=\"data-detail\">San Borja 1234</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Celular o Teléfono:</span>\n" +
+                "                  <span class=\"data-detail\">+51 965412378</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">N° de documento de identidad:</span>\n" +
+                "                  <span class=\"data-detail\">74859641</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Tipo de cliente:</span>\n" +
+                "                  <span class=\"data-detail\">Persona Natural</span>\n" +
+                "                </div>\n" +
+                "              </div>\n" +
+                "              <div class=\"custom-detail-complains\">\n" +
+                "                <div class=\"data-complains\">\n" +
+                "                  <span>Detalle del reclamo o queja</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Tipo:</span>\n" +
+                "                  <span class=\"data-detail\">Reclamo</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Producto o servicio:</span>\n" +
+                "                  <span class=\"data-detail\">Apartamento de 2 dormitorios con vistas al jardín</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Fecha de incidente:</span>\n" +
+                "                  <span class=\"data-detail\">12 agosto de 2024</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Descripción:</span>\n" +
+                "                  <span class=\"data-detail\">El aire acondicionado del apartamento no funcionaba correctamente y causó mucho inconveniente durante nuestra estadía.</span>\n" +
+                "                </div>\n" +
+                "              </div>\n" +
+                "            </div>\n" +
+                "          </div>\n" +
+                "        </div>\n" +
+                "        <div class=\"custom-footer-help\">\n" +
+                "          <p class=\"custom-help\">Ayuda y Soporte</p>\n" +
+                "          <p>Para cualquier consulta, por favor contactarse con nuestro equipo de atención al cliente a través de contacto@riberadelrio.com</p>\n" +
+                "        </div>\n" +
+                "      </div>\n" +
+                "      <div class=\"custom-footer-info\">\n" +
+                "        <p>\n" +
+                "          Recibió este mensaje porque usted o alguien con acceso a esta dirección de correo electrónico se inscribió en la lista de contactos de Ribera del Rio.\n" +
+                "          <br />\n" +
+                "          <a href=\"#\">Cancelar suscripción</a>\n" +
+                "        </p>\n" +
                 "      </div>\n" +
                 "    </div>\n" +
                 "  </body>\n" +
