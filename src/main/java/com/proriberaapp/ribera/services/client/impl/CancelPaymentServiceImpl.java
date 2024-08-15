@@ -142,15 +142,13 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
                         bookingRepository.findByBookingId(savedCancelPayment.getPaymentBookId())
                                 .flatMap(booking -> {
                                     if (booking.getBookingStateId() == 3 || booking.getBookingStateId() == 4) {
-                                        // Eliminar el booking si el estado es 3 o 4
-                                        return bookingRepository.deleteById(booking.getBookingId())
-                                                .then(paymentBookRepository.findById(savedCancelPayment.getPaymentBookId())
-                                                        .flatMap(paymentBook -> {
-                                                            paymentBook.setCancelReasonId(savedCancelPayment.getCancelReasonId());
-                                                            return paymentBookRepository.save(paymentBook)
-                                                                    .thenReturn(savedCancelPayment);
-                                                        })
-                                                );
+                                        // Ya no se elimina el booking, solo actualiza el PaymentBook
+                                        return paymentBookRepository.findById(savedCancelPayment.getPaymentBookId())
+                                                .flatMap(paymentBook -> {
+                                                    paymentBook.setCancelReasonId(savedCancelPayment.getCancelReasonId());
+                                                    return paymentBookRepository.save(paymentBook)
+                                                            .thenReturn(savedCancelPayment);
+                                                });
                                     } else {
                                         return Mono.just(savedCancelPayment);
                                     }
