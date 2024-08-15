@@ -300,18 +300,10 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "                  <span class=\"data\">Numero de documento de identidad:</span>\n" +
                 "                  <span class=\"data-detail\">" + complaint.getRuc() + "</span>\n" +
                 "                </div>\n" +
-                "                <div class=\"detail\">\n" +
-                "                  <span class=\"data\">Tipo de cliente:</span>\n" +
-                "                  <span class=\"data-detail\">" + complaint.getPersonType() + "</span>\n" +
-                "                </div>\n" +
                 "              </div>\n" +
                 "              <div class=\"custom-detail-complains\">\n" +
                 "                <div class=\"data-complains\">\n" +
                 "                  <span>Detalle del reclamo o queja</span>\n" +
-                "                </div>\n" +
-                "                <div class=\"detail\">\n" +
-                "                  <span class=\"data\">Tipo:</span>\n" +
-                "                  <span class=\"data-detail\">" + complaint.getPersonType() + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
                 "                  <span class=\"data\">Fecha de incidente:</span>\n" +
