@@ -552,7 +552,82 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                             .pendingPay(paymentBookEntity.getPendingpay());
 
                                     if (userClient != null) {
-                                        builder.userClientName(userClient.getFirstName());
+                                        builder.userClientName(userClient.getFirstName() + userClient.getLastName());
+                                    }
+                                    if (booking != null) {
+                                        builder.bookingName(booking.getDetail());
+                                    }
+                                    if (paymentMethod != null) {
+                                        builder.paymentMethod(paymentMethod.getDescription());
+                                    }
+                                    if (paymentState != null) {
+                                        builder.paymentState(paymentState.getPaymentStateName());
+                                    }
+                                    if (paymentType != null) {
+                                        builder.paymentType(paymentType.getPaymentTypeDesc());
+                                    }
+                                    if (paymentSubtype != null) {
+                                        builder.paymentSubtype(paymentSubtype.getPaymentSubtypeDesc());
+                                    }
+                                    if (currencyType != null) {
+                                        builder.currencyType(currencyType.getCurrencyTypeDescription());
+                                    }
+
+                                    return builder.build();
+                                })
+                        )
+                        .collectList()
+                        .map(paymentBookDetails -> new PaginatedResponse<>(totalElements, paymentBookDetails)));
+    }
+
+    @Override
+    public Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetailsPagado(int page, int size) {
+        int offset = page * size;
+        return paymentBookRepository.countByRefuseReasonIdAndPendingPay(1, 1)
+                .flatMap(totalElements -> paymentBookRepository.findAllByRefuseReasonIdAndPendingPay(1, 1, size, offset)
+                        .flatMap(paymentBook ->
+                                Mono.zip(
+                                        Mono.just(paymentBook),
+                                        userClientRepository.findById(paymentBook.getUserClientId()),
+                                        bookingService.findById(paymentBook.getBookingId()),
+                                        paymentMethodRepository.findById(paymentBook.getPaymentMethodId()),
+                                        paymentStateRepository.findById(paymentBook.getPaymentStateId()),
+                                        paymentTypeRepository.findById(paymentBook.getPaymentTypeId()),
+                                        paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId()),
+                                        currencyTypeRepository.findById(paymentBook.getCurrencyTypeId())
+                                ).map(tuple -> {
+                                    PaymentBookEntity paymentBookEntity = tuple.getT1();
+                                    UserClientEntity userClient = tuple.getT2();
+                                    BookingEntity booking = tuple.getT3();
+                                    PaymentMethodEntity paymentMethod = tuple.getT4();
+                                    PaymentStateEntity paymentState = tuple.getT5();
+                                    PaymentTypeEntity paymentType = tuple.getT6();
+                                    PaymentSubtypeEntity paymentSubtype = tuple.getT7();
+                                    CurrencyTypeEntity currencyType = tuple.getT8();
+
+                                    PaymentBookDetailsDTO.PaymentBookDetailsDTOBuilder builder = PaymentBookDetailsDTO.builder()
+                                            .paymentBookId(paymentBookEntity.getPaymentBookId())
+                                            .bookingId(paymentBookEntity.getBookingId())
+                                            .userClientId(paymentBookEntity.getUserClientId())
+                                            .paymentMethodId(paymentBookEntity.getPaymentMethodId())
+                                            .paymentStateId(paymentBookEntity.getPaymentStateId())
+                                            .refuseReasonId(paymentBookEntity.getRefuseReasonId())
+                                            .paymentTypeId(paymentBookEntity.getPaymentTypeId())
+                                            .paymentSubTypeId(paymentBookEntity.getPaymentSubTypeId())
+                                            .currencyTypeId(paymentBookEntity.getCurrencyTypeId())
+                                            .amount(paymentBookEntity.getAmount())
+                                            .description(paymentBookEntity.getDescription())
+                                            .paymentDate(paymentBookEntity.getPaymentDate())
+                                            .operationCode(paymentBookEntity.getOperationCode())
+                                            .note(paymentBookEntity.getNote())
+                                            .totalCost(paymentBookEntity.getTotalCost())
+                                            .imageVoucher(paymentBookEntity.getImageVoucher())
+                                            .totalPoints(paymentBookEntity.getTotalPoints())
+                                            .paymentComplete(paymentBookEntity.getPaymentComplete())
+                                            .pendingPay(paymentBookEntity.getPendingpay());
+
+                                    if (userClient != null) {
+                                        builder.userClientName(userClient.getFirstName() + userClient.getLastName());
                                     }
                                     if (booking != null) {
                                         builder.bookingName(booking.getDetail());

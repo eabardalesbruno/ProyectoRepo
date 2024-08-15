@@ -76,6 +76,11 @@ public class PaymentBookController {
         return paymentBookService.getAllPaymentBookDetails(paginationRequest.getPage(), paginationRequest.getSize());
     }
 
+    @PostMapping("/pagedpayed")
+    public Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetailsPagado(@RequestBody PaginationRequest paginationRequest) {
+        return paymentBookService.getAllPaymentBookDetailsPagado(paginationRequest.getPage(), paginationRequest.getSize());
+    }
+
     @GetMapping("/user-client/{userClientId}")
     public Flux<PaymentBookEntity> getPaymentBooksByUserClientId(@PathVariable Integer userClientId) {
         return paymentBookService.getPaymentBooksByUserClientId(userClientId);

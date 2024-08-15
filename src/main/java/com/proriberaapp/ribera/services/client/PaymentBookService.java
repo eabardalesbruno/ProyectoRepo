@@ -28,6 +28,7 @@ public interface PaymentBookService {
     Mono<PaymentBookEntity> findById(Integer id);
     //Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails(int page, int size);
     Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetails(int page, int size);
+    Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetailsPagado(int page, int size);
     Mono<PaymentBookEntity> savePaymentBook(PaymentBookEntity paymentBook);
 
 }
