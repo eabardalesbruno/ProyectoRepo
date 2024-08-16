@@ -11,6 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 public interface BookingService extends BaseService<BookingEntity,BookingEntity> {
     Mono<S3UploadResponse> loadBoucher(Mono<FilePart> file, Integer folderNumber, String token);
@@ -31,5 +32,11 @@ public interface BookingService extends BaseService<BookingEntity,BookingEntity>
     Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest);
     Mono<BigDecimal> getRiberaPointsByBookingId(Integer bookingId);
     Mono<Integer> getUserClientIdByBookingId(Integer bookingId);
+
+    Flux<ViewBookingReturn> findAllByRoomTypeIdAndUserClientIdAndBookingStateId(Integer roomTypeId, Integer userClientId, Integer bookingStateId);
+
+    Flux<ViewBookingReturn> findAllByDayBookingInitAndDayBookingEndAndUserClientIdAndBookingStateId(Timestamp dayBookingInit, Timestamp dayBookingEnd, Integer userClientId, Integer bookingStateId);
+
+    Flux<ViewBookingReturn> findAllByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(Integer numberAdults, Integer numberChildren, Integer numberBabies, Integer userClientId, Integer bookingStateId);
 
 }

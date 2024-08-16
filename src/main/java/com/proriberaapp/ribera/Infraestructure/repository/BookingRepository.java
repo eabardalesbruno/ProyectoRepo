@@ -44,4 +44,10 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
     Flux<CalendarDate> findAllCalendarDate(@Param("roomofferid") Integer roomOfferId);
     Mono<BookingEntity> findByBookingId(Integer bookingId);
 
+    @Query("SELECT * FROM ViewBookingReturn WHERE roomTypeId = :roomTypeId AND userClientId = :userClientId AND bookingStateId = :bookingStateId")
+    Flux<ViewBookingReturn> findAllViewBookingReturnByRoomTypeIdAndUserClientIdAndBookingStateId(@Param("roomTypeId") Integer roomTypeId, @Param("userClientId") Integer userClientId, @Param("bookingStateId") Integer bookingStateId);
+    @Query("SELECT * FROM ViewBookingReturn WHERE dayBookingInit >= :dayBookingInit AND dayBookingEnd <= :dayBookingEnd AND userClientId = :userClientId AND bookingStateId = :bookingStateId")
+    Flux<ViewBookingReturn> findAllViewBookingReturnByDayBookingInitAndDayBookingEndAndUserClientIdAndBookingStateId(@Param("dayBookingInit") Timestamp dayBookingInit, @Param("dayBookingEnd") Timestamp dayBookingEnd, @Param("userClientId") Integer userClientId, @Param("bookingStateId") Integer bookingStateId);
+    @Query("SELECT * FROM ViewBookingReturn WHERE numberAdults = :numberAdults AND numberChildren = :numberChildren AND numberBabies = :numberBabies AND userClientId = :userClientId AND bookingStateId = :bookingStateId")
+    Flux<ViewBookingReturn> findAllViewBookingReturnByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(@Param("numberAdults") Integer numberAdults, @Param("numberChildren") Integer numberChildren, @Param("numberBabies") Integer numberBabies, @Param("userClientId") Integer userClientId, @Param("bookingStateId") Integer bookingStateId);
 }

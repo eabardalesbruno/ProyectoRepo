@@ -8,12 +8,15 @@ import com.proriberaapp.ribera.services.client.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/v1/booking")
@@ -30,6 +33,36 @@ public class BookingController {
             @RequestHeader("Authorization") String token) {
         Integer userClientId = jtp.getIdFromToken(token);
         return bookingService.findAllByUserClientIdAndBookingStateIdIn(userClientId, stateId);
+    }
+
+    @GetMapping("/find/all/roomType")
+    public Flux<ViewBookingReturn> findAllByRoomTypeIdAndUserClientIdAndBookingStateId(
+            @RequestParam("roomTypeId") Integer roomTypeId,
+            @RequestParam("stateId") Integer stateId,
+            @RequestHeader("Authorization") String token) {
+        Integer userClientId = jtp.getIdFromToken(token);
+        return bookingService.findAllByRoomTypeIdAndUserClientIdAndBookingStateId(roomTypeId, userClientId, stateId);
+    }
+
+    @GetMapping("/find/all/dateRange")
+    public Flux<ViewBookingReturn> findAllByDayBookingInitAndDayBookingEndAndUserClientIdAndBookingStateId(
+            @RequestParam("dayBookingInit") Timestamp dayBookingInit,
+            @RequestParam("dayBookingEnd") Timestamp dayBookingEnd,
+            @RequestParam("stateId") Integer stateId,
+            @RequestHeader("Authorization") String token) {
+        Integer userClientId = jtp.getIdFromToken(token);
+        return bookingService.findAllByDayBookingInitAndDayBookingEndAndUserClientIdAndBookingStateId(dayBookingInit, dayBookingEnd, userClientId, stateId);
+    }
+
+    @GetMapping("/find/all/family")
+    public Flux<ViewBookingReturn> findAllByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(
+            @RequestParam("numberAdults") Integer numberAdults,
+            @RequestParam("numberChildren") Integer numberChildren,
+            @RequestParam("numberBabies") Integer numberBabies,
+            @RequestParam("stateId") Integer stateId,
+            @RequestHeader("Authorization") String token) {
+        Integer userClientId = jtp.getIdFromToken(token);
+        return bookingService.findAllByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(numberAdults, numberChildren, numberBabies, userClientId, stateId);
     }
 
     @GetMapping("/find/all/states")

@@ -53,6 +53,11 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
     }
 
     @Override
+    public Flux<RoomTypeEntity> getAllRoomTypes() {
+        return roomTypeRepository.findAll();
+    }
+
+    @Override
     public Mono<RoomTypeEntity> update(RoomTypeEntity entity) {
         return roomTypeRepository.findById(entity.getRoomTypeId())
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")))
