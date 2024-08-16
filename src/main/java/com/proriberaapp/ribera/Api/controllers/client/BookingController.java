@@ -31,7 +31,6 @@ public class BookingController {
         Integer userClientId = jtp.getIdFromToken(token);
         return bookingService.findAllByUserClientIdAndBookingStateIdIn(userClientId, stateId);
     }
-
     @GetMapping("/find/all")
     public Flux<ViewBookingReturn> findAllBookings(
             @RequestHeader("Authorization") String token) {
