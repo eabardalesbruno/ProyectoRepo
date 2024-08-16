@@ -32,6 +32,11 @@ public class BookingController {
         return bookingService.findAllByUserClientIdAndBookingStateIdIn(userClientId, stateId);
     }
 
+    @GetMapping("/find/all/states")
+    public Flux<ViewBookingReturn> findAllByStateBookings(@RequestParam("stateId") Integer stateId) {
+        return bookingService.findAllByBookingStateId(stateId);
+    }
+
     @GetMapping("/find/all")
     public Flux<ViewBookingReturn> findAllBookings(
             @RequestHeader("Authorization") String token) {

@@ -34,6 +34,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
     @Query("SELECT * FROM ViewBookingReturn WHERE bookingId = :bookingId")
     Mono<ViewBookingReturn> findAllViewBookingReturnByBookingId(@Param("bookingId") Integer bookingId);
 
+    @Query("SELECT * FROM booking WHERE bookingstateid = :bookingStateId")
+    Flux<ViewBookingReturn> findAllViewBookingReturnByBookingStateId(Integer bookingStateId);
 
     @Query("SELECT * FROM ViewBookingReturn")
     Flux<ViewBookingReturn> findAllViewBookingReturn();
