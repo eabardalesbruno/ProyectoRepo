@@ -33,7 +33,7 @@ public class EmailServiceImpl implements EmailService {
             try {
                 MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, true);
-                helper.setFrom("inclubnotification@inclub.world");
+                helper.setFrom("notificacionesribera@inresorts.club");
                 helper.setTo(to);
                 helper.setSubject(subject);
                 helper.setText(body, true); // true indica que el cuerpo es HTML
@@ -81,7 +81,7 @@ public class EmailServiceImpl implements EmailService {
         return Mono.fromRunnable(() -> {
             try {
                 SimpleMailMessage message = new SimpleMailMessage();
-                message.setFrom("inclubnotification@inclub.world");
+                message.setFrom("notificacionesribera@inresorts.club");
                 message.setTo(to);
                 message.setSubject(subject);
                 message.setText(body);

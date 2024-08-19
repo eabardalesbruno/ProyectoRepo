@@ -32,7 +32,37 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 .flatMap(savedComplaint -> {
                     String subject = "Nuevo Reclamo Recibido";
                     String body = generateEmailBody(savedComplaint);
-                    String primaryRecipient = "reclamosriberadelrio@inresorts.club";
+                    String primaryRecipient = "notificacionesribera@inresorts.club";
+                    String userEmail = savedComplaint.getEmail();
+
+                    // Enviar el correo al destinatario principal y una copia al email del usuario
+                    return emailService.sendEmail(primaryRecipient, subject, body)
+                            .onErrorResume(e -> {
+                                // Log error and continue
+                                System.err.println("Error sending email to primary recipient: " + e.getMessage());
+                                return Mono.empty(); // Continue without stopping the flow
+                            })
+                            .then(emailService.sendEmail(userEmail, subject, body)
+                                    .onErrorResume(e -> {
+                                        // Log error and continue
+                                        System.err.println("Error sending email to user: " + e.getMessage());
+                                        return Mono.empty(); // Continue without stopping the flow
+                                    }))
+                            .thenReturn(savedComplaint);
+                });
+    }
+
+    /*
+    @Override
+    public Mono<ComplaintsBookEntity> createComplaint(ComplaintsBookEntity complaint) {
+        // Establecer la fecha actual antes de guardar
+        complaint.setDateSaved(LocalDateTime.now());
+
+        return complaintsBookRepository.save(complaint)
+                .flatMap(savedComplaint -> {
+                    String subject = "Nuevo Reclamo Recibido";
+                    String body = generateEmailBody(savedComplaint);
+                    String primaryRecipient = "notificacionesribera@inresorts.club";
                     String userEmail = savedComplaint.getEmail();
 
                     // Enviar el correo al destinatario principal y una copia al email del usuario
@@ -41,6 +71,7 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                             .thenReturn(savedComplaint);
                 });
     }
+     */
 
     /*
     private String generateEmailBody(ComplaintsBookEntity complaint) {
