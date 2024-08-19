@@ -419,6 +419,7 @@ public class PayMeService {
         return paymeRepository.findByIdUser(idUser);
     }
 
+    /*
     public Mono<TransactionNecessaryResponse> savePayment(Integer idUser, AuthorizationResponse authorizationResponse) {
         PayMeAuthorization payMeAuthorization = AuthorizationResponse.create(idUser, Role.ROLE_USER, authorizationResponse);
 
@@ -469,6 +470,70 @@ public class PayMeService {
                         userClientRepository.findById(idUser)
                                 .flatMap(userClient -> sendErrorEmail(userClient.getEmail(), e.getMessage()))
                                 .then(Mono.error(e))
+                );
+    }
+     */
+
+    public Mono<TransactionNecessaryResponse> savePayment(Integer idUser, AuthorizationResponse authorizationResponse) {
+        PayMeAuthorization payMeAuthorization = AuthorizationResponse.create(idUser, Role.ROLE_USER, authorizationResponse);
+
+        return authorizationRepository.save(payMeAuthorization)
+                .flatMap(savedAuthorization ->
+                        userClientRepository.findById(idUser)
+                                .flatMap(userClient ->
+                                        bookingRepository.findByBookingId(savedAuthorization.getIdBooking())
+                                                .flatMap(booking -> {
+                                                    if (booking.getBookingStateId() == 3) {
+                                                        booking.setBookingStateId(2);
+                                                        return bookingRepository.save(booking);
+                                                    } else {
+                                                        return Mono.just(booking);
+                                                    }
+                                                })
+                                                .flatMap(updatedBooking -> {
+                                                    BigDecimal monto = new BigDecimal(authorizationResponse.getTransaction().getAmount());
+
+                                                    PaymentBookEntity paymentBook = PaymentBookEntity.builder()
+                                                            .bookingId(updatedBooking.getBookingId())
+                                                            .userClientId(updatedBooking.getUserClientId())
+                                                            .refuseReasonId(1)
+                                                            .cancelReasonId(1)
+                                                            .paymentMethodId(5)
+                                                            .paymentStateId(1)
+                                                            .paymentTypeId(6)
+                                                            .paymentSubTypeId(1)
+                                                            .currencyTypeId(1)
+                                                            .amount(monto)
+                                                            .description("Pago exitoso")
+                                                            .paymentDate(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Lima"))))
+                                                            .operationCode(authorizationResponse.getId())
+                                                            .note("Nota de pago")
+                                                            .totalCost(monto)
+                                                            .imageVoucher("Pago con Tarjeta")
+                                                            .totalPoints(0)
+                                                            .paymentComplete(true)
+                                                            .pendingpay(0)
+                                                            .build();
+                                                    return paymentBookRepository.save(paymentBook)
+                                                            .then(sendSuccessEmail(userClient.getEmail()))
+                                                            .thenReturn(new TransactionNecessaryResponse(true));
+                                                })
+                                )
+                )
+                .onErrorResume(e ->
+                        authorizationRepository.findById(idUser)
+                                .flatMap(savedAuthorization ->
+                                        bookingRepository.findByBookingId(savedAuthorization.getIdBooking())
+                                                .flatMap(booking -> {
+                                                    booking.setBookingStateId(1);
+                                                    return bookingRepository.save(booking);
+                                                })
+                                )
+                                .flatMap(updatedBooking ->
+                                        userClientRepository.findById(idUser)
+                                                .flatMap(userClient -> sendErrorEmail(userClient.getEmail(), e.getMessage()))
+                                                .then(Mono.error(e))
+                                )
                 );
     }
 
@@ -686,7 +751,7 @@ public class PayMeService {
                 "            <p>Estimado cliente,</p>\n" +
                 "            <p>Ha ocurrido un error durante el procesamiento de su pago.</p>\n" +
                 "            <p>Detalles del error:</p>\n" +
-                "            <p>" + errorMessage + "</p>\n" +
+                "            <p>Error en el pago por motivos de su entidad bancaria</p>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
                 "\n" +
