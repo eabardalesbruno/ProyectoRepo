@@ -525,7 +525,7 @@ public class PayMeService {
                                 .flatMap(savedAuthorization ->
                                         bookingRepository.findByBookingId(savedAuthorization.getIdBooking())
                                                 .flatMap(booking -> {
-                                                    booking.setBookingStateId(1);
+                                                    booking.setBookingStateId(3);
                                                     return bookingRepository.save(booking);
                                                 })
                                 )
