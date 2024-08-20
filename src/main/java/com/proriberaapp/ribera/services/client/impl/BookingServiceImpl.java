@@ -90,7 +90,10 @@ public class BookingServiceImpl implements BookingService {
                     return riberaPoints != null ? BigDecimal.valueOf(riberaPoints) : BigDecimal.ZERO;
                 });
     }
-
+    @Override
+    public Flux<BookingEntity> findAllBookings() {
+        return bookingRepository.findAll();
+    }
     @Override
     public Mono<Integer> getUserClientIdByBookingId(Integer bookingId) {
         return bookingRepository.findById(bookingId)

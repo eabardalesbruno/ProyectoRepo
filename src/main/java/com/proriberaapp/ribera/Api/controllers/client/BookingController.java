@@ -70,6 +70,12 @@ public class BookingController {
         return bookingService.findAllByBookingStateId(stateId);
     }
 
+    //RESERVAS JMANRIQUE
+    @GetMapping("/all")
+    public Flux<BookingEntity> findAllBookings() {
+        return bookingService.findAllBookings();
+    }
+
     @GetMapping("/find/all")
     public Flux<ViewBookingReturn> findAllBookings(
             @RequestHeader("Authorization") String token) {
