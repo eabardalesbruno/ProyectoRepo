@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOffer;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOfferFiltro;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BedroomRepository;
@@ -16,6 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -43,6 +45,34 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("RoomOffer already exists"))
                         : roomOfferRepository.save(entity));
+    }
+
+    @Override
+    public Flux<RoomOfferEntity> findByFilters(SearchFiltersRoomOfferFiltro filters) {
+        return roomOfferRepository.findByFilters(
+                filters.roomTypeId(),
+                filters.capacity() != null ? filters.capacity().toString() : null,
+                filters.offerTimeInit(),
+                filters.offerTimeEnd()
+        );
+    }
+
+    @Override
+    public Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd, Integer capacity) {
+        return roomOfferRepository.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, capacity)
+                .flatMap(roomOffer ->
+                        servicesRepository.findAllViewComfortReturn(roomOffer.getRoomOfferId())
+                                .collectList()
+                                .flatMap(comfortList -> {
+                                    roomOffer.setListAmenities(comfortList);
+                                    return bedroomRepository.findAllViewBedroomReturn(roomOffer.getRoomId())
+                                            .collectList()
+                                            .map(bedroomList -> {
+                                                roomOffer.setListBedroomReturn(bedroomList);
+                                                return roomOffer;
+                                            });
+                                })
+                );
     }
 
     @Override

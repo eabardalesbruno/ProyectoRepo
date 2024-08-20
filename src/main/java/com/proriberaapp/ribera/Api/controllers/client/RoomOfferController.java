@@ -1,17 +1,21 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOffer;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOfferFiltro;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.services.client.RoomOfferService;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/v1/room-offer")
@@ -38,5 +42,14 @@ public class RoomOfferController {
     ) {
         SearchFiltersRoomOffer filters = new SearchFiltersRoomOffer(roomId, roomOfferId, roomTypeId, typeRoom);
         return roomOfferService.viewRoomOfferReturn(filters);
+    }
+
+    @GetMapping("/filter")
+    public Flux<ViewRoomOfferReturn> getFilteredRoomOffers(
+            @RequestParam(required = false) Integer roomTypeId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offerTimeInit,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offerTimeEnd,
+            @RequestParam(required = false) Integer capacity) {
+        return roomOfferService.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, capacity);
     }
 }
