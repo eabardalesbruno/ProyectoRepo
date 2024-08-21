@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
+import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
@@ -73,7 +74,7 @@ public class BookingController {
 
     //RESERVAS JMANRIQUE
     @GetMapping("/all")
-    public Flux<BookingStates> findBookingsByStateIdPaginated(
+    public Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(
             @RequestParam Integer bookingStateId,
             @RequestParam int page,
             @RequestParam int size) {

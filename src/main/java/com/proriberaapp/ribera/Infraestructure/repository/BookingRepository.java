@@ -68,4 +68,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
     Flux<BookingStates> findBookingsByStateIdPaginated(@Param("bookingStateId") Integer bookingStateId,
                                                            @Param("limit") int limit,
                                                            @Param("offset") int offset);
+
+    @Query("SELECT COUNT(*) FROM booking bo " +
+            "WHERE bo.bookingstateid = :bookingStateId")
+    Mono<Long> countBookingsByStateId(@Param("bookingStateId") Integer bookingStateId);
 }

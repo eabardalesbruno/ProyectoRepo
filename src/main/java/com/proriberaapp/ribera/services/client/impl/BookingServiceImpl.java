@@ -2,10 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
-import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
-import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
-import com.proriberaapp.ribera.Api.controllers.client.dto.FinalCostumer;
-import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
+import com.proriberaapp.ribera.Api.controllers.client.dto.*;
 import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
@@ -93,9 +90,19 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Flux<BookingStates> findBookingsByStateIdPaginated(Integer bookingStateId, int page, int size) {
+    public Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(Integer bookingStateId, int page, int size) {
         int offset = page * size;
-        return bookingRepository.findBookingsByStateIdPaginated(bookingStateId, size, offset);
+
+        // Obtener las reservas paginadas
+        Flux<BookingStates> bookings = bookingRepository.findBookingsByStateIdPaginated(bookingStateId, size, offset);
+
+        // Contar el total de elementos sin paginación
+        Mono<Long> totalElements = bookingRepository.countBookingsByStateId(bookingStateId);
+
+        // Combinar la lista de reservas y el total de elementos en un solo objeto de respuesta
+        return bookings.collectList()
+                .zipWith(totalElements)
+                .map(tuple -> new PaginatedResponse<>(tuple.getT2(), tuple.getT1()));
     }
 
     @Override
