@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.services.client;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.services.BaseService;
@@ -38,6 +39,5 @@ public interface BookingService extends BaseService<BookingEntity,BookingEntity>
     Flux<ViewBookingReturn> findAllByDayBookingInitAndDayBookingEndAndUserClientIdAndBookingStateId(Timestamp dayBookingInit, Timestamp dayBookingEnd, Integer userClientId, Integer bookingStateId);
 
     Flux<ViewBookingReturn> findAllByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(Integer numberAdults, Integer numberChildren, Integer numberBabies, Integer userClientId, Integer bookingStateId);
-    Flux<BookingEntity> findAllBookings();
-
+    Flux<BookingStates> findBookingsByStateIdPaginated(Integer bookingStateId, int page, int size);
 }

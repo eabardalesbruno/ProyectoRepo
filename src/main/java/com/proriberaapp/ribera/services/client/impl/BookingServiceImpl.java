@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
 import com.proriberaapp.ribera.Api.controllers.client.dto.FinalCostumer;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
@@ -90,10 +91,13 @@ public class BookingServiceImpl implements BookingService {
                     return riberaPoints != null ? BigDecimal.valueOf(riberaPoints) : BigDecimal.ZERO;
                 });
     }
+
     @Override
-    public Flux<BookingEntity> findAllBookings() {
-        return bookingRepository.findAll();
+    public Flux<BookingStates> findBookingsByStateIdPaginated(Integer bookingStateId, int page, int size) {
+        int offset = page * size;
+        return bookingRepository.findBookingsByStateIdPaginated(bookingStateId, size, offset);
     }
+
     @Override
     public Mono<Integer> getUserClientIdByBookingId(Integer bookingId) {
         return bookingRepository.findById(bookingId)

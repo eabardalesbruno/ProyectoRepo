@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
+import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import org.springframework.data.r2dbc.repository.Query;
@@ -50,4 +51,21 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
     Flux<ViewBookingReturn> findAllViewBookingReturnByDayBookingInitAndDayBookingEndAndUserClientIdAndBookingStateId(@Param("dayBookingInit") Timestamp dayBookingInit, @Param("dayBookingEnd") Timestamp dayBookingEnd, @Param("userClientId") Integer userClientId, @Param("bookingStateId") Integer bookingStateId);
     @Query("SELECT * FROM ViewBookingReturn WHERE numberAdults = :numberAdults AND numberChildren = :numberChildren AND numberBabies = :numberBabies AND userClientId = :userClientId AND bookingStateId = :bookingStateId")
     Flux<ViewBookingReturn> findAllViewBookingReturnByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(@Param("numberAdults") Integer numberAdults, @Param("numberChildren") Integer numberChildren, @Param("numberBabies") Integer numberBabies, @Param("userClientId") Integer userClientId, @Param("bookingStateId") Integer bookingStateId);
+
+    @Query("SELECT us.firstname, us.lastname, bo.bookingid, rt.roomtypename, us.email, bo.costfinal, " +
+            "TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, " +
+            "TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend, " +
+            "rid.capacity, bs.bookingstatename " +
+            "FROM booking bo " +
+            "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
+            "JOIN room rid ON rid.roomid = r.roomid " +
+            "JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid " +
+            "JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid " +
+            "JOIN userclient us ON us.userclientid = bo.userclientid " +
+            "WHERE bo.bookingstateid = :bookingStateId " +
+            "ORDER BY bo.bookingid DESC " +
+            "LIMIT :limit OFFSET :offset")
+    Flux<BookingStates> findBookingsByStateIdPaginated(@Param("bookingStateId") Integer bookingStateId,
+                                                           @Param("limit") int limit,
+                                                           @Param("offset") int offset);
 }
