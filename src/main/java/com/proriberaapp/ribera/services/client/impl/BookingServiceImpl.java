@@ -93,13 +93,10 @@ public class BookingServiceImpl implements BookingService {
     public Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(Integer bookingStateId, int page, int size) {
         int offset = page * size;
 
-        // Obtener las reservas paginadas
         Flux<BookingStates> bookings = bookingRepository.findBookingsByStateIdPaginated(bookingStateId, size, offset);
 
-        // Contar el total de elementos sin paginación
         Mono<Long> totalElements = bookingRepository.countBookingsByStateId(bookingStateId);
 
-        // Combinar la lista de reservas y el total de elementos en un solo objeto de respuesta
         return bookings.collectList()
                 .zipWith(totalElements)
                 .map(tuple -> new PaginatedResponse<>(tuple.getT2(), tuple.getT1()));
