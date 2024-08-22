@@ -28,6 +28,7 @@ import java.math.BigDecimal;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -90,12 +91,21 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(Integer bookingStateId, int page, int size) {
+    public Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(
+            Integer bookingStateId,
+            Integer roomTypeId,
+            Integer capacity,
+            LocalDateTime offertimeInit,
+            LocalDateTime offertimeEnd,
+            int page,
+            int size) {
         int offset = page * size;
 
-        Flux<BookingStates> bookings = bookingRepository.findBookingsByStateIdPaginated(bookingStateId, size, offset);
+        Flux<BookingStates> bookings = bookingRepository.findBookingsByStateIdPaginated(
+                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd, size, offset);
 
-        Mono<Long> totalElements = bookingRepository.countBookingsByStateId(bookingStateId);
+        Mono<Long> totalElements = bookingRepository.countBookingsByStateId(
+                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd);
 
         return bookings.collectList()
                 .zipWith(totalElements)

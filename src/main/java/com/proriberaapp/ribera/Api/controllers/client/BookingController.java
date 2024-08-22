@@ -76,9 +76,14 @@ public class BookingController {
     @GetMapping("/all")
     public Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(
             @RequestParam Integer bookingStateId,
+            @RequestParam(required = false) Integer roomTypeId,
+            @RequestParam(required = false) Integer capacity,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offertimeInit,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offertimeEnd,
             @RequestParam int page,
             @RequestParam int size) {
-        return bookingService.findBookingsByStateIdPaginated(bookingStateId, page, size);
+        return bookingService.findBookingsByStateIdPaginated(
+                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd, page, size);
     }
 
     @GetMapping("/find/all")

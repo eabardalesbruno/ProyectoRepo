@@ -11,6 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingRepository extends R2dbcRepository<BookingEntity, Integer> {
@@ -63,13 +64,34 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
             "JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid " +
             "JOIN userclient us ON us.userclientid = bo.userclientid " +
             "WHERE bo.bookingstateid = :bookingStateId " +
+            "AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId) " +
+            "AND (:capacity IS NULL OR rid.capacity = :capacity) " +
+            "AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR " +
+            "bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd) " +
             "ORDER BY bo.bookingid DESC " +
             "LIMIT :limit OFFSET :offset")
-    Flux<BookingStates> findBookingsByStateIdPaginated(@Param("bookingStateId") Integer bookingStateId,
-                                                           @Param("limit") int limit,
-                                                           @Param("offset") int offset);
+    Flux<BookingStates> findBookingsByStateIdPaginated(
+            @Param("bookingStateId") Integer bookingStateId,
+            @Param("roomTypeId") Integer roomTypeId,
+            @Param("capacity") Integer capacity,
+            @Param("offertimeInit") LocalDateTime offertimeInit,
+            @Param("offertimeEnd") LocalDateTime offertimeEnd,
+            @Param("limit") int limit,
+            @Param("offset") int offset);
 
     @Query("SELECT COUNT(*) FROM booking bo " +
-            "WHERE bo.bookingstateid = :bookingStateId")
-    Mono<Long> countBookingsByStateId(@Param("bookingStateId") Integer bookingStateId);
+            "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
+            "JOIN room rid ON rid.roomid = r.roomid " +
+            "JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid " +
+            "WHERE bo.bookingstateid = :bookingStateId " +
+            "AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId) " +
+            "AND (:capacity IS NULL OR rid.capacity = :capacity) " +
+            "AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR " +
+            "bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd)")
+    Mono<Long> countBookingsByStateId(
+            @Param("bookingStateId") Integer bookingStateId,
+            @Param("roomTypeId") Integer roomTypeId,
+            @Param("capacity") Integer capacity,
+            @Param("offertimeInit") LocalDateTime offertimeInit,
+            @Param("offertimeEnd") LocalDateTime offertimeEnd);
 }
