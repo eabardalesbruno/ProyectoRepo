@@ -13,16 +13,16 @@ public class EmailConfig {
     @Bean
     public JavaMailSender javaMailSender() {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
-        mailSender.setHost("mail5005.site4now.net");
-        mailSender.setPort(25);
+        mailSender.setHost("smtp.office365.com");
+        mailSender.setPort(587);
 
-        mailSender.setUsername("notificacionesribera@inresorts.club");
-        mailSender.setPassword("Ribera123#");
+        mailSender.setUsername("notificacionesinclub@inclub.world");
+        mailSender.setPassword("Inclub12345+");
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "false"); // Cambiar a true si usas otro puerto como 587
+        props.put("mail.smtp.starttls.enable", "true"); // Cambiar a true si usas otro puerto como 587
         props.put("mail.smtp.ssl.enable", "false"); // Configura a true si estás usando el puerto 465
         props.put("mail.debug", "true");
 

@@ -29,11 +29,16 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
     """)
     Flux<RoomOfferEntity> findByFilters(Integer roomTypeId, String capacity, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd);
 
-    @Query("SELECT * FROM viewroomofferreturn WHERE " +
-            "(:roomTypeId IS NULL OR roomtypeid = :roomTypeId) AND " +
-            "(:offerTimeInit IS NULL OR offertimeinit >= :offerTimeInit) AND " +
-            "(:offerTimeEnd IS NULL OR offertimeend <= :offerTimeEnd) AND " +
-            "(:capacity IS NULL OR capacity = :capacity)")
+    @Query("SELECT v.* " +
+            "FROM booking b " +
+            "JOIN roomoffer r ON b.roomofferid = r.roomofferid " +
+            "JOIN viewroomofferreturn v ON r.roomofferid = v.roomofferid " +
+            "WHERE (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId) " +
+            "AND (:capacity IS NULL OR v.capacity = :capacity) " +
+            "AND ( (r.offertimeinit <= :offerTimeEnd AND r.offertimeinit >= :offerTimeInit) " +
+            "    OR (r.offertimeend <= :offerTimeEnd AND r.offertimeend >= :offerTimeInit) " +
+            "    OR (r.offertimeinit <= :offerTimeInit AND r.offertimeend >= :offerTimeEnd) ) " +
+            "AND NOT (b.daybookinginit <= :offerTimeEnd AND b.daybookingend >= :offerTimeInit)")
     Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd, Integer capacity);
 
     @Query("""
