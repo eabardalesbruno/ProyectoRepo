@@ -56,13 +56,15 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
     @Query("SELECT us.firstname, us.lastname, bo.bookingid, rt.roomtypename, us.email, bo.costfinal, " +
             "TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, " +
             "TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend, " +
-            "rid.capacity, bs.bookingstatename " +
+            "rid.capacity, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription, r.riberapoints, r.inresortpoints, r.points " +
             "FROM booking bo " +
             "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
             "JOIN room rid ON rid.roomid = r.roomid " +
             "JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid " +
             "JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid " +
             "JOIN userclient us ON us.userclientid = bo.userclientid " +
+            "JOIN bedroom be ON be.roomid = rid.roomid " +
+            "JOIN bedstype bt ON bt.bedtypeid = be.bedtypeid " +
             "WHERE bo.bookingstateid = :bookingStateId " +
             "AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId) " +
             "AND (:capacity IS NULL OR rid.capacity = :capacity) " +
@@ -79,7 +81,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
             @Param("limit") int limit,
             @Param("offset") int offset);
 
-    @Query("SELECT COUNT(*) FROM booking bo " +
+    @Query("SELECT COUNT(*) " +
+            "FROM booking bo " +
             "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
             "JOIN room rid ON rid.roomid = r.roomid " +
             "JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid " +
