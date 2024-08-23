@@ -19,6 +19,7 @@ public class BookingStates {
     private LocalDateTime daybookinginit;
     private LocalDateTime daybookingend;
     private Integer capacity;
+    private String bookingstatename;
     private String bedtypename;
     private String bedtypedescription;
     private Integer riberapoints;
