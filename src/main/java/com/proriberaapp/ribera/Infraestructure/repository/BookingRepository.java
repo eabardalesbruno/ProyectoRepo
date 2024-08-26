@@ -53,10 +53,12 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
     @Query("SELECT * FROM ViewBookingReturn WHERE numberAdults = :numberAdults AND numberChildren = :numberChildren AND numberBabies = :numberBabies AND userClientId = :userClientId AND bookingStateId = :bookingStateId")
     Flux<ViewBookingReturn> findAllViewBookingReturnByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(@Param("numberAdults") Integer numberAdults, @Param("numberChildren") Integer numberChildren, @Param("numberBabies") Integer numberBabies, @Param("userClientId") Integer userClientId, @Param("bookingStateId") Integer bookingStateId);
 
-    @Query("SELECT us.firstname, us.lastname, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, r.offertimeinit, r.offertimeend, us.email, bo.costfinal, " +
+    @Query("SELECT us.firstname, us.lastname, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, " +
+            "r.offertimeinit, r.offertimeend, us.email, bo.costfinal, " +
             "TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, " +
             "TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend, " +
-            "rid.capacity, bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription, r.riberapoints, r.inresortpoints, r.points " +
+            "rid.capacity, bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription, " +
+            "r.riberapoints, r.inresortpoints, r.points " +
             "FROM booking bo " +
             "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
             "JOIN room rid ON rid.roomid = r.roomid " +
@@ -81,16 +83,20 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
             @Param("limit") int limit,
             @Param("offset") int offset);
 
-    @Query("SELECT COUNT(*) " +
+    @Query("SELECT count(*) " +
             "FROM booking bo " +
             "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
             "JOIN room rid ON rid.roomid = r.roomid " +
             "JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid " +
+            "JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid " +
+            "JOIN userclient us ON us.userclientid = bo.userclientid " +
+            "JOIN bedroom be ON be.roomid = rid.roomid " +
+            "JOIN bedstype bt ON bt.bedtypeid = be.bedtypeid " +
             "WHERE bo.bookingstateid = :bookingStateId " +
             "AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId) " +
             "AND (:capacity IS NULL OR rid.capacity = :capacity) " +
             "AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR " +
-            "bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd)")
+            "bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd) ")
     Mono<Long> countBookingsByStateId(
             @Param("bookingStateId") Integer bookingStateId,
             @Param("roomTypeId") Integer roomTypeId,
