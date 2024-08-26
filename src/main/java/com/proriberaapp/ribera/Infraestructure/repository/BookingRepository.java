@@ -53,10 +53,10 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
     @Query("SELECT * FROM ViewBookingReturn WHERE numberAdults = :numberAdults AND numberChildren = :numberChildren AND numberBabies = :numberBabies AND userClientId = :userClientId AND bookingStateId = :bookingStateId")
     Flux<ViewBookingReturn> findAllViewBookingReturnByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(@Param("numberAdults") Integer numberAdults, @Param("numberChildren") Integer numberChildren, @Param("numberBabies") Integer numberBabies, @Param("userClientId") Integer userClientId, @Param("bookingStateId") Integer bookingStateId);
 
-    @Query("SELECT us.firstname, us.lastname, bo.bookingid, rt.roomtypename, us.email, bo.costfinal, " +
+    @Query("SELECT us.firstname, us.lastname, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, r.offertimeinit, r.offertimeend, us.email, bo.costfinal, " +
             "TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, " +
             "TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend, " +
-            "rid.capacity, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription, r.riberapoints, r.inresortpoints, r.points " +
+            "rid.capacity, bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription, r.riberapoints, r.inresortpoints, r.points " +
             "FROM booking bo " +
             "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
             "JOIN room rid ON rid.roomid = r.roomid " +
