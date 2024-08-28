@@ -8,8 +8,5 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 public interface RoomTypeRepository extends R2dbcRepository<RoomTypeEntity, Integer> {
-    Mono<RoomTypeEntity> findByRoomTypeName(RoomTypeEntity roomTypeEntity);
-    Flux<RoomTypeEntity> findAllByRoomTypeNameIn(List<RoomTypeEntity> roomTypeEntity);
-
-    Mono<RoomTypeEntity> findByRoomsTypeName(String roomTypeName);
-}
+    Mono<RoomTypeEntity> findByRoomTypeName(String roomTypeName);
+    Flux<RoomTypeEntity> findAllByRoomTypeNameIn(List<String> roomTypeNames);}

@@ -19,25 +19,27 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
 
     @Override
     public Mono<RoomTypeEntity> save(RoomTypeEntity entity) {
-        return roomTypeRepository.findByRoomTypeName(entity).hasElement()
-                .flatMap(exists -> exists
-                        ? Mono.error(new IllegalArgumentException("RoomType already exists"))
-                        : roomTypeRepository.save(entity));
+        return roomTypeRepository.findByRoomTypeName(entity.getRoomTypeName())
+                .flatMap(existing -> Mono.error(new IllegalArgumentException("RoomType already exists")))
+                .then(roomTypeRepository.save(entity));
     }
 
     @Override
-    public Flux<RoomTypeEntity> saveAll(List<RoomTypeEntity> entity) {
-        return roomTypeRepository.findAllByRoomTypeNameIn(entity)
+    public Flux<RoomTypeEntity> saveAll(List<RoomTypeEntity> entities) {
+        return roomTypeRepository.findAllByRoomTypeNameIn(
+                        entities.stream().map(RoomTypeEntity::getRoomTypeName).toList())
                 .collectList()
-                .flatMapMany(roomTypeEntities -> roomTypeRepository.saveAll(
-                        entity.stream().filter(roomTypeEntity -> !roomTypeEntities.contains(roomTypeEntity)).toList()
+                .flatMapMany(existingEntities -> roomTypeRepository.saveAll(
+                        entities.stream().filter(entity -> !existingEntities.stream()
+                                        .anyMatch(existing -> existing.getRoomTypeName().equals(entity.getRoomTypeName())))
+                                .toList()
                 ));
     }
 
     @Override
     public Mono<RoomTypeEntity> findById(Integer id) {
-        return roomTypeRepository.findById(id).
-                switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")));
+        return roomTypeRepository.findById(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")));
     }
 
     @Override
@@ -61,34 +63,27 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
     public Mono<RoomTypeEntity> update(RoomTypeEntity entity) {
         return roomTypeRepository.findById(entity.getRoomTypeId())
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")))
-                .flatMap(roomTypeRepository::save);
-    }
-    @Override
-    public Mono<RoomTypeEntity> createRoomType(RoomTypeEntity roomTypeEntity) {
-        return roomTypeRepository.findByRoomsTypeName(roomTypeEntity.getRoomTypeName())
-                .hasElement()
-                .flatMap(exists -> exists
-                        ? Mono.error(new IllegalArgumentException("RoomType already exists"))
-                        : roomTypeRepository.save(roomTypeEntity));
-    }
-
-    @Override
-    public Mono<RoomTypeEntity> updateRoomType(Integer id, RoomTypeEntity roomTypeEntity) {
-        return roomTypeRepository.findById(id)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")))
                 .flatMap(existingRoomType -> {
-                    existingRoomType.setRoomType(roomTypeEntity.getRoomType());
-                    existingRoomType.setRoomTypeName(roomTypeEntity.getRoomTypeName());
-                    existingRoomType.setRoomTypeDescription(roomTypeEntity.getRoomTypeDescription());
-                    existingRoomType.setRoomstate(roomTypeEntity.getRoomstate());
+                    existingRoomType.setRoomType(entity.getRoomType());
+                    existingRoomType.setRoomTypeName(entity.getRoomTypeName());
+                    existingRoomType.setRoomTypeDescription(entity.getRoomTypeDescription());
+                    existingRoomType.setRoomstateid(entity.getRoomstateid());
                     return roomTypeRepository.save(existingRoomType);
                 });
     }
 
     @Override
+    public Mono<RoomTypeEntity> createRoomType(RoomTypeEntity roomTypeEntity) {
+        return save(roomTypeEntity);
+    }
+
+    @Override
+    public Mono<RoomTypeEntity> updateRoomType(Integer id, RoomTypeEntity roomTypeEntity) {
+        return update(roomTypeEntity);
+    }
+
+    @Override
     public Mono<Void> deleteRoomType(Integer id) {
-        return roomTypeRepository.findById(id)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")))
-                .flatMap(roomTypeRepository::delete);
+        return deleteById(id);
     }
 }

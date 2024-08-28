@@ -41,7 +41,7 @@ public class RoomTypeController {
     @DeleteMapping("/delete/{id}")
     public Mono<ResponseEntity<Void>> deleteRoomType(@PathVariable Integer id) {
         return roomTypeService.deleteRoomType(id)
-                .map(r -> new ResponseEntity<Void>(HttpStatus.NO_CONTENT))
+                .then(Mono.just(new ResponseEntity<Void>(HttpStatus.NO_CONTENT)))
                 .onErrorResume(e -> Mono.just(new ResponseEntity<>(HttpStatus.NOT_FOUND)));
     }
 }
