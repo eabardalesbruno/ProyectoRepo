@@ -63,5 +63,32 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")))
                 .flatMap(roomTypeRepository::save);
     }
+    @Override
+    public Mono<RoomTypeEntity> createRoomType(RoomTypeEntity roomTypeEntity) {
+        return roomTypeRepository.findByRoomsTypeName(roomTypeEntity.getRoomTypeName())
+                .hasElement()
+                .flatMap(exists -> exists
+                        ? Mono.error(new IllegalArgumentException("RoomType already exists"))
+                        : roomTypeRepository.save(roomTypeEntity));
+    }
 
+    @Override
+    public Mono<RoomTypeEntity> updateRoomType(Integer id, RoomTypeEntity roomTypeEntity) {
+        return roomTypeRepository.findById(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")))
+                .flatMap(existingRoomType -> {
+                    existingRoomType.setRoomType(roomTypeEntity.getRoomType());
+                    existingRoomType.setRoomTypeName(roomTypeEntity.getRoomTypeName());
+                    existingRoomType.setRoomTypeDescription(roomTypeEntity.getRoomTypeDescription());
+                    existingRoomType.setRoomstate(roomTypeEntity.getRoomstate());
+                    return roomTypeRepository.save(existingRoomType);
+                });
+    }
+
+    @Override
+    public Mono<Void> deleteRoomType(Integer id) {
+        return roomTypeRepository.findById(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")))
+                .flatMap(roomTypeRepository::delete);
+    }
 }

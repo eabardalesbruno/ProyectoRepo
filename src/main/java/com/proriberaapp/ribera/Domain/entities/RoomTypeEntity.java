@@ -21,6 +21,8 @@ public class RoomTypeEntity {
     private String roomTypeName;
     @Column("roomtypedescription")
     private String roomTypeDescription;
+    @Column("roomstateid")
+    private Integer roomstateid;
 
     @Getter
     public enum RoomType {

@@ -10,4 +10,6 @@ import java.util.List;
 public interface RoomTypeRepository extends R2dbcRepository<RoomTypeEntity, Integer> {
     Mono<RoomTypeEntity> findByRoomTypeName(RoomTypeEntity roomTypeEntity);
     Flux<RoomTypeEntity> findAllByRoomTypeNameIn(List<RoomTypeEntity> roomTypeEntity);
+
+    Mono<RoomTypeEntity> findByRoomsTypeName(String roomTypeName);
 }
