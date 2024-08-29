@@ -19,6 +19,12 @@ public class BedsTypeEntity {
     private String bedTypeName;
     @Column("bedtypedescription")
     private String bedTypeDescription;
+    @Column("quantity")
+    private Integer quantity;
+    @Column("bedsizeid")
+    private Integer bedsizeid;
+    @Column("bedstateid")
+    private Integer bedstateid;
 
     public Object complitToString() {
         return "BedsTypeEntity{" +
