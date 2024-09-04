@@ -17,7 +17,6 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 @SpringBootApplication
 
 public class RiberaApplication {
-
 	@Bean
 	ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
 
