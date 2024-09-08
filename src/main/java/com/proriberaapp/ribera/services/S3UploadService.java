@@ -35,7 +35,7 @@ public class S3UploadService {
 
         return Mono.fromCallable(() -> {
             ResponseEntity<String> response = restTemplate.exchange(
-                    "https://documentapi-dev.inclub.world/api/v1/s3",
+                    "https://documentapi-dev.inclub.site/api/v1/s3",
                     HttpMethod.POST,
                     requestEntity,
                     String.class
