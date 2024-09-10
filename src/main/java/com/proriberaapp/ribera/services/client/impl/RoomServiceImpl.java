@@ -57,6 +57,39 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    public Mono<RoomEntity> createRoom(RoomEntity room) {
+        return roomRepository.save(room);
+    }
+
+    @Override
+    public Mono<RoomEntity> updateRoom(Integer roomId, RoomEntity room) {
+        return roomRepository.findById(roomId)
+                .flatMap(existingRoom -> {
+                    existingRoom.setRoomName(room.getRoomName());
+                    existingRoom.setRoomTypeId(room.getRoomTypeId());
+                    existingRoom.setStateRoomId(room.getStateRoomId());
+                    existingRoom.setImage(room.getImage());
+                    return roomRepository.save(existingRoom);
+                });
+    }
+
+    @Override
+    public Mono<Void> deleteRoom(Integer roomId) {
+        return roomRepository.deleteById(roomId);
+    }
+
+    @Override
+    public Flux<RoomEntity> getAllRooms() {
+        return roomRepository.findAll();
+    }
+
+    @Override
+    public Mono<RoomEntity> getRoomById(Integer roomId) {
+        return roomRepository.findById(roomId);
+    }
+
+
+    @Override
     public Flux<ViewRoomReturn> findAllView() {
         return roomRepository.findAllViewRoomReturn()
                 .flatMap(room ->
