@@ -12,7 +12,6 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1/roomstates")
 @RequiredArgsConstructor
 public class RoomStateController {
-
     private final RoomStateService roomStateService;
 
     @GetMapping("/all")
