@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.RoomTypeEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.RoomStateRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomTypeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import java.util.List;
 public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.client.RoomTypeService {
 
     private final RoomTypeRepository roomTypeRepository;
+    private final RoomStateRepository roomStateRepository;
 
     @Override
     public Mono<RoomTypeEntity> save(RoomTypeEntity entity) {
@@ -56,7 +58,13 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
 
     @Override
     public Flux<RoomTypeEntity> getAllRoomTypes() {
-        return roomTypeRepository.findAll();
+        return roomTypeRepository.findAll()
+                .flatMap(roomTypeEntity -> roomStateRepository.findById(roomTypeEntity.getRoomstateid())
+                        .map(roomState -> {
+                            roomTypeEntity.setRoomState(roomState);
+                            return roomTypeEntity;
+                        })
+                );
     }
 
     @Override
