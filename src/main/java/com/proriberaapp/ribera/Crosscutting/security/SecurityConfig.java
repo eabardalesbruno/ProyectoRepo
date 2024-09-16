@@ -34,6 +34,7 @@ public class SecurityConfig {
                                 "/api/v1/users/check-email",
                                 "/api/v1/bedstype/**",
                                 "/api/v1/services/**",
+                                "/api/v1/room-offer/**",
                                 "/api/v1/roomstates/**",
                                 "/api/v1/getalltypes/**",
                                 "/api/v1/restaurant/**",
