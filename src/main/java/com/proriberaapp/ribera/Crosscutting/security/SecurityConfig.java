@@ -45,7 +45,7 @@ public class SecurityConfig {
                                 "/api/v1/countries/**",
                                 "/api/v1/users/**",
                                 "/api/v1/s3-client/**",
-                                "/api/v1/booking/**",
+                                "/api/v1/booking/save/**",
                                 "/api/v1/password-reset/**",
                                 "/api/v1/documenttype/**",
                                 "/api/v1/payment-method/**",

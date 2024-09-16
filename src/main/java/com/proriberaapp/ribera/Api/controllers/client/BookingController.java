@@ -125,6 +125,17 @@ public class BookingController {
                 .flatMap(userClientId -> bookingService.save(userClientId, bookingSaveRequest));
     }
 
+    @PostMapping("/saveyes")
+    public Mono<BookingEntity> saveBooking(@RequestBody BookingSaveRequest bookingSaveRequest) {
+        return Mono.fromCallable(() -> {
+                    Integer roomOfferId = bookingSaveRequest.getRoomOfferId();
+                    log.info("roomOfferId: {}", roomOfferId);
+                    log.info("bookingSaveRequest: {}", bookingSaveRequest);
+                    return roomOfferId;
+                })
+                .flatMap(userClientId -> bookingService.save(userClientId, bookingSaveRequest));
+    }
+
     @GetMapping("/{bookingId}/costfinal")
     public Mono<ResponseEntity<BigDecimal>> getCostFinalByBookingId(@PathVariable Integer bookingId) {
         return bookingService.getCostFinalByBookingId(bookingId)
