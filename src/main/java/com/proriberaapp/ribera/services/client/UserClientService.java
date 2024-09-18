@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface UserClientService {
-    Mono<UserClientEntity> registerUser(UserClientEntity user);
+    Mono<UserClientEntity> registerUser(UserClientEntity user,String randomPassword);
     Mono<String> login(String email, String password);
     Mono<UserClientEntity> registerWithGoogle(String googleId, String email, String name);
     Mono<String> loginWithGoogle(String googleId);

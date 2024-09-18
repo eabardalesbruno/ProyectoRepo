@@ -18,14 +18,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -399,8 +397,10 @@ public class BookingServiceImpl implements BookingService {
                                                 return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La reserva ya existe para las fechas seleccionadas"));
                                             } else {
                                                 // Si la reserva no existe, guardarla en la base de datos
+                                                System.out.println("holi");
                                                 return bookingRepository.save(bookingEntity)
-                                                        .flatMap(savedBooking -> sendBookingConfirmationEmail(savedBooking, roomName));
+                                                        .flatMap(savedBooking -> sendBookingConfirmationEmail(savedBooking, roomName)
+                                                                .then(Mono.just(savedBooking)));
                                             }
                                         })
                                         .map(bookingEntity1 -> {

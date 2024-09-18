@@ -141,11 +141,10 @@ public class UserClientServiceImpl implements UserClientService {
 
  */
 
-    public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
+    public Mono<UserClientEntity> registerUser(UserClientEntity userClient,String randomPassword) {
         long currentTimeMillis = System.currentTimeMillis();
         Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
         userClient.setCreatedat(currentTimestamp);
-        String randomPassword = generatePassword(userClient.getFirstName(), userClient.getLastName());
         userClient.setPassword(randomPassword);
         return userClientRepository.findByEmail(userClient.getEmail())
                 .flatMap(existingUser -> {
@@ -431,13 +430,4 @@ public class UserClientServiceImpl implements UserClientService {
         return null;
     }
 
-    public static String generatePassword(String firstName, String lastName) {
-        String cleanedFirstName = firstName.replaceAll("\\s+", "");
-        String cleanedLastName = lastName.replaceAll("\\s+", "");
-        String firstPart = cleanedFirstName.length() > 2 ? cleanedFirstName.substring(0, 3) : cleanedFirstName;
-        String lastPart = cleanedLastName.length() > 2 ? cleanedLastName.substring(0, 3) : cleanedLastName;
-        Random random = new Random();
-        int randomNumber = random.nextInt(900) + 100;
-        return firstPart + lastPart + randomNumber;
-    }
 }
