@@ -5,6 +5,7 @@ import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -24,8 +25,9 @@ public class BookingSaveRequest {
     private Integer numberChild;
     @Nullable
     private Integer numberBaby;
-
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dayBookingInit;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dayBookingEnd;
 
     @Nullable

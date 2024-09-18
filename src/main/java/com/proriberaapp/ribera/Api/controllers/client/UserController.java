@@ -1,10 +1,11 @@
 package com.proriberaapp.ribera.Api.controllers.client;
+
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.services.client.UserApiClient;
-import com.proriberaapp.ribera.services.client.UserRegistrationService;
 import com.proriberaapp.ribera.services.client.UserClientService;
+import com.proriberaapp.ribera.services.client.UserRegistrationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import static com.proriberaapp.ribera.utils.GeneralMethods.generatePassword;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -150,7 +153,7 @@ public class UserController {
         if (request.email() == null || request.firstName() == null || request.lastName() == null) {
             return Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
         }
-
+        String randomPassword = generatePassword(request.firstName(), request.lastName());
         return userClientService.findByEmail(request.email())
                 .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .switchIfEmpty(Mono.defer(() -> {
@@ -179,14 +182,14 @@ public class UserController {
                             .createdat(request.createdat())
                             .build();
 
-                    return userClientService.registerUser(user)
+                    return userClientService.registerUser(user, randomPassword)
                             .flatMap(savedUser -> {
                                 if ("1".equals(request.googleAuth()) && (request.password() == null || request.password().isEmpty())) {
                                     return userClientService.loginWithGoogle(request.email())
-                                            .map(token -> new ResponseEntity<>(new LoginResponse(token,""), HttpStatus.OK));
+                                            .map(token -> new ResponseEntity<>(new LoginResponse(token, ""), HttpStatus.OK));
                                 } else {
-                                    return userClientService.login(request.email(), request.password())
-                                            .map(token -> new ResponseEntity<>(new LoginResponse(token,""), HttpStatus.OK));
+                                    return userClientService.login(request.email(), randomPassword)
+                                            .map(token -> new ResponseEntity<>(new LoginResponse(token, ""), HttpStatus.OK));
                                 }
                             });
                 }))
@@ -197,7 +200,7 @@ public class UserController {
     @PostMapping("/login")
     public Mono<ResponseEntity<LoginResponse>> loginUser(@RequestBody LoginRequest request) {
         return userClientService.login(request.email(), request.password())
-                .map(token -> new ResponseEntity<>(new LoginResponse(token,"tokenizado"), HttpStatus.OK))
+                .map(token -> new ResponseEntity<>(new LoginResponse(token, "tokenizado"), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
 
@@ -261,4 +264,5 @@ public class UserController {
         Integer idUserClient = jwtProvider.getIdFromToken(token);
         return userClientService.findUserDTOById(idUserClient);
     }
+
 }
