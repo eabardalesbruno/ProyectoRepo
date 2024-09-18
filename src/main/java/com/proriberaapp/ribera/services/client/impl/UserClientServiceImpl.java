@@ -17,6 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
+import java.util.Random;
 
 @Slf4j
 @Service
@@ -144,7 +145,8 @@ public class UserClientServiceImpl implements UserClientService {
         long currentTimeMillis = System.currentTimeMillis();
         Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
         userClient.setCreatedat(currentTimestamp);
-
+        String randomPassword = generatePassword(userClient.getFirstName(), userClient.getLastName());
+        userClient.setPassword(randomPassword);
         return userClientRepository.findByEmail(userClient.getEmail())
                 .flatMap(existingUser -> {
                     if ("1".equals(userClient.getGoogleAuth())) {
@@ -181,7 +183,7 @@ public class UserClientServiceImpl implements UserClientService {
                 })
                 .flatMap(userClientRepository::save)
                 .flatMap(savedUser -> {
-                    String emailBody = generateUserRegistrationEmailBody(savedUser);
+                    String emailBody = generateUserRegistrationEmailBody(savedUser, randomPassword);
                     return emailService.sendEmail(savedUser.getEmail(), "Confirmación de Registro", emailBody)
                             .thenReturn(savedUser);
                 });
@@ -193,7 +195,7 @@ public class UserClientServiceImpl implements UserClientService {
         }
     }
 
-    private String generateUserRegistrationEmailBody(UserClientEntity userClient) {
+    private String generateUserRegistrationEmailBody(UserClientEntity userClient, String tempPassword) {
         String body = "<html>\n" +
                 "<head>\n" +
                 "    <title>Bienvenido</title>\n" +
@@ -285,8 +287,9 @@ public class UserClientServiceImpl implements UserClientService {
                 "    <div class=\"container\">\n" +
                 "        <div class=\"content\">\n" +
                 "            <h1>Registro exitoso!</h1>\n" +
-                "            <p>Hola "+ userClient.getFirstName()+",</p>\n" +
-                "            <p>Gracias por registrarte a la plataforma. Su correo registrado es "+ userClient.getEmail()+".</p>\n" +
+                "            <p>Hola " + userClient.getFirstName() + ",</p>\n" +
+                "            <p>Gracias por registrarte a la plataforma. Su correo registrado es " + userClient.getEmail() + ".</p>\n" +
+                "            <p>Y su contraseña es " + tempPassword + "</p>\n" +
                 "            <p>Si tienes alguna consulta, envianos tu consulta por correo.</p>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
@@ -307,10 +310,12 @@ public class UserClientServiceImpl implements UserClientService {
     public Flux<UserClientEntity> findAll() {
         return userClientRepository.findAll();
     }
+
     @Override
     public Mono<UserClientEntity> findById(Integer id) {
         return userClientRepository.findById(id);
     }
+
     @Override
     public Mono<UserDataDTO> findUserDTOById(Integer id) {
         return userClientRepository.findById(id)
@@ -424,5 +429,15 @@ public class UserClientServiceImpl implements UserClientService {
         userClient.setPassword(passwordEncoder.encode(newPassword));
         userClientRepository.save(userClient).block();
         return null;
+    }
+
+    public static String generatePassword(String firstName, String lastName) {
+        String cleanedFirstName = firstName.replaceAll("\\s+", "");
+        String cleanedLastName = lastName.replaceAll("\\s+", "");
+        String firstPart = cleanedFirstName.length() > 2 ? cleanedFirstName.substring(0, 3) : cleanedFirstName;
+        String lastPart = cleanedLastName.length() > 2 ? cleanedLastName.substring(0, 3) : cleanedLastName;
+        Random random = new Random();
+        int randomNumber = random.nextInt(900) + 100;
+        return firstPart + lastPart + randomNumber;
     }
 }
