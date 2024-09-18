@@ -60,19 +60,17 @@ public class RoomOfferServiceImpl implements RoomOfferService {
     @Override
     public Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd, Integer capacity) {
         return roomOfferRepository.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, capacity)
-                .flatMap(roomOffer ->
-                        servicesRepository.findAllViewComfortReturn(roomOffer.getRoomOfferId())
-                                .collectList()
-                                .flatMap(comfortList -> {
-                                    roomOffer.setListAmenities(comfortList);
-                                    return bedroomRepository.findAllViewBedroomReturn(roomOffer.getRoomId())
-                                            .collectList()
-                                            .map(bedroomList -> {
-                                                roomOffer.setListBedroomReturn(bedroomList);
-                                                return roomOffer;
-                                            });
-                                })
-                );
+                .flatMap(roomOffer -> servicesRepository.findAllViewComfortReturn(roomOffer.getRoomOfferId())
+                        .collectList()
+                        .flatMap(comfortList -> {
+                            roomOffer.setListAmenities(comfortList);
+                            return bedroomRepository.findAllViewBedroomReturn(roomOffer.getRoomId())
+                                    .collectList()
+                                    .map(bedroomList -> {
+                                        roomOffer.setListBedroomReturn(bedroomList);
+                                        return roomOffer;
+                                    });
+                        }));
     }
 
     @Override

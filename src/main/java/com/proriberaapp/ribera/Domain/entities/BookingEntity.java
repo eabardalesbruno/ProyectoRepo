@@ -1,7 +1,6 @@
 package com.proriberaapp.ribera.Domain.entities;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
-import io.r2dbc.spi.Parameter;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,8 +9,8 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
-import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 @Getter
@@ -61,5 +60,12 @@ public class BookingEntity {
                 .dayBookingEnd(Timestamp.valueOf(bookingSaveRequest.getDayBookingEnd().atStartOfDay()))
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                 .build();
+    }
+
+    public boolean hasPassed30Minutes() {
+        LocalDateTime createdTime = createdAt.toLocalDateTime();
+        LocalDateTime currentTime = LocalDateTime.now();
+        Duration duration = Duration.between(createdTime, currentTime);
+        return duration.toMinutes() >= 30;
     }
 }

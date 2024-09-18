@@ -1,4 +1,5 @@
 package com.proriberaapp.ribera.Api.controllers.client;
+
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
@@ -155,4 +156,10 @@ public class BookingController {
             @RequestParam("roomOfferId") Integer id) {
         return bookingService.calendarDate(id);
     }
+
+    @DeleteMapping("/all-old")
+    public Mono<Void> deleteOldBookings() {
+        return bookingService.deleteBookingNotPay();
+    }
+
 }

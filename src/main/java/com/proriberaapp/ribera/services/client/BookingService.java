@@ -16,14 +16,19 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
-public interface BookingService extends BaseService<BookingEntity,BookingEntity> {
+public interface BookingService extends BaseService<BookingEntity, BookingEntity> {
     Mono<S3UploadResponse> loadBoucher(Mono<FilePart> file, Integer folderNumber, String token);
+
     Flux<ViewBookingReturn> findAllByUserClientIdAndBookingStateIdIn(Integer userClientId, Integer stateId);
+
     Flux<ViewBookingReturn> findAllByUserClientIdAndBookingIn(Integer userClientId);
+
     Flux<ViewBookingReturn> findAllView();
+
     Flux<ViewBookingReturn> findAllByBookingStateId(Integer bookingStateId);
 
     Mono<BookingEntity> findByIdAndIdUserAdmin(Integer idUserAdmin, Integer bookingId);
+
     Mono<BigDecimal> getCostFinalByBookingId(Integer bookingId);
 
     Mono<BookingEntity> findByBookingId(Integer bookingId);
@@ -33,7 +38,9 @@ public interface BookingService extends BaseService<BookingEntity,BookingEntity>
     Flux<CalendarDate> calendarDate(Integer id);
 
     Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest);
+
     Mono<BigDecimal> getRiberaPointsByBookingId(Integer bookingId);
+
     Mono<Integer> getUserClientIdByBookingId(Integer bookingId);
 
     Flux<ViewBookingReturn> findAllByRoomTypeIdAndUserClientIdAndBookingStateId(Integer roomTypeId, Integer userClientId, Integer bookingStateId);
@@ -41,6 +48,7 @@ public interface BookingService extends BaseService<BookingEntity,BookingEntity>
     Flux<ViewBookingReturn> findAllByDayBookingInitAndDayBookingEndAndUserClientIdAndBookingStateId(Timestamp dayBookingInit, Timestamp dayBookingEnd, Integer userClientId, Integer bookingStateId);
 
     Flux<ViewBookingReturn> findAllByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(Integer numberAdults, Integer numberChildren, Integer numberBabies, Integer userClientId, Integer bookingStateId);
+
     Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(
             Integer bookingStateId,
             Integer roomTypeId,
@@ -48,4 +56,7 @@ public interface BookingService extends BaseService<BookingEntity,BookingEntity>
             LocalDateTime offertimeInit,
             LocalDateTime offertimeEnd,
             int page,
-            int size);}
+            int size);
+
+    Mono<Void> deleteBookingNotPay();
+}

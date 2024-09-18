@@ -111,6 +111,14 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public Mono<Void> deleteBookingNotPay() {
+        return bookingRepository.findAll()
+                .filter(BookingEntity::hasPassed30Minutes)
+                .flatMap(booking -> bookingRepository.deleteById(booking.getBookingId()))
+                .then();
+    }
+
+    @Override
     public Mono<Integer> getUserClientIdByBookingId(Integer bookingId) {
         return bookingRepository.findById(bookingId)
                 .map(booking -> booking.getUserClientId());
@@ -397,7 +405,6 @@ public class BookingServiceImpl implements BookingService {
                                                 return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La reserva ya existe para las fechas seleccionadas"));
                                             } else {
                                                 // Si la reserva no existe, guardarla en la base de datos
-                                                System.out.println("holi");
                                                 return bookingRepository.save(bookingEntity)
                                                         .flatMap(savedBooking -> sendBookingConfirmationEmail(savedBooking, roomName)
                                                                 .then(Mono.just(savedBooking)));
