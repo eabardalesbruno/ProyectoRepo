@@ -158,7 +158,7 @@ public class BookingController {
     }
 
     @DeleteMapping("/all-old")
-    public Mono<Void> deleteOldBookings() {
+    public Mono<Boolean> deleteOldBookings() {
         return bookingService.deleteBookingNotPay();
     }
 

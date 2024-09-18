@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @Getter
 @Setter
@@ -49,6 +51,7 @@ public class BookingEntity {
     private Timestamp createdAt;
 
     public static BookingEntity createBookingEntity(Integer userClientId, BookingSaveRequest bookingSaveRequest, Integer numberOfDays) {
+        ZoneId limaZoneId = ZoneId.of("America/Lima");
         return BookingEntity.builder()
                 .roomOfferId(bookingSaveRequest.getRoomOfferId())
                 .bookingStateId(3)
@@ -58,14 +61,16 @@ public class BookingEntity {
                 .numberBabies(bookingSaveRequest.getNumberBaby())
                 .dayBookingInit(Timestamp.valueOf(bookingSaveRequest.getDayBookingInit().atStartOfDay()))
                 .dayBookingEnd(Timestamp.valueOf(bookingSaveRequest.getDayBookingEnd().atStartOfDay()))
-                .createdAt(Timestamp.valueOf(LocalDateTime.now()))
+                .createdAt(Timestamp.valueOf(ZonedDateTime.now(limaZoneId).toLocalDateTime()))
                 .build();
     }
 
     public boolean hasPassed30Minutes() {
         LocalDateTime createdTime = createdAt.toLocalDateTime();
-        LocalDateTime currentTime = LocalDateTime.now();
+        ZoneId limaZoneId = ZoneId.of("America/Lima");
+        LocalDateTime currentTime = ZonedDateTime.now(limaZoneId).toLocalDateTime();
         Duration duration = Duration.between(createdTime, currentTime);
         return duration.toMinutes() >= 30;
     }
+
 }

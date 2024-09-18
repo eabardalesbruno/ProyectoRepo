@@ -58,5 +58,5 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
             int page,
             int size);
 
-    Mono<Void> deleteBookingNotPay();
+    Mono<Boolean> deleteBookingNotPay();
 }

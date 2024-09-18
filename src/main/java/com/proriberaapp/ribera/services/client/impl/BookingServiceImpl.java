@@ -43,7 +43,7 @@ public class BookingServiceImpl implements BookingService {
     private final ComfortTypeRepository comfortTypeRepository;
     private final RoomOfferRepository roomOfferRepository;
     private final FinalCostumerRepository finalCostumerRepository;
-
+    private final PaymentBookRepository paymentBookRepository;
     private final BedsTypeRepository bedsTypeRepository;
     private final RoomRepository roomRepository;
     //private final WebClient webClient;
@@ -62,7 +62,7 @@ public class BookingServiceImpl implements BookingService {
             ComfortTypeRepository comfortTypeRepository,
             BedsTypeRepository bedsTypeRepository,
             RoomOfferRepository roomOfferRepository, FinalCostumerRepository finalCostumerRepository,
-            RoomRepository roomRepository
+            PaymentBookRepository paymentBookRepository, RoomRepository roomRepository
             //WebClient.Builder webClientBuilder
     ) {
         this.bookingRepository = bookingRepository;
@@ -73,6 +73,7 @@ public class BookingServiceImpl implements BookingService {
         this.bedsTypeRepository = bedsTypeRepository;
         this.roomOfferRepository = roomOfferRepository;
         this.finalCostumerRepository = finalCostumerRepository;
+        this.paymentBookRepository = paymentBookRepository;
         this.roomRepository = roomRepository;
         //this.webClient = webClientBuilder.baseUrl(uploadDir).build();
     }
@@ -111,12 +112,21 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Mono<Void> deleteBookingNotPay() {
+    public Mono<Boolean> deleteBookingNotPay() {
         return bookingRepository.findAll()
                 .filter(BookingEntity::hasPassed30Minutes)
-                .flatMap(booking -> bookingRepository.deleteById(booking.getBookingId()))
-                .then();
+                .flatMap(booking -> paymentBookRepository.findAllByBookingIdAndCancelReasonIdIsNull(booking.getBookingId())
+                        .collectList()
+                        .flatMap(payments -> {
+                            if (!payments.isEmpty()) {
+                                return Mono.empty();
+                            } else {
+                                return bookingRepository.deleteById(booking.getBookingId());
+                            }
+                        }))
+                .then(Mono.just(true));
     }
+
 
     @Override
     public Mono<Integer> getUserClientIdByBookingId(Integer bookingId) {
