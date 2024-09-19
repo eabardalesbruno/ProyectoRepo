@@ -9,21 +9,13 @@ import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.PaymentBookService;
 import com.proriberaapp.ribera.services.client.S3Uploader;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.Timestamp;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.UUID;
 
 @Service
 public class PaymentBookServiceImpl implements PaymentBookService {
@@ -245,6 +237,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     private final PaymentBookRepository paymentBookRepository;
     private final UserClientRepository userClientRepository;
     private final BookingService bookingService;
+    private final RoomOfferRepository roomOfferRepository;
+    private final RoomRepository roomRepository;
     private final S3Uploader s3Uploader;
     private final EmailService emailService;
     private final PaymentMethodRepository paymentMethodRepository;
@@ -260,13 +254,15 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository,
                                   UserClientRepository userClientRepository,
                                   BookingService bookingService,
-                                  S3Uploader s3Uploader,
+                                  RoomOfferRepository roomOfferRepository, RoomRepository roomRepository, S3Uploader s3Uploader,
                                   EmailService emailService,
                                   PaymentMethodRepository paymentMethodRepository,
-                                  PaymentStateRepository paymentStateRepository,PaymentTypeRepository paymentTypeRepository,PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository) {
+                                  PaymentStateRepository paymentStateRepository, PaymentTypeRepository paymentTypeRepository, PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository) {
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
         this.bookingService = bookingService;
+        this.roomOfferRepository = roomOfferRepository;
+        this.roomRepository = roomRepository;
         this.s3Uploader = s3Uploader;
         this.emailService = emailService;
         this.paymentMethodRepository = paymentMethodRepository;
@@ -658,8 +654,14 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     }
 
     private Mono<Void> sendPaymentConfirmationEmail(PaymentBookEntity paymentBook, String email) {
-        String emailBody = generatePaymentConfirmationEmailBody(paymentBook);
-        return emailService.sendEmail(email, "Confirmación de Pago", emailBody);
+        return bookingService.findById(paymentBook.getBookingId())
+                .flatMap(booking -> roomOfferRepository.findById(booking.getRoomOfferId()))
+                .flatMap(roomOffer -> roomRepository.findById(roomOffer.getRoomId()))
+                .flatMap(room -> {
+                    String roomName = room.getRoomName(); // Extract roomName
+                    String emailBody = generatePaymentConfirmationEmailBody(paymentBook, roomName);
+                    return emailService.sendEmail(email, "Confirmación de Pago", emailBody);
+                });
     }
 
     /*
@@ -688,7 +690,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         return paymentBookRepository.save(paymentBook);
     }
 
-    private String generatePaymentConfirmationEmailBody(PaymentBookEntity paymentBook) {
+    private String generatePaymentConfirmationEmailBody(PaymentBookEntity paymentBook, String roomName) {
         String body = "<html>\n" +
                 "<head>\n" +
                 "    <title>Bienvenido</title>\n" +
@@ -770,11 +772,11 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                 "<body>\n" +
                 "    <div class=\"header\">\n" +
                 "        <!-- Encabezado con logos -->\n" +
-                "        <img class=\"logo-left\" src=\"https://bit.ly/4d7FuGX\" alt=\"Logo Izquierda\">\n" +
+                "        <img class=\"logo-left\" src=\"https://i.postimg.cc/7PsVyMZz/Email-Template-Header.png\" alt=\"Logo Izquierda\">\n" +
                 "    </div>\n" +
                 "\n" +
                 "    <!-- Imagen de banner -->\n" +
-                "    <img class=\"banner\" src=\"https://bit.ly/46vO7sq\" alt=\"Bienvenido\">\n" +
+                "    <img class=\"banner\" src=\"https://i.postimg.cc/pX3JmW8X/Image.png\" alt=\"Bienvenido\">\n" +
                 "\n" +
                 "    <!-- Contenedor blanco con el contenido del mensaje -->\n" +
                 "    <div class=\"container\">\n" +
@@ -784,8 +786,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                 "            <p>Su pago ha sido recibido con éxito.</p>\n" +
                 "            <p>Detalles del pago:</p>\n" +
                 "            <ul>\n" +
-                "                <li>Reserva: " + paymentBook.getBookingId() + "</li>\n" +
-                "                <li>Monto: " + paymentBook.getAmount() + "</li>\n" +
+                "                <li>Reserva: " + roomName + "</li>\n" +
+                "                <li>Monto: " + paymentBook.getTotalCost() + "</li>\n" +
                 "                <li>Fecha de pago: " + paymentBook.getPaymentDate() + "</li>\n" +
                 "            </ul>\n" +
                 "            <p>Gracias por su confianza.</p>\n" +

@@ -42,6 +42,7 @@ public class BookingServiceImpl implements BookingService {
     private final PartnerPointsService partnerPointsService;
     private final ComfortTypeRepository comfortTypeRepository;
     private final RoomOfferRepository roomOfferRepository;
+    private final CancelPaymentRepository cancelPaymentRepository;
     private final FinalCostumerRepository finalCostumerRepository;
     private final PaymentBookRepository paymentBookRepository;
     private final RefusePaymentRepository refusePaymentRepository;
@@ -61,7 +62,7 @@ public class BookingServiceImpl implements BookingService {
             EmailService emailService,
             PartnerPointsService partnerPointsService,
             ComfortTypeRepository comfortTypeRepository,
-            RefusePaymentRepository refusePaymentRepository, BedsTypeRepository bedsTypeRepository,
+            CancelPaymentRepository cancelPaymentRepository, RefusePaymentRepository refusePaymentRepository, BedsTypeRepository bedsTypeRepository,
             RoomOfferRepository roomOfferRepository, FinalCostumerRepository finalCostumerRepository,
             PaymentBookRepository paymentBookRepository, RoomRepository roomRepository
             //WebClient.Builder webClientBuilder
@@ -71,6 +72,7 @@ public class BookingServiceImpl implements BookingService {
         this.emailService = emailService;
         this.partnerPointsService = partnerPointsService;
         this.comfortTypeRepository = comfortTypeRepository;
+        this.cancelPaymentRepository = cancelPaymentRepository;
         this.refusePaymentRepository = refusePaymentRepository;
         this.bedsTypeRepository = bedsTypeRepository;
         this.roomOfferRepository = roomOfferRepository;
