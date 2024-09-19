@@ -118,7 +118,7 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.findAll()
                 .filter(BookingEntity::hasPassed1Hours)
                 .flatMap(booking -> {
-                    if (booking.getBookingId() == 0) {
+                    if (booking.getUserClientId() == 0) {
                         return bookingRepository.deleteById(booking.getBookingId());
                     }
                     return paymentBookRepository.findAllByBookingIdAndCancelReasonIdIsNull(booking.getBookingId())
