@@ -44,6 +44,7 @@ public class BookingServiceImpl implements BookingService {
     private final RoomOfferRepository roomOfferRepository;
     private final FinalCostumerRepository finalCostumerRepository;
     private final PaymentBookRepository paymentBookRepository;
+    private final RefusePaymentRepository refusePaymentRepository;
     private final BedsTypeRepository bedsTypeRepository;
     private final RoomRepository roomRepository;
     //private final WebClient webClient;
@@ -60,7 +61,7 @@ public class BookingServiceImpl implements BookingService {
             EmailService emailService,
             PartnerPointsService partnerPointsService,
             ComfortTypeRepository comfortTypeRepository,
-            BedsTypeRepository bedsTypeRepository,
+            RefusePaymentRepository refusePaymentRepository, BedsTypeRepository bedsTypeRepository,
             RoomOfferRepository roomOfferRepository, FinalCostumerRepository finalCostumerRepository,
             PaymentBookRepository paymentBookRepository, RoomRepository roomRepository
             //WebClient.Builder webClientBuilder
@@ -70,6 +71,7 @@ public class BookingServiceImpl implements BookingService {
         this.emailService = emailService;
         this.partnerPointsService = partnerPointsService;
         this.comfortTypeRepository = comfortTypeRepository;
+        this.refusePaymentRepository = refusePaymentRepository;
         this.bedsTypeRepository = bedsTypeRepository;
         this.roomOfferRepository = roomOfferRepository;
         this.finalCostumerRepository = finalCostumerRepository;
@@ -114,18 +116,29 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Mono<Boolean> deleteBookingNotPay() {
         return bookingRepository.findAll()
-                .filter(BookingEntity::hasPassed30Minutes)
-                .flatMap(booking -> paymentBookRepository.findAllByBookingIdAndCancelReasonIdIsNull(booking.getBookingId())
-                        .collectList()
-                        .flatMap(payments -> {
-                            if (!payments.isEmpty()) {
-                                return Mono.empty();
-                            } else {
-                                return bookingRepository.deleteById(booking.getBookingId());
-                            }
-                        }))
+                .filter(BookingEntity::hasPassed2Hours)
+                .flatMap(booking ->
+                        paymentBookRepository.findAllByBookingIdAndCancelReasonIdIsNull(booking.getBookingId())
+                                .collectList()
+                                .flatMap(payments -> {
+                                    if (!payments.isEmpty()) {
+                                        return Mono.empty();
+                                    } else {
+                                        return refusePaymentRepository.findAllByPaymentBookId(booking.getBookingId())
+                                                .collectList()
+                                                .flatMap(refusePayments -> {
+                                                    if (!refusePayments.isEmpty()) {
+                                                        return bookingRepository.deleteById(booking.getBookingId());
+                                                    } else {
+                                                        return Mono.empty();
+                                                    }
+                                                });
+                                    }
+                                })
+                )
                 .then(Mono.just(true));
     }
+
 
 
     @Override
