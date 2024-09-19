@@ -189,7 +189,7 @@ public class UserController {
                                             .map(token -> new ResponseEntity<>(new LoginResponse(token, ""), HttpStatus.OK));
                                 } else {
                                     return userClientService.login(request.email(), randomPassword)
-                                            .map(token -> new ResponseEntity<>(new LoginResponse(token, ""), HttpStatus.OK));
+                                            .map(token -> new ResponseEntity<>(new LoginResponse(token, savedUser.getUserClientId().toString()), HttpStatus.OK));
                                 }
                             });
                 }))
