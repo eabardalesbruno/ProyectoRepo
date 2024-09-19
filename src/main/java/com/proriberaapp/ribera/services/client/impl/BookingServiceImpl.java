@@ -155,6 +155,11 @@ public class BookingServiceImpl implements BookingService {
                 .flatMap(bookingRepository::save);
     }
 
+    @Override
+    public Mono<Boolean> deleteBooking(Integer bookingId) {
+        return bookingRepository.deleteById(bookingId)
+                .then(Mono.just(true));
+    }
 
     @Override
     public Mono<Integer> getUserClientIdByBookingId(Integer bookingId) {

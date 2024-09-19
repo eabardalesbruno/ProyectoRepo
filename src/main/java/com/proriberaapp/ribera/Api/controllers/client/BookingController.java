@@ -162,6 +162,11 @@ public class BookingController {
         return bookingService.deleteBookingNotPay();
     }
 
+    @DeleteMapping("/{bookingId}")
+    public Mono<Boolean> deleteBooking(@PathVariable Integer bookingId) {
+        return bookingService.deleteBooking(bookingId);
+    }
+
     @GetMapping("/assign-client/{userId}/bookingId/{bookingId}")
     public Mono<ResponseEntity<BookingEntity>> assignClientToBooking(@PathVariable Integer bookingId, @PathVariable Integer userId) {
         return bookingService.assignClientToBooking(bookingId, userId)
