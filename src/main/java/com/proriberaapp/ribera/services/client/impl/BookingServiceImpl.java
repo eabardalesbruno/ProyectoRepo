@@ -116,29 +116,42 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Mono<Boolean> deleteBookingNotPay() {
         return bookingRepository.findAll()
-                .filter(BookingEntity::hasPassed2Hours)
-                .flatMap(booking ->
-                        paymentBookRepository.findAllByBookingIdAndCancelReasonIdIsNull(booking.getBookingId())
-                                .collectList()
-                                .flatMap(payments -> {
-                                    if (!payments.isEmpty()) {
-                                        return Mono.empty();
-                                    } else {
-                                        return refusePaymentRepository.findAllByPaymentBookId(booking.getBookingId())
-                                                .collectList()
-                                                .flatMap(refusePayments -> {
-                                                    if (!refusePayments.isEmpty()) {
-                                                        return bookingRepository.deleteById(booking.getBookingId());
-                                                    } else {
-                                                        return Mono.empty();
-                                                    }
-                                                });
-                                    }
-                                })
-                )
+                .filter(BookingEntity::hasPassed1Hours)
+                .flatMap(booking -> {
+                    if (booking.getBookingId() == 0) {
+                        return bookingRepository.deleteById(booking.getBookingId());
+                    }
+                    return paymentBookRepository.findAllByBookingIdAndCancelReasonIdIsNull(booking.getBookingId())
+                            .collectList()
+                            .flatMap(payments -> {
+                                if (!payments.isEmpty()) {
+                                    return Mono.empty();
+                                } else {
+                                    return refusePaymentRepository.findAllByPaymentBookId(booking.getBookingId())
+                                            .collectList()
+                                            .flatMap(refusePayments -> {
+                                                if (!refusePayments.isEmpty()) {
+                                                    return bookingRepository.deleteById(booking.getBookingId());
+                                                } else {
+                                                    return Mono.empty();
+                                                }
+                                            });
+                                }
+                            });
+                })
                 .then(Mono.just(true));
     }
 
+
+    @Override
+    public Mono<BookingEntity> assignClientToBooking(Integer bookingId, Integer userClientId) {
+        return bookingRepository.findByBookingId(bookingId)
+                .map(bookingEntity -> {
+                    bookingEntity.setUserClientId(userClientId);
+                    return bookingEntity;
+                })
+                .flatMap(bookingRepository::save);
+    }
 
 
     @Override

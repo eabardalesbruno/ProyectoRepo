@@ -134,7 +134,7 @@ public class BookingController {
                     log.info("bookingSaveRequest: {}", bookingSaveRequest);
                     return roomOfferId;
                 })
-                .flatMap(userClientId -> bookingService.save(userClientId, bookingSaveRequest));
+                .flatMap(userClientId -> bookingService.save(0, bookingSaveRequest));
     }
 
     @GetMapping("/{bookingId}/costfinal")
@@ -160,6 +160,12 @@ public class BookingController {
     @DeleteMapping("/all-old")
     public Mono<Boolean> deleteOldBookings() {
         return bookingService.deleteBookingNotPay();
+    }
+
+    @GetMapping("/assign-client/{userId}/bookingId/{bookingId}")
+    public Mono<ResponseEntity<BookingEntity>> assignClientToBooking(@PathVariable Integer bookingId, @PathVariable Integer userId) {
+        return bookingService.assignClientToBooking(bookingId, userId)
+                .map(ResponseEntity::ok);
     }
 
 }

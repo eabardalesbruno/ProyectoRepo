@@ -65,12 +65,12 @@ public class BookingEntity {
                 .build();
     }
 
-    public boolean hasPassed2Hours() {
+    public boolean hasPassed1Hours() {
         LocalDateTime createdTime = createdAt.toLocalDateTime();
         ZoneId limaZoneId = ZoneId.of("America/Lima");
         LocalDateTime currentTime = ZonedDateTime.now(limaZoneId).toLocalDateTime();
         Duration duration = Duration.between(createdTime, currentTime);
-        return duration.toMinutes() >= 60*2;
+        return duration.toMinutes() >= 60;
     }
 
 }
