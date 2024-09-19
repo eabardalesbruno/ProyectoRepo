@@ -17,7 +17,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
-import java.util.Random;
 
 @Slf4j
 @Service
@@ -141,7 +140,7 @@ public class UserClientServiceImpl implements UserClientService {
 
  */
 
-    public Mono<UserClientEntity> registerUser(UserClientEntity userClient,String randomPassword) {
+    public Mono<UserClientEntity> registerUser(UserClientEntity userClient, String randomPassword) {
         long currentTimeMillis = System.currentTimeMillis();
         Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
         userClient.setCreatedat(currentTimestamp);

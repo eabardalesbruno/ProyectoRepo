@@ -42,8 +42,10 @@ public class BookingServiceImpl implements BookingService {
     private final PartnerPointsService partnerPointsService;
     private final ComfortTypeRepository comfortTypeRepository;
     private final RoomOfferRepository roomOfferRepository;
+    private final CancelPaymentRepository cancelPaymentRepository;
     private final FinalCostumerRepository finalCostumerRepository;
-
+    private final PaymentBookRepository paymentBookRepository;
+    private final RefusePaymentRepository refusePaymentRepository;
     private final BedsTypeRepository bedsTypeRepository;
     private final RoomRepository roomRepository;
     //private final WebClient webClient;
@@ -60,9 +62,9 @@ public class BookingServiceImpl implements BookingService {
             EmailService emailService,
             PartnerPointsService partnerPointsService,
             ComfortTypeRepository comfortTypeRepository,
-            BedsTypeRepository bedsTypeRepository,
+            CancelPaymentRepository cancelPaymentRepository, RefusePaymentRepository refusePaymentRepository, BedsTypeRepository bedsTypeRepository,
             RoomOfferRepository roomOfferRepository, FinalCostumerRepository finalCostumerRepository,
-            RoomRepository roomRepository
+            PaymentBookRepository paymentBookRepository, RoomRepository roomRepository
             //WebClient.Builder webClientBuilder
     ) {
         this.bookingRepository = bookingRepository;
@@ -70,9 +72,12 @@ public class BookingServiceImpl implements BookingService {
         this.emailService = emailService;
         this.partnerPointsService = partnerPointsService;
         this.comfortTypeRepository = comfortTypeRepository;
+        this.cancelPaymentRepository = cancelPaymentRepository;
+        this.refusePaymentRepository = refusePaymentRepository;
         this.bedsTypeRepository = bedsTypeRepository;
         this.roomOfferRepository = roomOfferRepository;
         this.finalCostumerRepository = finalCostumerRepository;
+        this.paymentBookRepository = paymentBookRepository;
         this.roomRepository = roomRepository;
         //this.webClient = webClientBuilder.baseUrl(uploadDir).build();
     }
@@ -108,6 +113,52 @@ public class BookingServiceImpl implements BookingService {
         return bookings.collectList()
                 .zipWith(totalElements)
                 .map(tuple -> new PaginatedResponse<>(tuple.getT2(), tuple.getT1()));
+    }
+
+    @Override
+    public Mono<Boolean> deleteBookingNotPay() {
+        return bookingRepository.findAll()
+                .filter(BookingEntity::hasPassed1Hours)
+                .flatMap(booking -> {
+                    if (booking.getUserClientId() == 0) {
+                        return bookingRepository.deleteById(booking.getBookingId());
+                    }
+                    return paymentBookRepository.findAllByBookingIdAndCancelReasonIdIsNull(booking.getBookingId())
+                            .collectList()
+                            .flatMap(payments -> {
+                                if (!payments.isEmpty()) {
+                                    return Mono.empty();
+                                } else {
+                                    return refusePaymentRepository.findAllByPaymentBookId(booking.getBookingId())
+                                            .collectList()
+                                            .flatMap(refusePayments -> {
+                                                if (!refusePayments.isEmpty()) {
+                                                    return bookingRepository.deleteById(booking.getBookingId());
+                                                } else {
+                                                    return Mono.empty();
+                                                }
+                                            });
+                                }
+                            });
+                })
+                .then(Mono.just(true));
+    }
+
+
+    @Override
+    public Mono<BookingEntity> assignClientToBooking(Integer bookingId, Integer userClientId) {
+        return bookingRepository.findByBookingId(bookingId)
+                .map(bookingEntity -> {
+                    bookingEntity.setUserClientId(userClientId);
+                    return bookingEntity;
+                })
+                .flatMap(bookingRepository::save);
+    }
+
+    @Override
+    public Mono<Boolean> deleteBooking(Integer bookingId) {
+        return bookingRepository.deleteById(bookingId)
+                .then(Mono.just(true));
     }
 
     @Override
@@ -397,7 +448,6 @@ public class BookingServiceImpl implements BookingService {
                                                 return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La reserva ya existe para las fechas seleccionadas"));
                                             } else {
                                                 // Si la reserva no existe, guardarla en la base de datos
-                                                System.out.println("holi");
                                                 return bookingRepository.save(bookingEntity)
                                                         .flatMap(savedBooking -> sendBookingConfirmationEmail(savedBooking, roomName)
                                                                 .then(Mono.just(savedBooking)));

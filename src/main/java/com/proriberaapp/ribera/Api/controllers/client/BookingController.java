@@ -1,4 +1,5 @@
 package com.proriberaapp.ribera.Api.controllers.client;
+
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
@@ -133,7 +134,7 @@ public class BookingController {
                     log.info("bookingSaveRequest: {}", bookingSaveRequest);
                     return roomOfferId;
                 })
-                .flatMap(userClientId -> bookingService.save(userClientId, bookingSaveRequest));
+                .flatMap(userClientId -> bookingService.save(0, bookingSaveRequest));
     }
 
     @GetMapping("/{bookingId}/costfinal")
@@ -155,4 +156,21 @@ public class BookingController {
             @RequestParam("roomOfferId") Integer id) {
         return bookingService.calendarDate(id);
     }
+
+    @DeleteMapping("/all-old")
+    public Mono<Boolean> deleteOldBookings() {
+        return bookingService.deleteBookingNotPay();
+    }
+
+    @DeleteMapping("/{bookingId}")
+    public Mono<Boolean> deleteBooking(@PathVariable Integer bookingId) {
+        return bookingService.deleteBooking(bookingId);
+    }
+
+    @GetMapping("/assign-client/{userId}/bookingId/{bookingId}")
+    public Mono<ResponseEntity<BookingEntity>> assignClientToBooking(@PathVariable Integer bookingId, @PathVariable Integer userId) {
+        return bookingService.assignClientToBooking(bookingId, userId)
+                .map(ResponseEntity::ok);
+    }
+
 }

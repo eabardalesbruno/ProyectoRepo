@@ -11,4 +11,6 @@ import reactor.core.publisher.Flux;
 public interface RefusePaymentRepository extends R2dbcRepository<RefusePaymentEntity, Integer> {
     @Query("SELECT * FROM refusereason WHERE refusereasonid != 1")
     Flux<RefuseEntity> findAllWhereRefuseReasonIdNotEqualToOne();
+
+    Flux<RefusePaymentEntity> findAllByPaymentBookId(Integer paymentBookId);
 }
