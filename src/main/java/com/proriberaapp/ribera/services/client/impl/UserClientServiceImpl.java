@@ -148,7 +148,11 @@ public class UserClientServiceImpl implements UserClientService {
         return userClientRepository.findByEmail(userClient.getEmail())
                 .flatMap(existingUser -> {
                     if ("1".equals(userClient.getGoogleAuth())) {
-                        return Mono.just(existingUser);
+                        if (existingUser.getPassword() != null) {
+                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
+                        } else {
+                            return Mono.just(existingUser);
+                        }
                     } else {
                         if (existingUser.getPassword() != null) {
                             return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
