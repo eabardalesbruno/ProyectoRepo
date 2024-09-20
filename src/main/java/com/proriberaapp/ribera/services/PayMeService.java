@@ -503,7 +503,7 @@ public class PayMeService {
                                                             .paymentTypeId(6)
                                                             .paymentSubTypeId(1)
                                                             .currencyTypeId(1)
-                                                            .amount(monto)
+                                                            .amount(monto.divide(BigDecimal.valueOf(100000)))
                                                             .description("Pago exitoso")
                                                             .paymentDate(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Lima"))))
                                                             .operationCode(authorizationResponse.getId())
