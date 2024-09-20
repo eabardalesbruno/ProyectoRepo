@@ -22,7 +22,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
 
     Flux<BookingEntity> findAllByUserClientIdAndBookingStateId(Integer userClientId, Integer bookingStateId);
 
-    @Query("SELECT * FROM booking WHERE roomofferid = :roomOfferId AND ((daybookinginit <= :dayBookingEnd) AND (daybookingend >= :dayBookingInit))")
+    @Query("SELECT * FROM booking WHERE roomofferid = :roomOfferId AND ((daybookinginit <= :dayBookingEnd) AND (daybookingend >= :dayBookingInit)) AND bookingStateId != 4")
     Flux<BookingEntity> findExistingBookings(@Param("roomOfferId") Integer roomOfferId, @Param("dayBookingInit") Timestamp dayBookingInit, @Param("dayBookingEnd") Timestamp dayBookingEnd);
 
     Mono<BookingEntity> findByBookingIdAndUserClientId(Integer userClientId, Integer bookingId);
@@ -42,7 +42,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
     @Query("SELECT * FROM ViewBookingReturn")
     Flux<ViewBookingReturn> findAllViewBookingReturn();
 
-    @Query("SELECT bookingid, roomofferid, daybookinginit, daybookingend FROM booking WHERE roomofferid = :roomOfferId AND dayBookingEnd >= CURRENT_DATE")
+    @Query("SELECT bookingid, roomofferid, daybookinginit, daybookingend FROM booking WHERE roomofferid = :roomOfferId AND dayBookingEnd >= CURRENT_DATE AND bookingStateId != 4")
     Flux<CalendarDate> findAllCalendarDate(@Param("roomofferid") Integer roomOfferId);
     Mono<BookingEntity> findByBookingId(Integer bookingId);
 
