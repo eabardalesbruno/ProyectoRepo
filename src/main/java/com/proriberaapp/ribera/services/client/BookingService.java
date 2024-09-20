@@ -58,6 +58,15 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
             int page,
             int size);
 
+    Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginatedAndUserId(
+            Integer bookingStateId,
+            Integer roomTypeId,
+            Integer capacity,
+            LocalDateTime offertimeInit,
+            LocalDateTime offertimeEnd,
+            int page,
+            int size,Integer userId);
+
     Mono<Boolean> deleteBookingNotPay();
 
     Mono<BookingEntity> assignClientToBooking(Integer bookingId, Integer userClientId);

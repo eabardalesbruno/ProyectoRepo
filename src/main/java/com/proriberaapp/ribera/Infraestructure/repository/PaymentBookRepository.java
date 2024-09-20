@@ -22,6 +22,6 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
     @Query("SELECT COUNT(*) FROM paymentbook WHERE refusereasonid = :refuseReasonId AND pendingpay = :pendingPay")
     Mono<Long> countByRefuseReasonIdAndPendingPay(int refuseReasonId, int pendingPay);
 
-    @Query("SELECT * FROM paymentbook WHERE bookingId = :bookingId AND pendingpay = 1")
+    @Query("SELECT * FROM paymentbook WHERE bookingId = :bookingId")
     Flux<PaymentBookEntity> findAllByBookingIdAndCancelReasonIdIsNull(Integer bookingId);
 }

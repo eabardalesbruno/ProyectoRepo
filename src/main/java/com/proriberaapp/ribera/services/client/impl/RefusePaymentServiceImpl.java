@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.Domain.entities.RefuseEntity;
 import com.proriberaapp.ribera.Domain.entities.RefusePaymentEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.RefusePaymentRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
@@ -14,60 +15,63 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class RefusePaymentServiceImpl implements RefusePaymentService {
-/*
+    /*
+        private final RefusePaymentRepository refusePaymentRepository;
+        private final PaymentBookRepository paymentBookRepository;
+
+        public RefusePaymentServiceImpl(RefusePaymentRepository refusePaymentRepository, PaymentBookRepository paymentBookRepository) {
+            this.refusePaymentRepository = refusePaymentRepository;
+            this.paymentBookRepository = paymentBookRepository;
+        }
+
+        @Override
+        public Flux<RefusePaymentEntity> getAllRefusePayments() {
+            return refusePaymentRepository.findAll();
+        }
+
+        @Override
+        public Flux<RefuseEntity> getAllRefuseReason() {
+            return refusePaymentRepository.findAllWhereRefuseReasonIdNotEqualToOne();
+        }
+
+        @Override
+        public Mono<RefusePaymentEntity> getRefusePaymentById(Integer id) {
+            return refusePaymentRepository.findById(id);
+        }
+
+        @Override
+        public Mono<RefusePaymentEntity> saveRefusePayment(RefusePaymentEntity refusePayment) {
+            return refusePaymentRepository.save(refusePayment)
+                    .flatMap(savedRefusePayment -> {
+                        return paymentBookRepository.findById(savedRefusePayment.getPaymentBookId())
+                                .flatMap(paymentBook -> {
+                                    paymentBook.setRefuseReasonId(savedRefusePayment.getRefuseReasonId());
+                                    return paymentBookRepository.save(paymentBook);
+                                })
+                                .then(Mono.just(savedRefusePayment));
+                    });
+        }
+
+        @Override
+        public Mono<Void> deleteRefusePayment(Integer id) {
+            return refusePaymentRepository.deleteById(id);
+        }
+     */
     private final RefusePaymentRepository refusePaymentRepository;
     private final PaymentBookRepository paymentBookRepository;
-
-    public RefusePaymentServiceImpl(RefusePaymentRepository refusePaymentRepository, PaymentBookRepository paymentBookRepository) {
-        this.refusePaymentRepository = refusePaymentRepository;
-        this.paymentBookRepository = paymentBookRepository;
-    }
-
-    @Override
-    public Flux<RefusePaymentEntity> getAllRefusePayments() {
-        return refusePaymentRepository.findAll();
-    }
-
-    @Override
-    public Flux<RefuseEntity> getAllRefuseReason() {
-        return refusePaymentRepository.findAllWhereRefuseReasonIdNotEqualToOne();
-    }
-
-    @Override
-    public Mono<RefusePaymentEntity> getRefusePaymentById(Integer id) {
-        return refusePaymentRepository.findById(id);
-    }
-
-    @Override
-    public Mono<RefusePaymentEntity> saveRefusePayment(RefusePaymentEntity refusePayment) {
-        return refusePaymentRepository.save(refusePayment)
-                .flatMap(savedRefusePayment -> {
-                    return paymentBookRepository.findById(savedRefusePayment.getPaymentBookId())
-                            .flatMap(paymentBook -> {
-                                paymentBook.setRefuseReasonId(savedRefusePayment.getRefuseReasonId());
-                                return paymentBookRepository.save(paymentBook);
-                            })
-                            .then(Mono.just(savedRefusePayment));
-                });
-    }
-
-    @Override
-    public Mono<Void> deleteRefusePayment(Integer id) {
-        return refusePaymentRepository.deleteById(id);
-    }
- */
-private final RefusePaymentRepository refusePaymentRepository;
-    private final PaymentBookRepository paymentBookRepository;
     private final UserClientRepository userClientRepository;
+
+    private final BookingRepository bookingRepository;
     private final EmailService emailService;
 
     public RefusePaymentServiceImpl(RefusePaymentRepository refusePaymentRepository,
                                     PaymentBookRepository paymentBookRepository,
                                     UserClientRepository userClientRepository,
-                                    EmailService emailService) {
+                                    BookingRepository bookingRepository, EmailService emailService) {
         this.refusePaymentRepository = refusePaymentRepository;
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
+        this.bookingRepository = bookingRepository;
         this.emailService = emailService;
     }
 
@@ -92,7 +96,12 @@ private final RefusePaymentRepository refusePaymentRepository;
                 .flatMap(savedRefusePayment -> paymentBookRepository.findById(savedRefusePayment.getPaymentBookId())
                         .flatMap(paymentBook -> {
                             paymentBook.setRefuseReasonId(savedRefusePayment.getRefuseReasonId());
-                            return paymentBookRepository.save(paymentBook);
+                            return bookingRepository.findByBookingId(paymentBook.getBookingId())
+                                    .flatMap(booking -> {
+                                        booking.setBookingStateId(3);
+                                        return bookingRepository.save(booking);
+                                    })
+                                    .then(paymentBookRepository.save(paymentBook));
                         })
                         .then(paymentBookRepository.findUserClientIdByPaymentBookId(savedRefusePayment.getPaymentBookId())
                                 .flatMap(userClientId -> userClientRepository.findById(userClientId)

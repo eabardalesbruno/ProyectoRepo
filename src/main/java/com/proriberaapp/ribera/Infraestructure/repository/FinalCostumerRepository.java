@@ -10,5 +10,5 @@ import java.util.List;
 public interface FinalCostumerRepository extends R2dbcRepository<FinalCostumerEntity, Integer>{
     Mono<FinalCostumerRepository> findByDocumentNumber(FinalCostumerEntity entity);
     Flux<FinalCostumerRepository> findAllByDocumentNumberIn(List<FinalCostumerEntity> entity);
-
+    //Terrible
 }
