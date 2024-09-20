@@ -508,7 +508,7 @@ public class PayMeService {
                                                             .paymentDate(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Lima"))))
                                                             .operationCode(authorizationResponse.getId())
                                                             .note("Nota de pago")
-                                                            .totalCost(monto)
+                                                            .totalCost(monto.divide(BigDecimal.valueOf(100000)))
                                                             .imageVoucher("Pago con Tarjeta")
                                                             .totalPoints(0)
                                                             .paymentComplete(true)
