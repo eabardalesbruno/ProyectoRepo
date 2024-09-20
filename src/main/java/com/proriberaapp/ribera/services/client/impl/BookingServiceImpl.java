@@ -116,6 +116,21 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginatedAndUserId(Integer bookingStateId, Integer roomTypeId, Integer capacity, LocalDateTime offertimeInit, LocalDateTime offertimeEnd, int page, int size, Integer userId) {
+        int offset = page * size;
+
+        Flux<BookingStates> bookings = bookingRepository.findBookingsByStateIdPaginatedAndUserId(
+                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd, size, offset,userId);
+
+        Mono<Long> totalElements = bookingRepository.countBookingsByStateIdAndUserId(
+                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd,userId);
+
+        return bookings.collectList()
+                .zipWith(totalElements)
+                .map(tuple -> new PaginatedResponse<>(tuple.getT2(), tuple.getT1()));
+    }
+
+    @Override
     public Mono<Boolean> deleteBookingNotPay() {
         return bookingRepository.findAll()
                 .filter(BookingEntity::hasPassed1Hours)
@@ -129,15 +144,7 @@ public class BookingServiceImpl implements BookingService {
                                 if (!payments.isEmpty()) {
                                     return Mono.empty();
                                 } else {
-                                    return refusePaymentRepository.findAllByPaymentBookId(booking.getBookingId())
-                                            .collectList()
-                                            .flatMap(refusePayments -> {
-                                                if (!refusePayments.isEmpty()) {
-                                                    return bookingRepository.deleteById(booking.getBookingId());
-                                                } else {
-                                                    return Mono.empty();
-                                                }
-                                            });
+                                    return bookingRepository.deleteById(booking.getBookingId());
                                 }
                             });
                 })

@@ -87,6 +87,19 @@ public class BookingController {
                 bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd, page, size);
     }
 
+    @GetMapping("/all/user/{userId}")
+    public Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginatedAndUserClientId(
+            @RequestParam Integer bookingStateId, @PathVariable Integer userId,
+            @RequestParam(required = false) Integer roomTypeId,
+            @RequestParam(required = false) Integer capacity,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offertimeInit,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offertimeEnd,
+            @RequestParam int page,
+            @RequestParam int size) {
+        return bookingService.findBookingsByStateIdPaginatedAndUserId(
+                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd, page, size,userId);
+    }
+
     @GetMapping("/find/all")
     public Flux<ViewBookingReturn> findAllBookings(
             @RequestHeader("Authorization") String token) {
