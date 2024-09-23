@@ -405,13 +405,15 @@ public class UserClientServiceImpl implements UserClientService {
     @Override
     public Mono<Void> sendContactInfo(ContactInfo contactInfo) {
         String emailBody = getContactInfo(contactInfo);
-        return emailService.sendEmail("informesyreservasribera@inresorts.club", contactInfo.getSubject(), emailBody);
+        return emailService.sendEmail("informesyreservasribera@inresorts.club", contactInfo.getSubject(), emailBody)
+                .then(emailService.sendEmail(contactInfo.getEmail(), "Confirmación de envío", emailBody));
     }
 
     @Override
     public Mono<Void> sendEventContactInfo(EventContactInfo eventContactInfo) {
         String emailBody = getEventContactInfo(eventContactInfo);
-        return emailService.sendEmail("informesyreservasribera@inresorts.club", "Eventos", emailBody);
+        return emailService.sendEmail("informesyreservasribera@inresorts.club", "Eventos", emailBody)
+                .then(emailService.sendEmail(eventContactInfo.getEmail(), "Confirmación de envío", emailBody));
     }
 
     @Override
@@ -534,7 +536,7 @@ public class UserClientServiceImpl implements UserClientService {
                 "                <span id='adultos'>" + eventContactInfo.getNumberAdults() + "</span>" +
                 "            </div>" +
                 "            <div class='data-group'>" +
-                "                <label for='niños'>Numero de niños</label>" +
+                "                <label for='niños'>Numero de infantes</label>" +
                 "                <span id='niños'>" + eventContactInfo.getNumberChildren() + "</span>" +
                 "            </div>" +
                 "        </div>" +
