@@ -265,4 +265,16 @@ public class UserController {
         return userClientService.findUserDTOById(idUserClient);
     }
 
+    @PostMapping("/contact-info")
+    public Mono<ResponseEntity<Void>> sendContactInfo(@RequestBody ContactInfo contactInfo) {
+        return userClientService.sendContactInfo(contactInfo)
+                .map(ResponseEntity::ok);
+    }
+
+    @PostMapping("/event-contact-info")
+    public Mono<ResponseEntity<Void>> sendEventContactInfo(@RequestBody EventContactInfo eventContactInfo) {
+        return userClientService.sendEventContactInfo(eventContactInfo)
+                .map(ResponseEntity::ok);
+    }
+
 }
