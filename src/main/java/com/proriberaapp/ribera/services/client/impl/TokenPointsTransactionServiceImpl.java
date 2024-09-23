@@ -63,7 +63,7 @@ public class TokenPointsTransactionServiceImpl implements TokenPointsTransaction
 
                     return tokenPointsTransactionRepository.save(tokenPointsTransaction)
                             .flatMap(savedToken -> {
-                                String linkPayment = "https://ribera-dev.inclub.world/payment-validation?token=" + savedToken.getCodigoToken();
+                                String linkPayment = "https://cieneguillariberadelrio.online/login";
                                 String subject = "Pagos";
                                 String body = generateEmailBody(email, linkPayment);
                                 return emailService.sendEmail(email, subject, body)
