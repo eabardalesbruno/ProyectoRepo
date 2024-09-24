@@ -476,8 +476,7 @@ public class PayMeService {
 
     public Mono<TransactionNecessaryResponse> savePayment(Integer idUser, AuthorizationResponse authorizationResponse) {
         PayMeAuthorization payMeAuthorization = AuthorizationResponse.create(idUser, Role.ROLE_USER, authorizationResponse);
-        payMeAuthorization.setAmount(String.valueOf(new BigDecimal(payMeAuthorization.getAmount()).divide(BigDecimal.valueOf(100000))));
-        if (!payMeAuthorization.getSuccess() || Objects.equals(payMeAuthorization.getStatusCode(), "01")) {
+        if (Objects.equals(payMeAuthorization.getStatusCode(), "01")) {
             return authorizationRepository.findById(idUser)
                     .flatMap(savedAuthorization ->
                             bookingRepository.findByBookingId(savedAuthorization.getIdBooking())
