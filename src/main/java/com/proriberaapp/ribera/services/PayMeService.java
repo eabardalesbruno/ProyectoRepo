@@ -2,7 +2,6 @@ package com.proriberaapp.ribera.services;
 
 import com.proriberaapp.ribera.Api.controllers.payme.AuthorizationRepository;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.*;
-import com.proriberaapp.ribera.Api.controllers.payme.entity.AuthorizationEntity;
 import com.proriberaapp.ribera.Api.controllers.payme.entity.PayMeAuthorization;
 import com.proriberaapp.ribera.Api.controllers.payme.entity.TokenizeEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
@@ -27,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -476,65 +476,81 @@ public class PayMeService {
 
     public Mono<TransactionNecessaryResponse> savePayment(Integer idUser, AuthorizationResponse authorizationResponse) {
         PayMeAuthorization payMeAuthorization = AuthorizationResponse.create(idUser, Role.ROLE_USER, authorizationResponse);
+        payMeAuthorization.setAmount(String.valueOf(new BigDecimal(payMeAuthorization.getAmount()).divide(BigDecimal.valueOf(100000))));
+        if (!payMeAuthorization.getSuccess() || Objects.equals(payMeAuthorization.getStatusCode(), "01")) {
+            return authorizationRepository.findById(idUser)
+                    .flatMap(savedAuthorization ->
+                            bookingRepository.findByBookingId(savedAuthorization.getIdBooking())
+                                    .flatMap(booking -> {
+                                        booking.setBookingStateId(3);
+                                        return bookingRepository.save(booking);
+                                    })
+                    )
+                    .flatMap(updatedBooking ->
+                            userClientRepository.findById(idUser)
+                                    .flatMap(userClient -> sendErrorEmail(userClient.getEmail(), "Error al procesar el pago. Intente nuevamente."))
+                                    .then(Mono.just(new TransactionNecessaryResponse(false)))
+                    );
+        } else {
+            return authorizationRepository.save(payMeAuthorization)
+                    .flatMap(savedAuthorization ->
+                            userClientRepository.findById(idUser)
+                                    .flatMap(userClient ->
+                                            bookingRepository.findByBookingId(savedAuthorization.getIdBooking())
+                                                    .flatMap(booking -> {
+                                                        if (booking.getBookingStateId() == 3) {
+                                                            booking.setBookingStateId(2);
+                                                            return bookingRepository.save(booking);
+                                                        } else {
+                                                            return Mono.just(booking);
+                                                        }
+                                                    })
+                                                    .flatMap(updatedBooking -> {
+                                                        BigDecimal monto = new BigDecimal(authorizationResponse.getTransaction().getAmount());
 
-        return authorizationRepository.save(payMeAuthorization)
-                .flatMap(savedAuthorization ->
-                        userClientRepository.findById(idUser)
-                                .flatMap(userClient ->
-                                        bookingRepository.findByBookingId(savedAuthorization.getIdBooking())
-                                                .flatMap(booking -> {
-                                                    if (booking.getBookingStateId() == 3) {
-                                                        booking.setBookingStateId(2);
+                                                        PaymentBookEntity paymentBook = PaymentBookEntity.builder()
+                                                                .bookingId(updatedBooking.getBookingId())
+                                                                .userClientId(updatedBooking.getUserClientId())
+                                                                .refuseReasonId(1)
+                                                                .cancelReasonId(1)
+                                                                .paymentMethodId(5)
+                                                                .paymentStateId(1)
+                                                                .paymentTypeId(6)
+                                                                .paymentSubTypeId(1)
+                                                                .currencyTypeId(1)
+                                                                .amount(monto.divide(BigDecimal.valueOf(100000)))
+                                                                .description("Pago exitoso")
+                                                                .paymentDate(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Lima"))))
+                                                                .operationCode(authorizationResponse.getId())
+                                                                .note("Nota de pago")
+                                                                .totalCost(monto.divide(BigDecimal.valueOf(100000)))
+                                                                .imageVoucher("Pago con Tarjeta")
+                                                                .totalPoints(0)
+                                                                .paymentComplete(true)
+                                                                .pendingpay(0)
+                                                                .build();
+                                                        return paymentBookRepository.save(paymentBook)
+                                                                .then(sendSuccessEmail(userClient.getEmail()))
+                                                                .thenReturn(new TransactionNecessaryResponse(true));
+                                                    })
+                                    )
+                    )
+                    .onErrorResume(e ->
+                            authorizationRepository.findById(idUser)
+                                    .flatMap(savedAuthorization ->
+                                            bookingRepository.findByBookingId(savedAuthorization.getIdBooking())
+                                                    .flatMap(booking -> {
+                                                        booking.setBookingStateId(3);
                                                         return bookingRepository.save(booking);
-                                                    } else {
-                                                        return Mono.just(booking);
-                                                    }
-                                                })
-                                                .flatMap(updatedBooking -> {
-                                                    BigDecimal monto = new BigDecimal(authorizationResponse.getTransaction().getAmount());
-
-                                                    PaymentBookEntity paymentBook = PaymentBookEntity.builder()
-                                                            .bookingId(updatedBooking.getBookingId())
-                                                            .userClientId(updatedBooking.getUserClientId())
-                                                            .refuseReasonId(1)
-                                                            .cancelReasonId(1)
-                                                            .paymentMethodId(5)
-                                                            .paymentStateId(1)
-                                                            .paymentTypeId(6)
-                                                            .paymentSubTypeId(1)
-                                                            .currencyTypeId(1)
-                                                            .amount(monto.divide(BigDecimal.valueOf(100000)))
-                                                            .description("Pago exitoso")
-                                                            .paymentDate(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Lima"))))
-                                                            .operationCode(authorizationResponse.getId())
-                                                            .note("Nota de pago")
-                                                            .totalCost(monto.divide(BigDecimal.valueOf(100000)))
-                                                            .imageVoucher("Pago con Tarjeta")
-                                                            .totalPoints(0)
-                                                            .paymentComplete(true)
-                                                            .pendingpay(0)
-                                                            .build();
-                                                    return paymentBookRepository.save(paymentBook)
-                                                            .then(sendSuccessEmail(userClient.getEmail()))
-                                                            .thenReturn(new TransactionNecessaryResponse(true));
-                                                })
-                                )
-                )
-                .onErrorResume(e ->
-                        authorizationRepository.findById(idUser)
-                                .flatMap(savedAuthorization ->
-                                        bookingRepository.findByBookingId(savedAuthorization.getIdBooking())
-                                                .flatMap(booking -> {
-                                                    booking.setBookingStateId(3);
-                                                    return bookingRepository.save(booking);
-                                                })
-                                )
-                                .flatMap(updatedBooking ->
-                                        userClientRepository.findById(idUser)
-                                                .flatMap(userClient -> sendErrorEmail(userClient.getEmail(), e.getMessage()))
-                                                .then(Mono.error(e))
-                                )
-                );
+                                                    })
+                                    )
+                                    .flatMap(updatedBooking ->
+                                            userClientRepository.findById(idUser)
+                                                    .flatMap(userClient -> sendErrorEmail(userClient.getEmail(), e.getMessage()))
+                                                    .then(Mono.error(e))
+                                    )
+                    );
+        }
     }
 
     private Mono<Void> sendSuccessEmail(String email) {
@@ -766,7 +782,6 @@ public class PayMeService {
 
         return body;
     }
-
 
 
     public Mono<TransactionNecessaryResponse> savePayment2(Integer idUser, AuthorizationResponse authorizationResponse) {
