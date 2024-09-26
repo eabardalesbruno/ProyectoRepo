@@ -153,10 +153,13 @@ public class UserController {
         if (request.email() == null || request.firstName() == null || request.lastName() == null) {
             return Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
         }
-        String randomPassword = generatePassword(request.firstName(), request.lastName());
         return userClientService.findByEmail(request.email())
                 .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .switchIfEmpty(Mono.defer(() -> {
+                    String finalPassword = request.password() == null || request.password().isEmpty()
+                            ? generatePassword(request.firstName(), request.lastName())
+                            : request.password();
+
                     UserClientEntity user = UserClientEntity.builder()
                             .email(request.email())
                             .password(request.password())
@@ -182,13 +185,13 @@ public class UserController {
                             .createdat(request.createdat())
                             .build();
 
-                    return userClientService.registerUser(user, randomPassword)
+                    return userClientService.registerUser(user, finalPassword)
                             .flatMap(savedUser -> {
                                 if ("1".equals(request.googleAuth()) && (request.password() == null || request.password().isEmpty())) {
                                     return userClientService.loginWithGoogle(request.email())
                                             .map(token -> new ResponseEntity<>(new LoginResponse(token, ""), HttpStatus.OK));
                                 } else {
-                                    return userClientService.login(request.email(), randomPassword)
+                                    return userClientService.login(request.email(), finalPassword)
                                             .map(token -> new ResponseEntity<>(new LoginResponse(token, savedUser.getUserClientId().toString()), HttpStatus.OK));
                                 }
                             });
