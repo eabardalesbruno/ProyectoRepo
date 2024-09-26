@@ -290,7 +290,7 @@ public class UserClientServiceImpl implements UserClientService {
                 "            <p>Hola " + userClient.getFirstName() + ",</p>\n" +
                 "            <p>Gracias por registrarte a la plataforma. Su correo registrado es " + userClient.getEmail() + ".</p>\n" +
                 "            <p>Y su contraseña es " + tempPassword + "</p>\n" +
-                "            <p>Si tienes alguna consulta, envianos tu consulta por correo.</p>\n" +
+                "            <p>Si tienes alguna consulta, envianos tu consulta por correo. Tener en cuenta si creo una cuenta google, omitir la contraseña.</p>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
                 "\n" +
