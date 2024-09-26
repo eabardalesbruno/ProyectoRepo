@@ -234,6 +234,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
         return paymentBookRepository.findById(paymentBookId)
                 .flatMap(paymentBook -> {
                     if (paymentBook.getPendingpay() == 0) {
+                        paymentBook.setPaymentStateId(2);
                         paymentBook.setPendingpay(1);
                         return paymentBookRepository.save(paymentBook)
                                 .then(userClientRepository.findById(paymentBook.getUserClientId())
