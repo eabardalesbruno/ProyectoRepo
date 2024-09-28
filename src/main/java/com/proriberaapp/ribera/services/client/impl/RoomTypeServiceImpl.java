@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.RoomTypeEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.RoomRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomStateRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomTypeRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.List;
 public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.client.RoomTypeService {
 
     private final RoomTypeRepository roomTypeRepository;
+    private final RoomRepository roomRepository;
     private final RoomStateRepository roomStateRepository;
 
     @Override
@@ -51,9 +53,17 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
 
     @Override
     public Mono<Void> deleteById(Integer id) {
-        return roomTypeRepository.findById(id)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")))
-                .flatMap(roomTypeRepository::delete);
+        return roomRepository.findAllByRoomTypeId(id)
+                .collectList()
+                .flatMap(rooms -> {
+                    if (rooms.isEmpty()) {
+                        return roomTypeRepository.findById(id)
+                                .switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")))
+                                .flatMap(roomTypeRepository::delete);
+                    } else {
+                        return Mono.error(new IllegalArgumentException("RoomType is in use"));
+                    }
+                });
     }
 
     @Override
