@@ -1,4 +1,5 @@
 package com.proriberaapp.ribera.Api.controllers.client;
+
 import com.proriberaapp.ribera.Domain.entities.RoomTypeEntity;
 import com.proriberaapp.ribera.services.client.RoomTypeService;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,12 @@ public class RoomTypeController {
         return roomTypeService.getAllRoomTypes();
     }
 
+    @GetMapping("/{id}")
+    public Mono<ResponseEntity<RoomTypeEntity>> getRoomTypeById(@PathVariable Integer id) {
+        return roomTypeService.findByRoomTypeId(id)
+                .map(roomType -> new ResponseEntity<>(roomType, HttpStatus.OK));
+    }
+
     @PostMapping("/create")
     public Mono<ResponseEntity<RoomTypeEntity>> createRoomType(@RequestBody RoomTypeEntity roomTypeEntity) {
         return roomTypeService.createRoomType(roomTypeEntity)
@@ -41,7 +48,6 @@ public class RoomTypeController {
     @DeleteMapping("/delete/{id}")
     public Mono<ResponseEntity<Void>> deleteRoomType(@PathVariable Integer id) {
         return roomTypeService.deleteRoomType(id)
-                .then(Mono.just(new ResponseEntity<Void>(HttpStatus.NO_CONTENT)))
-                .onErrorResume(e -> Mono.just(new ResponseEntity<>(HttpStatus.NOT_FOUND)));
+                .then(Mono.just(new ResponseEntity<Void>(HttpStatus.NO_CONTENT)));
     }
 }

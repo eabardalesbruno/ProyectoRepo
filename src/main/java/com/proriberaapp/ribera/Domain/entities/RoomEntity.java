@@ -21,6 +21,8 @@ public class RoomEntity {
     private Integer stateRoomId;
     @Column("roomdetailid")
     private Integer roomDetailId;
+    @Column("roomdescription")
+    private String roomDescription;
     @Column("roomname")
     private String roomName;
     @Column("roomnumber")

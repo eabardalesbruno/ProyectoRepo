@@ -58,10 +58,10 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
                 .flatMap(rooms -> {
                     if (rooms.isEmpty()) {
                         return roomTypeRepository.findById(id)
-                                .switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")))
+                                .switchIfEmpty(Mono.error(new IllegalArgumentException("No se encontro el tipo de habitacion")))
                                 .flatMap(roomTypeRepository::delete);
                     } else {
-                        return Mono.error(new IllegalArgumentException("RoomType is in use"));
+                        return Mono.error(new IllegalArgumentException("No se puede eliminar el tipo de habitacion porque tiene alojamientos asociadas"));
                     }
                 });
     }
@@ -75,6 +75,12 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
                             return roomTypeEntity;
                         })
                 );
+    }
+
+    @Override
+    public Mono<RoomTypeEntity> findByRoomTypeId(Integer id) {
+        return roomTypeRepository.findById(id)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("RoomType not found")));
     }
 
     @Override
@@ -97,6 +103,7 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
 
     @Override
     public Mono<RoomTypeEntity> updateRoomType(Integer id, RoomTypeEntity roomTypeEntity) {
+        roomTypeEntity.setRoomTypeId(id);
         return update(roomTypeEntity);
     }
 

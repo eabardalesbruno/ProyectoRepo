@@ -52,7 +52,6 @@ public class BedsTypeController {
     @DeleteMapping("/delete/{id}")
     public Mono<ResponseEntity<Void>> deleteBedsType(@PathVariable Integer id) {
         return bedsTypeService.deleteById(id)
-                .then(Mono.just(new ResponseEntity<Void>(HttpStatus.NO_CONTENT)))
-                .onErrorResume(e -> Mono.just(new ResponseEntity<>(HttpStatus.NOT_FOUND)));
+                .then(Mono.just(new ResponseEntity<Void>(HttpStatus.NO_CONTENT)));
     }
 }

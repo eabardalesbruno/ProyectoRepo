@@ -340,6 +340,7 @@ CREATE TABLE IF NOT EXISTS refusepayment (
     detail VARCHAR(255)
 );
 CREATE TABLE IF NOT EXISTS comfortroomofferdetail (
+    id SERIAL PRIMARY KEY,
     roomofferid INTEGER,
     comforttypeid INTEGER
 );
