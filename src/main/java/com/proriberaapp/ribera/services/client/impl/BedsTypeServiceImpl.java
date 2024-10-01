@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.BedsTypeEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.BedroomRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.BedsTypeRepository;
 import com.proriberaapp.ribera.services.client.BedsTypeService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 @Slf4j
 public class BedsTypeServiceImpl implements BedsTypeService {
     private final BedsTypeRepository bedsTypeRepository;
+    private final BedroomRepository bedroomRepository;
 
     @Override
     public Mono<BedsTypeEntity> save(BedsTypeEntity entity) {
@@ -39,7 +41,12 @@ public class BedsTypeServiceImpl implements BedsTypeService {
 
     @Override
     public Mono<Void> deleteById(Integer id) {
-        return bedsTypeRepository.deleteById(id);
+        return bedroomRepository.findAllByBedTypeId(id).hasElements().flatMap(hasElements -> {
+            if (hasElements) {
+                return Mono.error(new RuntimeException("Se esta usando la cama en las habitaciones, no se puede eliminar"));
+            }
+            return bedsTypeRepository.deleteById(id);
+        });
     }
 
     @Override

@@ -7,6 +7,9 @@ import reactor.core.publisher.Mono;
 
 public interface RoomTypeService extends BaseService<RoomTypeEntity, RoomTypeEntity> {
     Flux<RoomTypeEntity> getAllRoomTypes();
+
+    Mono<RoomTypeEntity> findByRoomTypeId(Integer id);
+
     Mono<RoomTypeEntity> createRoomType(RoomTypeEntity roomTypeEntity);
 
     Mono<RoomTypeEntity> updateRoomType(Integer id, RoomTypeEntity roomTypeEntity);

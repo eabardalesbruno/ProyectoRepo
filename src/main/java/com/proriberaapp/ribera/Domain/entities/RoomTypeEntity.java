@@ -34,8 +34,8 @@ public class RoomTypeEntity {
     @Getter
     public enum RoomType {
         DEPARTAMENTO("Departamento"),
-        HABITACION("Habitación");
-
+        HABITACION("Habitación"),
+        SUITE("Suite");
         private final String value;
 
         RoomType(String value) {
