@@ -16,8 +16,8 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class RoomController {
     private final RoomService roomService;
-    @GetMapping("/find")
-    public Mono<RoomEntity> findRoom(@RequestParam Integer id) {
+    @GetMapping("/find/{id}")
+    public Mono<RoomEntity> findRoom(@PathVariable Integer id) {
         return roomService.findById(id);
     }
     @GetMapping("/find/all")

@@ -15,7 +15,11 @@ public interface BedroomRepository extends R2dbcRepository<BedroomEntity, Intege
 
     Flux<BedroomEntity> findAllByRoomIdIn(List<BedroomEntity> entity);
 
+    Flux<BedroomEntity> findAllByRoomId(Integer roomId);
+
     Flux<BedroomEntity> findAllByBedTypeId(Integer bedTypeId);
+
+    Mono<Void> deleteAllByRoomId(Integer roomId);
 
     @Query("SELECT * FROM ViewBedroomReturn WHERE roomid = :roomid")
     Flux<BedroomReturn> findAllViewBedroomReturn(@Param("roomid") Integer roomid);

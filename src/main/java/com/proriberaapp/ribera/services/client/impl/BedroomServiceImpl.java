@@ -57,4 +57,14 @@ public class BedroomServiceImpl implements BedroomService {
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Bedroom not found")))
                 .flatMap(bedroomEntity -> bedroomRepository.save(entity));
     }
+
+    @Override
+    public Mono<Void> deleteByRoomId(Integer roomId) {
+        return bedroomRepository.deleteAllByRoomId(roomId);
+    }
+
+    @Override
+    public Flux<BedroomEntity> findByRoomId(Integer roomId) {
+        return bedroomRepository.findAllByRoomId(roomId);
+    }
 }
