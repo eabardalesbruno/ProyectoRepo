@@ -11,6 +11,7 @@ public interface RoomService extends BaseService<RoomEntity, RoomEntity> {
     Mono<RoomEntity> createRoom(RoomEntity room);
 
     Mono<RoomEntity> updateRoom(Integer roomId, RoomEntity room);
+    Mono<RoomEntity> uploadImage(Integer roomId, String filePath);
 
     Mono<Void> deleteRoom(Integer roomId);
 

@@ -1,478 +1,551 @@
 -- Table definitions
 
-CREATE TABLE IF NOT EXISTS userlevel (
-    userlevelid SERIAL PRIMARY KEY,
-    levelname VARCHAR(50),
+CREATE TABLE IF NOT EXISTS userlevel
+(
+    userlevelid      SERIAL PRIMARY KEY,
+    levelname        VARCHAR(50),
     leveldescription VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS roomdetail (
-    roomdetailid SERIAL PRIMARY KEY,
-    information VARCHAR(255),
-    terms VARCHAR(255),
-    bedrooms INTEGER,
-    squaremeters VARCHAR(50),
-    oceanviewbalcony BOOLEAN,
+CREATE TABLE IF NOT EXISTS roomdetail
+(
+    roomdetailid           SERIAL PRIMARY KEY,
+    information            VARCHAR(255),
+    terms                  VARCHAR(255),
+    bedrooms               INTEGER,
+    squaremeters           VARCHAR(50),
+    oceanviewbalcony       BOOLEAN,
     balconyoverlookingpool BOOLEAN
 );
-CREATE TABLE IF NOT EXISTS roomtype (
-    roomtypeid SERIAL PRIMARY KEY,
-    roomtypename VARCHAR(150),
+CREATE TABLE IF NOT EXISTS roomtype
+(
+    roomtypeid          SERIAL PRIMARY KEY,
+    roomtypename        VARCHAR(150),
     roomtypedescription VARCHAR(555)
 );
-CREATE TABLE IF NOT EXISTS stateroom (
-    stateroomid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS stateroom
+(
+    stateroomid   SERIAL PRIMARY KEY,
     stateroomname VARCHAR(50)
 );
-CREATE TABLE IF NOT EXISTS offertype (
-    offertypeid SERIAL PRIMARY KEY,
-    offertypename VARCHAR(50),
+CREATE TABLE IF NOT EXISTS offertype
+(
+    offertypeid          SERIAL PRIMARY KEY,
+    offertypename        VARCHAR(50),
     offertypedescription VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS bookingstate (
-    bookingstateid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS bookingstate
+(
+    bookingstateid   SERIAL PRIMARY KEY,
     bookingstatename VARCHAR(50)
 );
-CREATE TABLE IF NOT EXISTS comforttype (
-    comforttypeid SERIAL PRIMARY KEY,
-    comforttypename VARCHAR(50),
+CREATE TABLE IF NOT EXISTS comforttype
+(
+    comforttypeid          SERIAL PRIMARY KEY,
+    comforttypename        VARCHAR(50),
     comforttypedescription VARCHAR(255),
-    active BOOLEAN
+    active                 BOOLEAN
 );
-CREATE TABLE IF NOT EXISTS paymentmethod (
+CREATE TABLE IF NOT EXISTS paymentmethod
+(
     paymentmethodid SERIAL PRIMARY KEY,
-    description VARCHAR(255),
-    state VARCHAR(50)
+    description     VARCHAR(255),
+    state           VARCHAR(50)
 );
-CREATE TABLE IF NOT EXISTS paymentstate (
-    paymentstateid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS paymentstate
+(
+    paymentstateid   SERIAL PRIMARY KEY,
     paymentstatename VARCHAR(50)
 );
-CREATE TABLE IF NOT EXISTS registertype (
-    registertypeid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS registertype
+(
+    registertypeid   SERIAL PRIMARY KEY,
     registertypename VARCHAR(50)
 );
-CREATE TABLE IF NOT EXISTS statepointstype (
-    statepointstypeid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS statepointstype
+(
+    statepointstypeid   SERIAL PRIMARY KEY,
     statepointstypedesc VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS exchangetype (
-    exchangetypeid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS exchangetype
+(
+    exchangetypeid   SERIAL PRIMARY KEY,
     exchangetypedesc VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS requesttype (
-    requesttypeid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS requesttype
+(
+    requesttypeid   SERIAL PRIMARY KEY,
     requesttypedesc VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS sendandreceive (
-    sendandreceiveid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS sendandreceive
+(
+    sendandreceiveid   SERIAL PRIMARY KEY,
     sendandreceivedesc VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS pointstransfers (
+CREATE TABLE IF NOT EXISTS pointstransfers
+(
     pointstransferid SERIAL PRIMARY KEY,
-    senderid INTEGER,
-    requesttypeid INTEGER,
-    receiverid INTEGER,
-    pointstypeid INTEGER,
+    senderid         INTEGER,
+    requesttypeid    INTEGER,
+    receiverid       INTEGER,
+    pointstypeid     INTEGER,
     sendandreceiveid INTEGER,
-    datetransfer TIMESTAMP,
+    datetransfer     TIMESTAMP,
     pointstransfered DOUBLE PRECISION
 );
-CREATE TABLE IF NOT EXISTS pointsexchange (
+CREATE TABLE IF NOT EXISTS pointsexchange
+(
     pointsexchangeid SERIAL PRIMARY KEY,
-    userclientid INTEGER,
-    exchangetypeid INTEGER,
-    serviceid INTEGER,
-    pointstypeid INTEGER,
-    bookingid INTEGER,
-    dateuse TIMESTAMP,
-    exchangecode VARCHAR(255),
-    description VARCHAR(255),
-    checkin TIMESTAMP,
-    checkout TIMESTAMP,
-    nights INTEGER,
-    pointsquantity DOUBLE PRECISION,
-    pointsused DOUBLE PRECISION
+    userclientid     INTEGER,
+    exchangetypeid   INTEGER,
+    serviceid        INTEGER,
+    pointstypeid     INTEGER,
+    bookingid        INTEGER,
+    dateuse          TIMESTAMP,
+    exchangecode     VARCHAR(255),
+    description      VARCHAR(255),
+    checkin          TIMESTAMP,
+    checkout         TIMESTAMP,
+    nights           INTEGER,
+    pointsquantity   DOUBLE PRECISION,
+    pointsused       DOUBLE PRECISION
 );
-CREATE TABLE IF NOT EXISTS country (
-    countryid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS country
+(
+    countryid   SERIAL PRIMARY KEY,
     countrydesc VARCHAR(255),
-    iso VARCHAR(255),
-    nicename VARCHAR(255),
-    iso3 VARCHAR(255),
-    numcode integer,
-    phonecode integer,
-    symbol VARCHAR(255),
-    courtesy VARCHAR(255),
-    icon VARCHAR(500)
+    iso         VARCHAR(255),
+    nicename    VARCHAR(255),
+    iso3        VARCHAR(255),
+    numcode     integer,
+    phonecode   integer,
+    symbol      VARCHAR(255),
+    courtesy    VARCHAR(255),
+    icon        VARCHAR(500)
 );
-CREATE TABLE IF NOT EXISTS gender (
-    genderid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS gender
+(
+    genderid   SERIAL PRIMARY KEY,
     genderdesc VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS areazone (
-    areazoneid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS areazone
+(
+    areazoneid   SERIAL PRIMARY KEY,
     areazonedesc VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS nationality (
-    nationalityid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS nationality
+(
+    nationalityid   SERIAL PRIMARY KEY,
     nationalitydesc VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS documenttype (
-    documenttypeid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS documenttype
+(
+    documenttypeid   SERIAL PRIMARY KEY,
     documenttypedesc VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS termsversion (
+CREATE TABLE IF NOT EXISTS termsversion
+(
     versionid SERIAL PRIMARY KEY,
-    s3url VARCHAR(255),
+    s3url     VARCHAR(255),
     createdat TIMESTAMP
 );
-CREATE TABLE IF NOT EXISTS refusereason (
-    refusereasonid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS refusereason
+(
+    refusereasonid   SERIAL PRIMARY KEY,
     refusereasonname VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS cancelreason (
-    cancelreasonid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS cancelreason
+(
+    cancelreasonid   SERIAL PRIMARY KEY,
     cancelreasonname VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS cancelpayment (
+CREATE TABLE IF NOT EXISTS cancelpayment
+(
     cancelpaymentid SERIAL PRIMARY KEY,
-    paymentbookid INTEGER,
-    cancelreasonid INTEGER,
-    detail VARCHAR(255)
+    paymentbookid   INTEGER,
+    cancelreasonid  INTEGER,
+    detail          VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS currencytype (
-    currencytypeid SERIAL PRIMARY KEY,
-    currencytypename VARCHAR(50),
+CREATE TABLE IF NOT EXISTS currencytype
+(
+    currencytypeid          SERIAL PRIMARY KEY,
+    currencytypename        VARCHAR(50),
     currencytypedescription VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS bedstype (
-    bedtypeid SERIAL PRIMARY KEY,
-    bedtypename VARCHAR(50),
+CREATE TABLE IF NOT EXISTS bedstype
+(
+    bedtypeid          SERIAL PRIMARY KEY,
+    bedtypename        VARCHAR(50),
     bedtypedescription VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS emaillog (
+CREATE TABLE IF NOT EXISTS emaillog
+(
     emaillogid SERIAL PRIMARY KEY,
-    recipient VARCHAR(255) NOT NULL,
-    subject VARCHAR(255) NOT NULL,
-    body TEXT NOT NULL,
-    sentdate TIMESTAMP NOT NULL,
-    status VARCHAR(50) NOT NULL
+    recipient  VARCHAR(255) NOT NULL,
+    subject    VARCHAR(255) NOT NULL,
+    body       TEXT         NOT NULL,
+    sentdate   TIMESTAMP    NOT NULL,
+    status     VARCHAR(50)  NOT NULL
 );
-CREATE TABLE IF NOT EXISTS service (
-    serviceid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS service
+(
+    serviceid   SERIAL PRIMARY KEY,
     servicedesc VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS transactioncategory(
+CREATE TABLE IF NOT EXISTS transactioncategory
+(
     transactioncategoryid integer PRIMARY KEY,
-    name varchar(255)
+    name                  varchar(255)
 );
-CREATE TABLE IF NOT EXISTS room (
-    roomid SERIAL PRIMARY KEY,
-    roomtypeid INTEGER,
-    stateroomid INTEGER,
+CREATE TABLE IF NOT EXISTS room
+(
+    roomid       SERIAL PRIMARY KEY,
+    roomtypeid   INTEGER,
+    stateroomid  INTEGER,
     roomdetailid INTEGER,
-    roomname VARCHAR(50),
-    roomnumber VARCHAR(50),
-    image VARCHAR(255),
-    capacity INTEGER
+    roomname     VARCHAR(50),
+    roomnumber   VARCHAR(50),
+    image        VARCHAR(255),
+    capacity     INTEGER
 );
-CREATE TABLE IF NOT EXISTS roomoffer (
-    roomofferid SERIAL PRIMARY KEY,
-    roomid INTEGER,
-    offertypeid INTEGER,
-    cost DECIMAL,
-    offertimeinit TIMESTAMP,
-    offertimeend TIMESTAMP,
-    offername VARCHAR(50),
-    riberapoints INTEGER,
+CREATE TABLE IF NOT EXISTS roomoffer
+(
+    roomofferid    SERIAL PRIMARY KEY,
+    roomid         INTEGER,
+    offertypeid    INTEGER,
+    cost           DECIMAL,
+    offertimeinit  TIMESTAMP,
+    offertimeend   TIMESTAMP,
+    offername      VARCHAR(50),
+    riberapoints   INTEGER,
     inresortpoints INTEGER,
-    points INTEGER
+    points         INTEGER
 );
-CREATE TABLE IF NOT EXISTS useradmin (
-    useradminid SERIAL PRIMARY KEY,
-    email VARCHAR(255),
-    password VARCHAR(255),
-    username VARCHAR(50),
-    firstname VARCHAR(50),
-    lastname VARCHAR(50),
-    phone VARCHAR(50),
-    address VARCHAR(255),
+CREATE TABLE IF NOT EXISTS useradmin
+(
+    useradminid    SERIAL PRIMARY KEY,
+    email          VARCHAR(255),
+    password       VARCHAR(255),
+    username       VARCHAR(50),
+    firstname      VARCHAR(50),
+    lastname       VARCHAR(50),
+    phone          VARCHAR(50),
+    address        VARCHAR(255),
     documenttypeid INTEGER,
     documentnumber VARCHAR(50),
-    role VARCHAR(50),
-    status VARCHAR(50),
-    permission VARCHAR(50),
-    createdat TIMESTAMP,
-    createdid INTEGER,
-    updatedat TIMESTAMP,
-    updatedid INTEGER
+    role           VARCHAR(50),
+    status         VARCHAR(50),
+    permission     VARCHAR(50),
+    createdat      TIMESTAMP,
+    createdid      INTEGER,
+    updatedat      TIMESTAMP,
+    updatedid      INTEGER
 );
-CREATE TABLE IF NOT EXISTS userpromoter (
+CREATE TABLE IF NOT EXISTS userpromoter
+(
     userpromoterid SERIAL PRIMARY KEY,
-    email VARCHAR(255),
-    password VARCHAR(255),
-    username VARCHAR(50),
-    firstname VARCHAR(50),
-    lastname VARCHAR(50),
-    phone VARCHAR(50),
-    address VARCHAR(255),
+    email          VARCHAR(255),
+    password       VARCHAR(255),
+    username       VARCHAR(50),
+    firstname      VARCHAR(50),
+    lastname       VARCHAR(50),
+    phone          VARCHAR(50),
+    address        VARCHAR(255),
     documenttypeid INTEGER,
     documentnumber VARCHAR(50),
-    role VARCHAR(50),
-    status VARCHAR(50),
-    permission VARCHAR(50),
-    createdat TIMESTAMP,
-    createdid INTEGER,
-    updatedat TIMESTAMP,
-    updatedid INTEGER
+    role           VARCHAR(50),
+    status         VARCHAR(50),
+    permission     VARCHAR(50),
+    createdat      TIMESTAMP,
+    createdid      INTEGER,
+    updatedat      TIMESTAMP,
+    updatedid      INTEGER
 );
-CREATE TABLE IF NOT EXISTS userclient (
-    userclientid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS userclient
+(
+    userclientid   SERIAL PRIMARY KEY,
     registertypeid INTEGER,
-    userlevelid INTEGER,
-    countryid INTEGER,
-    genderid INTEGER,
-    codeuser INTEGER,
-    firstname VARCHAR(50),
-    lastname VARCHAR(50),
+    userlevelid    INTEGER,
+    countryid      INTEGER,
+    genderid       INTEGER,
+    codeuser       INTEGER,
+    firstname      VARCHAR(50),
+    lastname       VARCHAR(50),
     documenttypeid INTEGER,
     documentnumber VARCHAR(50),
-    birthdate TIMESTAMP,
-    role INTEGER,
-    civilstatus VARCHAR(50),
-    city VARCHAR(50),
-    address VARCHAR(255),
-    cellnumber VARCHAR(20),
-    email VARCHAR(255),
-    password VARCHAR(255),
-    googleauth VARCHAR(255),
-    googleid VARCHAR(255),
-    googleemail VARCHAR(255),
-    username VARCHAR(50),
-    status VARCHAR(50),
-    createdat TIMESTAMP
+    birthdate      TIMESTAMP,
+    role           INTEGER,
+    civilstatus    VARCHAR(50),
+    city           VARCHAR(50),
+    address        VARCHAR(255),
+    cellnumber     VARCHAR(20),
+    email          VARCHAR(255),
+    password       VARCHAR(255),
+    googleauth     VARCHAR(255),
+    googleid       VARCHAR(255),
+    googleemail    VARCHAR(255),
+    username       VARCHAR(50),
+    status         VARCHAR(50),
+    createdat      TIMESTAMP
 );
-CREATE TABLE IF NOT EXISTS booking (
-    bookingid SERIAL PRIMARY KEY,
-    roomofferid INTEGER,
+CREATE TABLE IF NOT EXISTS booking
+(
+    bookingid      SERIAL PRIMARY KEY,
+    roomofferid    INTEGER,
     bookingstateid INTEGER,
-    userclientid INTEGER,
-    costfinal DECIMAL,
-    detail VARCHAR(255),
+    userclientid   INTEGER,
+    costfinal      DECIMAL,
+    detail         VARCHAR(255),
 
-    numberadults INTEGER,
+    numberadults   INTEGER,
     numberchildren INTEGER,
-    numberbabies INTEGER,
+    numberbabies   INTEGER,
 
     daybookinginit TIMESTAMP,
-    daybookingend TIMESTAMP,
-    checkin TIMESTAMP,
-    checkout TIMESTAMP,
-    createdat TIMESTAMP
+    daybookingend  TIMESTAMP,
+    checkin        TIMESTAMP,
+    checkout       TIMESTAMP,
+    createdat      TIMESTAMP
 );
-CREATE TABLE IF NOT EXISTS comfortbookingdetail (
-    bookingid INTEGER,
+CREATE TABLE IF NOT EXISTS comfortbookingdetail
+(
+    bookingid     INTEGER,
     comforttypeid INTEGER
 );
-CREATE TABLE IF NOT EXISTS comfortservicedetail (
-    roomofferid INTEGER,
+CREATE TABLE IF NOT EXISTS comfortservicedetail
+(
+    roomofferid   INTEGER,
     comforttypeid INTEGER
 );
-CREATE TABLE IF NOT EXISTS finalcostumer (
+CREATE TABLE IF NOT EXISTS finalcostumer
+(
     finalcostumerid SERIAL PRIMARY KEY,
-    bookingid INTEGER,
-    documenttype VARCHAR(50),
-    documentnumber VARCHAR(50),
-    firstname VARCHAR(50),
-    lastname VARCHAR(50),
-    yearold INTEGER
+    bookingid       INTEGER,
+    documenttype    VARCHAR(50),
+    documentnumber  VARCHAR(50),
+    firstname       VARCHAR(50),
+    lastname        VARCHAR(50),
+    yearold         INTEGER
 );
-CREATE TABLE IF NOT EXISTS partnerpoints (
+CREATE TABLE IF NOT EXISTS partnerpoints
+(
     partnerpointid SERIAL PRIMARY KEY,
-    userclientid INTEGER,
-    points INTEGER
+    userclientid   INTEGER,
+    points         INTEGER
 );
-CREATE TABLE IF NOT EXISTS bookingincidents (
+CREATE TABLE IF NOT EXISTS bookingincidents
+(
     roomincidentsid SERIAL PRIMARY KEY,
-    bookingid INTEGER,
-    useradminid INTEGER,
-    evidenceimage VARCHAR(255),
-    description VARCHAR(255),
-    observation VARCHAR(255),
-    actionstake VARCHAR(255),
-    createdat TIMESTAMP,
-    createdid INTEGER
+    bookingid       INTEGER,
+    useradminid     INTEGER,
+    evidenceimage   VARCHAR(255),
+    description     VARCHAR(255),
+    observation     VARCHAR(255),
+    actionstake     VARCHAR(255),
+    createdat       TIMESTAMP,
+    createdid       INTEGER
 );
-CREATE TABLE IF NOT EXISTS paymentbook (
-    paymentbookid SERIAL PRIMARY KEY,
-    bookingid INTEGER NOT NULL,
-    userclientid INTEGER NOT NULL,
-    refusereasonid INTEGER NOT NULL,
-    cancelreasonid INTEGER,
-    paymentmethodid INTEGER,
-    paymentstateid INTEGER,
-    paymenttypeid INTEGER,
+CREATE TABLE IF NOT EXISTS paymentbook
+(
+    paymentbookid    SERIAL PRIMARY KEY,
+    bookingid        INTEGER NOT NULL,
+    userclientid     INTEGER NOT NULL,
+    refusereasonid   INTEGER NOT NULL,
+    cancelreasonid   INTEGER,
+    paymentmethodid  INTEGER,
+    paymentstateid   INTEGER,
+    paymenttypeid    INTEGER,
     paymentsubtypeid INTEGER,
-    currencytypeid INTEGER,
-    amount DECIMAL,
-    description VARCHAR(255),
-    paymentdate TIMESTAMP,
-    operationcode VARCHAR(50),
-    note VARCHAR(255),
-    totalcost DECIMAL,
-    imagevoucher VARCHAR(150000),
-    totalpoints INTEGER,
-    paymentcomplete BOOLEAN,
-    pendingpay INTEGER DEFAULT 0
+    currencytypeid   INTEGER,
+    amount           DECIMAL,
+    description      VARCHAR(255),
+    paymentdate      TIMESTAMP,
+    operationcode    VARCHAR(50),
+    note             VARCHAR(255),
+    totalcost        DECIMAL,
+    imagevoucher     VARCHAR(150000),
+    totalpoints      INTEGER,
+    paymentcomplete  BOOLEAN,
+    pendingpay       INTEGER DEFAULT 0
 );
-CREATE TABLE IF NOT EXISTS paymenttoken (
+CREATE TABLE IF NOT EXISTS paymenttoken
+(
     paymenttokenid SERIAL PRIMARY KEY,
-    paymenttoken VARCHAR(255),
-	startdate TIMESTAMP,
-	enddate TIMESTAMP,
-	bookingid INTEGER NOT NULL,
-	paymentbookid INTEGER NOT NULL
+    paymenttoken   VARCHAR(255),
+    startdate      TIMESTAMP,
+    enddate        TIMESTAMP,
+    bookingid      INTEGER NOT NULL,
+    paymentbookid  INTEGER NOT NULL
 );
-CREATE TABLE IF NOT EXISTS refusepayment (
+CREATE TABLE IF NOT EXISTS refusepayment
+(
     refusepaymentid SERIAL PRIMARY KEY,
-    paymentbookid INTEGER,
-    refusereasonid INTEGER,
-    detail VARCHAR(255)
+    paymentbookid   INTEGER,
+    refusereasonid  INTEGER,
+    detail          VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS comfortroomofferdetail (
-    id SERIAL PRIMARY KEY,
-    roomofferid INTEGER,
+
+CREATE TABLE roomimages
+(
+    id   SERIAL PRIMARY KEY,
+    roomid int4 NOT NULL,
+    imagepath varchar(2000) NOT NULL,
+    CONSTRAINT fk_roomid FOREIGN KEY (roomid) REFERENCES public.room (roomid)
+);
+
+CREATE TABLE IF NOT EXISTS comfortroomofferdetail
+(
+    id            SERIAL PRIMARY KEY,
+    roomofferid   INTEGER,
     comforttypeid INTEGER
 );
-CREATE TABLE IF NOT EXISTS bedroom (
+CREATE TABLE IF NOT EXISTS bedroom
+(
     bedroomid SERIAL PRIMARY KEY,
-    roomid INTEGER,
+    roomid    INTEGER,
     bedtypeid INTEGER,
-    quantity INTEGER
+    quantity  INTEGER
 );
-CREATE TABLE IF NOT EXISTS solicitude (
+CREATE TABLE IF NOT EXISTS solicitude
+(
     solicitudeid SERIAL PRIMARY KEY,
-    email VARCHAR(255),
-    phone VARCHAR(50),
-    message VARCHAR(255),
-    codesend VARCHAR(50),
-    status VARCHAR(50),
-    type VARCHAR(50),
-    createdid INTEGER,
-    createdat TIMESTAMP,
-    responseid INTEGER,
-    responseat TIMESTAMP
+    email        VARCHAR(255),
+    phone        VARCHAR(50),
+    message      VARCHAR(255),
+    codesend     VARCHAR(50),
+    status       VARCHAR(50),
+    type         VARCHAR(50),
+    createdid    INTEGER,
+    createdat    TIMESTAMP,
+    responseid   INTEGER,
+    responseat   TIMESTAMP
 );
-CREATE TABLE IF NOT EXISTS pointstype (
-    pointstypeid SERIAL PRIMARY KEY,
-    pointstypedesc VARCHAR(255),
+CREATE TABLE IF NOT EXISTS pointstype
+(
+    pointstypeid      SERIAL PRIMARY KEY,
+    pointstypedesc    VARCHAR(255),
     statepointstypeid INTEGER
 );
-CREATE TABLE IF NOT EXISTS userclientversion (
+CREATE TABLE IF NOT EXISTS userclientversion
+(
     userclientversionid SERIAL PRIMARY KEY,
-    userclientid INTEGER,
-    versionid INTEGER,
-	active BOOLEAN,
-	createdat TIMESTAMP
+    userclientid        INTEGER,
+    versionid           INTEGER,
+    active              BOOLEAN,
+    createdat           TIMESTAMP
 );
-CREATE TABLE IF NOT EXISTS paymenttype (
-    paymenttypeid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS paymenttype
+(
+    paymenttypeid   SERIAL PRIMARY KEY,
     paymenttypedesc VARCHAR(255),
-    countryid INTEGER,
+    countryid       INTEGER,
     paymentmethodid INTEGER
 );
-CREATE TABLE IF NOT EXISTS paymentsubtype (
-    paymentsubtypeid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS paymentsubtype
+(
+    paymentsubtypeid   SERIAL PRIMARY KEY,
     paymentsubtypedesc VARCHAR(255),
-    accountsoles VARCHAR(255),
-    accountdollars VARCHAR(255),
-    paymenttypeid INTEGER,
-    soles DOUBLE PRECISION,
-    dollars DOUBLE PRECISION,
-    percentage DOUBLE PRECISION,
-    statussoles INTEGER,
-    statusdollars INTEGER
+    accountsoles       VARCHAR(255),
+    accountdollars     VARCHAR(255),
+    paymenttypeid      INTEGER,
+    soles              DOUBLE PRECISION,
+    dollars            DOUBLE PRECISION,
+    percentage         DOUBLE PRECISION,
+    statussoles        INTEGER,
+    statusdollars      INTEGER
 );
-CREATE TABLE IF NOT EXISTS typepointstransaction(
-    typepointstransactionid integer PRIMARY KEY,
-    description varchar(255),
-    status integer,
-    transactioncategoryid integer,
+CREATE TABLE IF NOT EXISTS typepointstransaction
+(
+    typepointstransactionid    integer PRIMARY KEY,
+    description                varchar(255),
+    status                     integer,
+    transactioncategoryid      integer,
     istransferbalanceavailable integer
 );
-CREATE TABLE IF NOT EXISTS pointstransaction(
-    pointstransactionid SERIAL PRIMARY KEY,
-    partnerpointid integer,
+CREATE TABLE IF NOT EXISTS pointstransaction
+(
+    pointstransactionid     SERIAL PRIMARY KEY,
+    partnerpointid          integer,
     typepointstransactionid integer,
-    initialdate timestamp,
-    points integer,
-    isavailable integer,
-    availabilitydate timestamp,
-    referencedata varchar(255),
-    successfultransaction integer
+    initialdate             timestamp,
+    points                  integer,
+    isavailable             integer,
+    availabilitydate        timestamp,
+    referencedata           varchar(255),
+    successfultransaction   integer
 );
-CREATE TABLE IF NOT EXISTS tokenpointstransaction(
+CREATE TABLE IF NOT EXISTS tokenpointstransaction
+(
     tokenpointstransactionid SERIAL PRIMARY KEY,
-    codigotoken VARCHAR(255),
-    datecreated TIMESTAMP,
-    expirationdate TIMESTAMP,
-    partnerpointid INTEGER,
-    bookingid INTEGER
+    codigotoken              VARCHAR(255),
+    datecreated              TIMESTAMP,
+    expirationdate           TIMESTAMP,
+    partnerpointid           INTEGER,
+    bookingid                INTEGER
 );
-CREATE TABLE IF NOT EXISTS detailcomplaints (
-    detailcomplaintsid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS detailcomplaints
+(
+    detailcomplaintsid   SERIAL PRIMARY KEY,
     detailcomplaintsdesc VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS servicescomplaints (
-    servicescomplaintsid SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS servicescomplaints
+(
+    servicescomplaintsid   SERIAL PRIMARY KEY,
     servicescomplaintsdesc VARCHAR(255)
 );
-CREATE TABLE complaintsbook (
-    id SERIAL PRIMARY KEY,
-    persontype VARCHAR(50) NOT NULL,
-    businessname VARCHAR(100),
-    ruc VARCHAR(20),
-    firstname VARCHAR(50) NOT NULL,
-    lastname VARCHAR(50) NOT NULL,
-    phone VARCHAR(20),
-    email VARCHAR(100),
-    isadult BOOLEAN NOT NULL,
-    address VARCHAR(255),
-    acceptedterms BOOLEAN NOT NULL
+CREATE TABLE complaintsbook
+(
+    id            SERIAL PRIMARY KEY,
+    persontype    VARCHAR(50) NOT NULL,
+    businessname  VARCHAR(100),
+    ruc           VARCHAR(20),
+    firstname     VARCHAR(50) NOT NULL,
+    lastname      VARCHAR(50) NOT NULL,
+    phone         VARCHAR(20),
+    email         VARCHAR(100),
+    isadult       BOOLEAN     NOT NULL,
+    address       VARCHAR(255),
+    acceptedterms BOOLEAN     NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS documenttype( documenttypedesc)
-	VALUES ('DNI'),('RUC');
+CREATE TABLE IF NOT EXISTS documenttype
+(
+    documenttypedesc
+)
+    VALUES
+    ('DNI')
+    ,('RUC');
 
-CREATE TABLE IF NOT EXISTS public.implements_apartment(
-    implements_apartment_id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS public.implements_apartment
+(
+    implements_apartment_id   SERIAL PRIMARY KEY,
     implements_apartment_name VARCHAR(255)
 );
-CREATE TABLE IF NOT EXISTS public.implements_comfort(
+CREATE TABLE IF NOT EXISTS public.implements_comfort
+(
     implements_apartment_id integer,
-    comforttypeid integer,
-    cuantity integer
+    comforttypeid           integer,
+    cuantity                integer
 );
 
-CREATE TABLE IF NOT EXISTS public.pay_me_authorizations (
-    idAuthorization SERIAL PRIMARY KEY,
-    idBooking INTEGER NOT NULL,
-    idUser INTEGER NOT NULL,
-    role VARCHAR(255) NOT NULL,
-    createdAt TIMESTAMP NOT NULL,
-    action VARCHAR(255),
-    id VARCHAR(255),
-    success BOOLEAN,
-    currency VARCHAR(255),
-    amount VARCHAR(255),
-    internal_operation_number VARCHAR(255),
-    description TEXT,
+CREATE TABLE IF NOT EXISTS public.pay_me_authorizations
+(
+    idAuthorization              SERIAL PRIMARY KEY,
+    idBooking                    INTEGER      NOT NULL,
+    idUser                       INTEGER      NOT NULL,
+    role                         VARCHAR(255) NOT NULL,
+    createdAt                    TIMESTAMP    NOT NULL,
+    action                       VARCHAR(255),
+    id                           VARCHAR(255),
+    success                      BOOLEAN,
+    currency                     VARCHAR(255),
+    amount                       VARCHAR(255),
+    internal_operation_number    VARCHAR(255),
+    description                  TEXT,
     processor_authorization_code VARCHAR(255),
-    additional_fields TEXT, -- Assuming JSON format or similar for simplicity
-    status_code VARCHAR(255),
-    message_ilgn TEXT -- Assuming JSON format for list of messages
+    additional_fields            TEXT, -- Assuming JSON format or similar for simplicity
+    status_code                  VARCHAR(255),
+    message_ilgn                 TEXT  -- Assuming JSON format for list of messages
 );
-
 
 
 /*

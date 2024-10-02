@@ -77,6 +77,15 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    public Mono<RoomEntity> uploadImage(Integer roomId, String filePath) {
+        return roomRepository.findById(roomId)
+                .flatMap(existingRoom -> {
+                    existingRoom.setImage(filePath);
+                    return roomRepository.save(existingRoom);
+                });
+    }
+
+    @Override
     public Mono<Void> deleteRoom(Integer roomId) {
         return roomRepository.deleteById(roomId);
     }
