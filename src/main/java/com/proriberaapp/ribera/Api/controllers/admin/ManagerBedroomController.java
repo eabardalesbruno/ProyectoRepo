@@ -22,6 +22,11 @@ public class ManagerBedroomController extends BaseManagerController<BedroomEntit
         return bedroomService.findAll();
     }
 
+    @GetMapping("/count/{id}")
+    public Mono<Integer> countByBedTypeId(@PathVariable Integer id) {
+        return bedroomService.countByBedTypeId(id);
+    }
+
     @GetMapping("/roomId/{id}")
     public Flux<BedroomEntity> findByRoomId(@PathVariable Integer id) {
         return bedroomService.findByRoomId(id);

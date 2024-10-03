@@ -36,7 +36,7 @@ public class BedsTypeServiceImpl implements BedsTypeService {
 
     @Override
     public Flux<BedsTypeEntity> findAll() {
-        return bedsTypeRepository.findAll();
+        return bedsTypeRepository.findAllByOrderByBedTypeIdAsc();
     }
 
     @Override

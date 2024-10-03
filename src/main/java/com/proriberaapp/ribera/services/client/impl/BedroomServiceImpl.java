@@ -67,4 +67,9 @@ public class BedroomServiceImpl implements BedroomService {
     public Flux<BedroomEntity> findByRoomId(Integer roomId) {
         return bedroomRepository.findAllByRoomId(roomId);
     }
+
+    @Override
+    public Mono<Integer> countByBedTypeId(Integer bedTypeId) {
+        return bedroomRepository.countAllByBedTypeId(bedTypeId);
+    }
 }

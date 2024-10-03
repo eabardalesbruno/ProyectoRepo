@@ -48,7 +48,7 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
 
     @Override
     public Flux<RoomTypeEntity> findAll() {
-        return roomTypeRepository.findAll();
+        return roomTypeRepository.findAllByOrderByRoomTypeIdAsc();
     }
 
     @Override
@@ -68,8 +68,8 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
 
     @Override
     public Flux<RoomTypeEntity> getAllRoomTypes() {
-        return roomTypeRepository.findAll()
-                .flatMap(roomTypeEntity -> roomStateRepository.findById(roomTypeEntity.getRoomstateid())
+        return roomTypeRepository.findAllByOrderByRoomTypeIdAsc()
+                .concatMap(roomTypeEntity -> roomStateRepository.findById(roomTypeEntity.getRoomstateid())
                         .map(roomState -> {
                             roomTypeEntity.setRoomState(roomState);
                             return roomTypeEntity;
