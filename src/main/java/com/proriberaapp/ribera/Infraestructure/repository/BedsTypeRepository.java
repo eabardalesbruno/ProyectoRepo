@@ -10,4 +10,6 @@ import reactor.core.publisher.Flux;
 public interface BedsTypeRepository extends R2dbcRepository<BedsTypeEntity, Integer> {
     @Query("SELECT * FROM viewbedstype WHERE bookingId = :bookingId")
     Flux<ViewBookingReturn.BedsType> findAllByViewBedsType(@Param("bookingId") Integer bookingId);
+
+    Flux<BedsTypeEntity> findAllByOrderByBedTypeIdAsc();
 }
