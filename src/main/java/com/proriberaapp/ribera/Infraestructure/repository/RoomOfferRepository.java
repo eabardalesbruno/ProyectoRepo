@@ -14,6 +14,8 @@ import java.util.List;
 
 public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, Integer> {
     Mono<RoomOfferEntity> findByRoomIdAndOfferTypeId(Integer roomId, Integer offerTypeId);
+
+    Flux<RoomOfferEntity> findAllByRoomId(Integer roomId);
     Flux<RoomOfferEntity> findAllByRoomIdInAndOfferTypeIdIn(List<RoomOfferEntity> roomOfferEntity,List<RoomOfferEntity> roomOfferEntity1);
     //@Query("SELECT cost FROM roomoffer WHERE roomofferid = :id")
     Mono<BigDecimal> findCostByRoomOfferId(Integer id);
