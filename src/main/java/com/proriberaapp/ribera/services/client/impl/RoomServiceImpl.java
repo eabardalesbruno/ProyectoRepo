@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BedroomRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.RoomImageRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomRepository;
 import com.proriberaapp.ribera.services.client.RoomService;
@@ -20,7 +21,7 @@ import java.util.List;
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
-
+    private final RoomImageRepository roomImageRepository;
     private final BedroomRepository bedroomRepository;
     private final RoomOfferRepository roomOfferRepository;
 
@@ -96,7 +97,9 @@ public class RoomServiceImpl implements RoomService {
                 .collectList()
                 .flatMap(roomOffers -> {
                     if (roomOffers.isEmpty()) {
-                        return bedroomRepository.deleteAllByRoomId(roomId)
+                        System.out.println("RoomServiceImpl.deleteRoom");
+                        return roomImageRepository.deleteAllByRoomId(roomId)
+                                .then(bedroomRepository.deleteAllByRoomId(roomId))
                                 .then(roomRepository.deleteById(roomId));
                     } else {
                         return Mono.error(new IllegalArgumentException("Alojamiento asociado a un servicio, no se puede eliminar"));

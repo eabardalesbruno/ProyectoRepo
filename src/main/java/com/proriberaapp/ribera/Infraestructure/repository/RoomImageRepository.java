@@ -10,5 +10,7 @@ import reactor.core.publisher.Mono;
 public interface RoomImageRepository extends R2dbcRepository<RoomImagesEntity, Integer> {
     Flux<RoomImagesEntity> findAllByRoomId(Integer roomId);
 
+    Mono<Void> deleteAllByRoomId(Integer roomId);
+
     Mono<Void> deleteAllByImagePath(String imagePath);
 }

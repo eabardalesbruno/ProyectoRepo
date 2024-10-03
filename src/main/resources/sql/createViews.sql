@@ -317,6 +317,7 @@ CREATE OR REPLACE VIEW viewservicereturn
     r.roomname,
     rt.roomtypename,
     r.capacity,
+    r.roomnumber,
     ro.cost AS costweekly,
     ro.cost AS costweekend,
     ro.riberapoints AS riberapointweekly,

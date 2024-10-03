@@ -54,17 +54,20 @@ public class ServicesServiceImpl implements ServicesService {
         BigDecimal porcentaje = new BigDecimal("1.10"); // 10% expresado como 1 más el porcentaje
 
         return servicesRepository.findAllViewServiceReturn()
-                .flatMap(service -> servicesRepository.findAllViewComfortReturn(service.getRoomofferid())
-                        .collectList().map(comfort -> {
-                                    service.setListAmenities(comfort);
-                                    return service;
-                                }
-                        ))
-                .flatMap(service -> servicesRepository.findAllViewServiceComfortReturn(service.getRoomofferid())
-                        .collectList().map(comfort -> {
+                .concatMap(service -> servicesRepository.findAllViewComfortReturn(service.getRoomofferid())
+                        .collectList()
+                        .map(comfort -> {
+                            service.setListAmenities(comfort);
+                            return service;
+                        })
+                )
+                .concatMap(service -> servicesRepository.findAllViewServiceComfortReturn(service.getRoomofferid())
+                        .collectList()
+                        .map(comfort -> {
                             service.setListService(comfort);
                             return service;
                         })
                 );
     }
+
 }

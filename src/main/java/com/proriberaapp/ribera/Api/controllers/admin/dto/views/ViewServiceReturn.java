@@ -16,6 +16,7 @@ public class ViewServiceReturn {
     private String roomname;
     private String roomtypename;
     private String capacity;
+    private String roomnumber;
 
     private BigDecimal costweekly;
     private BigDecimal costweekend;

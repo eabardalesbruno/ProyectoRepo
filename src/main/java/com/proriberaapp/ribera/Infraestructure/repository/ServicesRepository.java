@@ -11,7 +11,7 @@ import reactor.core.publisher.Flux;
 
 @Repository
 public interface ServicesRepository extends R2dbcRepository<ServicesEntity, Integer> {
-    @Query("SELECT * FROM ViewServiceReturn")
+    @Query("SELECT * FROM ViewServiceReturn ORDER BY roomofferid ASC")
     Flux<ViewServiceReturn> findAllViewServiceReturn();
 
     @Query("SELECT * FROM ViewComfortReturn WHERE roomofferid = :roomofferid")
