@@ -16,6 +16,7 @@ import java.util.List;
 @Slf4j
 public class ComfortRoomOfferDetailServiceImpl implements ComfortRoomOfferDetailService {
     private final ComfortRoomOfferDetailRepository comfortRoomOfferDetailRepository;
+
     @Override
     public Mono<ComfortRoomOfferDetailEntity> save(ComfortRoomOfferDetailEntity entity) {
         return comfortRoomOfferDetailRepository.save(entity);
@@ -23,7 +24,8 @@ public class ComfortRoomOfferDetailServiceImpl implements ComfortRoomOfferDetail
 
     @Override
     public Flux<ComfortRoomOfferDetailEntity> saveAll(List<ComfortRoomOfferDetailEntity> entity) {
-        return comfortRoomOfferDetailRepository.saveAll(entity);
+        return comfortRoomOfferDetailRepository.deleteAllByRoomOfferId(entity.get(0).getRoomOfferId())
+                .thenMany(comfortRoomOfferDetailRepository.saveAll(entity));
     }
 
     @Override
@@ -44,5 +46,15 @@ public class ComfortRoomOfferDetailServiceImpl implements ComfortRoomOfferDetail
     @Override
     public Mono<ComfortRoomOfferDetailEntity> update(ComfortRoomOfferDetailEntity entity) {
         return comfortRoomOfferDetailRepository.save(entity);
+    }
+
+    @Override
+    public Flux<ComfortRoomOfferDetailEntity> findAllByRoomOfferId(Integer roomOfferId) {
+        return comfortRoomOfferDetailRepository.findAllByRoomOfferId(roomOfferId);
+    }
+
+    @Override
+    public Mono<Integer> countByComfortTypeId(Integer comfortTypeId) {
+        return comfortRoomOfferDetailRepository.countAllByComfortTypeId(comfortTypeId);
     }
 }

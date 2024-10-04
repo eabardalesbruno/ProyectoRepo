@@ -21,6 +21,7 @@ public interface BedroomRepository extends R2dbcRepository<BedroomEntity, Intege
 
     Mono<Void> deleteAllByRoomId(Integer roomId);
 
+    @Query("select SUM(quantity) FROM bedroom where bedtypeid = :bedTypeId GROUP BY bedtypeid")
     Mono<Integer> countAllByBedTypeId(Integer bedTypeId);
 
     @Query("SELECT * FROM ViewBedroomReturn WHERE roomid = :roomid")
