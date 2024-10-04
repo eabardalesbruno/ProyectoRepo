@@ -3,7 +3,6 @@ package com.proriberaapp.ribera.Crosscutting.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -34,6 +33,7 @@ public class SecurityConfig {
                                 "/api/v1/users/check-email",
                                 "/api/v1/offer-type/**",
                                 "/api/v1/comfort-type/**",
+                                "/api/v1/comfort-room-offer-detail/**",
                                 "/api/v1/bedstype/**",
                                 "/api/v1/admin/manager/service/**",
                                 "/api/v1/services/**",

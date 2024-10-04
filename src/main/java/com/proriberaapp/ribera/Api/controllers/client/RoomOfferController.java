@@ -1,17 +1,13 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOffer;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOfferFiltro;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.services.client.RoomOfferService;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -25,6 +21,11 @@ public class RoomOfferController {
 
     @GetMapping("/find")
     public Mono<RoomOfferEntity> findRoomOffer(@RequestParam Integer id) {
+        return roomOfferService.findById(id);
+    }
+
+    @GetMapping("{id}")
+    public Mono<RoomOfferEntity> findRoomOfferById(@PathVariable Integer id) {
         return roomOfferService.findById(id);
     }
 
@@ -52,4 +53,21 @@ public class RoomOfferController {
             @RequestParam(required = false) Integer capacity) {
         return roomOfferService.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, capacity);
     }
+
+    @PostMapping
+    public Mono<RoomOfferEntity> saveRoomOffer(@RequestBody RoomOfferEntity roomOfferEntity) {
+        return roomOfferService.save(roomOfferEntity);
+    }
+
+    @PutMapping("{id}")
+    public Mono<RoomOfferEntity> updateRoomOffer(@PathVariable Integer id, @RequestBody RoomOfferEntity roomOfferEntity) {
+        roomOfferEntity.setRoomOfferId(id);
+        return roomOfferService.update(roomOfferEntity);
+    }
+
+    @DeleteMapping("{id}")
+    public Mono<Void> deleteRoomOffer(@PathVariable Integer id) {
+        return roomOfferService.deleteById(id);
+    }
+
 }

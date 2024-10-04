@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFil
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BedroomRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.ComfortRoomOfferDetailRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.ServicesRepository;
 import com.proriberaapp.ribera.Infraestructure.viewRepository.RoomOfferViewRepository;
@@ -26,6 +27,7 @@ import java.util.List;
 public class RoomOfferServiceImpl implements RoomOfferService {
     private final RoomOfferRepository roomOfferRepository;
     private final RoomOfferViewRepository roomOfferViewRepository;
+    private final ComfortRoomOfferDetailRepository comfortRoomOfferDetailRepository;
     private final ServicesRepository servicesRepository;
     private final BedroomRepository bedroomRepository;
     @Value("${room.offer.ratio.base}")
@@ -41,9 +43,9 @@ public class RoomOfferServiceImpl implements RoomOfferService {
         entity.setInResortPoints(calculatePoints(entity.getCost(), RATIO_INRESORT));
         entity.setRiberaPoints(calculatePoints(entity.getCost(), RATIO_RIBERA));
 
-        return roomOfferRepository.findByRoomIdAndOfferTypeId(entity.getRoomId(), entity.getOfferTypeId()).hasElement()
+        return roomOfferRepository.findByRoomIdAndOfferTypeIdAndState(entity.getRoomId(), entity.getOfferTypeId(), 1).hasElement()
                 .flatMap(exists -> exists
-                        ? Mono.error(new IllegalArgumentException("RoomOffer already exists"))
+                        ? Mono.error(new IllegalArgumentException("Ya existe una oferta para este alojamiento, pongala inactiva"))
                         : roomOfferRepository.save(entity));
     }
 
@@ -101,6 +103,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
         return roomOfferViewRepository.viewRoomOfferReturn(filters)
                 .flatMap(service -> servicesRepository.findAllViewComfortReturn(service.getRoomOfferId())
                         .collectList().map(comfort -> {
+                            log.info("Comfort: {}", comfort);
                             service.setListAmenities(comfort);
                             return service;
                         })
@@ -115,7 +118,8 @@ public class RoomOfferServiceImpl implements RoomOfferService {
 
     @Override
     public Mono<Void> deleteById(Integer id) {
-        return roomOfferRepository.deleteById(id);
+        return comfortRoomOfferDetailRepository.deleteAllByRoomOfferId(id)
+                .then(roomOfferRepository.deleteById(id));
     }
 
     @Override

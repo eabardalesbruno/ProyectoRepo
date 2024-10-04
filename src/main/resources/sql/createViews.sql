@@ -382,6 +382,7 @@ CREATE OR REPLACE VIEW public.viewcomfortreturn
     ct.comforttypeid,
     ct.comforttypename,
     ct.comforttypedescription,
+    crod.quantity,
     ct.active
    FROM comfortroomofferdetail crod
      JOIN comforttype ct ON crod.comforttypeid = ct.comforttypeid;
