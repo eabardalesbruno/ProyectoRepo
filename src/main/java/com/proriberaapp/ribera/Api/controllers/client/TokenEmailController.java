@@ -32,7 +32,7 @@ public class TokenEmailController {
         return paymentTokenService.generateAndSaveToken(request.getBookingId(), request.getUserClientId())
                 .flatMap(token -> {
                     String subject = "Pagos";
-                    String linkPayment = "https://ribera-dev.inclub.world/payment-validation?token=" + token;
+                    String linkPayment = "https://cieneguillariberadelrio.online/payment-validation?token=" + token;
                     String body = "<html><head><title></title></head><body style='color:black'>";
                     body += "<div style='width: 100%'>";
                     body += "<div style='display:flex;'>";
