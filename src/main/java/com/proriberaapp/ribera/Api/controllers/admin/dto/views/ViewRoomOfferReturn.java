@@ -105,6 +105,7 @@ public class ViewRoomOfferReturn {
 
         String image;
         Integer capacity;
+        Integer state;
 
         String description;
         Integer bedrooms;
