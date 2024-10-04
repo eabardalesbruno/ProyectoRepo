@@ -6,4 +6,6 @@ import reactor.core.publisher.Flux;
 
 public interface ComfortRoomOfferDetailRepository extends R2dbcRepository<ComfortRoomOfferDetailEntity, Integer> {
     Flux<ComfortRoomOfferDetailEntity> findByRoomOfferId(Integer roomOfferId);
+
+    Flux<ComfortRoomOfferDetailEntity> findAllByComfortTypeId(Integer comfortTypeId);
 }

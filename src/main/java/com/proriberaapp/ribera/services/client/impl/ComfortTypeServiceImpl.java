@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.ComfortTypeEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.ComfortRoomOfferDetailRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.ComfortTypeRepository;
 import com.proriberaapp.ribera.services.client.ComfortTypeService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,8 @@ import java.util.List;
 @Slf4j
 public class ComfortTypeServiceImpl implements ComfortTypeService {
     private final ComfortTypeRepository comfortTypeRepository;
+    private final ComfortRoomOfferDetailRepository comfortRoomOfferDetailRepository;
+
     @Override
     public Mono<ComfortTypeEntity> save(ComfortTypeEntity entity) {
         entity.setActive(true);
@@ -44,7 +47,7 @@ public class ComfortTypeServiceImpl implements ComfortTypeService {
 
     @Override
     public Flux<ComfortTypeEntity> findAll() {
-        return comfortTypeRepository.findAll();
+        return comfortTypeRepository.findAllByOrderByComfortTypeIdAsc();
     }
 
     @Override
@@ -55,5 +58,18 @@ public class ComfortTypeServiceImpl implements ComfortTypeService {
     @Override
     public Mono<ComfortTypeEntity> update(ComfortTypeEntity entity) {
         return comfortTypeRepository.save(entity);
+    }
+
+    @Override
+    public Mono<Void> deleteComforTypeById(Integer id) {
+        return comfortRoomOfferDetailRepository.findAllByComfortTypeId(id)
+                .collectList()
+                .flatMap(comfortRoomOfferDetailEntities -> {
+                    if (comfortRoomOfferDetailEntities.isEmpty()) {
+                        return comfortTypeRepository.deleteById(id);
+                    } else {
+                        return Mono.error(new IllegalArgumentException("Esta siendo usado en una oferta de alojamiento"));
+                    }
+                });
     }
 }

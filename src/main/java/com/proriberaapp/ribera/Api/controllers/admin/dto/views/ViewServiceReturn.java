@@ -35,6 +35,7 @@ public class ViewServiceReturn {
     private List<ListAmenities> listService;
 
     private String image;
+    private Integer state;
     private String stateroomname;
 
 }

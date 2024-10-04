@@ -19,5 +19,6 @@ public class ComfortTypeEntity {
     private String comfortTypeName;
     @Column("comforttypedescription")
     private String comfortTypeDescription;
+    private Integer quantity;
     private Boolean active;
 }

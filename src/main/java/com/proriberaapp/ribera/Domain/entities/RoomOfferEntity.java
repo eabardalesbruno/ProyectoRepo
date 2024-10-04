@@ -38,4 +38,5 @@ public class RoomOfferEntity {
     private Integer numberDays;
     @Column("numbernights")
     private Integer numberNights;
+    private Integer state;
 }
