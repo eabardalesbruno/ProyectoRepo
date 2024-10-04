@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface ComfortTypeRepository extends R2dbcRepository<ComfortTypeEntity, Integer> {
     Mono<ComfortTypeEntity> findByComfortTypeName(ComfortTypeEntity entity);
-
+    Flux<ComfortTypeEntity> findAllByOrderByComfortTypeIdAsc();
     Flux<ComfortTypeEntity> findAllByComfortTypeNameIn(List<ComfortTypeEntity> entity);
 
     @Query("SELECT * FROM viewcomfortdata WHERE bookingId = :bookingId")

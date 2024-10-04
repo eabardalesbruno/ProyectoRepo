@@ -329,6 +329,7 @@ CREATE OR REPLACE VIEW viewservicereturn
     rd.oceanviewbalcony,
     rd.balconyoverlookingpool,
     r.image,
+    ro.state,
     sr.stateroomname
    FROM roomoffer ro
      JOIN room r ON ro.roomid = r.roomid

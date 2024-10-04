@@ -97,7 +97,6 @@ public class RoomServiceImpl implements RoomService {
                 .collectList()
                 .flatMap(roomOffers -> {
                     if (roomOffers.isEmpty()) {
-                        System.out.println("RoomServiceImpl.deleteRoom");
                         return roomImageRepository.deleteAllByRoomId(roomId)
                                 .then(bedroomRepository.deleteAllByRoomId(roomId))
                                 .then(roomRepository.deleteById(roomId));
