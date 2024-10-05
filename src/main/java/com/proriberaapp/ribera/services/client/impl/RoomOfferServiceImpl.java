@@ -39,10 +39,15 @@ public class RoomOfferServiceImpl implements RoomOfferService {
 
     @Override
     public Mono<RoomOfferEntity> save(RoomOfferEntity entity) {
-        entity.setPoints(calculatePoints(entity.getCost(), RATIO_BASE));
-        entity.setInResortPoints(calculatePoints(entity.getCost(), RATIO_INRESORT));
-        entity.setRiberaPoints(calculatePoints(entity.getCost(), RATIO_RIBERA));
-
+        if (entity.getNumberDays() == null) {
+            entity.setPoints(calculatePoints(entity.getCost(), RATIO_BASE));
+            entity.setInResortPoints(calculatePoints(entity.getCost(), RATIO_INRESORT));
+            entity.setRiberaPoints(calculatePoints(entity.getCost(), RATIO_RIBERA));
+        } else {
+            entity.setPoints(null);
+            entity.setInResortPoints(null);
+            entity.setRiberaPoints(null);
+        }
         return roomOfferRepository.findByRoomIdAndOfferTypeIdAndState(entity.getRoomId(), entity.getOfferTypeId(), 1).hasElement()
                 .flatMap(exists -> exists
                         ? Mono.error(new IllegalArgumentException("Ya existe una oferta para este alojamiento, pongala inactiva"))
