@@ -33,7 +33,7 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
             """)
     Flux<RoomOfferEntity> findByFilters(Integer roomTypeId, String capacity, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd);
 
-    @Query("SELECT v.*, r.state " +
+    @Query("SELECT v.*, r.state,r.numberdays " +
             "FROM roomoffer r " +
             "JOIN viewroomofferreturn v ON r.roomofferid = v.roomofferid " +
             "WHERE (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId) " +
