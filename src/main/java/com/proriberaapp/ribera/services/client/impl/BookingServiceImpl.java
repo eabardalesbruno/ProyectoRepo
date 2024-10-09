@@ -428,7 +428,10 @@ public class BookingServiceImpl implements BookingService {
         if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
             return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La fecha de inicio no puede ser anterior al día actual"));
         }
-
+        System.out.println(bookingSaveRequest.getNumberBaby());
+        System.out.println(bookingSaveRequest.getNumberChild());
+        System.out.println(bookingSaveRequest.getNumberAdult());
+        System.out.println(bookingSaveRequest.getNumberAdultExtra());
         // Calcular el número de días entre la fecha de inicio y fin
         Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
 

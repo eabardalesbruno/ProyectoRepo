@@ -39,6 +39,8 @@ public class BookingEntity {
     private Integer numberChildren;
     @Column("numberbabies")
     private Integer numberBabies;
+    @Column("numberadultsextra")
+    private Integer numberAdultsExtra;
 
     @Column("daybookinginit")
     private Timestamp dayBookingInit;
@@ -59,6 +61,7 @@ public class BookingEntity {
                 .numberAdults(bookingSaveRequest.getNumberAdult())
                 .numberChildren(bookingSaveRequest.getNumberChild())
                 .numberBabies(bookingSaveRequest.getNumberBaby())
+                .numberAdultsExtra(bookingSaveRequest.getNumberAdultExtra())
                 .dayBookingInit(Timestamp.valueOf(bookingSaveRequest.getDayBookingInit().atStartOfDay()))
                 .dayBookingEnd(Timestamp.valueOf(bookingSaveRequest.getDayBookingEnd().atStartOfDay()))
                 .createdAt(Timestamp.valueOf(ZonedDateTime.now(limaZoneId).toLocalDateTime()))

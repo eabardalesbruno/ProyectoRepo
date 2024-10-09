@@ -25,6 +25,8 @@ public class BookingSaveRequest {
     private Integer numberChild;
     @Nullable
     private Integer numberBaby;
+    @Nullable
+    private Integer numberAdultExtra;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dayBookingInit;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
