@@ -12,7 +12,10 @@ import java.time.LocalDateTime;
 public interface RoomOfferService extends BaseService<RoomOfferEntity, RoomOfferEntity> {
 
     Flux<ViewRoomOfferReturn> viewRoomOfferReturn(SearchFiltersRoomOffer filters);
+
     Flux<RoomOfferEntity> findByFilters(SearchFiltersRoomOfferFiltro filters);
-    Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd, Integer capacity);
+
+    Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd,
+                                           Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity, Integer adultExtra);
 
 }
