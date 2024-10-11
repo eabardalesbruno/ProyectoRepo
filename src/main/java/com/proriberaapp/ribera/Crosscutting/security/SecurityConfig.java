@@ -34,6 +34,7 @@ public class SecurityConfig {
                                 "/api/v1/offer-type/**",
                                 "/api/v1/comfort-type/**",
                                 "/api/v1/feeding/**",
+                                "/api/v1/quotation/**",
                                 "/api/v1/comfort-room-offer-detail/**",
                                 "/api/v1/bedstype/**",
                                 "/api/v1/admin/manager/service/**",

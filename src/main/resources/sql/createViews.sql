@@ -336,6 +336,7 @@ AS
 SELECT ro.roomofferid,
        ro.roomid,
        r.roomname,
+       ro.offername,
        rt.roomtypename,
        r.infantcapacity AS infantcapacity,
        r.kidcapacity AS kidcapacity,
