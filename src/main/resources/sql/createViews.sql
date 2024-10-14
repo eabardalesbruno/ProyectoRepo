@@ -219,7 +219,11 @@ SELECT
     ro.roomofferid,
     r.roomid,
     rt.roomtypeid,
-
+    q.infant_cost as infantcost,
+    q.kid_cost as kidcost,
+    q.adult_cost as adultcost,
+    q.adult_mayor_cost as adultmayorcost,
+    q.adult_extra_cost as adultextracost,
     ROW_NUMBER() OVER (ORDER BY roomofferid) AS item,
 
     ro.offertimeinit as offertimeinit,
@@ -256,9 +260,10 @@ SELECT
     CONCAT(ro.inresortpoints,' pts Ribera') AS pointInResortstring
 
 FROM roomoffer ro
-
          JOIN room r ON r.roomid = ro.roomid
          JOIN roomtype rt ON rt.roomtypeid = r.roomtypeid
+         join quotation_roomoffer qro on qro.room_offer_id = ro.roomofferid
+         join quotation q on q.quotation_id = qro.quotation_id
          JOIN roomdetail rd ON r.roomdetailid = rd.roomdetailid;
 
 

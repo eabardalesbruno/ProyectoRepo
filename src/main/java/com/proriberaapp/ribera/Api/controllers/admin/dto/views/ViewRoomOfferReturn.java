@@ -109,6 +109,11 @@ public static ViewRoomOfferReturn convertTo(Readable row) {
     Integer kidcapacity;
     Integer adultmayorcapacity;
     Integer infantcapacity;
+    BigDecimal infantcost;
+    BigDecimal kidcost;
+    BigDecimal adultcost;
+    BigDecimal adultmayorcost;
+    BigDecimal adultextracost;
     Integer state;
     Integer numberdays;
 
@@ -151,6 +156,11 @@ public static ViewRoomOfferReturn convertTo(Readable row) {
                 .adultcapacity(row.get("adultcapacity", Integer.class))
                 .adultmayorcapacity(row.get("adultmayorcapacity", Integer.class))
                 .adultextra(row.get("adultextra", Integer.class))
+                .infantcost(row.get("infantcost", BigDecimal.class))
+                .kidcost(row.get("kidcost", BigDecimal.class))
+                .adultcost(row.get("adultcost", BigDecimal.class))
+                .adultmayorcost(row.get("adultmayorcost", BigDecimal.class))
+                .adultextracost(row.get("adultextracost", BigDecimal.class))
                 .description(row.get("description", String.class))
                 .bedrooms(row.get("bedrooms", Integer.class))
                 .squaremeters(row.get("squaremeters", String.class))

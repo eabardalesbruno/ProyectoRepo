@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -50,10 +51,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
         entity.setPoints(null);
         entity.setInResortPoints(null);
         entity.setRiberaPoints(null);
-        return roomOfferRepository.findByRoomIdAndOfferTypeIdAndState(entity.getRoomId(), entity.getOfferTypeId(), 1).hasElement()
-                .flatMap(exists -> exists
-                        ? Mono.error(new IllegalArgumentException("Ya existe una oferta para este alojamiento, pongala inactiva"))
-                        : roomOfferRepository.save(entity));
+        return roomOfferRepository.save(entity);
     }
 
     @Override
@@ -80,8 +78,11 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                         roomOffer.setListBedroomReturn(bedroomList);
                                         return roomOffer;
                                     });
-                        }));
+                        }))
+                .collectSortedList(Comparator.comparing(ViewRoomOfferReturn::getRoomOfferId))
+                .flatMapMany(Flux::fromIterable);
     }
+
 
     @Override
     public Flux<RoomOfferEntity> saveAll(List<RoomOfferEntity> entity) {
@@ -140,16 +141,32 @@ public class RoomOfferServiceImpl implements RoomOfferService {
 
     @Override
     public Mono<RoomOfferEntity> update(RoomOfferEntity entity) {
-        return quotationRoomOfferRepository.findAllByRoomOfferId(entity.getRoomOfferId())
-                .hasElements()
-                .flatMap(hasElements -> {
-                    if (!hasElements && entity.getState() == 1) {
-                        return Mono.error(new IllegalArgumentException("No se puede activar una oferta que no tiene cotizaciones"));
+        return roomOfferRepository.findByRoomIdAndState(entity.getRoomId(), 1)
+                .flatMap(existingActiveOffer -> {
+                    if (!existingActiveOffer.getRoomOfferId().equals(entity.getRoomOfferId())) {
+                        return Mono.error(new IllegalArgumentException("Ya existe una oferta activa para este alojamiento."));
                     }
-                    return roomOfferRepository.save(entity);
-                });
-
+                    return quotationRoomOfferRepository.findAllByRoomOfferId(entity.getRoomOfferId())
+                            .hasElements()
+                            .flatMap(hasElements -> {
+                                if (!hasElements && entity.getState() == 1) {
+                                    return Mono.error(new IllegalArgumentException("No se puede activar una oferta que no tiene cotizaciones"));
+                                }
+                                return roomOfferRepository.save(entity);
+                            });
+                })
+                .switchIfEmpty(
+                        quotationRoomOfferRepository.findAllByRoomOfferId(entity.getRoomOfferId())
+                                .hasElements()
+                                .flatMap(hasElements -> {
+                                    if (!hasElements && entity.getState() == 1) {
+                                        return Mono.error(new IllegalArgumentException("No se puede activar una oferta que no tiene cotizaciones"));
+                                    }
+                                    return roomOfferRepository.save(entity);
+                                })
+                );
     }
+
 
     private Integer calculatePoints(BigDecimal price, Integer points) {
         return price.intValue() / points;
