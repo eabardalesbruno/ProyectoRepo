@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
+import com.proriberaapp.ribera.Domain.dto.QuotationDto;
 import com.proriberaapp.ribera.Domain.entities.QuotationEntity;
 import com.proriberaapp.ribera.services.client.QuotationService;
 import lombok.RequiredArgsConstructor;
@@ -18,20 +19,19 @@ public class QuotationController {
         return quotationService.findAllQuotations();
     }
 
+    @GetMapping("/{quotationId}")
+    public Mono<QuotationEntity> findQuotationById(@PathVariable Integer quotationId) {
+        return quotationService.findQuotationById(quotationId);
+    }
+
     @PostMapping
-    public Mono<QuotationEntity> saveQuotation(@RequestBody QuotationEntity quotationEntity) {
-        System.out.println(quotationEntity.getQuotationDescription());
-        System.out.println(quotationEntity.getInfantCost());
-        System.out.println(quotationEntity.getKidCost());
-        System.out.println(quotationEntity.getAdultCost());
-        System.out.println(quotationEntity.getAdultMayorCost());
-        System.out.println(quotationEntity.getAdultExtraCost());
+    public Mono<QuotationEntity> saveQuotation(@RequestBody QuotationDto quotationEntity) {
         return quotationService.saveQuotation(quotationEntity);
     }
 
     @PutMapping
-    public Mono<QuotationEntity> updateQuotation(@RequestBody QuotationEntity quotationEntity) {
-        return quotationService.updateQuotation(quotationEntity);
+    public Mono<QuotationEntity> updateQuotation(@RequestBody QuotationDto quotationDto) {
+        return quotationService.updateQuotation(quotationDto);
     }
 
     @DeleteMapping("/{quotationId}")

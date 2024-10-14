@@ -1,18 +1,27 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Domain.dto.QuotationDto;
 import com.proriberaapp.ribera.Domain.entities.QuotationEntity;
+import com.proriberaapp.ribera.Domain.entities.QuotationRoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.QuotationRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.QuotationRoomOfferRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
 import com.proriberaapp.ribera.services.client.QuotationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class QuotationServiceImpl implements QuotationService {
 
     private final QuotationRepository quotationRepository;
+    private final QuotationRoomOfferRepository quotationRoomOfferRepository;
+    private final RoomOfferRepository roomOfferRepository;
 
     @Override
     public Flux<QuotationEntity> findAllQuotations() {
@@ -20,26 +29,95 @@ public class QuotationServiceImpl implements QuotationService {
     }
 
     @Override
-    public Mono<QuotationEntity> saveQuotation(QuotationEntity quotationEntity) {
-        return quotationRepository.save(quotationEntity);
+    public Mono<QuotationEntity> findQuotationById(Integer quotationId) {
+        return quotationRepository.findById(quotationId);
     }
 
     @Override
-    public Mono<QuotationEntity> updateQuotation(QuotationEntity quotationEntity) {
-        return quotationRepository.findById(quotationEntity.getQuotationId()).flatMap(quotation -> {
-            quotation.setQuotationDescription(quotationEntity.getQuotationDescription());
-            quotation.setInfantCost(quotationEntity.getInfantCost());
-            quotation.setKidCost(quotationEntity.getKidCost());
-            quotation.setAdultCost(quotationEntity.getAdultCost());
-            quotation.setAdultMayorCost(quotationEntity.getAdultMayorCost());
-            quotation.setAdultExtraCost(quotationEntity.getAdultExtraCost());
-            return quotationRepository.save(quotation);
-        });
+    public Mono<QuotationEntity> saveQuotation(QuotationDto quotationDto) {
+        QuotationEntity quotationEntity = QuotationEntity.builder()
+                .quotationDescription(quotationDto.getQuotationDescription())
+                .infantCost(quotationDto.getInfantCost())
+                .kidCost(quotationDto.getKidCost())
+                .adultCost(quotationDto.getAdultCost())
+                .adultMayorCost(quotationDto.getAdultMayorCost())
+                .adultExtraCost(quotationDto.getAdultExtraCost())
+                .build();
+
+        return quotationRepository.save(quotationEntity)
+                .flatMap(savedQuotation -> {
+                    List<QuotationRoomOfferEntity> quotationRoomOffers = quotationDto.getRoomOfferIds().stream()
+                            .map(roomOfferId -> QuotationRoomOfferEntity.builder()
+                                    .quotationId(savedQuotation.getQuotationId())
+                                    .roomOfferId(roomOfferId)
+                                    .build())
+                            .collect(Collectors.toList());
+                    return quotationRoomOfferRepository.saveAll(quotationRoomOffers)
+                            .then(Mono.just(savedQuotation));
+                });
     }
+
+    @Override
+    public Mono<QuotationEntity> updateQuotation(QuotationDto quotationDto) {
+        return quotationRepository.findById(quotationDto.getQuotationId())
+                .flatMap(existingQuotation -> {
+                    existingQuotation.setQuotationDescription(quotationDto.getQuotationDescription());
+                    existingQuotation.setKidCost(quotationDto.getKidCost());
+                    existingQuotation.setAdultCost(quotationDto.getAdultCost());
+                    existingQuotation.setAdultMayorCost(quotationDto.getAdultMayorCost());
+                    existingQuotation.setAdultExtraCost(quotationDto.getAdultExtraCost());
+                    return quotationRepository.save(existingQuotation)
+                            .flatMap(savedQuotation ->
+                                    quotationRoomOfferRepository.findAllByQuotationId(quotationDto.getQuotationId()).collectList()
+                                            .flatMap(existingQuotationRoomOffers -> {
+                                                List<Integer> existingRoomOfferIds = existingQuotationRoomOffers.stream()
+                                                        .map(QuotationRoomOfferEntity::getRoomOfferId).toList();
+                                                List<Integer> roomOffersToDeactivate = existingRoomOfferIds.stream()
+                                                        .filter(roomOfferId -> !quotationDto.getRoomOfferIds().contains(roomOfferId))
+                                                        .collect(Collectors.toList());
+                                                return Flux.fromIterable(roomOffersToDeactivate)
+                                                        .flatMap(roomOfferId -> roomOfferRepository.findById(roomOfferId)
+                                                                .flatMap(roomOffer -> {
+                                                                    roomOffer.setState(2);
+                                                                    return roomOfferRepository.save(roomOffer);
+                                                                }))
+                                                        .then(quotationRoomOfferRepository.deleteAllByQuotationId(quotationDto.getQuotationId()))
+                                                        .thenMany(Flux.fromIterable(quotationDto.getRoomOfferIds())
+                                                                .map(roomOfferId -> QuotationRoomOfferEntity.builder()
+                                                                        .quotationId(quotationDto.getQuotationId())
+                                                                        .roomOfferId(roomOfferId)
+                                                                        .build()))
+                                                        .collectList()
+                                                        .flatMap(entities -> quotationRoomOfferRepository.saveAll(Flux.fromIterable(entities)).then())
+                                                        .then(Mono.just(savedQuotation));
+                                            })
+                            );
+                });
+    }
+
 
     @Override
     public Mono<Void> deleteQuotation(Integer quotationId) {
-        return quotationRepository.deleteById(quotationId);
+        return quotationRoomOfferRepository.findAllByQuotationId(quotationId).collectList()
+                .flatMap(quotationRoomOffers -> {
+                    if (!quotationRoomOffers.isEmpty()) {
+                        List<Integer> roomOfferIds = quotationRoomOffers.stream()
+                                .map(QuotationRoomOfferEntity::getRoomOfferId)
+                                .collect(Collectors.toList());
+                        return quotationRoomOfferRepository.deleteAllByQuotationId(quotationId)
+                                .thenMany(Flux.fromIterable(roomOfferIds)
+                                        .flatMap(roomOfferId -> roomOfferRepository.findById(roomOfferId)
+                                                .flatMap(roomOffer -> {
+                                                    roomOffer.setState(2);
+                                                    return roomOfferRepository.save(roomOffer);
+                                                }))
+                                )
+                                .then()
+                                .then(quotationRepository.deleteById(quotationId));
+                    }
+                    return quotationRepository.deleteById(quotationId);
+                });
     }
+
 
 }
