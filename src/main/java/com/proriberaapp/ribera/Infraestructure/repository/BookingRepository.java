@@ -154,4 +154,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
             @Param("capacity") Integer capacity,
             @Param("offertimeInit") LocalDateTime offertimeInit,
             @Param("offertimeEnd") LocalDateTime offertimeEnd,Integer userId);
+
+    Mono<Boolean> existsByRoomOfferId(Integer roomOfferId);
+    Mono<Boolean> existsByRoomOfferIdAndBookingStateId(Integer roomOfferId, Integer bookingStateId);
 }

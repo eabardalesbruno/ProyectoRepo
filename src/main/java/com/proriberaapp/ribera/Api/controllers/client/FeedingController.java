@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
+import com.proriberaapp.ribera.Domain.dto.FeedingDto;
 import com.proriberaapp.ribera.Domain.entities.FeedingEntity;
 import com.proriberaapp.ribera.services.client.FeedingService;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +26,13 @@ public class FeedingController {
     }
 
     @PostMapping
-    public Mono<FeedingEntity> saveFeeding(@RequestBody FeedingEntity feeding) {
-        return feedingService.saveFeeding(feeding);
+    public Mono<FeedingEntity> saveFeeding(@RequestBody FeedingDto feedingDto) {
+        return feedingService.saveFeeding(feedingDto);
     }
 
     @PutMapping
-    public Mono<FeedingEntity> updateFeeding(@RequestBody FeedingEntity feeding) {
-        return feedingService.updateFeeding(feeding);
+    public Mono<FeedingEntity> updateFeeding(@RequestBody FeedingDto feedingDto) {
+        return feedingService.updateFeeding(feedingDto);
     }
 
     @DeleteMapping("/{id}")
