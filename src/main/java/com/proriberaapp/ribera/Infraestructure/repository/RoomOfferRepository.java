@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, Integer> {
-    Mono<RoomOfferEntity> findByRoomIdAndOfferTypeIdAndState(Integer roomId, Integer offerTypeId, Integer state);
+    Mono<RoomOfferEntity> findByRoomIdAndState(Integer roomId, Integer state);
 
     Flux<RoomOfferEntity> findAllByRoomId(Integer roomId);
 

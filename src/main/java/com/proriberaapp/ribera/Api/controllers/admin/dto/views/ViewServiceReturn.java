@@ -15,6 +15,7 @@ public class ViewServiceReturn {
     private Integer roomid;
     private String roomname;
     private String roomtypename;
+    private String offername;
     private Integer adultcapacity;
     private Integer adultextra;
     private Integer kidcapacity;

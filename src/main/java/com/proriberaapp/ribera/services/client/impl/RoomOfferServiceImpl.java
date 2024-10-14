@@ -4,10 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFil
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOfferFiltro;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
-import com.proriberaapp.ribera.Infraestructure.repository.BedroomRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.ComfortRoomOfferDetailRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.ServicesRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.Infraestructure.viewRepository.RoomOfferViewRepository;
 import com.proriberaapp.ribera.services.client.RoomOfferService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +16,7 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -26,8 +24,10 @@ import java.util.List;
 @Slf4j
 public class RoomOfferServiceImpl implements RoomOfferService {
     private final RoomOfferRepository roomOfferRepository;
+    private final BookingRepository bookingRepository;
     private final RoomOfferViewRepository roomOfferViewRepository;
     private final ComfortRoomOfferDetailRepository comfortRoomOfferDetailRepository;
+    private final QuotationRoomOfferRepository quotationRoomOfferRepository;
     private final ServicesRepository servicesRepository;
     private final BedroomRepository bedroomRepository;
     @Value("${room.offer.ratio.base}")
@@ -39,7 +39,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
 
     @Override
     public Mono<RoomOfferEntity> save(RoomOfferEntity entity) {
-        if (entity.getNumberDays() == null) {
+        /*if (entity.getNumberDays() == null) {
             entity.setPoints(calculatePoints(entity.getCost(), RATIO_BASE));
             entity.setInResortPoints(calculatePoints(entity.getCost(), RATIO_INRESORT));
             entity.setRiberaPoints(calculatePoints(entity.getCost(), RATIO_RIBERA));
@@ -47,11 +47,11 @@ public class RoomOfferServiceImpl implements RoomOfferService {
             entity.setPoints(null);
             entity.setInResortPoints(null);
             entity.setRiberaPoints(null);
-        }
-        return roomOfferRepository.findByRoomIdAndOfferTypeIdAndState(entity.getRoomId(), entity.getOfferTypeId(), 1).hasElement()
-                .flatMap(exists -> exists
-                        ? Mono.error(new IllegalArgumentException("Ya existe una oferta para este alojamiento, pongala inactiva"))
-                        : roomOfferRepository.save(entity));
+        }*/
+        entity.setPoints(null);
+        entity.setInResortPoints(null);
+        entity.setRiberaPoints(null);
+        return roomOfferRepository.save(entity);
     }
 
     @Override
@@ -78,8 +78,11 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                         roomOffer.setListBedroomReturn(bedroomList);
                                         return roomOffer;
                                     });
-                        }));
+                        }))
+                .collectSortedList(Comparator.comparing(ViewRoomOfferReturn::getRoomOfferId))
+                .flatMapMany(Flux::fromIterable);
     }
+
 
     @Override
     public Flux<RoomOfferEntity> saveAll(List<RoomOfferEntity> entity) {
@@ -124,14 +127,46 @@ public class RoomOfferServiceImpl implements RoomOfferService {
 
     @Override
     public Mono<Void> deleteById(Integer id) {
-        return comfortRoomOfferDetailRepository.deleteAllByRoomOfferId(id)
-                .then(roomOfferRepository.deleteById(id));
+        return bookingRepository.findAllByRoomOfferId(id)
+                .hasElements()
+                .flatMap(hasElements -> {
+                    if (hasElements) {
+                        return Mono.error(new IllegalArgumentException("Solo se puede poner inactiva una oferta, " +
+                                "no se puede eliminar si tiene reservas"));
+                    }
+                    return quotationRoomOfferRepository.deleteAllByRoomOfferId(id).then(comfortRoomOfferDetailRepository.deleteAllByRoomOfferId(id)
+                            .then(roomOfferRepository.deleteById(id)));
+                });
     }
 
     @Override
     public Mono<RoomOfferEntity> update(RoomOfferEntity entity) {
-        return roomOfferRepository.save(entity);
+        return roomOfferRepository.findByRoomIdAndState(entity.getRoomId(), 1)
+                .flatMap(existingActiveOffer -> {
+                    if (!existingActiveOffer.getRoomOfferId().equals(entity.getRoomOfferId())) {
+                        return Mono.error(new IllegalArgumentException("Ya existe una oferta activa para este alojamiento."));
+                    }
+                    return quotationRoomOfferRepository.findAllByRoomOfferId(entity.getRoomOfferId())
+                            .hasElements()
+                            .flatMap(hasElements -> {
+                                if (!hasElements && entity.getState() == 1) {
+                                    return Mono.error(new IllegalArgumentException("No se puede activar una oferta que no tiene cotizaciones"));
+                                }
+                                return roomOfferRepository.save(entity);
+                            });
+                })
+                .switchIfEmpty(
+                        quotationRoomOfferRepository.findAllByRoomOfferId(entity.getRoomOfferId())
+                                .hasElements()
+                                .flatMap(hasElements -> {
+                                    if (!hasElements && entity.getState() == 1) {
+                                        return Mono.error(new IllegalArgumentException("No se puede activar una oferta que no tiene cotizaciones"));
+                                    }
+                                    return roomOfferRepository.save(entity);
+                                })
+                );
     }
+
 
     private Integer calculatePoints(BigDecimal price, Integer points) {
         return price.intValue() / points;
