@@ -36,17 +36,15 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
     @Query("SELECT v.*, r.state, r.numberdays " +
             "FROM roomoffer r " +
             "JOIN viewroomofferreturn v ON r.roomofferid = v.roomofferid " +
-            "WHERE (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId) " +
-            "AND (:infantCapacity IS NULL OR v.infantcapacity = :infantCapacity) " +
-            "AND (:kidCapacity IS NULL OR v.kidcapacity = :kidCapacity) " +
-            "AND (:adultCapacity IS NULL OR v.adultcapacity = :adultCapacity) " +
-            "AND (:adultMayorCapacity IS NULL OR v.adultmayorcapacity = :adultMayorCapacity) " +
-            "AND (:adultExtra IS NULL OR v.adultextra = :adultExtra) " +
+            "WHERE (:roomTypeId IS NULL OR v.roomtypeid >= :roomTypeId) " +
+            "AND (:infantCapacity IS NULL OR v.infantcapacity >= :infantCapacity) " +
+            "AND (:kidCapacity IS NULL OR v.kidcapacity >= :kidCapacity) " +
+            "AND (:adultCapacity IS NULL OR v.adultcapacity >= :adultCapacity) " +
+            "AND (:adultMayorCapacity IS NULL OR v.adultmayorcapacity >= :adultMayorCapacity) " +
+            "AND (:adultExtra IS NULL OR v.adultextra >= :adultExtra) " +
             "AND ( " +
-            "  (:offerTimeInit IS NULL OR :offerTimeEnd IS NULL OR " +
-            "   (r.offertimeinit <= :offerTimeEnd AND r.offertimeinit >= :offerTimeInit) " +
-            "   OR (r.offertimeend <= :offerTimeEnd AND r.offertimeend >= :offerTimeInit) " +
-            "   OR (r.offertimeinit <= :offerTimeInit AND r.offertimeend >= :offerTimeEnd)) " +
+            "  (:offerTimeInit IS NULL AND :offerTimeEnd IS NULL) OR " +
+            "  (DATE(r.offertimeend) >= DATE(:offerTimeInit)) " +
             ") " +
             "ORDER BY r.roomofferid ASC")
     Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd,
