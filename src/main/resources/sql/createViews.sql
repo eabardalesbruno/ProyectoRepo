@@ -4,7 +4,8 @@ SELECT
     b.bookingid AS bookingId,
     bt.bedtypeid,
     bt.bedtypename,
-    bt.bedtypedescription
+    bt.bedtypedescription,
+    br.quantity
 FROM
     booking b
         JOIN
@@ -33,45 +34,6 @@ FROM
     comfortroomofferdetail crod ON ro.roomofferid = crod.roomofferid
         JOIN
     comforttype ct ON crod.comforttypeid = ct.comforttypeid;
-
-
-
-CREATE OR REPLACE VIEW ViewBookingReturn AS
-SELECT
-    b.bookingid AS bookingId,
-    b.userclientid,
-    b.bookingstateid,
-    r.image AS image,
-    bs.bookingstatename AS state,
-    rd.information AS description,
-    rd.bedrooms AS bedrooms,
-    rd.squaremeters AS squareMeters,
-    rd.oceanviewbalcony AS oceanViewBalcony,
-    rd.balconyoverlookingpool AS balconyOverlookingPool,
-    r.infantcapacity AS infantcapacity,
-    r.kidcapacity AS kidcapacity,
-    r.adultcapacity AS adultcapacity,
-    r.adultMayorcapacity AS adultMayorcapacity,
-    r.adultExtra AS adultExtra,
-    b.daybookinginit AS dayBookingInit,
-    b.daybookingend AS dayBookingEnd,
-    ro.cost AS price,
-    ro.inresortpoints AS pointsInResort,
-    ro.riberapoints AS pointsRibera
-FROM
-    booking b
-        JOIN
-    roomoffer ro ON b.roomofferid = ro.roomofferid
-        JOIN
-    room r ON ro.roomid = r.roomid
-        JOIN
-    roomtype rt ON r.roomtypeid = rt.roomtypeid
-        JOIN
-    roomdetail rd ON r.roomdetailid = rd.roomdetailid
-        JOIN
-    bookingstate bs ON b.bookingstateid = bs.bookingstateid;
-
-
 
 CREATE OR REPLACE VIEW ViewAdminBookingInventoryReturn AS
 SELECT
@@ -267,7 +229,7 @@ FROM roomoffer ro
          JOIN roomdetail rd ON r.roomdetailid = rd.roomdetailid;
 
 
-CREATE OR REPLACE VIEW ViewBedsType AS
+/*CREATE OR REPLACE VIEW ViewBedsType AS
 SELECT
     b.bookingid AS bookingId,
     bt.*
@@ -280,7 +242,7 @@ FROM
         JOIN
     bedroom br ON r.roomid = br.roomid
         JOIN
-    bedstype bt ON br.bedtypeid = bt.bedtypeid;
+    bedstype bt ON br.bedtypeid = bt.bedtypeid;*/
 
 
 
@@ -296,45 +258,6 @@ FROM
     comfortroomofferdetail crod ON ro.roomofferid = crod.roomofferid
         JOIN
     comforttype ct ON crod.comforttypeid = ct.comforttypeid;
-
-
-
-CREATE OR REPLACE VIEW ViewBookingReturn AS
-SELECT
-    b.bookingid AS bookingId,
-    b.userclientid,
-    b.bookingstateid,
-    r.image AS image,
-    bs.bookingstatename AS state,
-    rd.information AS description,
-    rd.bedrooms AS bedrooms,
-    rd.squaremeters AS squareMeters,
-    rd.oceanviewbalcony AS oceanViewBalcony,
-    rd.balconyoverlookingpool AS balconyOverlookingPool,
-    r.infantcapacity AS infantcapacity,
-    r.kidcapacity AS kidcapacity,
-    r.adultcapacity AS adultcapacity,
-    r.adultMayorcapacity AS adultMayorcapacity,
-    r.adultExtra AS adultExtra,
-    b.daybookinginit AS dayBookingInit,
-    b.daybookingend AS dayBookingEnd,
-    b.costfinal AS price,
-    ro.inresortpoints AS pointsInResort,
-    ro.riberapoints AS pointsRibera
-FROM
-    booking b
-        JOIN
-    roomoffer ro ON b.roomofferid = ro.roomofferid
-        JOIN
-    room r ON ro.roomid = r.roomid
-        JOIN
-    roomtype rt ON r.roomtypeid = rt.roomtypeid
-        JOIN
-    roomdetail rd ON r.roomdetailid = rd.roomdetailid
-        JOIN
-    bookingstate bs ON b.bookingstateid = bs.bookingstateid;
-
-
 
 CREATE OR REPLACE VIEW viewservicereturn
 AS
@@ -417,4 +340,45 @@ SELECT crod.roomofferid,
        ct.active
 FROM comfortroomofferdetail crod
          JOIN comforttype ct ON crod.comforttypeid = ct.comforttypeid;
-    
+
+
+CREATE OR REPLACE VIEW ViewBookingReturn AS
+SELECT
+    b.bookingid AS bookingId,
+    ro.roomid as roomid,
+    b.bookingstateid,
+    b.numberBabies as numberbabies,
+    b.numberChildren as numberchildren,
+    b.numberAdults as numberadults,
+    b.numberAdultsMayor as numberadultsmayor,
+    b.numberAdultsExtra as numberadultsextra,
+    r.image AS image,
+    b.userclientid,
+    bs.bookingstatename AS state,
+    rd.information AS description,
+    rd.bedrooms AS bedrooms,
+    rd.squaremeters AS squareMeters,
+    rd.oceanviewbalcony AS oceanViewBalcony,
+    rd.balconyoverlookingpool AS balconyOverlookingPool,
+    r.infantcapacity AS infantcapacity,
+    r.kidcapacity AS kidcapacity,
+    r.adultcapacity AS adultcapacity,
+    r.adultMayorcapacity AS adultMayorcapacity,
+    r.adultExtra AS adultExtra,
+    b.daybookinginit AS dayBookingInit,
+    b.daybookingend AS dayBookingEnd,
+    b.costfinal AS price,
+    ro.inresortpoints AS pointsInResort,
+    ro.riberapoints AS pointsRibera
+FROM
+    booking b
+        JOIN
+    roomoffer ro ON b.roomofferid = ro.roomofferid
+        JOIN
+    room r ON ro.roomid = r.roomid
+        JOIN
+    roomtype rt ON r.roomtypeid = rt.roomtypeid
+        JOIN
+    roomdetail rd ON r.roomdetailid = rd.roomdetailid
+        JOIN
+    bookingstate bs ON b.bookingstateid = bs.bookingstateid;

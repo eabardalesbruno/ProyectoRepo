@@ -207,6 +207,13 @@ public class UserController {
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
 
+    @GetMapping("/email/{email}")
+    public Mono<ResponseEntity<UserClientEntity>> getUserClientByEmail(@PathVariable String email) {
+        return userClientService.findByEmail(email)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
     @PostMapping("/registerAndLogin")
     public Mono<ResponseEntity<String>> registerAndLoginUser(@RequestBody RegisterAndLoginRequest request) {
         return userRegistrationService.loginAndRegisterUser(request.username(), request.password())

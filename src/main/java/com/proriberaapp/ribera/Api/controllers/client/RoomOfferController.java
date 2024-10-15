@@ -55,6 +55,11 @@ public class RoomOfferController {
             @RequestParam(required = false) Integer adultCapacity,
             @RequestParam(required = false) Integer adultMayorCapacity,
             @RequestParam(required = false) Integer adultExtra) {
+        System.out.println("infantCapacity: " + infantCapacity);
+        System.out.println("kidCapacity: " + kidCapacity);
+        System.out.println("adultCapacity: " + adultCapacity);
+        System.out.println("adultMayorCapacity: " + adultMayorCapacity);
+        System.out.println("adultExtra: " + adultExtra);
         return roomOfferService.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity, kidCapacity, adultCapacity, adultMayorCapacity, adultExtra);
     }
 
