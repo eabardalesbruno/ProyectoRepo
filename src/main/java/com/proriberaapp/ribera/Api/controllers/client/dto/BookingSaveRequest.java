@@ -1,15 +1,13 @@
 package com.proriberaapp.ribera.Api.controllers.client.dto;
 
-import com.proriberaapp.ribera.Domain.entities.FinalCostumerEntity;
 import jakarta.annotation.Nullable;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.sql.Timestamp;
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -27,6 +25,18 @@ public class BookingSaveRequest {
     private Integer numberBaby;
     @Nullable
     private Integer numberAdultExtra;
+    @Nullable
+    private Integer numberAdultMayor;
+    @Nullable
+    private BigDecimal infantCost;
+    @Nullable
+    private BigDecimal kidCost;
+    @Nullable
+    private BigDecimal adultCost;
+    @Nullable
+    private BigDecimal adultMayorCost;
+    @Nullable
+    private BigDecimal adultExtraCost;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dayBookingInit;
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

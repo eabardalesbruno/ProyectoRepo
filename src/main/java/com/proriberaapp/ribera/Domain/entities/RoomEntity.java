@@ -28,7 +28,16 @@ public class RoomEntity {
     @Column("roomnumber")
     private String roomNumber;
     private String image;
-    private Integer capacity;
+    @Column("adultcapacity")
+    private Integer adultCapacity;
+    @Column("adultextra")
+    private Integer adultExtra;
+    @Column("kidcapacity")
+    private Integer kidCapacity;
+    @Column("adultmayorcapacity")
+    private Integer adultMayorCapacity;
+    @Column("infantcapacity")
+    private Integer infantCapacity;
 
     public static RoomEntity from(RoomEntity room) {
         return RoomEntity.builder()
@@ -39,7 +48,11 @@ public class RoomEntity {
                 .roomName(room.getRoomName())
                 .roomNumber(room.getRoomNumber())
                 .image(room.getImage())
-                .capacity(room.getCapacity())
+                .adultCapacity(room.getAdultCapacity())
+                .adultExtra(room.getAdultExtra())
+                .kidCapacity(room.getKidCapacity())
+                .adultMayorCapacity(room.getAdultMayorCapacity())
+                .infantCapacity(room.getInfantCapacity())
                 .build();
     }
 }

@@ -18,6 +18,7 @@ public class ViewBookingReturn {
     Integer bookingId;
     String image;
     String state;
+    Integer roomid;
     String description;
     Integer bedrooms;
     @Column("squaremeters")
@@ -26,7 +27,11 @@ public class ViewBookingReturn {
     Boolean oceanViewBalcony;
     @Column("balconyoverlookingpool")
     Boolean balconyOverLookingPool;
-    Integer capacity;
+    Integer numberadults;
+    Integer numberchildren;
+    Integer numberbabies;
+    Integer numberadultsextra;
+    Integer numberadultsmayor;
     //Boolean cancelledAnticipated,
     //@Column("daybookinginit")
     List<ComfortData> ListComfortType;
@@ -60,5 +65,6 @@ public class ViewBookingReturn {
         String bedTypeName;
         @Column("bedtypedescription")
         String bedTypeDescription;
+        Integer quantity;
     }
 }

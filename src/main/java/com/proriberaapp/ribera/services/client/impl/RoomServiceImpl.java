@@ -77,7 +77,11 @@ public class RoomServiceImpl implements RoomService {
                     existingRoom.setRoomDetailId(room.getRoomDetailId());
                     existingRoom.setRoomDescription(room.getRoomDescription());
                     existingRoom.setRoomNumber(room.getRoomNumber());
-                    existingRoom.setCapacity(room.getCapacity());
+                    existingRoom.setAdultCapacity(room.getAdultCapacity());
+                    existingRoom.setAdultExtra(room.getAdultExtra());
+                    existingRoom.setKidCapacity(room.getKidCapacity());
+                    existingRoom.setAdultMayorCapacity(room.getAdultMayorCapacity());
+                    existingRoom.setInfantCapacity(room.getInfantCapacity());
                     return roomRepository.save(existingRoom);
                 });
     }

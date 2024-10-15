@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, Integer> {
-    Mono<RoomOfferEntity> findByRoomIdAndOfferTypeIdAndState(Integer roomId, Integer offerTypeId, Integer state);
+    Mono<RoomOfferEntity> findByRoomIdAndState(Integer roomId, Integer state);
 
     Flux<RoomOfferEntity> findAllByRoomId(Integer roomId);
 
@@ -33,18 +33,24 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
             """)
     Flux<RoomOfferEntity> findByFilters(Integer roomTypeId, String capacity, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd);
 
-    @Query("SELECT v.*, r.state,r.numberdays " +
+    @Query("SELECT v.*, r.state, r.numberdays " +
             "FROM roomoffer r " +
             "JOIN viewroomofferreturn v ON r.roomofferid = v.roomofferid " +
             "WHERE (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId) " +
-            "AND (:capacity IS NULL OR v.capacity = :capacity) " +
+            "AND (:infantCapacity IS NULL OR v.infantcapacity = :infantCapacity) " +
+            "AND (:kidCapacity IS NULL OR v.kidcapacity = :kidCapacity) " +
+            "AND (:adultCapacity IS NULL OR v.adultcapacity = :adultCapacity) " +
+            "AND (:adultMayorCapacity IS NULL OR v.adultmayorcapacity = :adultMayorCapacity) " +
+            "AND (:adultExtra IS NULL OR v.adultextra = :adultExtra) " +
             "AND ( " +
             "  (:offerTimeInit IS NULL OR :offerTimeEnd IS NULL OR " +
             "   (r.offertimeinit <= :offerTimeEnd AND r.offertimeinit >= :offerTimeInit) " +
             "   OR (r.offertimeend <= :offerTimeEnd AND r.offertimeend >= :offerTimeInit) " +
             "   OR (r.offertimeinit <= :offerTimeInit AND r.offertimeend >= :offerTimeEnd)) " +
-            ")")
-    Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd, Integer capacity);
+            ") " +
+            "ORDER BY r.roomofferid ASC")
+    Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd,
+                                           Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity, Integer adultExtra);
 
     @Query("""
             SELECT * FROM viewroomofferreturn

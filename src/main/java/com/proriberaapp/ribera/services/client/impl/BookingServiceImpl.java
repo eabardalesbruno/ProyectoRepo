@@ -120,10 +120,10 @@ public class BookingServiceImpl implements BookingService {
         int offset = page * size;
 
         Flux<BookingStates> bookings = bookingRepository.findBookingsByStateIdPaginatedAndUserId(
-                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd, size, offset,userId);
+                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd, size, offset, userId);
 
         Mono<Long> totalElements = bookingRepository.countBookingsByStateIdAndUserId(
-                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd,userId);
+                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd, userId);
 
         return bookings.collectList()
                 .zipWith(totalElements)
@@ -428,10 +428,6 @@ public class BookingServiceImpl implements BookingService {
         if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
             return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La fecha de inicio no puede ser anterior al día actual"));
         }
-        System.out.println(bookingSaveRequest.getNumberBaby());
-        System.out.println(bookingSaveRequest.getNumberChild());
-        System.out.println(bookingSaveRequest.getNumberAdult());
-        System.out.println(bookingSaveRequest.getNumberAdultExtra());
         // Calcular el número de días entre la fecha de inicio y fin
         Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
 
@@ -444,7 +440,13 @@ public class BookingServiceImpl implements BookingService {
                             .flatMap(roomOfferEntity -> {
                                 // Crear la entidad de reserva con los datos proporcionados
                                 BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId, bookingSaveRequest, numberOfDays);
-                                bookingEntity.setCostFinal(roomOfferEntity.getCost().multiply(BigDecimal.valueOf(numberOfDays)));
+                                BigDecimal costFinal = (bookingSaveRequest.getInfantCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberBaby()))
+                                        .add(bookingSaveRequest.getKidCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberChild())))
+                                        .add(bookingSaveRequest.getAdultCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberAdult())))
+                                        .add(bookingSaveRequest.getAdultMayorCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberAdultMayor())))
+                                        .add(bookingSaveRequest.getAdultExtraCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberAdultExtra()))))
+                                        .multiply(BigDecimal.valueOf(numberOfDays));
+                                bookingEntity.setCostFinal(costFinal);
 
                                 // Verificar si ya existe una reserva para las fechas seleccionadas
                                 return bookingRepository.findExistingBookings(

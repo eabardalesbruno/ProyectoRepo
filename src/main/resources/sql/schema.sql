@@ -1,5 +1,14 @@
 -- Table definitions
 
+CREATE TABLE IF NOT EXISTS feeding
+(
+    id          SERIAL PRIMARY KEY,
+    feedingname VARCHAR(1000) NOT NULL,
+    description VARCHAR(1000) NOT NULL,
+    cost        DECIMAL       NULL,
+    state       INTEGER       NULL
+);
+
 CREATE TABLE IF NOT EXISTS userlevel
 (
     userlevelid      SERIAL PRIMARY KEY,
@@ -386,10 +395,19 @@ CREATE TABLE IF NOT EXISTS refusepayment
 
 CREATE TABLE roomimages
 (
-    id   SERIAL PRIMARY KEY,
+    id        SERIAL PRIMARY KEY,
     roomid int4 NOT NULL,
     imagepath varchar(2000) NOT NULL,
     CONSTRAINT fk_roomid FOREIGN KEY (roomid) REFERENCES public.room (roomid)
+);
+
+CREATE TABLE quotation_roomoffer
+(
+    id SERIAL PRIMARY KEY,
+    quotation_id int4 NOT NULL,
+    room_offer_id int4 NOT NULL,
+    CONSTRAINT fk_roomofferid FOREIGN KEY (room_offer_id) REFERENCES roomoffer (roomofferid),
+    CONSTRAINT fk_quotationid FOREIGN KEY (quotation_id) REFERENCES quotation (quotation_id)
 );
 
 CREATE TABLE IF NOT EXISTS comfortroomofferdetail
@@ -513,7 +531,8 @@ CREATE TABLE IF NOT EXISTS documenttype
 )
     VALUES
     ('DNI')
-    ,('RUC');
+    ,
+    ('RUC');
 
 CREATE TABLE IF NOT EXISTS public.implements_apartment
 (
