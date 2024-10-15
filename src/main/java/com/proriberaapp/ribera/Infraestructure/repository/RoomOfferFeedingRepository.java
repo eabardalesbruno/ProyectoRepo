@@ -10,4 +10,5 @@ import reactor.core.publisher.Mono;
 public interface RoomOfferFeedingRepository extends ReactiveCrudRepository<RoomOfferFeedingEntity, Integer> {
     Mono<Void> deleteByFeedingId(Integer feedingId);
     Flux<RoomOfferFeedingEntity> findByFeedingId(Integer feedingId);
+    Mono<Boolean> existsByFeedingIdAndRoomOfferId(Integer feedingId, Integer roomOfferId);
 }

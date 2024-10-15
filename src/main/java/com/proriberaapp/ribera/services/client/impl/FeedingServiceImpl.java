@@ -33,18 +33,14 @@ public class FeedingServiceImpl implements FeedingService {
 
     @Override
     public Mono<FeedingEntity> saveFeeding(FeedingDto feedingDTO) {
-        // Guardar el FeedingEntity
         return feedingRepository.save(feedingDTO.getFeedingEntity())
                 .flatMap(savedFeeding -> {
-                    // Crear entradas en la tabla intermedia para cada roomOfferId
                     return Flux.fromIterable(feedingDTO.getRoomOfferIds())
                             .flatMap(roomOfferId -> {
                                 RoomOfferFeedingEntity roomOfferFeedingEntity = RoomOfferFeedingEntity.builder()
                                         .roomOfferId(roomOfferId)
                                         .feedingId(savedFeeding.getId())
                                         .build();
-
-                                // Guardar en la tabla intermedia
                                 return roomOfferFeedingRepository.save(roomOfferFeedingEntity);
                             })
                             .then(Mono.just(savedFeeding));  // Devolver el FeedingEntity guardado después de guardar todas las relaciones
@@ -56,25 +52,49 @@ public class FeedingServiceImpl implements FeedingService {
         // Guardar siempre el FeedingEntity
         return feedingRepository.save(feedingDTO.getFeedingEntity())
                 .flatMap(updatedFeeding -> {
-                    // Iterar sobre la lista de roomOfferIds
-                    return Flux.fromIterable(feedingDTO.getRoomOfferIds())
-                            .flatMap(roomOfferId -> {
-                                // Verificar si existe una reserva asociada al roomOfferId
-                                return bookingRepository.existsByRoomOfferId(roomOfferId)
-                                        .flatMap(exists -> {
-                                            // Si no existe reserva, actualizar la tabla intermedia
-                                            if (!exists) {
-                                                RoomOfferFeedingEntity roomOfferFeedingEntity = RoomOfferFeedingEntity.builder()
-                                                        .roomOfferId(roomOfferId)
-                                                        .feedingId(updatedFeeding.getId())
-                                                        .build();
-                                                return roomOfferFeedingRepository.save(roomOfferFeedingEntity);
+                    // Obtener todas las relaciones antiguas para el feedingId
+                    return roomOfferFeedingRepository.findByFeedingId(updatedFeeding.getId())
+                            .collectList()
+                            .flatMap(existingRelations -> {
+                                // Filtrar las relaciones que no están en la nueva lista y que no tienen reservas
+                                return Flux.fromIterable(existingRelations)
+                                        .flatMap(roomOfferFeeding -> {
+                                            if (!feedingDTO.getRoomOfferIds().contains(roomOfferFeeding.getRoomOfferId())) {
+                                                // Verificar si no tiene reserva asociada
+                                                return bookingRepository.existsByRoomOfferId(roomOfferFeeding.getRoomOfferId())
+                                                        .flatMap(hasBooking -> {
+                                                            if (!hasBooking) {
+                                                                // Si no tiene reserva, eliminar la relación
+                                                                return roomOfferFeedingRepository.delete(roomOfferFeeding);
+                                                            } else {
+                                                                // Si tiene reserva, mantener la relación
+                                                                return Mono.empty();
+                                                            }
+                                                        });
                                             } else {
-                                                return Mono.empty(); // No hacer nada si hay una reserva asociada
+                                                // Si el RoomOfferId aún está en la lista, mantener la relación
+                                                return Mono.empty();
                                             }
-                                        });
-                            })
-                            .then(Mono.just(updatedFeeding)); // Devolver el FeedingEntity actualizado
+                                        })
+                                        .thenMany(Flux.fromIterable(feedingDTO.getRoomOfferIds())
+                                                .flatMap(roomOfferId -> {
+                                                    // Verificar si la nueva relación ya existe
+                                                    return roomOfferFeedingRepository.existsByFeedingIdAndRoomOfferId(updatedFeeding.getId(), roomOfferId)
+                                                            .flatMap(exists -> {
+                                                                if (!exists) {
+                                                                    // Si no existe, agregar la nueva relación
+                                                                    RoomOfferFeedingEntity newRelation = RoomOfferFeedingEntity.builder()
+                                                                            .roomOfferId(roomOfferId)
+                                                                            .feedingId(updatedFeeding.getId())
+                                                                            .build();
+                                                                    return roomOfferFeedingRepository.save(newRelation);
+                                                                } else {
+                                                                    return Mono.empty(); // No hacer nada si ya existe
+                                                                }
+                                                            });
+                                                }))
+                                        .then(Mono.just(updatedFeeding)); // Devolver el FeedingEntity actualizado
+                            });
                 });
     }
 
@@ -82,12 +102,16 @@ public class FeedingServiceImpl implements FeedingService {
     public Mono<Void> deleteFeeding(Integer feedingId) {
         return roomOfferFeedingRepository.findByFeedingId(feedingId)  // Obtener los roomOfferIds asociados
                 .flatMap(roomOfferFeeding -> {
-                    // Verificar si existe una reserva con bookingStateId = 2 para cada roomOfferId
-                    return bookingRepository.existsByRoomOfferIdAndBookingStateId(roomOfferFeeding.getRoomOfferId(), 2)
-                            .filter(exists -> !exists)  // Solo continuar si no existe una reserva con bookingStateId = 2
+                    // Verificar si existe una reserva con bookingStateId = 3 para cada roomOfferId
+                    return bookingRepository.existsByRoomOfferIdAndBookingStateId(roomOfferFeeding.getRoomOfferId(), 3)
+                            .filter(exists -> !exists)  // Solo continuar si no existe una reserva con bookingStateId = 3
+                            .switchIfEmpty(Mono.error(new RuntimeException("No se puede eliminar la Alimentación porque existe una reserva asociada!")))
                             .then();  // Continuar si la condición se cumple
                 })
                 .then(feedingRepository.deleteById(feedingId));  // Si no se encontró ninguna reserva, eliminar el FeedingEntity
     }
-
+    @Override
+    public Flux<RoomOfferFeedingEntity> findRoomOfferByFeedingId(Integer feedingId){
+        return roomOfferFeedingRepository.findByFeedingId(feedingId);
+    }
 }

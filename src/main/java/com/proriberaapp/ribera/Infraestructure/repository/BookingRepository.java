@@ -176,7 +176,5 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
 
         Mono<Boolean> existsByRoomOfferIdAndBookingStateId(Integer roomOfferId, Integer bookingStateId);
 
-        @Param("offertimeEnd") LocalDateTime offertimeEnd, Integer userId);
-
         Flux<BookingEntity> findAllByRoomOfferId(Integer roomOfferId);
 }
