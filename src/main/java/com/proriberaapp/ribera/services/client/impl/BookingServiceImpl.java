@@ -289,8 +289,8 @@ public class BookingServiceImpl implements BookingService {
                 "                <p>Fecha de inicio: " + bookingEntity.getDayBookingInit() + "</p>\n" +
                 "                <p>Fecha de fin: " + bookingEntity.getDayBookingEnd() + "</p>\n" +
                 "            </div>\n" +
-                "            <a href=\"http://www.cieneguillariberadelrio.com/reservas\" class=\"button\">Pagar ahora</a>\n" +
-                "            <p>Recuerde que el pago lo puede realizar mediante deposito en nuestra cuenta a traves de agente BCP, agencias o cualquier metodo de pago dentro de la plataforma usando este enlace: <a href=\"http://www.cieneguillariberadelrio.com/reservas\">www.cieneguillariberadelrio.com/reservas</a></p>\n" +
+                "            <a href=\"https://cieneguillariberadelrio.online/bookings/disponibles\" class=\"button\">Pagar ahora</a>\n" +
+                "            <p>Recuerde que el pago lo puede realizar mediante deposito en nuestra cuenta a traves de agente BCP, agencias o cualquier metodo de pago dentro de la plataforma. De no completar el proceso de pago en 60 minutos se anulara de manera automatica\n" +
                 "        </div>\n" +
                 "    </div>\n" +
                 "\n" +
@@ -436,6 +436,16 @@ public class BookingServiceImpl implements BookingService {
         if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
             return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La fecha de inicio no puede ser anterior al día actual"));
         }
+        int totalPeople = bookingSaveRequest.getNumberAdult() +
+                bookingSaveRequest.getNumberAdultExtra() +
+                bookingSaveRequest.getNumberAdultMayor() +
+                bookingSaveRequest.getNumberBaby() +
+                bookingSaveRequest.getNumberChild();
+
+        if (totalPeople < 4 || totalPeople > 7) {
+            return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "El número total de personas debe ser entre 4 y 7"));
+        }
+
         // Calcular el número de días entre la fecha de inicio y fin
         Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
 
