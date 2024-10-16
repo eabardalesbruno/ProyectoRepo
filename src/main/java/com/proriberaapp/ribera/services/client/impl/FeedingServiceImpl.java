@@ -100,15 +100,16 @@ public class FeedingServiceImpl implements FeedingService {
 
     @Override
     public Mono<Void> deleteFeeding(Integer feedingId) {
-        return roomOfferFeedingRepository.findByFeedingId(feedingId)  // Obtener los roomOfferIds asociados
-                .flatMap(roomOfferFeeding -> {
+        System.out.println(feedingId);
+         return feedingRepository.deleteById(feedingId); // Obtener los roomOfferIds asociados
+                //.flatMap(roomOfferFeeding -> {
                     // Verificar si existe una reserva con bookingStateId = 3 para cada roomOfferId
-                    return bookingRepository.existsByRoomOfferIdAndBookingStateId(roomOfferFeeding.getRoomOfferId(), 3)
-                            .filter(exists -> !exists)  // Solo continuar si no existe una reserva con bookingStateId = 3
-                            .switchIfEmpty(Mono.error(new RuntimeException("No se puede eliminar la Alimentación porque existe una reserva asociada!")))
-                            .then();  // Continuar si la condición se cumple
-                })
-                .then(feedingRepository.deleteById(feedingId));  // Si no se encontró ninguna reserva, eliminar el FeedingEntity
+                    //return bookingRepository.existsByRoomOfferIdAndBookingStateId(roomOfferFeeding.getRoomOfferId(), 3)
+                     //       .filter(exists -> !exists)  // Solo continuar si no existe una reserva con bookingStateId = 3
+                     //       .switchIfEmpty(Mono.error(new RuntimeException("No se puede eliminar la Alimentación porque existe una reserva asociada!")))
+                     //       .then();  // Continuar si la condición se cumple
+               // })
+                //.then(feedingRepository.deleteById(feedingId));  // Si no se encontró ninguna reserva, eliminar el FeedingEntity
     }
     @Override
     public Flux<RoomOfferFeedingEntity> findRoomOfferByFeedingId(Integer feedingId){

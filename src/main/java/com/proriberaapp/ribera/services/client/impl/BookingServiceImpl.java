@@ -4,7 +4,9 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
 import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
+import com.proriberaapp.ribera.Domain.dto.BookingFeedingDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
+import com.proriberaapp.ribera.Domain.entities.BookingFeedingEntity;
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
@@ -31,11 +33,13 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class BookingServiceImpl implements BookingService {
-
+    private final FeedingRepository feedingRepository;
+    private final BookingFeedingRepository bookingFeedingRepository;
     private final BookingRepository bookingRepository;
     private final UserClientRepository userClientRepository;
     private final EmailService emailService;
@@ -64,7 +68,9 @@ public class BookingServiceImpl implements BookingService {
             ComfortTypeRepository comfortTypeRepository,
             CancelPaymentRepository cancelPaymentRepository, RefusePaymentRepository refusePaymentRepository, BedsTypeRepository bedsTypeRepository,
             RoomOfferRepository roomOfferRepository, FinalCostumerRepository finalCostumerRepository,
-            PaymentBookRepository paymentBookRepository, RoomRepository roomRepository
+            PaymentBookRepository paymentBookRepository, RoomRepository roomRepository,
+            BookingFeedingRepository bookingFeedingRepository,
+            FeedingRepository feedingRepository
             //WebClient.Builder webClientBuilder
     ) {
         this.bookingRepository = bookingRepository;
@@ -79,6 +85,8 @@ public class BookingServiceImpl implements BookingService {
         this.finalCostumerRepository = finalCostumerRepository;
         this.paymentBookRepository = paymentBookRepository;
         this.roomRepository = roomRepository;
+        this.bookingFeedingRepository = bookingFeedingRepository;
+        this.feedingRepository = feedingRepository;
         //this.webClient = webClientBuilder.baseUrl(uploadDir).build();
     }
 
@@ -431,7 +439,6 @@ public class BookingServiceImpl implements BookingService {
         // Calcular el número de días entre la fecha de inicio y fin
         Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
 
-
         // Obtener el nombre de la habitación
         return getRoomName(bookingSaveRequest.getRoomOfferId())
                 .flatMap(roomName -> {
@@ -440,57 +447,80 @@ public class BookingServiceImpl implements BookingService {
                             .flatMap(roomOfferEntity -> {
                                 // Crear la entidad de reserva con los datos proporcionados
                                 BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId, bookingSaveRequest, numberOfDays);
+
+                                // Cálculo del costo inicial (bebés, niños, adultos, etc.)
                                 BigDecimal costFinal = (bookingSaveRequest.getInfantCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberBaby()))
                                         .add(bookingSaveRequest.getKidCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberChild())))
                                         .add(bookingSaveRequest.getAdultCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberAdult())))
                                         .add(bookingSaveRequest.getAdultMayorCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberAdultMayor())))
                                         .add(bookingSaveRequest.getAdultExtraCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberAdultExtra()))))
                                         .multiply(BigDecimal.valueOf(numberOfDays));
-                                bookingEntity.setCostFinal(costFinal);
 
-                                // Verificar si ya existe una reserva para las fechas seleccionadas
-                                return bookingRepository.findExistingBookings(
-                                                bookingEntity.getRoomOfferId(),
-                                                bookingEntity.getDayBookingInit(),
-                                                bookingEntity.getDayBookingEnd())
-                                        .hasElements()
-                                        .flatMap(exists -> {
-                                            if (exists) {
-                                                // Si la reserva ya existe, lanzar una excepción
-                                                return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La reserva ya existe para las fechas seleccionadas"));
-                                            } else {
-                                                // Si la reserva no existe, guardarla en la base de datos
-                                                return bookingRepository.save(bookingEntity)
-                                                        .flatMap(savedBooking -> sendBookingConfirmationEmail(savedBooking, roomName)
-                                                                .then(Mono.just(savedBooking)));
-                                            }
-                                        })
-                                        .map(bookingEntity1 -> {
-                                            if (bookingSaveRequest.getFinalCostumer() != null) {
-                                                // Guardar los datos de los huéspedes finales
-                                                bookingSaveRequest.getFinalCostumer().stream()
-                                                        .map(finalCostumer ->
-                                                                finalCostumerRepository.save(FinalCostumer.toFinalCostumerEntity(bookingEntity1.getBookingId(), finalCostumer))
-                                                        );
-                                            } else {
-                                                userClientRepository.findById(userClientId)
-                                                        .map(userClient -> {
-                                                            FinalCostumer finalCostumer = FinalCostumer.builder()
-                                                                    .firstName(userClient.getFirstName())
-                                                                    .lastName(userClient.getLastName())
-                                                                    .documentType(userClient.getDocumenttypeId() == 1 ? "DNI" : "PAS")
-                                                                    .documentNumber(userClient.getDocumentNumber())
-                                                                    .yearOld(calculateAge(userClient.getBirthDate()))
-                                                                    .build();
-                                                            finalCostumerRepository.save(FinalCostumer.toFinalCostumerEntity(bookingEntity1.getBookingId(), finalCostumer));
-                                                            return finalCostumer;
-                                                        });
-                                            }
-                                            return bookingEntity1;
+                                // Obtener los precios de los alimentos con feedingIDs y multiplicar por la capacidad
+                                List<Integer> feedingIDsAsIntegers = bookingSaveRequest.getFeedingIDs()
+                                        .stream()
+                                        .map(Long::intValue)
+                                        .collect(Collectors.toList());
+                                return feedingRepository.findAllById(feedingIDsAsIntegers)
+                                        .collectList()
+                                        .flatMap(feedingList -> {
+                                            // Calcular el costo adicional de los alimentos
+                                            BigDecimal extraCost = feedingList.stream()
+                                                    .map(feeding -> feeding.getCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getTotalCapacity())))
+                                                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                                            // Sumar el costo adicional al costo final
+                                            bookingEntity.setCostFinal(costFinal.add(extraCost));
+
+                                            // Verificar si ya existe una reserva para las fechas seleccionadas
+                                            return bookingRepository.findExistingBookings(
+                                                            bookingEntity.getRoomOfferId(),
+                                                            bookingEntity.getDayBookingInit(),
+                                                            bookingEntity.getDayBookingEnd())
+                                                    .hasElements()
+                                                    .flatMap(exists -> {
+                                                        if (exists) {
+                                                            // Si la reserva ya existe, lanzar una excepción
+                                                            return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "La reserva ya existe para las fechas seleccionadas"));
+                                                        } else {
+                                                            // Si la reserva no existe, guardarla en la base de datos
+                                                            return bookingRepository.save(bookingEntity)
+                                                                    .flatMap(savedBooking -> {
+                                                                        // Guardar los datos de booking_feeding después de guardar booking
+                                                                        return saveBookingFeeding(Long.parseLong(savedBooking.getBookingId().toString()), bookingSaveRequest.getFeedingIDs(), bookingSaveRequest.getTotalCapacity())
+                                                                                .then(sendBookingConfirmationEmail(savedBooking, roomName)
+                                                                                        .then(Mono.just(savedBooking)));
+                                                                    });
+                                                        }
+                                                    })
+                                                    .map(bookingEntity1 -> {
+                                                        if (bookingSaveRequest.getFinalCostumer() != null) {
+                                                            // Guardar los datos de los huéspedes finales
+                                                            bookingSaveRequest.getFinalCostumer().stream()
+                                                                    .map(finalCostumer ->
+                                                                            finalCostumerRepository.save(FinalCostumer.toFinalCostumerEntity(bookingEntity1.getBookingId(), finalCostumer))
+                                                                    );
+                                                        } else {
+                                                            userClientRepository.findById(userClientId)
+                                                                    .map(userClient -> {
+                                                                        FinalCostumer finalCostumer = FinalCostumer.builder()
+                                                                                .firstName(userClient.getFirstName())
+                                                                                .lastName(userClient.getLastName())
+                                                                                .documentType(userClient.getDocumenttypeId() == 1 ? "DNI" : "PAS")
+                                                                                .documentNumber(userClient.getDocumentNumber())
+                                                                                .yearOld(calculateAge(userClient.getBirthDate()))
+                                                                                .build();
+                                                                        finalCostumerRepository.save(FinalCostumer.toFinalCostumerEntity(bookingEntity1.getBookingId(), finalCostumer));
+                                                                        return finalCostumer;
+                                                                    });
+                                                        }
+                                                        return bookingEntity1;
+                                                    });
                                         });
                             });
                 });
     }
+
 
     public Integer calculateAge(Timestamp birthDate) {
         LocalDate birthDateLocal = birthDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -690,4 +720,36 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.findByBookingIdAndUserClientId(idUserAdmin, bookingId);
     }
 
+
+    private Mono<Void> saveBookingFeeding(Long bookingId, List<Long> feedingIds, Integer totalCapacity) {
+        return Flux.fromIterable(feedingIds)
+                .flatMap(feedingId -> {
+                    // Obtener el precio del alimento desde el feedingRepository
+                    return feedingRepository.findById(feedingId.intValue())
+                            .flatMap(feedingEntity -> {
+                                BookingFeedingEntity bookingFeeding = new BookingFeedingEntity();
+                                bookingFeeding.setBookingId(bookingId);
+                                bookingFeeding.setFeedingId(feedingId);
+
+                                // Calcular el monto (precio del alimento * capacidad total)
+                                BigDecimal feedingAmount = feedingEntity.getCost().multiply(BigDecimal.valueOf(totalCapacity));
+                                bookingFeeding.setBookingfeedingamout(feedingAmount.floatValue());
+
+                                // Guardar el BookingFeedingEntity en la base de datos
+                                return bookingFeedingRepository.save(bookingFeeding);
+                            });
+                })
+                .then(); // Retorna un Mono<Void> cuando se completan todos los guardados
+    }
+
+    @Override
+    public Mono<Void> saveBookingWithFeedings(BookingFeedingDto requestDTO) {
+        return Flux.fromIterable(requestDTO.getFeedingIds())
+                .flatMap(feedingId -> {
+                    BookingFeedingEntity bookingFeeding = new BookingFeedingEntity();
+                    bookingFeeding.setFeedingId(feedingId);
+                    return bookingFeedingRepository.save(bookingFeeding);
+                })
+                .then();
+    }
 }

@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
+import com.proriberaapp.ribera.Domain.dto.BookingFeedingDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.services.client.BookingService;
 import lombok.RequiredArgsConstructor;
@@ -138,7 +139,6 @@ public class BookingController {
                 })
                 .flatMap(userClientId -> bookingService.save(userClientId, bookingSaveRequest));
     }
-
     @PostMapping("/saveyes")
     public Mono<BookingEntity> saveBooking(@RequestBody BookingSaveRequest bookingSaveRequest) {
         return Mono.fromCallable(() -> {

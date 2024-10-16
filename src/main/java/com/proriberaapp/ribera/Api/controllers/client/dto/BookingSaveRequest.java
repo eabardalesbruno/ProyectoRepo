@@ -45,4 +45,8 @@ public class BookingSaveRequest {
     @Nullable
     private List<FinalCostumer> finalCostumer;
 
+    private List<Long> feedingIDs;
+
+    private Integer totalCapacity;
+
 }
