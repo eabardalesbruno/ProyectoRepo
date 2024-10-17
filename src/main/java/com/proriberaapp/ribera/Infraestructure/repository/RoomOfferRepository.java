@@ -36,7 +36,7 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
     @Query("SELECT v.*, r.state, r.numberdays " +
             "FROM roomoffer r " +
             "JOIN viewroomofferreturn v ON r.roomofferid = v.roomofferid " +
-            "WHERE (:roomTypeId IS NULL OR v.roomtypeid >= :roomTypeId) " +
+            "WHERE (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId) " +
             "AND (:infantCapacity IS NULL OR v.infantcapacity >= :infantCapacity) " +
             "AND (:kidCapacity IS NULL OR v.kidcapacity >= :kidCapacity) " +
             "AND (:adultCapacity IS NULL OR v.adultcapacity >= :adultCapacity) " +
@@ -44,7 +44,16 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
             "AND (:adultExtra IS NULL OR v.adultextra >= :adultExtra) " +
             "AND ( " +
             "  (:offerTimeInit IS NULL AND :offerTimeEnd IS NULL) OR " +
-            "  (DATE(r.offertimeend) >= DATE(:offerTimeInit)) " +
+            "  (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NULL AND " +
+            "   DATE(:offerTimeInit) BETWEEN DATE(r.offertimeinit) AND DATE(r.offertimeend) " +
+            "  ) OR " +
+            "  (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NOT NULL AND " +
+            "   ( " +
+            "      DATE(r.offertimeend) BETWEEN DATE(:offerTimeInit) AND DATE(:offerTimeEnd) OR " +
+            "      DATE(:offerTimeInit) BETWEEN DATE(r.offertimeinit) AND DATE(r.offertimeend) OR " +
+            "      DATE(:offerTimeEnd) BETWEEN DATE(r.offertimeinit) AND DATE(r.offertimeend) " +
+            "   ) " +
+            "  ) " +
             ") " +
             "ORDER BY r.roomofferid ASC")
     Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd,
