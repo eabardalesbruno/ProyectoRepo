@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
+import com.proriberaapp.ribera.Domain.dto.BookingFeedingDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.services.BaseService;
 import org.springframework.http.codec.multipart.FilePart;
@@ -72,4 +73,6 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
     Mono<BookingEntity> assignClientToBooking(Integer bookingId, Integer userClientId);
 
     Mono<Boolean> deleteBooking(Integer bookingId);
+
+    Mono<Void> saveBookingWithFeedings(BookingFeedingDto requestDTO);
 }
