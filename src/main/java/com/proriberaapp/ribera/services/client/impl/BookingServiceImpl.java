@@ -744,7 +744,8 @@ public class BookingServiceImpl implements BookingService {
                                 // Calcular el monto (precio del alimento * capacidad total)
                                 BigDecimal feedingAmount = feedingEntity.getCost().multiply(BigDecimal.valueOf(totalCapacity));
                                 bookingFeeding.setBookingfeedingamout(feedingAmount.floatValue());
-
+                                System.out.println("feedingAmount: " + feedingAmount);
+                                System.out.println("bookingFeeding: " + bookingFeeding.getFeedingId());
                                 // Guardar el BookingFeedingEntity en la base de datos
                                 return bookingFeedingRepository.save(bookingFeeding);
                             });
