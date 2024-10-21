@@ -442,8 +442,8 @@ public class BookingServiceImpl implements BookingService {
                 bookingSaveRequest.getNumberBaby() +
                 bookingSaveRequest.getNumberChild();
 
-        if (totalPeople < 4 || totalPeople > 7) {
-            return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "El número total de personas debe ser entre 4 y 7"));
+        if (totalPeople < 2 || totalPeople > 7) {
+            return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "El número total de personas debe ser entre 2 y 7"));
         }
 
         // Calcular el número de días entre la fecha de inicio y fin
