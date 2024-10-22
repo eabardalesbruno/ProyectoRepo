@@ -464,7 +464,7 @@ public class BookingServiceImpl implements BookingService {
                                         .add(bookingSaveRequest.getAdultCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberAdult())))
                                         .add(bookingSaveRequest.getAdultMayorCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberAdultMayor())))
                                         .add(bookingSaveRequest.getAdultExtraCost().multiply(BigDecimal.valueOf(bookingSaveRequest.getNumberAdultExtra()))))
-                                        .multiply(BigDecimal.valueOf(numberOfDays));
+                                        .multiply(BigDecimal.valueOf(numberOfDays-1));
 
                                 // Obtener los precios de los alimentos con feedingIDs y multiplicar por la capacidad
                                 List<Integer> feedingIDsAsIntegers = bookingSaveRequest.getFeedingIDs()
