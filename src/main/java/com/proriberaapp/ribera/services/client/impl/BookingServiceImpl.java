@@ -446,6 +446,14 @@ public class BookingServiceImpl implements BookingService {
             return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "El número total de personas debe ser entre 2 y 7"));
         }
 
+        if(     bookingSaveRequest.getNumberBaby() < 0  ||
+                bookingSaveRequest.getNumberAdult() < 0 ||
+                bookingSaveRequest.getNumberAdultExtra() < 0  ||
+                bookingSaveRequest.getNumberAdultMayor() < 0  ||
+                bookingSaveRequest.getNumberChild() < 0
+        ){
+            return Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "Las cantidades no pueden ser menores que Cero"));
+        }
         // Calcular el número de días entre la fecha de inicio y fin
         Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(), bookingSaveRequest.getDayBookingEnd());
 
