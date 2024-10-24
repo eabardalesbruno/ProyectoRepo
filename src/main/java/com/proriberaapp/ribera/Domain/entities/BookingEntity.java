@@ -81,8 +81,10 @@ public class BookingEntity {
                 .adultCost(bookingSaveRequest.getAdultCost())
                 .adultMayorCost(bookingSaveRequest.getAdultMayorCost())
                 .adultExtraCost(bookingSaveRequest.getAdultExtraCost())
-                .dayBookingInit(Timestamp.valueOf(bookingSaveRequest.getDayBookingInit().atStartOfDay()))
-                .dayBookingEnd(Timestamp.valueOf(bookingSaveRequest.getDayBookingEnd().atStartOfDay()))
+                .dayBookingInit(Timestamp.valueOf(bookingSaveRequest.getDayBookingInit()
+                        .atTime(15, 0)))
+                .dayBookingEnd(Timestamp.valueOf(bookingSaveRequest.getDayBookingEnd()
+                        .atTime(13, 0)))
                 .createdAt(Timestamp.valueOf(ZonedDateTime.now(limaZoneId).toLocalDateTime()))
                 .build();
     }
