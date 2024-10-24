@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.Api.controllers.client.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.relational.core.mapping.Column;
 
 import java.time.LocalDateTime;
 
@@ -28,6 +29,11 @@ public class BookingStates {
     private Integer riberapoints;
     private Integer inresortpoints;
     private Integer points;
+    private Integer numberadults;
+    private Integer numberchildren;
+    private Integer numberbabies;
+    private Integer numberadultsextra;
+    private Integer numberadultsmayor;
     private LocalDateTime offertimeinit;
     private LocalDateTime offertimeend;
 }
