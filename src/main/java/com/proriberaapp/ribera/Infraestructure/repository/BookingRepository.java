@@ -102,7 +102,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         "r.offertimeinit, r.offertimeend, us.email, bo.costfinal, " +
                         "TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, " +
                         "TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend, " +
-                        "rid.capacity, bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription, "
+                        "bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription,bo.numberadults" +
+                        ",bo.numberchildren,bo.numberbabies,bo.numberadultsextra,bo.numberadultsmayor, "
                         +
                         "r.riberapoints, r.inresortpoints, r.points " +
                         "FROM booking bo " +
@@ -115,7 +116,6 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         "JOIN bedstype bt ON bt.bedtypeid = be.bedtypeid " +
                         "WHERE bo.bookingstateid = :bookingStateId " +
                         "AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId) " +
-                        "AND (:capacity IS NULL OR rid.capacity = :capacity) " +
                         "AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR " +
                         "bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd) AND bo.userclientid = :userId "
                         +
@@ -124,7 +124,6 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
         Flux<BookingStates> findBookingsByStateIdPaginatedAndUserId(
                         @Param("bookingStateId") Integer bookingStateId,
                         @Param("roomTypeId") Integer roomTypeId,
-                        @Param("capacity") Integer capacity,
                         @Param("offertimeInit") LocalDateTime offertimeInit,
                         @Param("offertimeEnd") LocalDateTime offertimeEnd,
                         @Param("limit") int limit,
@@ -162,13 +161,11 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         "JOIN bedstype bt ON bt.bedtypeid = be.bedtypeid " +
                         "WHERE bo.bookingstateid = :bookingStateId " +
                         "AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId) " +
-                        "AND (:capacity IS NULL OR rid.capacity = :capacity) " +
                         "AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR " +
                         "bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd) AND bo.userclientid = :userId ")
         Mono<Long> countBookingsByStateIdAndUserId(
                         @Param("bookingStateId") Integer bookingStateId,
                         @Param("roomTypeId") Integer roomTypeId,
-                        @Param("capacity") Integer capacity,
                         @Param("offertimeInit") LocalDateTime offertimeInit,
                         @Param("offertimeEnd") LocalDateTime offertimeEnd, Integer userId);
 

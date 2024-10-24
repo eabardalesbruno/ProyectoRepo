@@ -784,7 +784,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                 "        <div class=\"content\">\n" +
                 "            <h2 style='text-align: center;'>Confirmación de Pago</h2>\n" +
                 "            <p>Estimado cliente,</p>\n" +
-                "            <p>Su pago ha sido recibido con éxito.</p>\n" +
+                "            <p>Su pago ha sido recibido con éxito. En unos momentos se realizara la validación</p>\n" +
                 "            <p>Detalles del pago:</p>\n" +
                 "            <ul>\n" +
                 "                <li>Reserva: " + roomName + "</li>\n" +
