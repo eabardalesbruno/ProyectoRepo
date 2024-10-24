@@ -113,10 +113,10 @@ public class BookingServiceImpl implements BookingService {
         int offset = page * size;
 
         Flux<BookingStates> bookings = bookingRepository.findBookingsByStateIdPaginated(
-                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd, size, offset);
+                bookingStateId, roomTypeId, offertimeInit, offertimeEnd, size, offset);
 
         Mono<Long> totalElements = bookingRepository.countBookingsByStateId(
-                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd);
+                bookingStateId, roomTypeId, offertimeInit, offertimeEnd);
 
         return bookings.collectList()
                 .zipWith(totalElements)
