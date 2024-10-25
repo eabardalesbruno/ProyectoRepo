@@ -106,6 +106,7 @@ public static ViewRoomOfferReturn convertTo(Readable row) {
     String image;
     Integer adultcapacity;
     Integer adultextra;
+    String descriptionroom;
     Integer kidcapacity;
     Integer adultmayorcapacity;
     Integer infantcapacity;
@@ -151,6 +152,7 @@ public static ViewRoomOfferReturn convertTo(Readable row) {
                 .numberroom(row.get("numberroom", String.class))
                 .typeroom(row.get("typeroom", String.class))
                 .image(row.get("image", String.class))
+                .descriptionroom(row.get("descriptionroom", String.class))
                 .infantcapacity(row.get("infantcapacity", Integer.class))
                 .kidcapacity(row.get("kidcapacity", Integer.class))
                 .adultcapacity(row.get("adultcapacity", Integer.class))

@@ -176,6 +176,7 @@ FROM booking bk
 
 
 
+
 CREATE OR REPLACE VIEW ViewRoomOfferReturn AS
 SELECT
     ro.roomofferid,
@@ -201,7 +202,7 @@ SELECT
     r.adultMayorcapacity AS adultMayorcapacity,
     r.adultExtra AS adultExtra,
 
-    rd.information AS description,
+    rt.roomtypedescription AS descriptionRoom,
     rd.bedrooms AS bedrooms,
     rd.squaremeters AS squareMeters,
     rd.oceanviewbalcony AS oceanViewBalcony,
@@ -355,7 +356,8 @@ SELECT
     r.image AS image,
     b.userclientid,
     bs.bookingstatename AS state,
-    rd.information AS description,
+    r.roomname as title,
+    rt.roomtypedescription AS description,
     rd.bedrooms AS bedrooms,
     rd.squaremeters AS squareMeters,
     rd.oceanviewbalcony AS oceanViewBalcony,
