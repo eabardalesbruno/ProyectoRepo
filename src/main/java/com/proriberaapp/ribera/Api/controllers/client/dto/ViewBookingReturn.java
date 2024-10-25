@@ -19,6 +19,7 @@ public class ViewBookingReturn {
     String image;
     String state;
     Integer roomid;
+    String title;
     String description;
     Integer bedrooms;
     @Column("squaremeters")
