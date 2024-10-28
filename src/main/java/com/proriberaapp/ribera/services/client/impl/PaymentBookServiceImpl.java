@@ -548,6 +548,10 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                             if (userClient != null) {
                                 builder.userClientName(userClient.getFirstName());
                                 builder.userClientLastName(userClient.getLastName());
+                                builder.userClientEmail(userClient.getEmail());
+                                builder.userCellphoneNumber(userClient.getCellNumber());
+                                builder.userDocumentType(userClient.getDocumenttypeId());
+                                builder.userDocumentNumber(userClient.getDocumentNumber());
                             }
                             if (booking != null) {
                                 builder.bookingName(booking.getDetail());
@@ -627,6 +631,10 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                     if (userClient != null) {
                                         builder.userClientName(userClient.getFirstName());
                                         builder.userClientLastName(userClient.getLastName());
+                                        builder.userClientEmail(userClient.getEmail());
+                                        builder.userCellphoneNumber(userClient.getCellNumber());
+                                        builder.userDocumentType(userClient.getDocumenttypeId());
+                                        builder.userDocumentNumber(userClient.getDocumentNumber());
                                     }
                                     if (booking != null) {
                                         builder.bookingName(booking.getDetail());
