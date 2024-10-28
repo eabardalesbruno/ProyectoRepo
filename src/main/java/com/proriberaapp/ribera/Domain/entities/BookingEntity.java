@@ -90,11 +90,16 @@ public class BookingEntity {
     }
 
     public boolean hasPassed1Hours() {
+        if (this.bookingStateId != null && this.bookingStateId == 2) {
+            return false;
+        }
         LocalDateTime createdTime = createdAt.toLocalDateTime();
         ZoneId limaZoneId = ZoneId.of("America/Lima");
         LocalDateTime currentTime = ZonedDateTime.now(limaZoneId).toLocalDateTime();
         Duration duration = Duration.between(createdTime, currentTime);
+
         return duration.toMinutes() >= 60;
     }
+
 
 }
