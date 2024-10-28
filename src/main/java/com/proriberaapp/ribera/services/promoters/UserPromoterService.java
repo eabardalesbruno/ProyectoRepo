@@ -8,5 +8,5 @@ import reactor.core.publisher.Mono;
 
 public interface UserPromoterService {
     Mono<TokenDto> login(LoginRequest loginRequest);
-    Mono<UserResponse> register(Integer idUserPromoter, RegisterRequest registerRequest);
+    Mono<UserResponse> register(RegisterRequest registerRequest);
 }
