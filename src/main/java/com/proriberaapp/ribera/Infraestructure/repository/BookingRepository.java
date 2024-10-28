@@ -71,9 +71,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         "r.offertimeinit, r.offertimeend, us.email, bo.costfinal, " +
                         "TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, " +
                         "TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend, " +
-                        "bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription" +
-                        ",SUM(bo.numberchildren+bo.numberbabies+bo.numberadultsextra+bo.numberadults+bo.numberadultsmayor), "
-                        +
+                        "bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription," +
+                        "SUM(bo.numberchildren+bo.numberbabies+bo.numberadultsextra+bo.numberadults+bo.numberadultsmayor) as capacity, " +
                         "r.riberapoints, r.inresortpoints, r.points " +
                         "FROM booking bo " +
                         "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
@@ -87,6 +86,10 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         "AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId) " +
                         "AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR " +
                         "bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd) " +
+                        "GROUP BY us.firstname, us.lastname, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, " +
+                        "r.offertimeinit, r.offertimeend, us.email, bo.costfinal, bo.daybookinginit, bo.daybookingend, " +
+                        "bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription, " +
+                        "r.riberapoints, r.inresortpoints, r.points " +
                         "ORDER BY bo.bookingid DESC " +
                         "LIMIT :limit OFFSET :offset")
         Flux<BookingStates> findBookingsByStateIdPaginated(
