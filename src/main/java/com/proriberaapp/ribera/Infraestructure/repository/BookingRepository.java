@@ -71,8 +71,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         "r.offertimeinit, r.offertimeend, us.email, bo.costfinal, " +
                         "TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, " +
                         "TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend, " +
-                        "bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription,bo.numberadults" +
-                        ",bo.numberchildren,bo.numberbabies,bo.numberadultsextra,bo.numberadultsmayor, "
+                        "bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription" +
+                        ",SUM(bo.numberchildren+bo.numberbabies+bo.numberadultsextra+bo.numberadults+bo.numberadultsmayor), "
                         +
                         "r.riberapoints, r.inresortpoints, r.points " +
                         "FROM booking bo " +

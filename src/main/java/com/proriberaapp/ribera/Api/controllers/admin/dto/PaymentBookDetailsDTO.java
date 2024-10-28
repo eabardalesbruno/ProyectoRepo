@@ -34,6 +34,10 @@ public class PaymentBookDetailsDTO {
 
     private String userClientName;
     private String userClientLastName;
+    private String userClientEmail;
+    private String userDocumentNumber;
+    private Integer userDocumentType;
+    private String userCellphoneNumber;
     private String bookingName;
     private String paymentMethod;
     private String paymentState;
