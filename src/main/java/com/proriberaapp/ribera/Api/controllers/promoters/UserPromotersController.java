@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("${url.promoter}")
+@RequestMapping("/api/v1/promoter")
 @RequiredArgsConstructor
 public class UserPromotersController {
 
@@ -20,10 +20,9 @@ public class UserPromotersController {
 
     @PostMapping("/register")
     public Mono<UserResponse> register(
-            @RequestBody RegisterRequest registerRequest,
-            @RequestHeader("Authorization") String token) {
-        Integer idUser = jwtProvider.getIdFromToken(token.substring(7));
-        return userPromoterService.register(idUser, registerRequest);
+            @RequestBody RegisterRequest registerRequest) {
+        //Integer idUser = jwtProvider.getIdFromToken(token.substring(7));
+        return userPromoterService.register(registerRequest);
     }
 
 

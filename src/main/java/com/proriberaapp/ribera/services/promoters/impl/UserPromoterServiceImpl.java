@@ -39,12 +39,11 @@ public class UserPromoterServiceImpl implements UserPromoterService {
     }
 
     @Override
-    public Mono<UserResponse> register(Integer idUserPromoter, RegisterRequest registerRequest) {
-
+    public Mono<UserResponse> register(RegisterRequest registerRequest) {
         String password = passwordEncoder.encode(registerRequest.password());
         UserPromoterEntity userCreate = RegisterRequest.fromPromoter(registerRequest, password);
         userCreate.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-        userCreate.setCreatedId(idUserPromoter);
+        //userCreate.setCreatedId(idUserPromoter);
 
         String username = registerRequest.firstName().toUpperCase() + " " + registerRequest.lastName().toUpperCase();
         return userPromoterRepository.findByUsernameOrEmailOrDocumentNumber(username , registerRequest.email(), registerRequest.document()).hasElement()

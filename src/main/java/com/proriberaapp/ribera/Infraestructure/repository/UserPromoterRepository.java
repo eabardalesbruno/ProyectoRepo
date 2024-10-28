@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 public interface UserPromoterRepository extends R2dbcRepository<UserPromoterEntity, Integer> {
     Mono<UserPromoterEntity> findByUsernameOrEmail(String username, String email);
 
-    Mono<UserAdminEntity> findByUsernameOrEmailOrDocumentNumber(String username, String email, String document);
+    Mono<UserPromoterEntity> findByUsernameOrEmailOrDocumentNumber(String username, String email, String document);
 
 }
 

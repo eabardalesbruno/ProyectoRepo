@@ -55,6 +55,12 @@ public class UserPromoterEntity implements UserDetails {
     @Column("updatedid")
     private Integer updatedId;
 
+    @Column("googleauth")
+    private String googleAuth;
+    @Column("googleid")
+    private String googleId;
+    @Column("googleemail")
+    private String googleEmail;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
