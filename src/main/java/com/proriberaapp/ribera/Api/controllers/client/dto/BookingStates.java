@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 public class BookingStates {
     private String firstname;
     private String lastname;
+    private String documenttypeid;
+    private String documentnumber;
+    private String cellnumber;
     private Integer bookingid;
     private Integer roomtypeid;
     private String roomtypename;

@@ -67,7 +67,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         @Param("numberBabies") Integer numberBabies, @Param("userClientId") Integer userClientId,
                         @Param("bookingStateId") Integer bookingStateId);
 
-        @Query("SELECT us.firstname, us.lastname, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, " +
+        @Query("SELECT us.firstname, us.lastname,us.documenttypeid,us.documentnumber,us.cellnumber, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, " +
                         "r.offertimeinit, r.offertimeend, us.email, bo.costfinal, " +
                         "TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, " +
                         "TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend, " +
@@ -89,7 +89,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         "GROUP BY us.firstname, us.lastname, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, " +
                         "r.offertimeinit, r.offertimeend, us.email, bo.costfinal, bo.daybookinginit, bo.daybookingend, " +
                         "bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription, " +
-                        "r.riberapoints, r.inresortpoints, r.points " +
+                        "r.riberapoints, r.inresortpoints, r.points,us.documenttypeid,us.documentNumber,us.cellnumber " +
                         "ORDER BY bo.bookingid DESC " +
                         "LIMIT :limit OFFSET :offset")
         Flux<BookingStates> findBookingsByStateIdPaginated(
