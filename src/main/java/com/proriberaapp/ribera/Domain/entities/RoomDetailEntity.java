@@ -24,6 +24,8 @@ public class RoomDetailEntity {
     private Boolean oceanViewBalcony;
     @Column("balconyoverlookingpool")
     private Boolean balconyOverlookingPool;
+    @Column("poolview")
+    private Boolean poolView;
 
     public static RoomDetailEntity from(RoomDetailEntity roomDetailEntity) {
         return RoomDetailEntity.builder()
@@ -34,6 +36,7 @@ public class RoomDetailEntity {
                 .squareMeters(roomDetailEntity.getSquareMeters())
                 .oceanViewBalcony(roomDetailEntity.getOceanViewBalcony())
                 .balconyOverlookingPool(roomDetailEntity.getBalconyOverlookingPool())
+                .poolView(roomDetailEntity.getPoolView())
                 .build();
     }
 }
