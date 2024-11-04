@@ -4,6 +4,8 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.LoginRequest;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RegisterRequest;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.TokenDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserResponse;
+import com.proriberaapp.ribera.Api.controllers.client.dto.PromotorDataDTO;
+import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.services.promoters.UserPromoterService;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +31,12 @@ public class UserPromotersController {
     @PostMapping("/login")
     public Mono<TokenDto> login(@RequestBody LoginRequest loginRequest) {
         return userPromoterService.login(loginRequest);
+    }
+
+    @GetMapping("/find/my-data")
+    public Mono<PromotorDataDTO> findMyData(
+            @RequestHeader("Authorization") String token) {
+        Integer idUserClient = jwtProvider.getIdFromToken(token);
+        return userPromoterService.findPromotorDTOById(idUserClient);
     }
 }

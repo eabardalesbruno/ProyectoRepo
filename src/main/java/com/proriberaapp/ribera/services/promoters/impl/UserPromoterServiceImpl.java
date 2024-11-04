@@ -4,6 +4,8 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.LoginRequest;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RegisterRequest;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.TokenDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserResponse;
+import com.proriberaapp.ribera.Api.controllers.client.dto.PromotorDataDTO;
+import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
@@ -51,5 +53,11 @@ public class UserPromoterServiceImpl implements UserPromoterService {
                         Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "username or email or document already in use"))
                         : userPromoterRepository.save(userCreate))
                 .map(UserResponse::toResponsePromoter);
+    }
+
+    @Override
+    public Mono<PromotorDataDTO> findPromotorDTOById(Integer id) {
+        return userPromoterRepository.findById(id)
+                .flatMap(promotor -> new PromotorDataDTO().convertTo(promotor));
     }
 }
