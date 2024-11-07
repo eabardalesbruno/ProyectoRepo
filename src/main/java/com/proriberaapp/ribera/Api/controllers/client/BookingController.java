@@ -130,14 +130,24 @@ public class BookingController {
     public Mono<BookingEntity> saveBooking(
             @RequestBody BookingSaveRequest bookingSaveRequest,
             @RequestHeader("Authorization") String token) {
+
         return Mono.fromCallable(() -> {
                     Integer userClientId = jtp.getIdFromToken(token);
+                    String document = jtp.getDocumentFromToken(token);
+                    Boolean isPromoter = (document != null && !document.isEmpty());
+
                     log.info("userClientId: {}", userClientId);
                     log.info("bookingSaveRequest: {}", bookingSaveRequest);
-                    return userClientId;
+
+                    return new Object[]{userClientId, isPromoter};
                 })
-                .flatMap(userClientId -> bookingService.save(userClientId, bookingSaveRequest));
+                .flatMap(userInfo -> {
+                    Integer userClientId = (Integer) userInfo[0];
+                    Boolean isPromoter = (Boolean) userInfo[1];
+                    return bookingService.save(userClientId, bookingSaveRequest, isPromoter);
+                });
     }
+
 
     @PostMapping("/saveyes")
     public Mono<BookingEntity> saveBooking(@RequestBody BookingSaveRequest bookingSaveRequest) {
@@ -147,7 +157,7 @@ public class BookingController {
                     log.info("bookingSaveRequest: {}", bookingSaveRequest);
                     return roomOfferId;
                 })
-                .flatMap(userClientId -> bookingService.save(0, bookingSaveRequest));
+                .flatMap(userClientId -> bookingService.save(0, bookingSaveRequest, false));
     }
 
     @GetMapping("/{bookingId}/costfinal")
