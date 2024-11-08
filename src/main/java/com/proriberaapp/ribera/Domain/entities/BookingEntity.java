@@ -72,7 +72,7 @@ public class BookingEntity {
         return BookingEntity.builder()
                 .roomOfferId(bookingSaveRequest.getRoomOfferId())
                 .bookingStateId(3)
-                .userClientId(isPromotor ? null : userClientId)
+                .userClientId(isPromotor ? bookingSaveRequest.getUserClientId() : userClientId)
                 .userPromotorId(isPromotor ? userClientId : null)
                 .numberAdults(bookingSaveRequest.getNumberAdult())
                 .numberChildren(bookingSaveRequest.getNumberChild())

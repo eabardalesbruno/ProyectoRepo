@@ -18,6 +18,9 @@ public class BookingSaveRequest {
     private Integer roomOfferId;
 
     @Nullable
+    private Integer userClientId;
+
+    @Nullable
     private Integer numberAdult;
     @Nullable
     private Integer numberChild;
