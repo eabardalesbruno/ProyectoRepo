@@ -29,6 +29,8 @@ public class BookingEntity {
     private Integer bookingStateId;
     @Column("userclientid")
     private Integer userClientId;
+    @Column("userpromotorid")
+    private Integer userPromotorId;
     @Column("costfinal")
     private BigDecimal costFinal;
     private String detail;
@@ -65,12 +67,13 @@ public class BookingEntity {
     @Column("createdat")
     private Timestamp createdAt;
 
-    public static BookingEntity createBookingEntity(Integer userClientId, BookingSaveRequest bookingSaveRequest, Integer numberOfDays) {
+    public static BookingEntity createBookingEntity(Integer userClientId, BookingSaveRequest bookingSaveRequest, Integer numberOfDays, Boolean isPromotor) {
         ZoneId limaZoneId = ZoneId.of("America/Lima");
         return BookingEntity.builder()
                 .roomOfferId(bookingSaveRequest.getRoomOfferId())
                 .bookingStateId(3)
-                .userClientId(userClientId)
+                .userClientId(isPromotor ? bookingSaveRequest.getUserClientId() : userClientId)
+                .userPromotorId(isPromotor ? userClientId : null)
                 .numberAdults(bookingSaveRequest.getNumberAdult())
                 .numberChildren(bookingSaveRequest.getNumberChild())
                 .numberBabies(bookingSaveRequest.getNumberBaby())
