@@ -22,6 +22,8 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Flux<ViewBookingReturn> findAllByUserClientIdAndBookingStateIdIn(Integer userClientId, Integer stateId);
 
+    Flux<ViewBookingReturn> findAllByUserPromoterIdAndBookingStateIdIn(Integer userClientId, Integer stateId);
+
     Flux<ViewBookingReturn> findAllByUserClientIdAndBookingIn(Integer userClientId);
 
     Flux<ViewBookingReturn> findAllView();

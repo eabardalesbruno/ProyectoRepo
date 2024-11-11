@@ -33,6 +33,10 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
         Flux<ViewBookingReturn> findAllViewBookingReturnByUserClientIdAndBookingStateId(
                         @Param("userClientId") Integer userClientId, @Param("bookingStateId") Integer bookingStateId);
 
+        @Query("SELECT * FROM ViewBookingReturn WHERE userPromoterId = :userPromoterId AND bookingStateId = :bookingStateId")
+        Flux<ViewBookingReturn> findAllViewBookingReturnByUsePromoterIdAndBookingStateId(
+                @Param("userPromoterId") Integer userPromoterId, @Param("bookingStateId") Integer bookingStateId);
+
         @Query("SELECT * FROM ViewBookingReturn WHERE userClientId = :userClientId")
         Flux<ViewBookingReturn> findAllViewBookingReturnByUserClientId(@Param("userClientId") Integer userClientId);
 

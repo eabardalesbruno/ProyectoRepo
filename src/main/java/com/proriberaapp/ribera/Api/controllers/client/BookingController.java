@@ -37,6 +37,13 @@ public class BookingController {
         Integer userClientId = jtp.getIdFromToken(token);
         return bookingService.findAllByUserClientIdAndBookingStateIdIn(userClientId, stateId);
     }
+    @GetMapping("/find/all/state/by-promoter")
+    public Flux<ViewBookingReturn> findAllByStateBookingsByPromoter(
+            @RequestParam("stateId") Integer stateId,
+            @RequestHeader("Authorization") String token) {
+        Integer userPromoterId = jtp.getIdFromToken(token);
+        return bookingService.findAllByUserClientIdAndBookingStateIdIn(userPromoterId, stateId);
+    }
 
     @GetMapping("/find/all/roomType")
     public Flux<ViewBookingReturn> findAllByRoomTypeIdAndUserClientIdAndBookingStateId(
