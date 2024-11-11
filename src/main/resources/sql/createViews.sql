@@ -355,6 +355,7 @@ SELECT
     b.numberAdultsExtra as numberadultsextra,
     r.image AS image,
     b.userclientid,
+    b.usepromotorid,
     bs.bookingstatename AS state,
     r.roomname as title,
     rt.roomtypedescription AS description,
