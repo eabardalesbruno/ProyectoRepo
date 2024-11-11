@@ -42,7 +42,7 @@ public class BookingController {
             @RequestParam("stateId") Integer stateId,
             @RequestHeader("Authorization") String token) {
         Integer userPromoterId = jtp.getIdFromToken(token);
-        return bookingService.findAllByUserClientIdAndBookingStateIdIn(userPromoterId, stateId);
+        return bookingService.findAllByUserPromoterIdAndBookingStateIdIn(userPromoterId, stateId);
     }
 
     @GetMapping("/find/all/roomType")
