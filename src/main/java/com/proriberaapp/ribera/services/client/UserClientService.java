@@ -24,6 +24,7 @@ public interface UserClientService {
     Mono<UserDataDTO> findUserDTOById(Integer id);
     Mono<Void> deleteById(Integer id);
     boolean existsByEmail(String email);
+    Flux<UserClientEntity> findByUserPromotorId(Integer id);
 
     Mono<UserClientEntity> updatePassword(UserClientEntity user, String newPassword);
 
