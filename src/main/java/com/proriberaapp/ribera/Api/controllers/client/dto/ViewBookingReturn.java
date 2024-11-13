@@ -47,6 +47,10 @@ public class ViewBookingReturn {
     Integer pointsInResort;
     @Column("pointsribera")
     Integer pointsRibera;
+    @Column("userclientid")
+    Integer userClientId;
+    @Column("userpromotorId")
+    Integer userPromotorId;
 
     @Getter
     @Setter
