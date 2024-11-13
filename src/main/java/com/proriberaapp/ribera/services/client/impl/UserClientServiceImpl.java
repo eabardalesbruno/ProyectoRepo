@@ -323,6 +323,11 @@ public class UserClientServiceImpl implements UserClientService {
     }
 
     @Override
+    public Flux<UserClientEntity> findByUserPromotorId(Integer userPromotorId) {
+        return userClientRepository.findByUserPromotorId(userPromotorId);
+    }
+
+    @Override
     public Mono<Void> deleteById(Integer id) {
         return userClientRepository.deleteById(id);
     }

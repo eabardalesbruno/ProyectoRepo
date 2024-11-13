@@ -20,4 +20,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
     @Query("SELECT * FROM userclient WHERE email = :email OR googleid = :googleId OR googleemail = :googleEmail")
     Mono<UserClientEntity> findByEmailOrGoogleIdOrGoogleEmail(String email, String googleId, String googleEmail);
 
+    @Query("SELECT * FROM userclient uc WHERE uc.userclientid IN (SELECT b.userclientid FROM booking b WHERE b.userpromotorid = :userpromotorid)")
+    Flux<UserClientEntity> findByUserPromotorId(Integer userpromotorid);
+
 }

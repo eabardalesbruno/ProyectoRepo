@@ -275,6 +275,11 @@ public class UserController {
         return userClientService.findUserDTOById(idUserClient);
     }
 
+    @GetMapping("/promotor/{userPromotorId}")
+    public Flux<UserClientEntity> getUsersByPromotorId(@PathVariable Integer userPromotorId) {
+        return userClientService.findByUserPromotorId(userPromotorId);
+    }
+
     @PostMapping("/contact-info")
     public Mono<ResponseEntity<Void>> sendContactInfo(@RequestBody ContactInfo contactInfo) {
         return userClientService.sendContactInfo(contactInfo)

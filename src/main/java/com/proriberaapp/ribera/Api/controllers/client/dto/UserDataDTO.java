@@ -17,7 +17,6 @@ public class UserDataDTO {
     private Timestamp birthDate;
     private String firstName;
     private String lastName;
-
     private Integer countryId;
 
     public Mono<UserDataDTO> convertTo(UserClientEntity user) {
