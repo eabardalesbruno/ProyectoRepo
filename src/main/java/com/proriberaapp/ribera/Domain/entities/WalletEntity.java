@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Domain.entities;
 
 import lombok.Builder;
+import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -23,12 +24,17 @@ public class WalletEntity {
     @Column("userpromoterid")
     private Integer userPromoterId;
 
+    @Column("cardnumber")
+    private Long cardNumber;
 
     @Column("balance")
     private Double balance;
 
     @Column("currencytypeid")
     private Integer currencyTypeId;
+
+    @Column("avalible")
+    private boolean avalible;
 
 
 

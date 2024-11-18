@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.services.client.UserApiClient;
 import com.proriberaapp.ribera.services.client.UserClientService;
 import com.proriberaapp.ribera.services.client.UserRegistrationService;
+import com.proriberaapp.ribera.services.client.impl.WalletServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,8 @@ public class UserController {
     @Autowired
     private UserApiClient userApiClient;
     private final UserRegistrationService userRegistrationService;
+    @Autowired
+    private WalletServiceImpl walletServiceImpl;
 
     @Autowired
     public UserController(UserRegistrationService userRegistrationService) {
@@ -187,13 +190,19 @@ public class UserController {
 
                     return userClientService.registerUser(user, finalPassword)
                             .flatMap(savedUser -> {
-                                if ("1".equals(request.googleAuth()) && (request.password() == null || request.password().isEmpty())) {
-                                    return userClientService.loginWithGoogle(request.email())
-                                            .map(token -> new ResponseEntity<>(new LoginResponse(token, ""), HttpStatus.OK));
-                                } else {
-                                    return userClientService.login(request.email(), finalPassword)
-                                            .map(token -> new ResponseEntity<>(new LoginResponse(token, savedUser.getUserClientId().toString()), HttpStatus.OK));
-                                }
+                                // Creamos la wallet con el número de tarjeta único
+                                return walletServiceImpl.createWalletUsuario(savedUser.getUserClientId(), 1)
+                                        .flatMap(wallet -> {
+                                            // Asociamos la wallet al usuario registrado
+                                            savedUser.setWalletId(wallet.getWalletId());
+                                            if ("1".equals(request.googleAuth()) && (request.password() == null || request.password().isEmpty())) {
+                                                return userClientService.loginWithGoogle(request.email())
+                                                        .map(token -> new ResponseEntity<>(new LoginResponse(token, ""), HttpStatus.OK));
+                                            } else {
+                                                return userClientService.login(request.email(), finalPassword)
+                                                        .map(token -> new ResponseEntity<>(new LoginResponse(token, savedUser.getUserClientId().toString()), HttpStatus.OK));
+                                            }
+                                        });
                             });
                 }))
                 .onErrorResume(e -> Mono.just(new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST)));

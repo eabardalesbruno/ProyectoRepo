@@ -1,9 +1,8 @@
 package com.proriberaapp.ribera.Domain.entities;
 
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -18,5 +17,7 @@ public class TransactionCategoryEntity {
     private Integer transactionCategoryId;
     @Column("transactioncategoryname")
     private String transactionCategoryName;
+    @Column("transactioncategorydescription")
+    private String transactionCategoryDescription;
 
 }

@@ -64,6 +64,9 @@ public class UserClientEntity implements UserDetails {
     private String googleEmail;
     private String username;
 
+    @Column("walletid")
+    private Integer walletId;
+
     private StatesUser status;
     private Timestamp createdat;
     @Override
