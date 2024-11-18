@@ -20,20 +20,18 @@ public class WalletTransactionEntity {
     @Id
     @Column("wallettransactionid")
     private Integer walletTransactionId;
-
     @Column("walletid")
     private Integer walletId;
 
     @Column("currencytypeid")
     private Integer currencyTypeId;
-
+/*
     @Column("typewallettransactionid")
     private Integer typeWalletTransactionId;
+ */
 
-    /*
     @Column("transactioncategoryid")
     private Integer transactionCategoryId;
-     */
 
     @Column("inicialdate")
     private Timestamp inicialDate;
@@ -46,22 +44,5 @@ public class WalletTransactionEntity {
 
     @Column("description")
     private String description;
-
-
-    //
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

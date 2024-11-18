@@ -20,4 +20,13 @@ public class TransactionCategoryEntity {
     @Column("transactioncategorydescription")
     private String transactionCategoryDescription;
 
+
+
+
+
+
+
+
+
+
 }
