@@ -12,7 +12,7 @@ public interface WalletService {
   Mono<WalletEntity> createWalletUsuario(Integer userId, Integer currencyId);
   Mono<WalletEntity> createWalletPromoter(Integer promoterId, Integer currencyId);
 
-  Mono<WalletTransactionEntity> makeTransfer (Integer walletIdOrigin, Integer walletIdDestiny, Double amount);
+  Mono<WalletTransactionEntity> makeTransfer (Integer walletIdOrigin, Integer walletIdDestiny ,String emailDestiny, String nameDestiny, Double amount);
   Mono<WalletTransactionEntity> makeWithdrawal(Integer walletId, Integer transactioncatid, Double amount);
   Mono<WalletTransactionEntity> makeDeposit(Integer walletId, Integer transactioncatid, Double amount);
   Mono<WalletTransactionEntity> makePayment(Integer walletId, Integer transactioncatid, Double amount);

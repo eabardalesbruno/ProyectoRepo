@@ -3,10 +3,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.WalletEntity;
 import com.proriberaapp.ribera.Domain.entities.WalletTransactionEntity;
-import com.proriberaapp.ribera.Infraestructure.repository.TransactionCategoryRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.TypeWalletTransactionRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.WalletRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.WalletTransactionRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.WalletService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +20,7 @@ public class WalletServiceImpl implements WalletService {
     private final WalletTransactionRepository walletTransactionRepository;
     private final TypeWalletTransactionRepository typeWalletTransactionRepository;
     private final TransactionCategoryRepository transactionCategoryRepository;
+    private final UserClientRepository userClientRepository;
 
     @Override
     public Mono<Integer> generateUniqueAccountNumber(Integer userId) {
@@ -60,29 +58,65 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public Mono<WalletTransactionEntity> makeTransfer(Integer walletIdOrigin, Integer walletIdDestiny, Double amount) {
+    public Mono<WalletTransactionEntity> makeTransfer(Integer walletIdOrigin, Integer walletIdDestiny ,String emailDestiny, String nameDestiny, Double amount) {
+        // Buscar la wallet de origen
         return walletRepository.findById(walletIdOrigin)
-                .flatMap(walletEntity -> {
-                    if (walletEntity.getBalance() >= amount) {
-                        return walletRepository.findById(walletIdDestiny)
-                                .flatMap(walletEntityDestiny -> {
-                                    walletEntity.setBalance(walletEntity.getBalance() - amount);
-                                    walletEntityDestiny.setBalance(walletEntityDestiny.getBalance() + amount);
-                                    return walletRepository.save(walletEntity)
-                                            .then(walletRepository.save(walletEntityDestiny))
-                                            .map(walletEntity1 -> WalletTransactionEntity.builder()
-                                                    .walletId(walletIdOrigin)
-                                                    .currencyTypeId(walletEntity.getCurrencyTypeId())
-                                                    .transactionCategoryId(1)
-                                                    .amount(amount)
-                                                    .description("Transferencia a " + walletEntityDestiny.getCardNumber())
-                                                    .build());
-                                });
+                .flatMap(walletEntityOrigin -> {
+                    //Verificacion si el saldo es suficiente
+                    if (walletEntityOrigin.getBalance() >= amount) {
+                        Mono<WalletEntity> walletEntityDestinyMono;
+
+                        // Se busca el destino por id de la wallet
+                        if (walletIdDestiny != null) {
+                            walletEntityDestinyMono = walletRepository.findById(walletIdDestiny);
+                        } else if (emailDestiny != null && !emailDestiny.isEmpty()) {
+                            // Busqueda por email del usuario destino
+                            walletEntityDestinyMono = userClientRepository.findByEmail(emailDestiny)
+                                    .flatMap(userDestiny -> {
+                                        if (userDestiny.getWalletId() != null) {
+                                            return walletRepository.findById(userDestiny.getWalletId());
+                                        } else {
+                                            return Mono.error(new Exception("El usuario no tiene una wallet asociada."));
+                                        }
+                                    });
+                        } else if (nameDestiny != null && !nameDestiny.isEmpty()) {
+                            // Si no se buca ni por los dos metodos entonces realiza un busqueda por nombre de usuario destino
+                            walletEntityDestinyMono = userClientRepository.findByName(nameDestiny)
+                                    .flatMap(userDestiny -> {
+                                        if (userDestiny.getWalletId() != null) {
+                                            return walletRepository.findById(userDestiny.getWalletId());
+                                        } else {
+                                            return Mono.error(new Exception("El usuario no tiene una wallet asociada."));
+                                        }
+                                    });
+                        } else {
+                            return Mono.error(new Exception("Debe proporcionar el ID de la wallet, correo electrónico o nombre para la wallet de destino."));
+                        }
+
+                        // Realizar la transferencia
+                        return walletEntityDestinyMono.flatMap(walletEntityDestiny -> {
+                            walletEntityOrigin.setBalance(walletEntityOrigin.getBalance() - amount);
+                            walletEntityDestiny.setBalance(walletEntityDestiny.getBalance() + amount);
+
+                            // Guarda los cambios en las wallets
+                            return walletRepository.save(walletEntityOrigin)
+                                    .then(walletRepository.save(walletEntityDestiny))
+                                    .map(walletEntity -> WalletTransactionEntity.builder()
+                                            .walletId(walletIdOrigin)
+                                            .currencyTypeId(walletEntityOrigin.getCurrencyTypeId())
+                                            .transactionCategoryId(1)  // Asegúrate de que el ID de la categoría de transacción sea correcto
+                                            .amount(amount)
+                                            .description("Transferencia a " + walletEntityDestiny.getCardNumber())
+                                            .build());
+                        });
                     } else {
                         return Mono.error(new Exception("Saldo insuficiente"));
                     }
                 });
     }
+
+
+
 
     @Override
     public Mono<WalletTransactionEntity> makeWithdrawal(Integer walletId, Integer transactioncatid, Double amount) {

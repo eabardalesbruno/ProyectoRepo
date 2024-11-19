@@ -33,8 +33,8 @@ public class WalletController {
 */
 
     @PostMapping("/transfer")
-    public Mono<ResponseEntity<WalletTransactionEntity>> transfer(@RequestParam Integer walletIdOrigin, @RequestParam Integer walletIdDestiny, @RequestParam Double amount) {
-        return walletService.makeTransfer(walletIdOrigin, walletIdDestiny, amount)
+    public Mono<ResponseEntity<WalletTransactionEntity>> transfer(@RequestParam Integer walletIdOrigin, @RequestParam Integer walletIdDestiny, @RequestParam String emailDestiny, @RequestParam String nameDestiny, @RequestParam Double amount) {
+        return walletService.makeTransfer(walletIdOrigin, walletIdDestiny, emailDestiny, nameDestiny, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
 
