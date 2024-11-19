@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CurrencyTypeRepository extends R2dbcRepository<CurrencyTypeEntity, Integer> {
-    Mono<CurrencyTypeEntity> findByCode(String code);
 
     Mono<CurrencyTypeEntity> findByCurrencyTypeName(String currencyTypeName);
 }
