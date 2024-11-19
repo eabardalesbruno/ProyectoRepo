@@ -4,6 +4,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
@@ -38,6 +40,7 @@ public class InvoiceEntity {
     @Column("totaligv")
     private double totalIgv;
     @Column("createdAt")
+    @CreatedDate
     private Date createdAt;
     @Column("idstatus")
     private int idStatus;
@@ -57,7 +60,8 @@ public class InvoiceEntity {
     /* private InvoiceStatusEntity status; */
     @Column("idPaymentBook")
     private int idPaymentBook;
-
+    @MappedCollection(idColumn = "idinvoice")
+    @Transient
     private List<InvoiceItemEntity> items;
 
     InvoiceEntity(
