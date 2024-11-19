@@ -1,8 +1,5 @@
 package com.proriberaapp.ribera;
 
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.relational.core.sql.In;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.proriberaapp.ribera.Domain.entities.CurrencyTypeEntity;
@@ -26,7 +22,6 @@ import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
 import com.proriberaapp.ribera.Infraestructure.repository.CurrencyTypeRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.Invoice.CompanyRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceItemRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceStateRepository;
@@ -53,6 +48,7 @@ public class InvoiceTests {
         @Autowired
         private InvoiceItemRepository invoiceItemRepository;
 
+        @Test
         void verifiedInvoiceTypeFacture() {
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "12345678912", "Av. Los Pinos",
                                 "123456789",
