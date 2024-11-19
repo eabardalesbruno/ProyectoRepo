@@ -111,10 +111,24 @@ public class InvoiceTests {
                                 "");
                 List<InvoiceItemDomain> items = List.of();
 
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 1, InvoiceCurrency.USD, items);
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 11, InvoiceCurrency.USD, items);
                 Mono<InvoiceDomain> invoiceMono = Mono
                                 .just(invoice);
-                StepVerifier.create(invoiceMono).expectNextMatches(invoiceM -> invoiceM.getSerie().equals("B002"))
+                StepVerifier.create(invoiceMono).expectNextMatches(invoiceM -> invoiceM.getSerie().equals("B012"))
+                                .verifyComplete();
+        }
+
+        @Test
+        void verfiedCorrelativeLessThan10Boleta() {
+                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
+                                "123456789",
+                                "");
+                List<InvoiceItemDomain> items = List.of();
+
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 8, InvoiceCurrency.USD, items);
+                Mono<InvoiceDomain> invoiceMono = Mono
+                                .just(invoice);
+                StepVerifier.create(invoiceMono).expectNextMatches(invoiceM -> invoiceM.getSerie().equals("B009"))
                                 .verifyComplete();
         }
 
@@ -318,7 +332,7 @@ public class InvoiceTests {
                 invoiceDomain.setKeySupplier("wdwdwd");
                 invoiceDomain.setSupplierNote("No se acepto tu factura");
                 invoiceDomain.setStatus(InvoiceStatus.REJECTED);
-                invoiceDomain.setId(UUID.fromString("ebea227f-1dae-45ea-905f-075deb1bc112"));
+                invoiceDomain.setId(UUID.fromString("decf1542-2c33-4a43-aaa2-af0ae1f203fd"));
                 List<InvoiceItemEntity> items = invoiceDomain.getItems()
                                 .stream()
                                 .map(item -> item.toEntity(invoiceDomain.getId()))
