@@ -164,9 +164,9 @@ public class InvoiceDomain {
     }
 
     public void calculateInvoiceSerieName() {
-        int maxDigits = 3;
+        int maxDigits = 4;
         String prefix = InvoiceSerie.getInvoiceSerieByName(this.getType()).name();
-        String endWith = "0".repeat(maxDigits - prefix.length());
+        String endWith = "0".repeat(maxDigits - prefix.length() - String.valueOf(this.correlative).length());
         this.serie = prefix.concat(endWith).concat(String.valueOf(this.correlative));
     }
 
