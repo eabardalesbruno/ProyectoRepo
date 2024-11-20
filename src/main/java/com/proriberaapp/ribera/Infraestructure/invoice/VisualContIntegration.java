@@ -92,27 +92,28 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
         invoiceMap.put("entidad_email", invoice.getClient().getEmail());
         invoiceMap.put("moneda", invoice.getCurrency().getDecimalPlaces());
         invoiceMap.put("number", String.valueOf(invoice.getCorrelative()));
-        invoiceMap.put("codigo_unico", invoice.getId().toString());
-        invoiceMap.put("descuento_global", "");
-        invoiceMap.put("total_descuento", "");
-        invoiceMap.put("total_anticipo", "");
-        invoiceMap.put("total_anticipo", "");
-        invoiceMap.put("total_exportacion", "");
-        invoiceMap.put("total_gravada", "");
-        invoiceMap.put("total_inafecta", "");
-        invoiceMap.put("total_exonerada", "");
-        invoiceMap.put("total_igv", invoice.getTotalIgv());
-        invoiceMap.put("total_isc", "");
+        invoiceMap.put("codigo_unico", String.valueOf(invoice.getCorrelative()).concat("-").concat(
+                invoice.getClient().getIdentifier()));
+        invoiceMap.put("descuento_global", 0);
+        invoiceMap.put("total_descuento", 0);
+        invoiceMap.put("total_anticipo", 0);
+        invoiceMap.put("total_anticipo", 0);
+        invoiceMap.put("total_exportacion", 0);
+        invoiceMap.put("total_gravada", invoice.getSubtotal().doubleValue());
+        invoiceMap.put("total_inafecta", 0);
+        invoiceMap.put("total_exonerada", 0);
+        invoiceMap.put("total_igv", invoice.getTotalIgv().doubleValue());
+        invoiceMap.put("total_isc", 0);
         invoiceMap.put("operacion_gratuita", "false");
-        invoiceMap.put("total_gratuita", "");
-        invoiceMap.put("total_otros_cargos", "");
+        invoiceMap.put("total_gratuita", 0);
+        invoiceMap.put("total_otros_cargos", 0);
         invoiceMap.put("total_icbper", 0);
-        invoiceMap.put("total", invoice.getTotalPayment());
-        invoiceMap.put("total_percepcion", "");
+        invoiceMap.put("total", invoice.getTotalPayment().doubleValue());
+        invoiceMap.put("total_percepcion", 0);
         invoiceMap.put("percepcion_tipo", "0");
-        invoiceMap.put("total_incluido_percepcion", "");
-        invoiceMap.put("total_percepcion", "");
-        invoiceMap.put("percepcion_base_imponible", "");
+        invoiceMap.put("total_incluido_percepcion", 0);
+        invoiceMap.put("total_percepcion", 0);
+        invoiceMap.put("percepcion_base_imponible", 0);
         invoiceMap.put("observaciones", "");
         invoiceMap.put("documento_que_se_modifica_tipo", "");
         invoiceMap.put("documento_que_se_modifica_serie", "");
@@ -134,8 +135,8 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
 
         for (int index = 0; index < invoice.getItems().size(); index++) {
             JSONObject itemJson = new JSONObject();
-            itemJson.put("item", index + 1);
             InvoiceItemDomain item = invoice.getItems().get(index);
+            itemJson.put("item", index + 1);
             itemJson.put("unit_code", item.getUnitOfMeasurement());
             itemJson.put("codigo_producto", item.getCodProductSunat());
             itemJson.put("unidad_de_medida", item.getUnitOfMeasurement());
@@ -146,13 +147,14 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
             itemJson.put("nombre_categoria", "");
             itemJson.put("codigo_producto_sunat", "90111800");
             itemJson.put("cantidad", item.getQuantity());
-            itemJson.put("valor_unitario", item.getPriceUnit());
-            itemJson.put("precio_unitario", item.getTotal());
-            itemJson.put("igv", item.getIgv());
+            itemJson.put("valor_unitario", item.getPriceUnit().doubleValue()); // Precio sin IGV);
+            itemJson.put("precio_unitario", item.getTotal().doubleValue());
+            itemJson.put("igv", item.getIgv().doubleValue());
             itemJson.put("tipo_de_igv", "1");
-            itemJson.put("descuento", "");
-            itemJson.put("subtotal", item.getSubtotal().subtract(item.getIgv()));
-            itemJson.put("total", item.getTotal());
+            itemJson.put("descuento", 0);
+            itemJson.put("subtotal", item.getSubtotal().doubleValue());
+            itemJson.put("total", item.getTotal().doubleValue());
+            itemJson.put("icbper", 0);
             items.put(itemJson);
         }
         invoiceMap.put("invoice_lines", items);

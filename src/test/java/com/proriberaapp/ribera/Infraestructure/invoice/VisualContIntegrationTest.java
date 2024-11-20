@@ -39,127 +39,152 @@ import reactor.test.StepVerifier;
 @SpringBootTest
 public class VisualContIntegrationTest {
 
-    @Mock
-    private WebClient webClient;
+        @Mock
+        private WebClient webClient;
 
-    @Mock
-    private WebClient.Builder webClientBuilder;
+        @Mock
+        private WebClient.Builder webClientBuilder;
 
-    @Autowired
-    private SunatInvoice sunatInvoice;
+        @Autowired
+        private SunatInvoice sunatInvoice;
 
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        when(webClientBuilder.build()).thenReturn(webClient);
-    }
+        @BeforeEach
+        public void setUp() {
+                MockitoAnnotations.openMocks(this);
+                when(webClientBuilder.build()).thenReturn(webClient);
+        }
 
-    @Test
-    public void testSendInvoice() {
-        CompanyDomain company = new CompanyDomain("ddd", "1233", "wdwd", "dwdwd", "wdwdw", "wdwdw", "wdwd");
-        InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
-                "123456789",
-                "");
-        InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, 1, InvoiceCurrency.PEN);
-        invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
-        invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
-        invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
-        Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice, company);
+        @Test
+        public void testSendInvoice() {
+                CompanyDomain company = new CompanyDomain("ddd", "1233", "wdwd", "dwdwd", "wdwdw", "wdwdw", "wdwd");
+                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
+                                "123456789",
+                                "");
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, 1, InvoiceCurrency.PEN);
+                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
+                invoice.calculatedTotals();
+                Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice, company);
 
-        StepVerifier.create(response)
-                .expectNextMatches(invoiceResponse -> !invoiceResponse.getKey().isEmpty())
-                .verifyComplete();
-    }
+                StepVerifier.create(response)
+                                .expectNextMatches(invoiceResponse -> {
+                                        System.out.println(invoiceResponse);
+                                        return !invoiceResponse.getKey().isEmpty();
+                                })
+                                .verifyComplete();
+        }
 
-    @Test
-    public void testFormatJsonFacture() {
-        InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "12345678912", "Av. Los Pinos",
-                "123456789",
-                "");
-        InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 0, InvoiceCurrency.PEN);
-        invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
-        invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
-        invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
-        JSONObject json = sunatInvoice.formatJson(invoice);
-        StepVerifier.create(Mono.just(json))
-                .expectNextMatches(jsonObject -> {
-                    try {
-                        return jsonObject.getString("type").equals("send_electronic_invoice")
-                                && jsonObject.getJSONObject("invoice").getString("tipo").equals("1")
-                                && jsonObject.getJSONObject("invoice").getString("serie").equals("F001")
-                                && jsonObject.getJSONObject("invoice").getString("entidad_tipo_de_documento")
-                                        .equals("6");
-                    } catch (JSONException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                        return false;
-                    }
-                })
-                .verifyComplete();
+        @Test
+        public void testFormatJsonFacture() {
+                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "12345678912", "Av. Los Pinos",
+                                "123456789",
+                                "");
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 0, InvoiceCurrency.PEN);
+                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
+                JSONObject json = sunatInvoice.formatJson(invoice);
+                StepVerifier.create(Mono.just(json))
+                                .expectNextMatches(jsonObject -> {
+                                        try {
+                                                return jsonObject.getString("type").equals("send_electronic_invoice")
+                                                                && jsonObject.getJSONObject("invoice").getString("tipo")
+                                                                                .equals("1")
+                                                                && jsonObject.getJSONObject("invoice")
+                                                                                .getString("serie").equals("F001")
+                                                                && jsonObject.getJSONObject("invoice")
+                                                                                .getString("entidad_tipo_de_documento")
+                                                                                .equals("6");
+                                        } catch (JSONException e) {
+                                                // TODO Auto-generated catch block
+                                                e.printStackTrace();
+                                                return false;
+                                        }
+                                })
+                                .verifyComplete();
 
-        // Add assertions to verify the JSON structure
-    }
+                // Add assertions to verify the JSON structure
+        }
 
-    @Test
-    public void testFormatJsonBoleta() {
-        InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
-                "123456789",
-                "");
-        InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 0, InvoiceCurrency.PEN);
-        invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
-        invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
-        invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
-        JSONObject json = sunatInvoice.formatJson(invoice);
-        StepVerifier.create(Mono.just(json))
-                .expectNextMatches(jsonObject -> {
-                    try {
-                        return jsonObject.getString("type").equals("send_electronic_invoice")
-                                && jsonObject.getJSONObject("invoice").getString("tipo").equals("2")
-                                && jsonObject.getJSONObject("invoice").getString("serie").equals("B001")
-                                && jsonObject.getJSONObject("invoice").getString("entidad_tipo_de_documento")
-                                        .equals("1");
-                    } catch (JSONException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                        return false;
-                    }
-                })
-                .verifyComplete();
-    }
+        @Test
+        public void testFormatJsonBoleta() {
+                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
+                                "123456789",
+                                "");
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 0, InvoiceCurrency.PEN);
+                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
+                JSONObject json = sunatInvoice.formatJson(invoice);
+                StepVerifier.create(Mono.just(json))
+                                .expectNextMatches(jsonObject -> {
+                                        try {
+                                                return jsonObject.getString("type").equals("send_electronic_invoice")
+                                                                && jsonObject.getJSONObject("invoice").getString("tipo")
+                                                                                .equals("2")
+                                                                && jsonObject.getJSONObject("invoice")
+                                                                                .getString("serie").equals("B001")
+                                                                && jsonObject.getJSONObject("invoice")
+                                                                                .getString("entidad_tipo_de_documento")
+                                                                                .equals("1");
+                                        } catch (JSONException e) {
+                                                // TODO Auto-generated catch block
+                                                e.printStackTrace();
+                                                return false;
+                                        }
+                                })
+                                .verifyComplete();
+        }
 
-    @Test
-    public void testFormatBaseJson() {
-        InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
-                "123456789",
-                "");
-        InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 0, InvoiceCurrency.PEN);
-        invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
-        invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
-        invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
-        JSONObject json = sunatInvoice.formatJson(invoice);
-        StepVerifier.create(Mono.just(json))
-                .expectNextMatches(jsonObject -> {
-                    try {
-                        return jsonObject.getString("type").equals("send_electronic_invoice")
-                                && jsonObject.getJSONObject("invoice").getString("moneda").equals("1")
-                                && jsonObject.getJSONObject("invoice").getString("entidad_denominacion")
-                                        .equals("Juan Perez")
-                                && jsonObject.getJSONObject("invoice").getString("entidad_direccion")
-                                        .equals("Av. Los Pinos")
-                                && jsonObject.getJSONObject("invoice").getString("entidad_email").equals("")
-                                && jsonObject.getJSONObject("invoice").getString("entidad_codigo").equals("71837677")
-                                && jsonObject.getJSONObject("invoice").getString("entidad_numero_de_documento")
-                                        .equals("71837677")
-                                && jsonObject.getJSONObject("invoice").getJSONArray("invoice_lines").length() == 3
-                                && jsonObject.getJSONObject("invoice").getJSONArray("invoice_lines").getJSONObject(0)
-                                        .getString("descripcion").equals("aaa")
-                                && jsonObject.getJSONObject("invoice").getJSONArray("invoice_lines").getJSONObject(0)
-                                        .getString("unidad_de_medida").equals("UND");
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        return false;
-                    }
-                })
-                .verifyComplete();
-    }
+        @Test
+        public void testFormatBaseJson() {
+                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
+                                "123456789",
+                                "");
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 0, InvoiceCurrency.PEN);
+                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
+                invoice.calculatedTotals();
+                JSONObject json = sunatInvoice.formatJson(invoice);
+                StepVerifier.create(Mono.just(json))
+                                .expectNextMatches(jsonObject -> {
+                                        try {
+                                                return jsonObject.getString("type").equals("send_electronic_invoice")
+                                                                && jsonObject.getJSONObject("invoice")
+                                                                                .getString("moneda").equals("1")
+                                                                && jsonObject.getJSONObject("invoice")
+                                                                                .getString("entidad_denominacion")
+                                                                                .equals("Juan Perez")
+                                                                && jsonObject.getJSONObject("invoice")
+                                                                                .getString("entidad_direccion")
+                                                                                .equals("Av. Los Pinos")
+                                                                && jsonObject.getJSONObject("invoice")
+                                                                                .getString("entidad_email").equals("")
+                                                                && jsonObject.getJSONObject("invoice")
+                                                                                .getString("entidad_codigo")
+                                                                                .equals("71837677")
+                                                                && jsonObject.getJSONObject("invoice").getString(
+                                                                                "entidad_numero_de_documento")
+                                                                                .equals("71837677")
+                                                                && jsonObject.getJSONObject("invoice")
+                                                                                .getJSONArray("invoice_lines")
+                                                                                .length() == 3
+                                                                && jsonObject.getJSONObject("invoice")
+                                                                                .getJSONArray("invoice_lines")
+                                                                                .getJSONObject(0)
+                                                                                .getString("descripcion").equals("aaa")
+                                                                && jsonObject.getJSONObject("invoice")
+                                                                                .getJSONArray("invoice_lines")
+                                                                                .getJSONObject(0)
+                                                                                .getString("unidad_de_medida")
+                                                                                .equals("UND");
+                                        } catch (JSONException e) {
+                                                e.printStackTrace();
+                                                return false;
+                                        }
+                                })
+                                .verifyComplete();
+        }
 }
