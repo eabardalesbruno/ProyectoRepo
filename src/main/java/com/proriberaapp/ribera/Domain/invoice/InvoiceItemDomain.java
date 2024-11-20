@@ -5,6 +5,7 @@ import java.text.DateFormat;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
+import java.math.RoundingMode;
 
 import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceEntity;
 import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceItemEntity;
@@ -19,7 +20,7 @@ import lombok.Setter;
 public class InvoiceItemDomain {
     private String id;
     private String name;
-    private String code;
+    private String codProductSunat;
     private String description;
     private int quantity;
     private BigDecimal priceUnit;
@@ -35,7 +36,7 @@ public class InvoiceItemDomain {
     public InvoiceItemDomain(String name, String description, int quantity, double percentajeIgv,
             BigDecimal priceUnit) {
         this.name = name;
-        this.code = "631210";
+        this.codProductSunat = "631210";
         this.description = description;
         if (quantity <= 0) {
             throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
@@ -43,16 +44,16 @@ public class InvoiceItemDomain {
         this.quantity = quantity;
         this.priceUnit = priceUnit;
         this.percentajeIgv = percentajeIgv;
-        this.unitOfMeasurement = "UND";
-        this.subtotal = priceUnit.multiply(new BigDecimal(quantity));
-        this.igv = this.subtotal.multiply(new BigDecimal(percentajeIgv / 100));
-        this.total = this.subtotal.add(this.igv);
+        this.unitOfMeasurement = "ZZ";
+        this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
+        this.igv = this.subtotal.multiply(new BigDecimal(percentajeIgv / 100)).setScale(2, RoundingMode.HALF_UP);
+        this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
         this.createdAt = DateFormat.getDateInstance().getCalendar().getTime();
     }
 
     public InvoiceItemDomain(String name, String description, int quantity, BigDecimal priceUnit) {
         this.name = name;
-        this.code = "631210";
+        this.codProductSunat = "631210";
         this.description = description;
         if (quantity <= 0) {
             throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
@@ -66,15 +67,15 @@ public class InvoiceItemDomain {
     }
 
     public void calculatedTotals() {
-        this.subtotal = priceUnit.multiply(new BigDecimal(quantity));
-        this.igv = this.subtotal.multiply(new BigDecimal(this.percentajeIgv / 100));
-        this.total = this.subtotal.add(this.igv);
+        this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
+        this.igv = this.subtotal.multiply(new BigDecimal(this.percentajeIgv / 100)).setScale(2, RoundingMode.HALF_UP);
+        this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
     }
 
     public InvoiceItemEntity toEntity(UUID idInvoice) {
         return InvoiceItemEntity.builder()
                 .name(this.name)
-                .code(this.code)
+                .code(this.codProductSunat)
                 .description(this.description)
                 .quantity(this.quantity)
                 .priceUnit(this.priceUnit.doubleValue())

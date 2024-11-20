@@ -39,6 +39,8 @@ public class InvoiceEntity {
     private double totalPayment;
     @Column("totaligv")
     private double totalIgv;
+    @Column("subtotal")
+    private double subtotal;
     @Column("createdAt")
     @CreatedDate
     private Date createdAt;

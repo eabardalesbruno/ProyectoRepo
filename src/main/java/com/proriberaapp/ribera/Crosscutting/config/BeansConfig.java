@@ -1,5 +1,7 @@
 package com.proriberaapp.ribera.Crosscutting.config;
 
+import com.proriberaapp.ribera.Domain.invoice.SunatInvoice;
+import com.proriberaapp.ribera.Infraestructure.invoice.VisualContIntegration;
 import com.proriberaapp.ribera.services.client.S3Uploader;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.context.annotation.Bean;
@@ -27,5 +29,10 @@ public class BeansConfig {
     @Bean
     public S3Uploader s3Uploader(RestTemplate restTemplate) {
         return new S3Uploader(restTemplate);
+    }
+
+    @Bean
+    public SunatInvoice sunatInvoice() {
+        return new VisualContIntegration();
     }
 }
