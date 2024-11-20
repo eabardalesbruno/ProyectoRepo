@@ -10,7 +10,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Getter
 @Setter
 @Builder
-@Table("transactioncategory")
+@Table("transactioncategorywallet")
 public class TransactionCategoryEntity {
     @Id
     @Column("transactioncategoryid")

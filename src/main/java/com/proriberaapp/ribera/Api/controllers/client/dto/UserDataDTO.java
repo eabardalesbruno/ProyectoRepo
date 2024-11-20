@@ -18,6 +18,7 @@ public class UserDataDTO {
     private String firstName;
     private String lastName;
     private Integer countryId;
+    private Integer walletId;
 
     public Mono<UserDataDTO> convertTo(UserClientEntity user) {
          UserDataDTO userDTO = new UserDataDTO();
@@ -32,7 +33,7 @@ public class UserDataDTO {
         userDTO.setCivilStatus(user.getCivilStatus());
         userDTO.setEmail(user.getEmail());
         userDTO.setCountryId(user.getCountryId());
-
+        userDTO.setWalletId(user.getWalletId());
         return Mono.just(userDTO);
     }
 }

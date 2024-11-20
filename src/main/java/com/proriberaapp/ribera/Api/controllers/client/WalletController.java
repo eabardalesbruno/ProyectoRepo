@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequestMapping("/api/v1/wallet")
 @RequiredArgsConstructor
@@ -18,7 +20,7 @@ public class WalletController {
 
     private final WalletService walletService;
 
-/*
+
     @PostMapping("/create-wallet")
     public Mono<Integer> createWallet(Integer userId, Integer currencyId) {
         return walletService.createWalletUsuario(userId, currencyId)
@@ -30,10 +32,9 @@ public class WalletController {
         return walletService.createWalletPromoter(promoterId, currencyId)
                 .map(walletEntity -> walletEntity.getWalletId());
     }
-*/
 
     @PostMapping("/transfer")
-    public Mono<ResponseEntity<WalletTransactionEntity>> transfer(@RequestParam Integer walletIdOrigin, @RequestParam Integer walletIdDestiny, @RequestParam String emailDestiny, @RequestParam String nameDestiny, @RequestParam Double amount) {
+    public Mono<ResponseEntity<WalletTransactionEntity>> transfer(@RequestParam Integer walletIdOrigin, @RequestParam Integer walletIdDestiny, @RequestParam String emailDestiny, @RequestParam String nameDestiny, @RequestParam BigDecimal amount) {
         return walletService.makeTransfer(walletIdOrigin, walletIdDestiny, emailDestiny, nameDestiny, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
@@ -41,28 +42,28 @@ public class WalletController {
     }
 
     @PostMapping("/withdraw")
-    public Mono<ResponseEntity<WalletTransactionEntity>> withdrawal(Integer walletId, Integer transactioncatid, Double amount) {
+    public Mono<ResponseEntity<WalletTransactionEntity>> withdrawal(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
         return walletService.makeWithdrawal(walletId, transactioncatid, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }
 
     @PostMapping("/deposit")
-    public Mono<ResponseEntity<WalletTransactionEntity>> deposit(Integer walletId, Integer transactioncatid, Double amount) {
+    public Mono<ResponseEntity<WalletTransactionEntity>> deposit(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
         return walletService.makeDeposit(walletId, transactioncatid, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }
 
     @PostMapping("/payment")
-    public Mono<ResponseEntity<WalletTransactionEntity>> payment(Integer walletId, Integer transactioncatid, Double amount) {
+    public Mono<ResponseEntity<WalletTransactionEntity>> payment(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
         return walletService.makePayment(walletId, transactioncatid, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }
 
     @PostMapping("/recharge")
-    public Mono<ResponseEntity<WalletTransactionEntity>> recharge(Integer walletId, Integer transactioncatid, Double amount) {
+    public Mono<ResponseEntity<WalletTransactionEntity>> recharge(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
         return walletService.makeRecharge(walletId, transactioncatid, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));

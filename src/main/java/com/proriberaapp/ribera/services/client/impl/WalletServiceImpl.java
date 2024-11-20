@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
 import java.util.Random;
 
 
@@ -24,10 +26,10 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public Mono<Integer> generateUniqueAccountNumber(Integer userId) {
-       Long cardNumber = Long.parseLong("4" + generaRamdomDigits(15));
+       String cardNumber = "4" + generaRamdomDigits(15);
         return walletRepository.findByCardNumber(cardNumber)
                 .flatMap(walletEntity -> generateUniqueAccountNumber(userId))
-                .switchIfEmpty(Mono.just(cardNumber.intValue()));
+                .switchIfEmpty(Mono.just(Integer.valueOf(cardNumber)));
     }
 
     @Override
@@ -35,9 +37,9 @@ public class WalletServiceImpl implements WalletService {
         return  generateUniqueAccountNumber(userId)
                 .map(cardNumber -> WalletEntity.builder()
                         .userClientId(userId)
-                        .cardNumber(cardNumber.longValue())
+                        .cardNumber(cardNumber.toString())
                         .currencyTypeId(currencyId)
-                        .balance(00.00)
+                        .balance(BigDecimal.valueOf(00.00))
                         .avalible(true)
                         .build()).
                 flatMap(walletRepository::save);
@@ -49,21 +51,21 @@ public class WalletServiceImpl implements WalletService {
         return generateUniqueAccountNumber(promoterId)
                 .map(cardNumber -> WalletEntity.builder()
                         .userPromoterId(promoterId)
-                        .cardNumber(cardNumber.longValue())
+                        .cardNumber(cardNumber.toString())
                         .currencyTypeId(currencyId)
-                        .balance(00.00)
+                        .balance(BigDecimal.valueOf(00.00))
                         .avalible(true)
                         .build()).
                 flatMap(walletRepository::save);
     }
 
     @Override
-    public Mono<WalletTransactionEntity> makeTransfer(Integer walletIdOrigin, Integer walletIdDestiny ,String emailDestiny, String nameDestiny, Double amount) {
+    public Mono<WalletTransactionEntity> makeTransfer(Integer walletIdOrigin, Integer walletIdDestiny ,String emailDestiny, String nameDestiny, BigDecimal amount) {
         // Buscar la wallet de origen
         return walletRepository.findById(walletIdOrigin)
                 .flatMap(walletEntityOrigin -> {
                     //Verificacion si el saldo es suficiente
-                    if (walletEntityOrigin.getBalance() >= amount) {
+                    if (walletEntityOrigin.getBalance().compareTo(amount) >= 0) {
                         Mono<WalletEntity> walletEntityDestinyMono;
 
                         // Se busca el destino por id de la wallet
@@ -95,8 +97,9 @@ public class WalletServiceImpl implements WalletService {
 
                         // Realizar la transferencia
                         return walletEntityDestinyMono.flatMap(walletEntityDestiny -> {
-                            walletEntityOrigin.setBalance(walletEntityOrigin.getBalance() - amount);
-                            walletEntityDestiny.setBalance(walletEntityDestiny.getBalance() + amount);
+                            walletEntityOrigin.setBalance(walletEntityOrigin.getBalance().subtract(amount));
+                            walletEntityDestiny.setBalance(walletEntityDestiny.getBalance().add(amount));
+
 
                             // Guarda los cambios en las wallets
                             return walletRepository.save(walletEntityOrigin)
@@ -119,16 +122,16 @@ public class WalletServiceImpl implements WalletService {
 
 
     @Override
-    public Mono<WalletTransactionEntity> makeWithdrawal(Integer walletId, Integer transactioncatid, Double amount) {
+    public Mono<WalletTransactionEntity> makeWithdrawal(Integer walletId, Integer transactionCatId, BigDecimal amount) {
         return walletRepository.findById(walletId)
                 .flatMap(walletEntity -> {
-                    if (walletEntity.getBalance() >= amount) {
-                        walletEntity.setBalance(walletEntity.getBalance() - amount);
+                    if (walletEntity.getBalance().compareTo(amount) >= 0) {
+                        walletEntity.setBalance(walletEntity.getBalance().subtract(amount));
                         return walletRepository.save(walletEntity)
-                                .map(walletEntity1 -> WalletTransactionEntity.builder()
+                                .map(savedWallet -> WalletTransactionEntity.builder()
                                         .walletId(walletId)
                                         .currencyTypeId(walletEntity.getCurrencyTypeId())
-                                        .transactionCategoryId(transactioncatid)
+                                        .transactionCategoryId(transactionCatId)
                                         .amount(amount)
                                         .description("Retiro de efectivo")
                                         .build());
@@ -139,10 +142,10 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public Mono<WalletTransactionEntity> makeDeposit(Integer walletId, Integer transactioncatid, Double amount) {
+    public Mono<WalletTransactionEntity> makeDeposit(Integer walletId, Integer transactioncatid, BigDecimal amount) {
         return walletRepository.findById(walletId)
                 .flatMap(walletEntity -> {
-                    walletEntity.setBalance(walletEntity.getBalance() + amount);
+                    walletEntity.setBalance(walletEntity.getBalance().add(amount));
                     return walletRepository.save(walletEntity)
                             .map(walletEntity1 -> WalletTransactionEntity.builder()
                                     .walletId(walletId)
@@ -155,11 +158,11 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public Mono<WalletTransactionEntity> makePayment(Integer walletId, Integer transactioncatid, Double amount) {
+    public Mono<WalletTransactionEntity> makePayment(Integer walletId, Integer transactioncatid, BigDecimal amount) {
         return walletRepository.findById(walletId)
                 .flatMap(walletEntity -> {
-                    if (walletEntity.getBalance() >= amount) {
-                        walletEntity.setBalance(walletEntity.getBalance() - amount);
+                    if (walletEntity.getBalance().compareTo(amount) >= 0) {
+                        walletEntity.setBalance(walletEntity.getBalance().subtract(amount));
                         return walletRepository.save(walletEntity)
                                 .map(walletEntity1 -> WalletTransactionEntity.builder()
                                         .walletId(walletId)
@@ -175,10 +178,10 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public Mono<WalletTransactionEntity> makeRecharge(Integer walletId, Integer transactioncatid, Double amount) {
+    public Mono<WalletTransactionEntity> makeRecharge(Integer walletId, Integer transactioncatid, BigDecimal amount) {
         return walletRepository.findById(walletId)
                 .flatMap(walletEntity -> {
-                    walletEntity.setBalance(walletEntity.getBalance() + amount);
+                    walletEntity.setBalance(walletEntity.getBalance().add(amount));
                     return walletRepository.save(walletEntity)
                             .map(walletEntity1 -> WalletTransactionEntity.builder()
                                     .walletId(walletId)
@@ -189,6 +192,8 @@ public class WalletServiceImpl implements WalletService {
                                     .build());
                 });
     }
+
+
 
     private String generaRamdomDigits(int length) {
         Random random = new Random();

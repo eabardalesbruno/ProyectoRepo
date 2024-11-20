@@ -8,6 +8,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @Builder
@@ -25,10 +27,10 @@ public class WalletEntity {
     private Integer userPromoterId;
 
     @Column("cardnumber")
-    private Long cardNumber;
+    private String cardNumber;
 
     @Column("balance")
-    private Double balance;
+    private BigDecimal balance;
 
     @Column("currencytypeid")
     private Integer currencyTypeId;

@@ -11,6 +11,8 @@ import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
 import com.proriberaapp.ribera.Domain.enums.StatesUser;
 import com.proriberaapp.ribera.Infraestructure.repository.UserPromoterRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.WalletRepository;
+import com.proriberaapp.ribera.services.client.impl.WalletServiceImpl;
 import com.proriberaapp.ribera.services.promoters.UserPromoterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,6 +29,7 @@ public class UserPromoterServiceImpl implements UserPromoterService {
     private final UserPromoterRepository userPromoterRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final WalletServiceImpl walletService;
 
     @Override
     public Mono<TokenDto> login(LoginRequest loginRequest) {
@@ -52,6 +55,8 @@ public class UserPromoterServiceImpl implements UserPromoterService {
                 .flatMap(exists -> exists ?
                         Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "username or email or document already in use"))
                         : userPromoterRepository.save(userCreate))
+                .flatMap(savedUser -> walletService.createWalletPromoter(savedUser.getUserPromoterId(),1 )
+                        .then(Mono.just(savedUser)))
                 .map(UserResponse::toResponsePromoter);
     }
 

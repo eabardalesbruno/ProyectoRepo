@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.math.BigDecimal;
 import java.security.Timestamp;
 
 @Getter
@@ -37,7 +38,7 @@ public class WalletTransactionEntity {
     private Timestamp inicialDate;
 
     @Column("amount")
-    private Double amount;
+    private BigDecimal amount;
 
     @Column("avalibledate")
     private Timestamp avalibleDate;
