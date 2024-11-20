@@ -222,9 +222,9 @@ public class VisualContIntegrationTest {
                                 "123456789",
                                 "");
                 InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, 1, InvoiceCurrency.PEN);
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
+                invoiceDomain.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(80)));
+                invoiceDomain.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(90)));
+                invoiceDomain.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(110)));
                 invoiceDomain.calculatedTotals();
                 List<InvoiceItemEntity> items = invoiceDomain.getItems()
                                 .stream()
