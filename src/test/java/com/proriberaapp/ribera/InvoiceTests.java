@@ -184,15 +184,41 @@ public class InvoiceTests {
         }
 
         @Test
+        void verfiedWithIgvIncludedPayment() {
+                InvoiceClientDomain client = new InvoiceClientDomain(
+                                "Juan Perez",
+                                "71837677",
+                                "Av. Los Pinos 123",
+                                "123456789",
+                                "juan.perez@example.com");
+                // Crear la Factura
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, 1, InvoiceCurrency.PEN);
+                invoice.addItem(new InvoiceItemDomain("Reserva Habitación Doble", "AAA", 1, new BigDecimal("100.00")),
+                                true);
+                invoice.calculatedTotals();
+                System.out.println("SUBTOTAL" + invoice.getSubtotal().doubleValue());
+                System.out.println("IGV" + invoice.getTotalIgv().doubleValue());
+                System.out.println("TOTAL" + invoice.getTotalPayment().doubleValue());
+                StepVerifier.create(Mono.just(invoice))
+                                .expectNextMatches(
+                                                invoiceN -> {
+                                                        return invoiceN.getTotalPayment().doubleValue() == 100.0
+                                                                        && invoiceN.getSubtotal().doubleValue() == 82.0
+                                                                        && invoiceN.getTotalIgv().doubleValue() == 18.0;
+                                                })
+                                .verifyComplete();
+        }
+
+        @Test
         void verfiedSubTotalPayment() {
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
                                 "123456789",
                                 "");
-                List<InvoiceItemDomain> items = new ArrayList<>();
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18, 1, InvoiceCurrency.PEN, items);
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18, 1, InvoiceCurrency.PEN);
                 invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, 0.0, new BigDecimal(20)));
                 invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, 0.0, new BigDecimal(30)));
                 invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, 0.0, new BigDecimal(50)));
+                invoice.calculatedTotals();
                 System.out.println(invoice);
                 Mono<InvoiceDomain> invoiceMono = Mono
                                 .just(invoice);

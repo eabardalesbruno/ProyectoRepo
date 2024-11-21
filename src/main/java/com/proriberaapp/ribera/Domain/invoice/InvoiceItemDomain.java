@@ -63,13 +63,23 @@ public class InvoiceItemDomain {
         this.unitOfMeasurement = "UND";
         this.percentajeIgv = 18;
         this.createdAt = Date.from(Instant.now());
-        this.calculatedTotals();
+        this.calculatedTotals(false);
     }
 
-    public void calculatedTotals() {
-        this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
-        this.igv = this.subtotal.multiply(new BigDecimal(this.percentajeIgv / 100)).setScale(2, RoundingMode.HALF_UP);
-        this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
+    public void calculatedTotals(boolean isIgvIncluded) {
+        if (isIgvIncluded) {
+            this.igv = this.subtotal.multiply(new BigDecimal(this.percentajeIgv / 100)).setScale(2,
+                    RoundingMode.HALF_UP);
+            this.total = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
+            this.subtotal = this.total.subtract(this.igv).setScale(2, RoundingMode.HALF_UP);
+        } else {
+            this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
+            this.igv = this.subtotal.multiply(new BigDecimal(this.percentajeIgv / 100)).setScale(2,
+                    RoundingMode.HALF_UP);
+            this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
+
+        }
+
     }
 
     public InvoiceItemEntity toEntity(UUID idInvoice) {

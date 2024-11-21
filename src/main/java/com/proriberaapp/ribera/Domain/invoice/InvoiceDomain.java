@@ -133,7 +133,14 @@ public class InvoiceDomain {
 
     public void addItem(InvoiceItemDomain item) {
         item.setPercentajeIgv(this.taxPercentaje);
-        item.calculatedTotals();
+        item.calculatedTotals(false);
+        this.items.add(item);
+
+    }
+
+    public void addItem(InvoiceItemDomain item, boolean isIgvIncluded) {
+        item.setPercentajeIgv(this.taxPercentaje);
+        item.calculatedTotals(isIgvIncluded);
         this.items.add(item);
 
     }
