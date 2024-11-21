@@ -22,7 +22,6 @@ public class WalletEntity {
 
     @Column("userclientid")
     private Integer userClientId;
-
     @Column("userpromoterid")
     private Integer userPromoterId;
 

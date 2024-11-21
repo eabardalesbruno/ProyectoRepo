@@ -61,7 +61,8 @@ public class UserPromoterEntity implements UserDetails {
     private String googleId;
     @Column("googleemail")
     private String googleEmail;
-
+    @Column("walletid")
+    private Integer walletId;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority((role.name())));

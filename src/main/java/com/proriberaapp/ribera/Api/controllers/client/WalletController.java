@@ -22,20 +22,20 @@ public class WalletController {
 
 
     @PostMapping("/create-wallet")
-    public Mono<Integer> createWallet(Integer userId, Integer currencyId) {
-        return walletService.createWalletUsuario(userId, currencyId)
+    public Mono<Integer> createWallet(@RequestParam Integer userClientId, @RequestParam Integer currencyId) {
+        return walletService.createWalletUsuario(userClientId, currencyId)
                 .map(walletEntity -> walletEntity.getWalletId());
     }
 
     @PostMapping("/create-wallet-promoter")
-    public Mono<Integer> createWalletPromoter(Integer promoterId, Integer currencyId) {
-        return walletService.createWalletPromoter(promoterId, currencyId)
+    public Mono<Integer> createWalletPromoter(@RequestParam Integer userPromoterId, @RequestParam Integer currencyId) {
+        return walletService.createWalletPromoter(userPromoterId, currencyId)
                 .map(walletEntity -> walletEntity.getWalletId());
     }
 
     @PostMapping("/transfer")
-    public Mono<ResponseEntity<WalletTransactionEntity>> transfer(@RequestParam Integer walletIdOrigin, @RequestParam Integer walletIdDestiny, @RequestParam String emailDestiny, @RequestParam String nameDestiny, @RequestParam BigDecimal amount) {
-        return walletService.makeTransfer(walletIdOrigin, walletIdDestiny, emailDestiny, nameDestiny, amount)
+    public Mono<ResponseEntity<WalletTransactionEntity>> transfer(@RequestParam Integer walletIdOrigin, @RequestParam(required = false) Integer walletIdDestiny, @RequestParam(required = false) String emailDestiny, @RequestParam(required = false) String documentNumber, @RequestParam BigDecimal amount) {
+        return walletService.makeTransfer(walletIdOrigin, walletIdDestiny, emailDestiny, documentNumber, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
 
