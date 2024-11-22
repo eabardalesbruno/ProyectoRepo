@@ -1,7 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
-import com.proriberaapp.ribera.Domain.dto.PaymentBookPagedDto;
 import com.proriberaapp.ribera.Domain.dto.PaymentBookUserDTO;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import org.springframework.data.r2dbc.repository.Query;
