@@ -28,13 +28,18 @@ import com.proriberaapp.ribera.Domain.invoice.InvoiceResponseStatus;
 import org.springframework.http.MediaType;
 
 public class VisualContIntegration extends InvoiceBaseProcess implements SunatInvoice {
+    @Value("${sunat.api.url}")
     private String url;
+    @Value("${sunat.api.token}")
     private String token;
 
-    public VisualContIntegration() {
-        this.url = "https://e-vf.softwareintegrado.com/vc-cpe/api/v1";
-        this.token = "4a4ea1cca6c51af7f30b567cd7fa0bd5bc22abaea0bac119bdc4a00bc5edc6fd";
-    }
+    /* public VisualContIntegration() { */
+    /* this.url = "https://e-vf.softwareintegrado.com/vc-cpe/api/v1"; */
+    /*
+     * this.token =
+     * "4a4ea1cca6c51af7f30b567cd7fa0bd5bc22abaea0bac119bdc4a00bc5edc6fd";
+     */
+    /* } */
 
     @Override
     public Mono<InvoiceResponse> sendInvoice(InvoiceDomain invoice, CompanyDomain company) {
