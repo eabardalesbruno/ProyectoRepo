@@ -35,6 +35,8 @@ public class InvoiceEntity {
     private String serie;
     @Column("suppliernote")
     private String supplierNote;
+    @Column("linkpdf")
+    private String linkpdf;
     @Column("totalpayment")
     private double totalPayment;
     @Column("totaligv")

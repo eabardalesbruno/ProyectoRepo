@@ -56,7 +56,7 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
                     JSONObject invoiceResponse = jsonResponse.getJSONObject("invoice");
                     String key = invoiceResponse.getString("key");
                     boolean aceptada_por_sunat = invoiceResponse.getBoolean("aceptada_por_sunat");
-                    String numero = invoiceResponse.getString("numero");
+                    String numero = String.valueOf(invoiceResponse.getInt("numero"));
                     String sunat_description = invoiceResponse.getString("sunat_description");
                     String sunat_note = invoiceResponse.getString("sunat_note");
                     String sunat_responsecode = invoiceResponse.getString("sunat_responsecode");
@@ -147,8 +147,8 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
             itemJson.put("nombre_categoria", "");
             itemJson.put("codigo_producto_sunat", "90111800");
             itemJson.put("cantidad", item.getQuantity());
-            itemJson.put("valor_unitario", item.getPriceUnit().doubleValue()); // Precio sin IGV);
-            itemJson.put("precio_unitario", item.getTotal().doubleValue());
+            itemJson.put("valor_unitario", item.getValorUnitario().doubleValue()); // Precio sin IGV);
+            itemJson.put("precio_unitario", item.getPriceUnit().doubleValue());
             itemJson.put("igv", item.getIgv().doubleValue());
             itemJson.put("tipo_de_igv", "1");
             itemJson.put("descuento", 0);

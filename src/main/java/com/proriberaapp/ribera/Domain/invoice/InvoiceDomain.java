@@ -27,6 +27,7 @@ public class InvoiceDomain {
     private String type;
     private String serie;
     private String supplierNote;
+    private String linkPdf;
     private int correlative;
     private BigDecimal totalPayment;
     private List<InvoiceItemDomain> items;
@@ -138,9 +139,10 @@ public class InvoiceDomain {
 
     }
 
-    public void addItem(InvoiceItemDomain item, boolean isIgvIncluded) {
+    public void addItemWithIncludedIgv(InvoiceItemDomain item) {
         item.setPercentajeIgv(this.taxPercentaje);
-        item.calculatedTotals(isIgvIncluded);
+        item.calculatedTotals(true);
+        this.calculatedTotals();
         this.items.add(item);
 
     }
@@ -217,6 +219,7 @@ public class InvoiceDomain {
                 .createdAt(this.createdAt)
                 .idStatus(idStatus)
                 .idCompany(companyId)
+                .linkpdf(linkPdf)
                 .subtotal(this.subtotal.doubleValue())
                 .idType(idType)
                 .build();

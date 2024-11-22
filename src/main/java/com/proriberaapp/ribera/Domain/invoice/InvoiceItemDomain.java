@@ -30,11 +30,12 @@ public class InvoiceItemDomain {
     private Date createdAt;
     private String unitOfMeasurement;
     private double percentajeIgv;
+    private BigDecimal valorUnitario;
 
     // Este constructor sirve para crear un item de factura con los datos necesarios
     // para
     public InvoiceItemDomain(String name, String description, int quantity, double percentajeIgv,
-            BigDecimal priceUnit) {
+            BigDecimal priceUnit, boolean isIgvIncluded) {
         this.name = name;
         this.codProductSunat = "631210";
         this.description = description;
@@ -45,13 +46,23 @@ public class InvoiceItemDomain {
         this.priceUnit = priceUnit;
         this.percentajeIgv = percentajeIgv;
         this.unitOfMeasurement = "ZZ";
-        this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
-        this.igv = this.subtotal.multiply(new BigDecimal(percentajeIgv / 100)).setScale(2, RoundingMode.HALF_UP);
-        this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
         this.createdAt = DateFormat.getDateInstance().getCalendar().getTime();
+        /*
+         * this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2,
+         * RoundingMode.HALF_UP);
+         */
+        /*
+         * this.igv = this.subtotal.multiply(new BigDecimal(percentajeIgv /
+         * 100)).setScale(2, RoundingMode.HALF_UP);
+         */
+        /*
+         * this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
+         */
+        this.calculatedTotals(isIgvIncluded);
     }
 
-    public InvoiceItemDomain(String name, String description, int quantity, BigDecimal priceUnit) {
+    public InvoiceItemDomain(String name, String description, int quantity, BigDecimal priceUnit,
+            boolean isIgvIncluded) {
         this.name = name;
         this.codProductSunat = "631210";
         this.description = description;
@@ -63,24 +74,69 @@ public class InvoiceItemDomain {
         this.unitOfMeasurement = "UND";
         this.percentajeIgv = 18;
         this.createdAt = Date.from(Instant.now());
-        this.calculatedTotals(false);
+        this.calculatedTotals(isIgvIncluded);
     }
 
     public void calculatedTotals(boolean isIgvIncluded) {
+        double percentajeIgvValue = this.percentajeIgv / 100;
         if (isIgvIncluded) {
-            this.igv = this.subtotal.multiply(new BigDecimal(this.percentajeIgv / 100)).setScale(2,
-                    RoundingMode.HALF_UP);
             this.total = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
-            this.subtotal = this.total.subtract(this.igv).setScale(2, RoundingMode.HALF_UP);
+            this.valorUnitario = priceUnit.divide(new BigDecimal(
+                    percentajeIgvValue).add(new BigDecimal(1)), 2,
+                    RoundingMode.HALF_UP);
+            this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
+            this.igv = subtotal.multiply(new BigDecimal(percentajeIgvValue)).setScale(2, RoundingMode.HALF_UP);
         } else {
             this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
-            this.igv = this.subtotal.multiply(new BigDecimal(this.percentajeIgv / 100)).setScale(2,
-                    RoundingMode.HALF_UP);
+            this.igv = this.subtotal.multiply(new BigDecimal(this.percentajeIgv /
+                    100)).setScale(2, RoundingMode.HALF_UP);
             this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
-
+            this.valorUnitario = priceUnit;
+            /*
+             * this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2,
+             * RoundingMode.HALF_UP);
+             */
+            /*
+             * this.igv = subtotal.multiply(new BigDecimal(percentajeIgvValue)).setScale(2,
+             * RoundingMode.HALF_UP);
+             */
+            /* this.total = subtotal.add(igv).setScale(2, RoundingMode.HALF_UP); */
         }
-
     }
+
+    /* public void calculatedTotals(boolean isIgvIncluded) { */
+    /* if (isIgvIncluded) { */
+    /*
+     * this.total = priceUnit.multiply(new BigDecimal(quantity)).setScale(2,
+     * RoundingMode.HALF_UP);
+     */
+    /*
+     * this.igv = this.total.multiply(new BigDecimal(this.percentajeIgv /
+     * 100)).setScale(2,
+     */
+    /* RoundingMode.HALF_UP); */
+    /*
+     * this.subtotal = this.total.subtract(this.igv).setScale(2,
+     * RoundingMode.HALF_UP);
+     */
+
+    /* } else { */
+    /*
+     * this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2,
+     * RoundingMode.HALF_UP);
+     */
+    /*
+     * this.igv = this.subtotal.multiply(new BigDecimal(this.percentajeIgv /
+     * 100)).setScale(2,
+     */
+    /* RoundingMode.HALF_UP); */
+    /*
+     * this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
+     */
+
+    /* } */
+
+    /* } */
 
     public InvoiceItemEntity toEntity(UUID idInvoice) {
         return InvoiceItemEntity.builder()
