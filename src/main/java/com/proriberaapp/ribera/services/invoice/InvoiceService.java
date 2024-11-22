@@ -56,7 +56,10 @@ public class InvoiceService implements InvoiceServiceI {
                 Mono<CurrencyTypeEntity> currencyTypeEntity = this.currencyTypeRepository
                                 .findByCurrencyTypeName(invoiceDomain.getCurrency().getCurrency())
                                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid currency")));
-                Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoiceDomain, company);
+                Mono<InvoiceResponse> response = invoiceTypeEntity.flatMap(invoiceType -> {
+                        invoiceDomain.setCorrelative(invoiceType.getCorrelative());
+                        return sunatInvoice.sendInvoice(invoiceDomain, company);
+                });
                 return response.flatMap(responseInvoice -> {
                         invoiceDomain.setKeySupplier(responseInvoice.getKey());
                         invoiceDomain.setSupplierNote(responseInvoice.getSunat_note());
@@ -71,7 +74,7 @@ public class InvoiceService implements InvoiceServiceI {
                                                         "Invalid status"))),
                                         currencyTypeEntity).flatMap(tuple -> {
                                                 InvoiceTypeEntity invoiceType = tuple.getT1();
-                                                invoiceDomain.setCorrelative(invoiceType.getCorrelative());
+
                                                 InvoiceStatusEntity invoiceStatus = tuple.getT2();
                                                 CurrencyTypeEntity currencyType = tuple.getT3();
                                                 InvoiceEntity entity = invoiceDomain.toEntity(invoiceType.getId(),
