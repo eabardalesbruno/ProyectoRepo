@@ -45,13 +45,25 @@ public class RefusePaymentController {
     }
 
     @PostMapping("/approved")
-    public Mono<CustomResponse> updatePendingPay(@RequestBody Map<String, Integer> request) {
+    public Mono<?> updatePendingPay(@RequestBody Map<String, Integer> request) {
         Integer paymentBookId = request.get("paymentBookId");
         if (paymentBookId == null) {
             return Mono.error(new IllegalArgumentException("El ID de pago es requerido"));
         }
-        return refusePaymentService.updatePendingPayAndSendConfirmation(paymentBookId)
-                .then(Mono.just(new CustomResponse("El pago ha sido aprobado exitosamente", request)));
+        return refusePaymentService.updatePendingPayAndSendConfirmation(
+                paymentBookId)
+                .then(Mono.just(new CustomResponse("El pago ha sido aprobado exitosamente", request))); /*
+                                                                                                         * return
+                                                                                                         * refusePaymentService
+                                                                                                         * .
+                                                                                                         * updatePendingPayAndSendConfirmation
+                                                                                                         * (
+                                                                                                         * paymentBookId)
+                                                                                                         */
+        /*
+         * .then(Mono.just(new CustomResponse("El pago ha sido aprobado exitosamente",
+         * request)));
+         */
     }
 
     @DeleteMapping("/{id}")
