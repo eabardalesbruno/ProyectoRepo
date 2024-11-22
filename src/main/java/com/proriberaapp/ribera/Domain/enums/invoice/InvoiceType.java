@@ -2,8 +2,8 @@ package com.proriberaapp.ribera.Domain.enums.invoice;
 
 public enum InvoiceType {
 
-    FACTURA(11, "6"),
-    BOLETA(8, "1");
+    FACTURA(11, "1"),
+    BOLETA(8, "2");
 
     private final int lenghtChart;
     private final String code;
@@ -29,4 +29,14 @@ public enum InvoiceType {
         }
         throw new IllegalArgumentException("Invalid lenght chart");
     }
+
+    static public InvoiceType getInvoiceTypeByName(String name) {
+        for (InvoiceType invoiceType : InvoiceType.values()) {
+            if (invoiceType.name().equals(name)) {
+                return invoiceType;
+            }
+        }
+        throw new IllegalArgumentException("Invalid name");
+    }
+
 }
