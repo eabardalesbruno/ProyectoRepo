@@ -5,6 +5,7 @@ import java.text.DateFormat;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
+import java.math.RoundingMode;
 
 import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceEntity;
 import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceItemEntity;
@@ -19,7 +20,7 @@ import lombok.Setter;
 public class InvoiceItemDomain {
     private String id;
     private String name;
-    private String code;
+    private String codProductSunat;
     private String description;
     private int quantity;
     private BigDecimal priceUnit;
@@ -29,13 +30,14 @@ public class InvoiceItemDomain {
     private Date createdAt;
     private String unitOfMeasurement;
     private double percentajeIgv;
+    private BigDecimal valorUnitario;
 
     // Este constructor sirve para crear un item de factura con los datos necesarios
     // para
     public InvoiceItemDomain(String name, String description, int quantity, double percentajeIgv,
-            BigDecimal priceUnit) {
+            BigDecimal priceUnit, boolean isIgvIncluded) {
         this.name = name;
-        this.code = "631210";
+        this.codProductSunat = "631210";
         this.description = description;
         if (quantity <= 0) {
             throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
@@ -43,16 +45,26 @@ public class InvoiceItemDomain {
         this.quantity = quantity;
         this.priceUnit = priceUnit;
         this.percentajeIgv = percentajeIgv;
-        this.unitOfMeasurement = "UND";
-        this.subtotal = priceUnit.multiply(new BigDecimal(quantity));
-        this.igv = this.subtotal.multiply(new BigDecimal(percentajeIgv / 100));
-        this.total = this.subtotal.add(this.igv);
+        this.unitOfMeasurement = "ZZ";
         this.createdAt = DateFormat.getDateInstance().getCalendar().getTime();
+        /*
+         * this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2,
+         * RoundingMode.HALF_UP);
+         */
+        /*
+         * this.igv = this.subtotal.multiply(new BigDecimal(percentajeIgv /
+         * 100)).setScale(2, RoundingMode.HALF_UP);
+         */
+        /*
+         * this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
+         */
+        this.calculatedTotals(isIgvIncluded);
     }
 
-    public InvoiceItemDomain(String name, String description, int quantity, BigDecimal priceUnit) {
+    public InvoiceItemDomain(String name, String description, int quantity, BigDecimal priceUnit,
+            boolean isIgvIncluded) {
         this.name = name;
-        this.code = "631210";
+        this.codProductSunat = "631210";
         this.description = description;
         if (quantity <= 0) {
             throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
@@ -62,19 +74,74 @@ public class InvoiceItemDomain {
         this.unitOfMeasurement = "UND";
         this.percentajeIgv = 18;
         this.createdAt = Date.from(Instant.now());
-        this.calculatedTotals();
+        this.calculatedTotals(isIgvIncluded);
     }
 
-    public void calculatedTotals() {
-        this.subtotal = priceUnit.multiply(new BigDecimal(quantity));
-        this.igv = this.subtotal.multiply(new BigDecimal(this.percentajeIgv / 100));
-        this.total = this.subtotal.add(this.igv);
+    public void calculatedTotals(boolean isIgvIncluded) {
+        double percentajeIgvValue = this.percentajeIgv / 100;
+        if (isIgvIncluded) {
+            this.total = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
+            this.valorUnitario = priceUnit.divide(new BigDecimal(
+                    percentajeIgvValue).add(new BigDecimal(1)), 2,
+                    RoundingMode.HALF_UP);
+            this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
+            this.igv = subtotal.multiply(new BigDecimal(percentajeIgvValue)).setScale(2, RoundingMode.HALF_UP);
+        } else {
+            this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
+            this.igv = this.subtotal.multiply(new BigDecimal(this.percentajeIgv /
+                    100)).setScale(2, RoundingMode.HALF_UP);
+            this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
+            this.valorUnitario = priceUnit;
+            /*
+             * this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2,
+             * RoundingMode.HALF_UP);
+             */
+            /*
+             * this.igv = subtotal.multiply(new BigDecimal(percentajeIgvValue)).setScale(2,
+             * RoundingMode.HALF_UP);
+             */
+            /* this.total = subtotal.add(igv).setScale(2, RoundingMode.HALF_UP); */
+        }
     }
+
+    /* public void calculatedTotals(boolean isIgvIncluded) { */
+    /* if (isIgvIncluded) { */
+    /*
+     * this.total = priceUnit.multiply(new BigDecimal(quantity)).setScale(2,
+     * RoundingMode.HALF_UP);
+     */
+    /*
+     * this.igv = this.total.multiply(new BigDecimal(this.percentajeIgv /
+     * 100)).setScale(2,
+     */
+    /* RoundingMode.HALF_UP); */
+    /*
+     * this.subtotal = this.total.subtract(this.igv).setScale(2,
+     * RoundingMode.HALF_UP);
+     */
+
+    /* } else { */
+    /*
+     * this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2,
+     * RoundingMode.HALF_UP);
+     */
+    /*
+     * this.igv = this.subtotal.multiply(new BigDecimal(this.percentajeIgv /
+     * 100)).setScale(2,
+     */
+    /* RoundingMode.HALF_UP); */
+    /*
+     * this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
+     */
+
+    /* } */
+
+    /* } */
 
     public InvoiceItemEntity toEntity(UUID idInvoice) {
         return InvoiceItemEntity.builder()
                 .name(this.name)
-                .code(this.code)
+                .code(this.codProductSunat)
                 .description(this.description)
                 .quantity(this.quantity)
                 .priceUnit(this.priceUnit.doubleValue())
