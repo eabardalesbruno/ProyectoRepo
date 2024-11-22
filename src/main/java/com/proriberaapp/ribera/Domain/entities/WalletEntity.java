@@ -37,8 +37,4 @@ public class WalletEntity {
     @Column("avalible")
     private boolean avalible;
 
-
-
-
-
 }

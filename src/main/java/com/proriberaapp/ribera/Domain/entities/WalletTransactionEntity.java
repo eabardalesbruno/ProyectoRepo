@@ -18,7 +18,6 @@ import java.sql.Timestamp;
 @Table("wallettransaction")
 public class WalletTransactionEntity {
 
-
     @Id
     @Column("wallettransactionid")
     private Integer walletTransactionId;
@@ -46,5 +45,11 @@ public class WalletTransactionEntity {
 
     @Column("description")
     private String description;
+
+    @Column("motivedescription")
+    private String motivedescription;
+
+    @Column("operationcode")
+    private String operationCode;
 
 }

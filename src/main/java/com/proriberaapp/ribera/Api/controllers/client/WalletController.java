@@ -1,7 +1,10 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
+import com.proriberaapp.ribera.Api.controllers.payme.dto.AuthorizationResponse;
+import com.proriberaapp.ribera.Api.controllers.payme.dto.TransactionNecessaryResponse;
 import com.proriberaapp.ribera.Domain.entities.WalletTransactionEntity;
 import com.proriberaapp.ribera.services.client.WalletService;
+import com.proriberaapp.ribera.services.client.WalletTransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +22,7 @@ import java.math.BigDecimal;
 public class WalletController {
 
     private final WalletService walletService;
-
+    private final WalletTransactionService walletTransactionService;
 
     @PostMapping("/create-wallet")
     public Mono<Integer> createWallet(@RequestParam Integer userClientId, @RequestParam Integer currencyId) {
@@ -34,39 +37,37 @@ public class WalletController {
     }
 
     @PostMapping("/transfer")
-    public Mono<ResponseEntity<WalletTransactionEntity>> transfer(@RequestParam Integer walletIdOrigin, @RequestParam(required = false) Integer walletIdDestiny, @RequestParam(required = false) String emailDestiny, @RequestParam(required = false) String documentNumber, @RequestParam BigDecimal amount) {
-        return walletService.makeTransfer(walletIdOrigin, walletIdDestiny, emailDestiny, documentNumber, amount)
+    public Mono<ResponseEntity<WalletTransactionEntity>> transfer(@RequestParam Integer walletIdOrigin, @RequestParam(required = false) Integer walletIdDestiny, @RequestParam(required = false) String emailDestiny, @RequestParam(required = false) String cardNumber, @RequestParam BigDecimal amount, @RequestParam(required = false) String motiveDescription) {
+        return walletTransactionService.makeTransfer(walletIdOrigin, walletIdDestiny, emailDestiny, cardNumber, amount, motiveDescription)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
+    }
 
+    @PostMapping("/payment")
+    public Mono<ResponseEntity<WalletTransactionEntity>> payment(Integer walletId, Integer transactioncatid, BigDecimal amount) {
+        return walletTransactionService.makePayment(walletId, transactioncatid, amount)
+                .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }
 
     @PostMapping("/withdraw")
     public Mono<ResponseEntity<WalletTransactionEntity>> withdrawal(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
-        return walletService.makeWithdrawal(walletId, transactioncatid, amount)
+        return walletTransactionService.makeWithdrawal(walletId, transactioncatid, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }
 
     @PostMapping("/deposit")
     public Mono<ResponseEntity<WalletTransactionEntity>> deposit(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
-        return walletService.makeDeposit(walletId, transactioncatid, amount)
-                .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
-    }
-
-    @PostMapping("/payment")
-    public Mono<ResponseEntity<WalletTransactionEntity>> payment(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
-        return walletService.makePayment(walletId, transactioncatid, amount)
+        return walletTransactionService.makeDeposit(walletId, transactioncatid, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }
 
     @PostMapping("/recharge")
     public Mono<ResponseEntity<WalletTransactionEntity>> recharge(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
-        return walletService.makeRecharge(walletId, transactioncatid, amount)
+        return walletTransactionService.makeRecharge(walletId, transactioncatid, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }
-
 }

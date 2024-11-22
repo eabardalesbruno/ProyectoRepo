@@ -15,4 +15,5 @@ public interface WalletRepository extends R2dbcRepository<WalletEntity, Integer>
 
 
 
+
 }
