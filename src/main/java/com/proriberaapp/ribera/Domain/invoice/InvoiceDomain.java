@@ -147,8 +147,8 @@ public class InvoiceDomain {
 
     }
 
-    public void setCorrelative(int correlative) {
-        this.correlative = correlative;
+    public void setCorrelative(int correlativeP) {
+        this.correlative = correlativeP;
         this.calculateInvoiceSerieName();
     }
 
