@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.utils;
 
+import java.util.List;
 import java.util.Random;
 
 public class GeneralMethods {
@@ -11,5 +12,11 @@ public class GeneralMethods {
         Random random = new Random();
         int randomNumber = random.nextInt(900) + 100;
         return firstPart + lastPart + randomNumber;
+    }
+
+    public static boolean esNombreDeMes(String nombre) {
+        return List.of("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio",
+                        "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
+                .contains(nombre);
     }
 }

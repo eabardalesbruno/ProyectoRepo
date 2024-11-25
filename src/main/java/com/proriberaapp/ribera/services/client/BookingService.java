@@ -52,6 +52,8 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Flux<ViewBookingReturn> findAllByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(Integer numberAdults, Integer numberChildren, Integer numberBabies, Integer userClientId, Integer bookingStateId);
 
+    Flux<BookingEntity> findBookingsByStateId(Integer bookingStateId);
+
     Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(
             Integer bookingStateId,
             Integer roomTypeId,
