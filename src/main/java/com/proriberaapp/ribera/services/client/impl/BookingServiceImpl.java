@@ -102,6 +102,12 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public Flux<BookingEntity> findBookingsByStateId(Integer bookingStateId) {
+        return bookingRepository.findAllByBookingStateId(bookingStateId);
+    }
+
+
+    @Override
     public Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(
             Integer bookingStateId,
             Integer roomTypeId,
