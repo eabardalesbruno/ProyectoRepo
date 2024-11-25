@@ -66,28 +66,29 @@ public class InvoiceDomain {
         this.calculateInvoiceSerieName();
     }
 
-    public InvoiceDomain(InvoiceClientDomain client,
-            int paymentBookId,
-            int lastCorrelative,
-            InvoiceCurrency currency,
-            List<InvoiceItemDomain> items) {
-        this.client = client;
-        this.items = items;
-        if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
-            this.tc = 0;
-        }
-        this.id = UUID.randomUUID();
-        this.paymentBookId = paymentBookId;
-        this.correlative = lastCorrelative + 1;
-        this.taxPercentaje = 18;
-        this.createdAt = Date.from(Instant.now());
-        this.currency = currency;
-        this.status = InvoiceStatus.PENDINGTOSEND;
-        this.calculatedTotals();
-        this.calculateInvoiceTypeName();
-        this.calculateInvoiceSerieName();
-    }
-
+    /*
+     * public InvoiceDomain(InvoiceClientDomain client,
+     * int paymentBookId,
+     * int lastCorrelative,
+     * InvoiceCurrency currency,
+     * List<InvoiceItemDomain> items) {
+     * this.client = client;
+     * this.items = items;
+     * if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
+     * this.tc = 0;
+     * }
+     * this.id = UUID.randomUUID();
+     * this.paymentBookId = paymentBookId;
+     * this.correlative = lastCorrelative + 1;
+     * this.taxPercentaje = 18;
+     * this.createdAt = Date.from(Instant.now());
+     * this.currency = currency;
+     * this.status = InvoiceStatus.PENDINGTOSEND;
+     * this.calculatedTotals();
+     * this.calculateInvoiceTypeName();
+     * this.calculateInvoiceSerieName();
+     * }
+     */
     public InvoiceDomain(InvoiceClientDomain client,
             int paymentBookId,
             int lastCorrelative,
@@ -107,6 +108,26 @@ public class InvoiceDomain {
         this.calculatedTotals();
         this.calculateInvoiceTypeName();
         this.calculateInvoiceSerieName();
+    }
+
+    public InvoiceDomain(InvoiceClientDomain client, int paymentBookId, double percentajeIgv, InvoiceCurrency currency,
+            InvoiceType type) {
+        this.client = client;
+        if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
+            this.tc = 0;
+        }
+        this.items = new ArrayList<>();
+        this.id = UUID.randomUUID();
+        this.paymentBookId = paymentBookId;
+        this.correlative = 0;
+        this.taxPercentaje = percentajeIgv;
+        this.createdAt = Date.from(Instant.now());
+        this.currency = currency;
+        this.status = InvoiceStatus.PENDINGTOSEND;
+        this.type = type.name();
+        this.calculatedTotals();
+        this.calculateInvoiceSerieName();
+
     }
 
     public InvoiceDomain(InvoiceClientDomain client,
