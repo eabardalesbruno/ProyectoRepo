@@ -65,6 +65,38 @@ public class InvoiceTests {
         }
 
         @Test
+        void verifiedInvoiceTypeWithTypeFactura() {
+                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
+                                "123456789",
+                                "");
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18, InvoiceCurrency.PEN, InvoiceType.FACTURA);
+                Mono<InvoiceDomain> invoiceMono = Mono
+                                .just(invoice);
+                StepVerifier.create(invoiceMono)
+                                .expectNextMatches(
+                                                invoiceM -> invoiceM.getType() == InvoiceType.FACTURA.name().toString()
+                                                                && invoiceM.getSerie().startsWith("F"))
+
+                                .verifyComplete();
+        }
+
+        @Test
+        void verifiedInvoiceTypeWithTypeBoleta() {
+                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
+                                "123456789",
+                                "");
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18, InvoiceCurrency.PEN, InvoiceType.BOLETA);
+                Mono<InvoiceDomain> invoiceMono = Mono
+                                .just(invoice);
+                StepVerifier.create(invoiceMono)
+                                .expectNextMatches(
+                                                invoiceM -> invoiceM.getType() == InvoiceType.BOLETA.name().toString()
+                                                                && invoiceM.getSerie().startsWith("B"))
+
+                                .verifyComplete();
+        }
+
+        @Test
         void verifiedInvoiceTypeBoleta() {
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
                                 "123456789",
@@ -255,10 +287,11 @@ public class InvoiceTests {
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
                                 "123456789",
                                 "");
-                List<InvoiceItemDomain> items = new ArrayList<>();
-                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 82, 1, InvoiceCurrency.PEN, items);
+                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 82, 1, InvoiceCurrency.PEN);
+
                 invoiceDomain.setKeySupplier("wdwdwd");
                 invoiceDomain.setSupplierNote("Salio bien");
+
                 invoiceDomain.setStatus(InvoiceStatus.ACEPTED);
                 Mono<InvoiceTypeEntity> invoiceTypeEntity = this.invoiceTypeRepsitory
                                 .findByName(invoiceDomain.getType())
@@ -288,8 +321,7 @@ public class InvoiceTests {
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
                                 "123456789",
                                 "");
-                List<InvoiceItemDomain> items = new ArrayList<>();
-                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 82, 1, InvoiceCurrency.PEN, items);
+                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 82, 1, InvoiceCurrency.PEN);
                 invoiceDomain.setKeySupplier("wdwdwd");
                 invoiceDomain.setSupplierNote("No se acepto tu factura");
                 invoiceDomain.setStatus(InvoiceStatus.REJECTED);
@@ -428,8 +460,7 @@ public class InvoiceTests {
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "12345678901", "Av. Los Pinos",
                                 "123456789",
                                 "");
-                List<InvoiceItemDomain> items = new ArrayList<>();
-                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 82, 1, InvoiceCurrency.PEN, items);
+                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 82, 1, InvoiceCurrency.PEN);
                 invoiceDomain.setKeySupplier("wdwdwd");
                 invoiceDomain.setSupplierNote("No se acepto tu factura");
                 invoiceDomain.setStatus(InvoiceStatus.REJECTED);
