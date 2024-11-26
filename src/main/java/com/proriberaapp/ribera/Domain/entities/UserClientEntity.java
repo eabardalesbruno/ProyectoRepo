@@ -62,10 +62,12 @@ public class UserClientEntity implements UserDetails {
     private String googleId;
     @Column("googleemail")
     private String googleEmail;
+    @Column("username")
     private String username;
 
     private StatesUser status;
     private Timestamp createdat;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority((role.toString())));
