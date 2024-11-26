@@ -25,6 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -422,9 +424,15 @@ public class PayMeService {
                                 .body(BodyInserters.fromValue(body))
                                 .retrieve()
                                 .bodyToMono(AuthorizeResponse.class)
-                                .onErrorResume(e -> Mono.error(new HttpStatusCodeException(HttpStatus.BAD_REQUEST,
-                                                "Error getting token") {
-                                }));
+                                .doOnError(WebClientResponseException.class, e -> {
+                                        System.out.println(e.getResponseBodyAsString());
+                                })
+                                .onErrorResume(WebClientResponseException.class, e -> {
+                                        System.out.println(e);
+                                        return Mono.error(new HttpStatusCodeException(HttpStatus.BAD_REQUEST,
+                                                        "Error getting token" + e.getResponseBodyAsString()) {
+                                        });
+                                });
         }
 
         public Mono<NonceResponse> getNonce() {
@@ -597,20 +605,32 @@ public class PayMeService {
                                                                         .findByBookingId(savedAuthorization
                                                                                         .getIdBooking())
                                                                         .flatMap(booking -> {
+                                                                                /*
+                                                                                 * if (booking.getBookingStateId() == 3)
+                                                                                 * {
+                                                                                 * booking.setBookingStateId(2);
+                                                                                 * return bookingRepository
+                                                                                 * .save(booking);
+                                                                                 * } else {
+                                                                                 * return Mono.just(booking);
+                                                                                 * }
+                                                                                 */
                                                                                 if (booking.getBookingStateId() == 3) {
                                                                                         booking.setBookingStateId(2);
-                                                                                        return bookingRepository
-                                                                                                        .save(booking);
-                                                                                } else {
-                                                                                        return Mono.just(booking);
                                                                                 }
+                                                                                return bookingRepository.save(booking)
+                                                                                                .flatMap(b -> this.bookingRepository
+                                                                                                                .getRoomNameAndDescriptionfindByBookingId(
+                                                                                                                                b.getBookingId()));
                                                                         })
                                                                         .flatMap(updatedBooking -> {
                                                                                 BigDecimal monto = new BigDecimal(
                                                                                                 authorizationResponse
                                                                                                                 .getTransaction()
                                                                                                                 .getAmount());
-
+                                                                                BigDecimal totalCost = monto.divide(
+                                                                                                BigDecimal.valueOf(
+                                                                                                                100000));
                                                                                 PaymentBookEntity paymentBook = PaymentBookEntity
                                                                                                 .builder()
                                                                                                 .bookingId(updatedBooking
@@ -618,15 +638,12 @@ public class PayMeService {
                                                                                                 .userClientId(updatedBooking
                                                                                                                 .getUserClientId())
                                                                                                 .refuseReasonId(1)
-                                                                                                .cancelReasonId(1)
-                                                                                                .paymentMethodId(5)
-                                                                                                .paymentStateId(1)
-                                                                                                .paymentTypeId(6)
-                                                                                                .paymentSubTypeId(1)
+                                                                                                .paymentMethodId(1)
+                                                                                                .paymentStateId(2)
+                                                                                                .paymentTypeId(3)
+                                                                                                .paymentSubTypeId(6)
                                                                                                 .currencyTypeId(1)
-                                                                                                .amount(monto.divide(
-                                                                                                                BigDecimal.valueOf(
-                                                                                                                                100000)))
+                                                                                                .amount(totalCost)
                                                                                                 .description("Pago exitoso")
                                                                                                 .paymentDate(Timestamp
                                                                                                                 .valueOf(LocalDateTime
@@ -634,9 +651,7 @@ public class PayMeService {
                                                                                                 .operationCode(authorizationResponse
                                                                                                                 .getId())
                                                                                                 .note("Nota de pago")
-                                                                                                .totalCost(monto.divide(
-                                                                                                                BigDecimal.valueOf(
-                                                                                                                                100000)))
+                                                                                                .totalCost(totalCost)
                                                                                                 .imageVoucher("Pago con Tarjeta")
                                                                                                 .totalPoints(0)
                                                                                                 .paymentComplete(true)
@@ -648,25 +663,31 @@ public class PayMeService {
                                                                                                 userClient.getAddress(),
                                                                                                 userClient.getCellNumber(),
                                                                                                 userClient.getEmail());
-                                                                                InvoiceDomain invoiceDomain = new InvoiceDomain(
+
+                                                                                InvoiceDomain invoice = new InvoiceDomain(
                                                                                                 invoiceClientDomain,
-                                                                                                paymentBook.getPaymentBookId(),
+                                                                                                updatedBooking.getBookingId(),
                                                                                                 0, InvoiceCurrency.PEN);
+
                                                                                 InvoiceItemDomain item = new InvoiceItemDomain(
-                                                                                                updatedBooking.getDetail(),
-                                                                                                updatedBooking.getDetail(),
+                                                                                                updatedBooking.getRoomName(),
+                                                                                                updatedBooking.getRoomDescription(),
                                                                                                 1,
-                                                                                                monto.divide(BigDecimal
-                                                                                                                .valueOf(100000)),
+                                                                                                totalCost,
                                                                                                 true);
-                                                                                invoiceDomain.addItemWithIncludedIgv(
+                                                                                invoice.addItemWithIncludedIgv(
                                                                                                 item);
                                                                                 return paymentBookRepository
                                                                                                 .save(paymentBook)
-                                                                                                .then(Mono.zip(this.invoiceService
-                                                                                                                .save(invoiceDomain),
-                                                                                                                sendSuccessEmail(
-                                                                                                                                userClient.getEmail())))
+                                                                                                .flatMap(paymentBookR -> {
+                                                                                                        invoice.setPaymentBookId(
+                                                                                                                        paymentBookR.getPaymentBookId());
+                                                                                                        return this.invoiceService
+                                                                                                                        .save(invoice);
+
+                                                                                                })
+                                                                                                .then(sendSuccessEmail(
+                                                                                                                userClient.getEmail()))
                                                                                                 .thenReturn(new TransactionNecessaryResponse(
                                                                                                                 true));
                                                                         })))

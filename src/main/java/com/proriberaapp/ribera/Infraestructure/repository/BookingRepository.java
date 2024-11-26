@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.Infraestructure.repository;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
+import com.proriberaapp.ribera.Domain.dto.BookingAndRoomNameDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
@@ -37,7 +38,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
 
         @Query("SELECT * FROM ViewBookingReturn WHERE userPromotorId = :userPromoterId AND bookingStateId = :bookingStateId")
         Flux<ViewBookingReturn> findAllViewBookingReturnByUsePromoterIdAndBookingStateId(
-                @Param("userPromoterId") Integer userPromoterId, @Param("bookingStateId") Integer bookingStateId);
+                        @Param("userPromoterId") Integer userPromoterId,
+                        @Param("bookingStateId") Integer bookingStateId);
 
         @Query("SELECT * FROM ViewBookingReturn WHERE userClientId = :userClientId")
         Flux<ViewBookingReturn> findAllViewBookingReturnByUserClientId(@Param("userClientId") Integer userClientId);
@@ -73,12 +75,14 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         @Param("numberBabies") Integer numberBabies, @Param("userClientId") Integer userClientId,
                         @Param("bookingStateId") Integer bookingStateId);
 
-        @Query("SELECT us.firstname, us.lastname,us.documenttypeid,us.documentnumber,us.cellnumber, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, " +
+        @Query("SELECT us.firstname, us.lastname,us.documenttypeid,us.documentnumber,us.cellnumber, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, "
+                        +
                         "r.offertimeinit, r.offertimeend, us.email, bo.costfinal, " +
                         "TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, " +
                         "TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend, " +
                         "bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription," +
-                        "SUM(bo.numberchildren+bo.numberbabies+bo.numberadultsextra+bo.numberadults+bo.numberadultsmayor) as capacity, " +
+                        "SUM(bo.numberchildren+bo.numberbabies+bo.numberadultsextra+bo.numberadults+bo.numberadultsmayor) as capacity, "
+                        +
                         "r.riberapoints, r.inresortpoints, r.points " +
                         "FROM booking bo " +
                         "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
@@ -92,10 +96,13 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         "AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId) " +
                         "AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR " +
                         "bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd) " +
-                        "GROUP BY us.firstname, us.lastname, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, " +
-                        "r.offertimeinit, r.offertimeend, us.email, bo.costfinal, bo.daybookinginit, bo.daybookingend, " +
+                        "GROUP BY us.firstname, us.lastname, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, "
+                        +
+                        "r.offertimeinit, r.offertimeend, us.email, bo.costfinal, bo.daybookinginit, bo.daybookingend, "
+                        +
                         "bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription, " +
-                        "r.riberapoints, r.inresortpoints, r.points,us.documenttypeid,us.documentNumber,us.cellnumber " +
+                        "r.riberapoints, r.inresortpoints, r.points,us.documenttypeid,us.documentNumber,us.cellnumber "
+                        +
                         "ORDER BY bo.bookingid DESC " +
                         "LIMIT :limit OFFSET :offset")
         Flux<BookingStates> findBookingsByStateIdPaginated(
@@ -110,7 +117,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         "r.offertimeinit, r.offertimeend, us.email, bo.costfinal, " +
                         "TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, " +
                         "TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend, " +
-                        "bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription,bo.numberadults" +
+                        "bs.bookingstateid, bs.bookingstatename, bt.bedtypename, bt.bedtypedescription,bo.numberadults"
+                        +
                         ",bo.numberchildren,bo.numberbabies,bo.numberadultsextra,bo.numberadultsmayor, "
                         +
                         "r.riberapoints, r.inresortpoints, r.points " +
@@ -180,4 +188,14 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
         Mono<Boolean> existsByRoomOfferIdAndBookingStateId(Integer roomOfferId, Integer bookingStateId);
 
         Flux<BookingEntity> findAllByRoomOfferId(Integer roomOfferId);
+
+        @Query("""
+                        select b.*,r.roomname,COALESCE(r.roomdescription,r.roomname) as roomdescription from
+                        booking b
+                        join roomoffer ro on ro.roomofferid=b.roomofferid
+                        join room r on r.roomid=ro.roomid
+                                where b.bookingid=:bookingId
+                                                """)
+        Mono<BookingAndRoomNameDto> getRoomNameAndDescriptionfindByBookingId(int bookinId);
+
 }
