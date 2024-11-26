@@ -44,8 +44,8 @@ public class WalletController {
     }
 
     @PostMapping("/payment")
-    public Mono<ResponseEntity<WalletTransactionEntity>> payment(Integer walletId, Integer transactioncatid, BigDecimal amount) {
-        return walletTransactionService.makePayment(walletId, transactioncatid, amount)
+    public Mono<ResponseEntity<WalletTransactionEntity>> payment(Integer walletId, Integer transactioncatid, Integer bookingId) {
+        return walletTransactionService.makePayment(walletId, transactioncatid, bookingId)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }

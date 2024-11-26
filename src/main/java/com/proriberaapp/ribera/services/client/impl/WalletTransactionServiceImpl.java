@@ -5,22 +5,24 @@ import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
 import com.proriberaapp.ribera.Domain.entities.WalletEntity;
 import com.proriberaapp.ribera.Domain.entities.WalletTransactionEntity;
-import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.UserPromoterRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.WalletRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.WalletTransactionRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.WalletTransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuple3;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
+
+import static com.proriberaapp.ribera.services.PDFGeneratorService.generatePdfFromHtml;
 
 
 @Service
@@ -32,6 +34,8 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     private final EmailService emailService;
     private final UserClientRepository userClientRepository;
     private final UserPromoterRepository userPromoterRepository;
+    private final BookingRepository bookingRepository;
+    private final CurrencyTypeRepository currencyTypeRepository;
 
     @Override
     public Mono<WalletTransactionEntity> makeTransfer(Integer walletIdOrigin, Integer walletIdDestiny, String emailDestiny, String cardNumber, BigDecimal amount, String motiveDescription) {
@@ -139,49 +143,100 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
 
     @Override
-    public Mono<WalletTransactionEntity> makePayment(Integer walletId, Integer transactioncatid, BigDecimal amount) {
+    public Mono<WalletTransactionEntity> makePayment(Integer walletId, Integer transactioncatid, Integer bookingId) {
         return walletRepository.findById(walletId)
-                .flatMap(walletEntity -> {
-                    if (walletEntity.getBalance().compareTo(amount) >= 0) {
-                        walletEntity.setBalance(walletEntity.getBalance().subtract(amount));
-                        return walletRepository.save(walletEntity)
-                                .flatMap(savedWallet -> generateUniqueOperationCode()
-                                        .flatMap(operationCode -> {
-                                            WalletTransactionEntity transaction = WalletTransactionEntity.builder()
-                                                    .walletId(walletId)
-                                                    .currencyTypeId(walletEntity.getCurrencyTypeId())
-                                                    .transactionCategoryId(transactioncatid)
-                                                    .amount(amount)
-                                                    .operationCode(operationCode)
-                                                    .description("Pago de servicio")
-                                                    .inicialDate(Timestamp.valueOf(LocalDateTime.now()))
-                                                    .avalibleDate(Timestamp.valueOf(LocalDateTime.now().plusDays(1)))
-                                                    .build();
-                                            return walletTransactionRepository.save(transaction)
-                                                    .flatMap(savedTransaction -> getEmailAndLastNameByWalletOwner(walletEntity)
-                                                            .flatMap(email -> sendSuccessEmail(email.getT1())
-                                                                    .then(Mono.just(savedTransaction)))
-                                                            .onErrorResume(error -> Mono.just(savedTransaction)));
-                                        }));
-                    } else {
-                        return Mono.error(new Exception("Saldo insuficiente"));
-                    }
-                });
+                .flatMap(walletEntity ->
+                        bookingRepository.findById(bookingId)
+                                .flatMap(booking -> {
+                                    // Obtener el precio de la reserva
+                                    BigDecimal amount = booking.getCostFinal();
+
+                                    if (walletEntity.getBalance().compareTo(amount) >= 0) {
+                                        walletEntity.setBalance(walletEntity.getBalance().subtract(amount));
+                                        return walletRepository.save(walletEntity)
+                                                .flatMap(savedWallet -> generateUniqueOperationCode()
+                                                        .flatMap(operationCode -> {
+                                                            WalletTransactionEntity transaction = WalletTransactionEntity.builder()
+                                                                    .walletId(walletId)
+                                                                    .currencyTypeId(walletEntity.getCurrencyTypeId())
+                                                                    .transactionCategoryId(transactioncatid)
+                                                                    .amount(amount) // Usamos el precio de la reserva como el monto
+                                                                    .operationCode(operationCode)
+                                                                    .description("Pago de servicio")
+                                                                    .inicialDate(Timestamp.valueOf(LocalDateTime.now()))
+                                                                    .avalibleDate(Timestamp.valueOf(LocalDateTime.now().plusDays(1)))
+                                                                    .build();
+
+                                                            return walletTransactionRepository.save(transaction)
+                                                                    .flatMap(savedTransaction -> {
+                                                                        if (booking.getBookingStateId() == 3) {
+                                                                            booking.setBookingStateId(2);
+                                                                            return bookingRepository.save(booking)
+                                                                                    .then(getEmailAndLastNameByWalletOwner(walletEntity)
+                                                                                            .flatMap(email ->
+                                                                                                    currencyTypeRepository.findById(walletEntity.getCurrencyTypeId())
+                                                                                                            .flatMap(currency -> {
+                                                                                                                // Obtener los valores para el PDF
+                                                                                                                String codigotransaccion = transaction.getOperationCode();
+                                                                                                                String username = email.getT2(); // Nombre de usuario
+                                                                                                                String documentNumber = email.getT3(); // Número de documento
+                                                                                                                String fecha = LocalDateTime.now().toString(); // Fecha de emisión
+                                                                                                                String bookingid = bookingId.toString(); // ID de la reserva
+                                                                                                                String bookingiroomname = booking.getDetail(); // Nombre de la habitación
+                                                                                                                String precioVentaTotal = amount.toString(); // Precio total de la venta
+
+                                                                                                                // Generar el PDF para el recibo de pago
+                                                                                                                String pdfFilePath = System.getProperty("java.io.tmpdir") + "/payment_receipt_" + walletId + "_" + System.currentTimeMillis() + ".pdf";
+                                                                                                                try {
+                                                                                                                    generatePdfFromHtml(
+                                                                                                                            codigotransaccion,
+                                                                                                                            username,
+                                                                                                                            documentNumber,
+                                                                                                                            currency.getCurrencyTypeDescription(),
+                                                                                                                            fecha,
+                                                                                                                            bookingid,
+                                                                                                                            bookingiroomname,
+                                                                                                                            precioVentaTotal,
+                                                                                                                            pdfFilePath
+                                                                                                                    );
+                                                                                                                } catch (IOException e) {
+                                                                                                                    e.printStackTrace();
+                                                                                                                    return Mono.error(new Exception("Error al generar el PDF", e));
+                                                                                                                }
+
+                                                                                                                // Enviar el correo con el PDF adjunto
+                                                                                                                return sendSuccessEmail(email.getT1(), pdfFilePath)
+                                                                                                                        .then(Mono.just(savedTransaction));
+                                                                                                            })
+                                                                                            ))
+                                                                                    .onErrorResume(error -> Mono.just(savedTransaction));
+                                                                        } else {
+                                                                            return Mono.error(new Exception("La reserva no está en estado pendiente"));
+                                                                        }
+                                                                    });
+                                                        }));
+                                    } else {
+                                        return Mono.error(new Exception("Saldo insuficiente"));
+                                    }
+                                })
+                );
     }
 
-    private Mono<Tuple2<String, String>> getEmailAndLastNameByWalletOwner(WalletEntity walletEntity) {
+    private Mono<Tuple3<String, String,String>> getEmailAndLastNameByWalletOwner(WalletEntity walletEntity) {
         if (walletEntity.getUserClientId() != null) {
             return userClientRepository.findById(walletEntity.getUserClientId())
                     .flatMap(user -> Mono.zip(
                             Mono.just(user.getEmail()),
-                            Mono.just(user.getUsername())
+                            Mono.just(user.getUsername()),
+                            Mono.just(user.getDocumentNumber())
                     ))
                     .switchIfEmpty(Mono.error(new Exception("Cliente no encontrado.")));
         } else if (walletEntity.getUserPromoterId() != null) {
             return userPromoterRepository.findById(walletEntity.getUserPromoterId())
                     .flatMap(promoter -> Mono.zip(
                             Mono.just(promoter.getEmail()),
-                            Mono.just(promoter.getUsername())
+                            Mono.just(promoter.getUsername()),
+                            Mono.just(promoter.getDocumentNumber())
                     ))
                     .switchIfEmpty(Mono.error(new Exception("Promotor no encontrado.")));
         } else {
@@ -190,9 +245,10 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     }
 
 
-    private Mono<Void> sendSuccessEmail(String email) {
+    private Mono<Void> sendSuccessEmail (String email,String pdfFilePath) {
         String emailBody = generateSuccessEmailBody();
-        return emailService.sendEmail(email, "Pago Exitoso", emailBody);
+        return emailService.sendEmailWithAttachment(email, "Pago Exitoso", emailBody, pdfFilePath);
+
     }
 
     private String generateSuccessEmailBody() {
@@ -304,7 +360,6 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
         return body;
     }
-
 
 
     @Override
@@ -554,6 +609,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
         return Mono.just(body);
     }
+
 
     private Mono<String> generateUniqueOperationCode() {
         return Mono.fromSupplier(() -> {

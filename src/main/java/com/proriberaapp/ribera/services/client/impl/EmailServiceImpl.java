@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.services.client.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -61,8 +62,27 @@ public class EmailServiceImpl implements EmailService {
             }
         }).then();
     }
-}
+    @Override
+    public Mono<Void> sendEmailWithAttachment(String to, String subject, String body, String attachmentPath) {
+        return Mono.fromRunnable(() -> {
+            try {
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true);
+                helper.setTo(to);
+                helper.setSubject(subject);
+                helper.setText(body);
 
+                // Adjuntar el archivo PDF
+                FileSystemResource file = new FileSystemResource(attachmentPath);
+                helper.addAttachment("Recibo de Pago.pdf", file);
+
+                mailSender.send(message);
+            } catch (MessagingException e) {
+                e.printStackTrace(); // Manejo de errores
+            }
+        });
+    }
+}
 /*
 @Service
 public class EmailServiceImpl implements EmailService {
