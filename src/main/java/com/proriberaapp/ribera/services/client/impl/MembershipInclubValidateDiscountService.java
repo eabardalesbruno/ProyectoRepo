@@ -13,12 +13,13 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseIn
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.UserDto;
 import com.proriberaapp.ribera.Infraestructure.repository.DiscountRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
+import com.proriberaapp.ribera.services.client.LoadMembershipsService;
 import com.proriberaapp.ribera.services.client.VerifiedDiscountService;
 
 import reactor.core.publisher.Mono;
 
 @Service
-public class MembershipInclubValidateDiscountService implements VerifiedDiscountService {
+public class MembershipInclubValidateDiscountService implements VerifiedDiscountService, LoadMembershipsService {
 
     @Value("${inclub.api.url.subscriptions}")
     private String URL_MEMBERSHIPS;
@@ -31,8 +32,32 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
     @Autowired
     private UserClientRepository userClientRepository;
 
-    public Mono<List<MembershipDto>> loadMemberships(String username) {
+    @Override
+    public Mono<List<MembershipDto>> loadMembershipsActives(String username) {
 
+        /*
+         * return this.loadDataUserRiber(username).flatMap(user -> {
+         * String uri =
+         * URL_MEMBERSHIPS.concat("/").concat(String.valueOf(user.getData().getId()));
+         * return Mono.just(uri);
+         * }).flatMap(uri -> {
+         * WebClient webClient = WebClient.create(uri);
+         * return webClient.get()
+         * .retrieve()
+         * .bodyToMono(ResponseDataMembershipDto.class)
+         * .flatMap(response -> {
+         * List<MembershipDto> data = response.getData().stream()
+         * .filter(p -> p.getIdFamilyPackage() == 2 && p.getIdStatus() == 1).toList();
+         * return data.size() > 0 ? Mono.just(data) : Mono.empty();
+         * });
+         * });
+         */
+        return this.loadMembershipsInsortInclub(username)
+                .flatMap(s -> Mono.just(s.stream().filter(p -> p.getIdStatus() == 1).toList()));
+
+    }
+
+    private Mono<List<MembershipDto>> loadMembershipsInsortInclub(String username) {
         return this.loadDataUserRiber(username).flatMap(user -> {
             String uri = URL_MEMBERSHIPS.concat("/").concat(String.valueOf(user.getData().getId()));
             return Mono.just(uri);
@@ -43,7 +68,7 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                     .bodyToMono(ResponseDataMembershipDto.class)
                     .flatMap(response -> {
                         List<MembershipDto> data = response.getData().stream()
-                                .filter(p -> p.getIdFamilyPackage() == 2 && p.getIdStatus() == 1).toList();
+                                .filter(p -> p.getIdFamilyPackage() == 2).toList();
                         return data.size() > 0 ? Mono.just(data) : Mono.empty();
                     });
         });
@@ -66,7 +91,7 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
         return this.userClientRepository.findById(userId)
                 .flatMap(userData -> {
 
-                    return this.loadMemberships(
+                    return this.loadMembershipsInsortInclub(
                             userData.getUsername())
                             .flatMap(memberships -> {
                                 return this.discountRepository
@@ -76,17 +101,13 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                             .switchIfEmpty(Mono.just(0f));
 
                 });
-        /*
-         * Mono<Float> discount = loadMemberships(
-         * usernameInclub)
-         * .flatMap(memberships -> {
-         * return this.discountRepository
-         * .getPercentajeWithItemsDiscount(userId,
-         * memberships.stream().map(d -> d.getIdPackage()).toList());
-         * }).map(discountBd ->
-         * discountBd.getPercentage()).switchIfEmpty(Mono.just(0f));
-         */
-        /* return discount; */
+    }
+
+    @Override
+    public Mono<List<MembershipDto>> loadAllMemberships(int userId) {
+        return this.userClientRepository.findById(userId)
+                .flatMap(userData -> this.loadMembershipsInsortInclub(userData.getUsername()));
+
     }
 
 }
