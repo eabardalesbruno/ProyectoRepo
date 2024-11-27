@@ -27,19 +27,36 @@ public class InclubManagementTest {
     void verifiedCredentialsInclub() {
         StepVerifier.create(loginInclubService.verifiedCredentialsInclub("EV48427283", "password321#"))
                 .expectNextMatches(responseValidateCredential -> {
-                    System.out.println(responseValidateCredential);
                     return responseValidateCredential.isData();
                 })
                 .verifyComplete();
     }
 
-    /* @Test */
-    /* void validateSubscriptions() { */
-    /* StepVerifier.create(VerifiedDiscountService.loadMemberships( */
-    /* 12892)) */
-    /* .expectNextMatches(responseDataMembershipDto -> { */
-    /* System.out.println(responseDataMembershipDto); */
-    /* return !responseDataMembershipDto.isEmpty(); */
-    /* }).verifyComplete(); */
-    /* } */
+    /*
+     * @Test
+     * void validateSubscriptions() {
+     * StepVerifier.create(VerifiedDiscountService.loadMemberships(
+     * 12892))
+     * .expectNextMatches(responseDataMembershipDto -> {
+     * System.out.println(responseDataMembershipDto);
+     * return !responseDataMembershipDto.isEmpty();
+     * }).verifyComplete();
+     * }
+     */
+
+    @Test
+    void validateDiscount() {
+        StepVerifier.create(membershipValidateDiscountService.verifiedPercentajeDiscount(151))
+                .expectNextMatches(discount -> {
+                    return discount == 30;
+                }).verifyComplete();
+    }
+
+    @Test
+    void validateNotDiscount() {
+        StepVerifier.create(membershipValidateDiscountService.verifiedPercentajeDiscount(151))
+                .expectNextMatches(discount -> {
+                    return discount == 0;
+                }).verifyComplete();
+    }
 }

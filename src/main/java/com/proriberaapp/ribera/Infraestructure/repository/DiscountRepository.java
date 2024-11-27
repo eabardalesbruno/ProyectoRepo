@@ -14,11 +14,15 @@ import reactor.core.publisher.Mono;
 public interface DiscountRepository extends R2dbcRepository<DiscountEntity, Integer> {
 
     @Query("""
-            SELECT COALESCE(d.percentaje,0) as percentage,d.name FROM discount d
-            join discount_item item on d.id = item.id_discount
-            WHERE item.idPackage IN :idPackage
-            limit 1
+            select COALESCE(SUM(DISTINCT d.percentage),0) as percentage,d.name,d.id from
+            discount d
+            join discount_item di on di.iddiscount=d.id
+            where d.maxreservationnumber>(select count(pb.paymentbookid) from paymentbook pb
+            where pb.userclientid=:idUser and pb.applydiscount=true)
+            and di.idpackage iN (:idPackage)
+            and d.status=1
+            GROUP BY d.name,d.id;
                     """)
-    Mono<DiscountEntity> getPercentajeWithItemsDiscount(List<Integer> idPackage);
+    Mono<DiscountEntity> getPercentajeWithItemsDiscount(int idUser, List<Integer> idPackage);
 
 }

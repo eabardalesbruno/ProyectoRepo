@@ -7,9 +7,10 @@ import lombok.Setter;
 @Setter
 public class MembershipDto {
     private int id;
-    private String maneSubscription;
+    private String naneSubscription;
     private String status;
     private int idFamilyPackage;
     private int statusId;
     private int numberQuotas;
+    private int idPackage;
 }
