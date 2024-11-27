@@ -25,7 +25,7 @@ public class InclubManagementTest {
 
     @Test
     void verifiedCredentialsInclub() {
-        StepVerifier.create(loginInclubService.verifiedCredentialsInclub("EV48427283", "password321%23"))
+        StepVerifier.create(loginInclubService.verifiedCredentialsInclub("EV48427283", "password321#"))
                 .expectNextMatches(responseValidateCredential -> {
                     System.out.println(responseValidateCredential);
                     return responseValidateCredential.isData();

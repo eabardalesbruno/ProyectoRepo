@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -86,19 +87,10 @@ public class LoginInclubServiceImpl implements LoginInclubService {
     @Override
     public Mono<ResponseValidateCredential> verifiedCredentialsInclub(String username, String password) {
         WebClient webClient = WebClient.create();
-        String encodedPassword = this.encodeValue(password);
-        String url = UriComponentsBuilder.fromHttpUrl(URL_VALIDATE_PASSWORD)
-                .queryParam("username", username)
-                .queryParam("password",
-                        password).qu
-                .encode(StandardCharsets.UTF_8)
-                .build()
-
-                .toUriString();
-
-        System.out.println(url);
+        UserDto user = UserDto.builder().username(username).password(password).build();
         return webClient.post()
-                .uri(url)
+                .uri(URL_VALIDATE_PASSWORD)
+                .bodyValue(user)
                 .retrieve()
                 .bodyToMono(ResponseValidateCredential.class).doOnNext(System.out::println).map(d -> {
                     System.out.println(d);
