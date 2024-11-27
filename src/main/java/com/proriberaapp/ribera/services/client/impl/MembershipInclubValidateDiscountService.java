@@ -43,7 +43,7 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                     .bodyToMono(ResponseDataMembershipDto.class)
                     .flatMap(response -> {
                         List<MembershipDto> data = response.getData().stream()
-                                .filter(p -> p.getIdFamilyPackage() == 2 && p.getStatusId() == 1).toList();
+                                .filter(p -> p.getIdFamilyPackage() == 2 && p.getIdStatus() == 1).toList();
                         return data.size() > 0 ? Mono.just(data) : Mono.empty();
                     });
         });
