@@ -12,6 +12,14 @@ public interface UserPromoterRepository extends R2dbcRepository<UserPromoterEnti
     Mono<UserPromoterEntity> findByUsernameOrEmailOrDocumentNumber(String username, String email, String document);
     Mono<UserPromoterEntity> findByEmail(String email);
     Mono<UserPromoterEntity> findById(Integer id);
+
+    Mono<UserPromoterEntity> findByGoogleId(String googleId);
+
+    @Query("SELECT * FROM userpromoter WHERE email = :email OR googleid = :googleId OR googleemail = :googleEmail")
+    Mono<UserPromoterEntity> findByEmailOrGoogleIdOrGoogleEmail(String email, String googleId, String googleEmail);
+
+    Mono<UserPromoterEntity> findByEmail(String email);
+    Mono<UserPromoterEntity> findByDocumentNumber(String documentNumber);
 }
 
 

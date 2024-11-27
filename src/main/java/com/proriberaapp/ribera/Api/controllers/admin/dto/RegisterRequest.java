@@ -7,6 +7,7 @@ import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.Domain.enums.StatesUser;
 import com.proriberaapp.ribera.Domain.enums.TypeDocument;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 public record RegisterRequest(
@@ -19,7 +20,16 @@ public record RegisterRequest(
         Integer typeDocument,
         String document,
         Role role,
-        List<Permission> permission
+        List<Permission> permission,
+        String googleAuth,
+        String googleId,
+        String googleEmail,
+        Integer countryId,
+        Integer genderId,
+        Timestamp birthDate,
+        String city,
+        String username,
+        Timestamp createdat
 ) {
 
     public static UserAdminEntity from(RegisterRequest registerRequest, String password) {
@@ -54,7 +64,9 @@ public record RegisterRequest(
                 .role(registerRequest.role())
                 .status(StatesUser.ACTIVE)
                 .permission(registerRequest.permission())
-
+                .googleEmail(registerRequest.googleEmail())
+                .googleId(registerRequest.googleId())
+                .googleAuth(registerRequest.googleAuth())
                 .build();
     }
 

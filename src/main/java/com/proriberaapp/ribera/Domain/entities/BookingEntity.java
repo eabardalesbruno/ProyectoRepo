@@ -87,7 +87,7 @@ public class BookingEntity {
                 .dayBookingInit(Timestamp.valueOf(bookingSaveRequest.getDayBookingInit()
                         .atTime(15, 0)))
                 .dayBookingEnd(Timestamp.valueOf(bookingSaveRequest.getDayBookingEnd()
-                        .atTime(13, 0)))
+                        .atTime(12, 0)))
                 .createdAt(Timestamp.valueOf(ZonedDateTime.now(limaZoneId).toLocalDateTime()))
                 .build();
     }
