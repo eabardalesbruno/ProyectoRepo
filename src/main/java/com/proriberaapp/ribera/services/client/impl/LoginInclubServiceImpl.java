@@ -1,5 +1,8 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +29,7 @@ public class LoginInclubServiceImpl implements LoginInclubService {
     @Value("${inclub.api.url.user}")
     private String URL_LOGIN_USER;
 
-    @Value("${inclub.api.url.subscriptions}")
-    private String URL_MEMBERSHIPS;
-    @Value("${inclub.api.url.validate-password}")
+    @Value("${inclub.api.url.validate.credentials}")
     private String URL_VALIDATE_PASSWORD;
 
     @Autowired
@@ -85,31 +86,29 @@ public class LoginInclubServiceImpl implements LoginInclubService {
     @Override
     public Mono<ResponseValidateCredential> verifiedCredentialsInclub(String username, String password) {
         WebClient webClient = WebClient.create();
+        String encodedPassword = this.encodeValue(password);
+
         String url = UriComponentsBuilder.fromHttpUrl(URL_VALIDATE_PASSWORD)
                 .queryParam("username", username)
-                .queryParam("password", password)
+                .queryParam("password",
+                        password)
+                .encode()
                 .toUriString();
+
+        System.out.println(url);
         return webClient.post()
                 .uri(url)
-                .bodyValue(new LoginRequestDTO(username, password))
                 .retrieve()
-                .bodyToMono(ResponseValidateCredential.class);
+                .bodyToMono(ResponseValidateCredential.class).doOnNext(System.out::println).map(d -> {
+                    System.out.println(d);
+                    return d;
+                });
 
     }
 
-    @Override
-    public Mono<List<MembershipDto>> loadMemberships(int userId) {
-        WebClient webClient = WebClient.create(URL_MEMBERSHIPS);
+    private String encodeValue(String value) {
 
-        return webClient.post()
-                .uri("/".concat(
-                        String.valueOf(userId)))
-                .retrieve()
-                .bodyToMono(ResponseDataMembershipDto.class)
-                .flatMap(response -> {
-                    return Mono.just(response.getData().stream().filter(p -> p.getIdFamilyPackage() == 1).toList());
-                });
-
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 
 }

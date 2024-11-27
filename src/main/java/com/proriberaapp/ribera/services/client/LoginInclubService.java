@@ -10,7 +10,5 @@ import reactor.core.publisher.Mono;
 public interface LoginInclubService {
     Mono<ResponseValidateCredential> verifiedCredentialsInclub(String username, String password);
 
-    Mono<List<MembershipDto>> loadMemberships(int userId);
-
     Mono<String> login(String userName, String password);
 }
