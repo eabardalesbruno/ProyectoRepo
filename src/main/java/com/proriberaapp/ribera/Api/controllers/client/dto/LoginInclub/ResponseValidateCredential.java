@@ -10,4 +10,9 @@ import lombok.Setter;
 public class ResponseValidateCredential {
     private boolean result;
     private boolean data;
+
+    @Override
+    public String toString() {
+        return "ResponseValidateCredential(result=" + this.isResult() + ", data=" + this.isData() + ")";
+    }
 }

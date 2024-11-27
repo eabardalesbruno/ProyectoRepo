@@ -12,4 +12,9 @@ import lombok.Setter;
 public class ResponseDataMembershipDto {
     private boolean result;
     private List<MembershipDto> data;
+
+    @Override
+    public String toString() {
+        return "ResponseDataMembershipDto(result=" + this.isResult() + ", data=" + this.getData() + ")";
+    }
 }

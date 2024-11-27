@@ -87,12 +87,13 @@ public class LoginInclubServiceImpl implements LoginInclubService {
     public Mono<ResponseValidateCredential> verifiedCredentialsInclub(String username, String password) {
         WebClient webClient = WebClient.create();
         String encodedPassword = this.encodeValue(password);
-
         String url = UriComponentsBuilder.fromHttpUrl(URL_VALIDATE_PASSWORD)
                 .queryParam("username", username)
                 .queryParam("password",
-                        password)
-                .encode()
+                        password).qu
+                .encode(StandardCharsets.UTF_8)
+                .build()
+
                 .toUriString();
 
         System.out.println(url);
