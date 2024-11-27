@@ -3,6 +3,8 @@ package com.proriberaapp.ribera.services.client;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Domain.entities.UserApiEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserApiRepository;
+import com.proriberaapp.ribera.services.client.impl.WalletServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,12 +16,14 @@ public class UserRegistrationService {
     private final UserApiRepository userApiRepository;
     private final UserApiClient userApiClient;
     private final PasswordEncoder passwordEncoder;
+    private final WalletServiceImpl walletService;
 
     @Autowired
-    public UserRegistrationService(UserApiRepository userApiRepository, UserApiClient userApiClient, PasswordEncoder passwordEncoder) {
+    public UserRegistrationService(UserApiRepository userApiRepository, UserApiClient userApiClient, PasswordEncoder passwordEncoder, WalletServiceImpl walletService) {
         this.userApiRepository = userApiRepository;
         this.userApiClient = userApiClient;
         this.passwordEncoder = passwordEncoder;
+        this.walletService = walletService;
     }
 
     public Mono<Void> loginAndRegisterUser(String username, String password) {
@@ -39,7 +43,10 @@ public class UserRegistrationService {
                 userApiEntity.setFirstName(userDataDTO.getFirstName());
                 userApiEntity.setLastName(userDataDTO.getLastName());
                 userApiEntity.setPassword(passwordEncoder.encode(password));
-                return userApiRepository.save(userApiEntity).then();
+                return userApiRepository.save(userApiEntity)
+                        .flatMap(savedUser -> walletService.createWalletUsuario(savedUser.getUserClientId(),1) )
+                        .then();
+
             } else {
                 return Mono.error(new RuntimeException("No se pudieron obtener los datos del usuario desde la API"));
             }

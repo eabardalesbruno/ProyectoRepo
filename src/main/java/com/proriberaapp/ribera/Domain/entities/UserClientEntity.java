@@ -62,7 +62,11 @@ public class UserClientEntity implements UserDetails {
     private String googleId;
     @Column("googleemail")
     private String googleEmail;
+    @Column("username")
     private String username;
+
+    @Column("walletid")
+    private Integer walletId;
 
     private StatesUser status;
     private Timestamp createdat;

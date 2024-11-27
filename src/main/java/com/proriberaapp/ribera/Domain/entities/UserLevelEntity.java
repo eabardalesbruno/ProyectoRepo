@@ -19,4 +19,12 @@ public class UserLevelEntity {
     private String levelName;
     @Column("leveldescription")
     private String levelDescription;
+
+/*
+    //Agregado si es que no interfiere en otras
+    @Column("rankpromoterid")
+    private Integer rankPromoterId;
+
+ */
+
 }

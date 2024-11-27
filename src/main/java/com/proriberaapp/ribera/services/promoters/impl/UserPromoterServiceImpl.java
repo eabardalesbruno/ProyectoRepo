@@ -13,9 +13,13 @@ import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
 import com.proriberaapp.ribera.Domain.enums.StatesUser;
 import com.proriberaapp.ribera.Infraestructure.repository.UserPromoterRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.WalletRepository;
+import com.proriberaapp.ribera.services.client.impl.WalletServiceImpl;
 import com.proriberaapp.ribera.services.client.EmailService;
+import com.proriberaapp.ribera.services.client.impl.WalletServiceImpl;
 import com.proriberaapp.ribera.services.promoters.UserPromoterService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,6 +37,7 @@ public class UserPromoterServiceImpl implements UserPromoterService {
     private final JwtProvider jwtProvider;
     @Autowired
     private EmailService emailService;
+    private final WalletServiceImpl walletService;
     @Override
     public Mono<TokenDto> login(LoginRequest loginRequest) {
         return userPromoterRepository.findByUsernameOrEmail(loginRequest.username(), loginRequest.email())
@@ -44,7 +49,6 @@ public class UserPromoterServiceImpl implements UserPromoterService {
                 .map(user -> new TokenDto(jwtProvider.generateTokenPromoter(user)))
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "error generating token")));
     }
-
     public Mono<UserPromoterEntity> register(UserPromoterEntity userPromoter, String randomPassword) {
         long currentTimeMillis = System.currentTimeMillis();
         Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
@@ -82,11 +86,17 @@ public class UserPromoterServiceImpl implements UserPromoterService {
                 })
                 .flatMap(userPromoterRepository::save)
                 .flatMap(savedUser -> {
+                    // Crear la wallet después de guardar el usuario
+                    return walletService.createWalletPromoter(savedUser.getUserPromoterId(), 1)
+                            .then(Mono.just(savedUser)); // Retorna el usuario con la billetera creada
+                })
+                .flatMap(savedUser -> {
                     String emailBody = generatePromoterRegistrationEmailBody(savedUser, randomPassword);
                     return emailService.sendEmail(savedUser.getEmail(), "Confirmación de Registro como Promotor", emailBody)
                             .thenReturn(savedUser);
                 });
     }
+
     private void validatePassword(String password) {
         if (!password.matches("^(?=.*[0-9])(?=.*[a-zA-Z]).{8,}$")) {
             throw new RuntimeException("La contraseña debe contener al menos una letra y un número, y tener una longitud mínima de 8 caracteres");

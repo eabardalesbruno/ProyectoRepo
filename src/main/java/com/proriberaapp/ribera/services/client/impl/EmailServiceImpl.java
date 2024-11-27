@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.services.client.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -61,8 +62,47 @@ public class EmailServiceImpl implements EmailService {
             }
         }).then();
     }
-}
+    @Override
+    public Mono<Void> sendEmailWithAttachment(String toEmail, String body, String subject, String attachmentPath) {
+        return Mono.defer(() -> {
+            try {
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true);
+                helper.setFrom("notificacionesinclub@inclub.site");
+                helper.setTo(toEmail);
+                helper.setSubject(subject);
+                helper.setText(body, true);
 
+                FileSystemResource file = new FileSystemResource(attachmentPath);
+                if (file.exists()) {
+                    helper.addAttachment("Recibo de Pago.pdf", file);
+                } else {
+                    return Mono.error(new IllegalArgumentException("El archivo adjunto no existe"));
+                }
+
+                mailSender.send(message);
+                EmailLogEntity emailLog = EmailLogEntity.builder()
+                        .recipient(toEmail)
+                        .subject(subject)
+                        .body(body)
+                        .sentDate(Timestamp.valueOf(LocalDateTime.now()))
+                        .status("SENT")
+                        .build();
+
+                return emailLogRepository.save(emailLog).then();
+            } catch (MessagingException e) {
+                EmailLogEntity emailLog = EmailLogEntity.builder()
+                        .recipient(toEmail)
+                        .subject(subject)
+                        .body(body)
+                        .sentDate(Timestamp.valueOf(LocalDateTime.now()))
+                        .status("FAILED")
+                        .build();
+                return emailLogRepository.save(emailLog).then(Mono.error(e));
+            }
+        });
+    }
+}
 /*
 @Service
 public class EmailServiceImpl implements EmailService {
