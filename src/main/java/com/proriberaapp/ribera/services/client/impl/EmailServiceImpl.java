@@ -63,22 +63,42 @@ public class EmailServiceImpl implements EmailService {
         }).then();
     }
     @Override
-    public Mono<Void> sendEmailWithAttachment(String to, String subject, String body, String attachmentPath) {
-        return Mono.fromRunnable(() -> {
+    public Mono<Void> sendEmailWithAttachment(String toEmail, String body, String subject, String attachmentPath) {
+        return Mono.defer(() -> {
             try {
                 MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, true);
-                helper.setTo(to);
+                helper.setFrom("notificacionesinclub@inclub.site");
+                helper.setTo(toEmail);
                 helper.setSubject(subject);
-                helper.setText(body);
+                helper.setText(body, true);
 
-                // Adjuntar el archivo PDF
                 FileSystemResource file = new FileSystemResource(attachmentPath);
-                helper.addAttachment("Recibo de Pago.pdf", file);
+                if (file.exists()) {
+                    helper.addAttachment("Recibo de Pago.pdf", file);
+                } else {
+                    return Mono.error(new IllegalArgumentException("El archivo adjunto no existe"));
+                }
 
                 mailSender.send(message);
+                EmailLogEntity emailLog = EmailLogEntity.builder()
+                        .recipient(toEmail)
+                        .subject(subject)
+                        .body(body)
+                        .sentDate(Timestamp.valueOf(LocalDateTime.now()))
+                        .status("SENT")
+                        .build();
+
+                return emailLogRepository.save(emailLog).then();
             } catch (MessagingException e) {
-                e.printStackTrace(); // Manejo de errores
+                EmailLogEntity emailLog = EmailLogEntity.builder()
+                        .recipient(toEmail)
+                        .subject(subject)
+                        .body(body)
+                        .sentDate(Timestamp.valueOf(LocalDateTime.now()))
+                        .status("FAILED")
+                        .build();
+                return emailLogRepository.save(emailLog).then(Mono.error(e));
             }
         });
     }

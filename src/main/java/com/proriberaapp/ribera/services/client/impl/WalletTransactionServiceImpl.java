@@ -11,12 +11,12 @@ import com.proriberaapp.ribera.services.client.WalletTransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple3;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,6 +36,8 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     private final UserPromoterRepository userPromoterRepository;
     private final BookingRepository bookingRepository;
     private final CurrencyTypeRepository currencyTypeRepository;
+    private final RoomOfferRepository roomOfferRepository;
+    private final RoomRepository roomRepository;
 
     @Override
     public Mono<WalletTransactionEntity> makeTransfer(Integer walletIdOrigin, Integer walletIdDestiny, String emailDestiny, String cardNumber, BigDecimal amount, String motiveDescription) {
@@ -141,14 +143,13 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
         throw new IllegalArgumentException("Debe proporcionar email para buscar la wallet de destino.");
     }
 
-
+    //PARTE DE PAGO CON LA WALLET
     @Override
     public Mono<WalletTransactionEntity> makePayment(Integer walletId, Integer transactioncatid, Integer bookingId) {
         return walletRepository.findById(walletId)
                 .flatMap(walletEntity ->
                         bookingRepository.findById(bookingId)
                                 .flatMap(booking -> {
-                                    // Obtener el precio de la reserva
                                     BigDecimal amount = booking.getCostFinal();
 
                                     if (walletEntity.getBalance().compareTo(amount) >= 0) {
@@ -160,7 +161,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                                                                     .walletId(walletId)
                                                                     .currencyTypeId(walletEntity.getCurrencyTypeId())
                                                                     .transactionCategoryId(transactioncatid)
-                                                                    .amount(amount) // Usamos el precio de la reserva como el monto
+                                                                    .amount(amount)
                                                                     .operationCode(operationCode)
                                                                     .description("Pago de servicio")
                                                                     .inicialDate(Timestamp.valueOf(LocalDateTime.now()))
@@ -173,41 +174,41 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                                                                             booking.setBookingStateId(2);
                                                                             return bookingRepository.save(booking)
                                                                                     .then(getEmailAndLastNameByWalletOwner(walletEntity)
-                                                                                            .flatMap(email ->
-                                                                                                    currencyTypeRepository.findById(walletEntity.getCurrencyTypeId())
-                                                                                                            .flatMap(currency -> {
-                                                                                                                // Obtener los valores para el PDF
-                                                                                                                String codigotransaccion = transaction.getOperationCode();
-                                                                                                                String username = email.getT2(); // Nombre de usuario
-                                                                                                                String documentNumber = email.getT3(); // Número de documento
-                                                                                                                String fecha = LocalDateTime.now().toString(); // Fecha de emisión
-                                                                                                                String bookingid = bookingId.toString(); // ID de la reserva
-                                                                                                                String bookingiroomname = booking.getDetail(); // Nombre de la habitación
-                                                                                                                String precioVentaTotal = amount.toString(); // Precio total de la venta
+                                                                                            .flatMap(email -> roomOfferRepository.findById(booking.getRoomOfferId())
+                                                                                                    .flatMap(roomOffer -> roomRepository.findById(roomOffer.getRoomId())
+                                                                                                            .flatMap(room -> {
+                                                                                                                String roomName = room.getRoomName();
+                                                                                                                return currencyTypeRepository.findById(walletEntity.getCurrencyTypeId())
+                                                                                                                        .flatMap(currency -> {
+                                                                                                                            String codigotransaccion = transaction.getOperationCode();
+                                                                                                                            String username = email.getT2();
+                                                                                                                            String documentNumber = email.getT3();
+                                                                                                                            String fecha = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+                                                                                                                            String bookingid = bookingId.toString();
+                                                                                                                            String bookingiroomname = roomName;
+                                                                                                                            String precioVentaTotal = amount.setScale(2, RoundingMode.HALF_UP).toString(); // Precio total de la venta
 
-                                                                                                                // Generar el PDF para el recibo de pago
-                                                                                                                String pdfFilePath = System.getProperty("java.io.tmpdir") + "/payment_receipt_" + walletId + "_" + System.currentTimeMillis() + ".pdf";
-                                                                                                                try {
-                                                                                                                    generatePdfFromHtml(
-                                                                                                                            codigotransaccion,
-                                                                                                                            username,
-                                                                                                                            documentNumber,
-                                                                                                                            currency.getCurrencyTypeDescription(),
-                                                                                                                            fecha,
-                                                                                                                            bookingid,
-                                                                                                                            bookingiroomname,
-                                                                                                                            precioVentaTotal,
-                                                                                                                            pdfFilePath
-                                                                                                                    );
-                                                                                                                } catch (IOException e) {
-                                                                                                                    e.printStackTrace();
-                                                                                                                    return Mono.error(new Exception("Error al generar el PDF", e));
-                                                                                                                }
-
-                                                                                                                // Enviar el correo con el PDF adjunto
-                                                                                                                return sendSuccessEmail(email.getT1(), pdfFilePath)
-                                                                                                                        .then(Mono.just(savedTransaction));
+                                                                                                                            String pdfFilePath = System.getProperty("user.dir") + "/payment_receipt_" + walletId + "_" + System.currentTimeMillis() + ".pdf";
+                                                                                                                            try {
+                                                                                                                                File pdfFile = generatePdfFromHtml(
+                                                                                                                                        codigotransaccion,
+                                                                                                                                        username,
+                                                                                                                                        documentNumber,
+                                                                                                                                        currency.getCurrencyTypeDescription(),
+                                                                                                                                        fecha,
+                                                                                                                                        bookingid,
+                                                                                                                                        bookingiroomname,
+                                                                                                                                        precioVentaTotal,
+                                                                                                                                        pdfFilePath
+                                                                                                                                );
+                                                                                                                                return sendSuccessEmail(email.getT1(), pdfFilePath)
+                                                                                                                                        .then(Mono.just(savedTransaction));
+                                                                                                                            } catch (IOException e) {
+                                                                                                                                return Mono.error(new RuntimeException("Error al generar el PDF", e));
+                                                                                                                            }
+                                                                                                                        });
                                                                                                             })
+                                                                                                    )
                                                                                             ))
                                                                                     .onErrorResume(error -> Mono.just(savedTransaction));
                                                                         } else {
@@ -245,10 +246,26 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     }
 
 
-    private Mono<Void> sendSuccessEmail (String email,String pdfFilePath) {
+    private Mono<Void> sendSuccessEmail(String email, String pdfFilePath) {
+        File pdfFile = new File(pdfFilePath);
+        if (!pdfFile.exists()) {
+            return Mono.error(new RuntimeException("El archivo PDF no existe en la ruta especificada: " + pdfFile.getAbsolutePath()));
+        }
         String emailBody = generateSuccessEmailBody();
-        return emailService.sendEmailWithAttachment(email, "Pago Exitoso", emailBody, pdfFilePath);
 
+
+        return emailService.sendEmailWithAttachment(email, emailBody, "Constancia de Pago", pdfFilePath)
+                .doOnSuccess(v -> {
+                    boolean deleted = pdfFile.delete();
+                    if (!deleted) {
+                        System.err.println("Error al eliminar el archivo PDF: " + pdfFilePath);
+                    } else {
+                        System.out.println("Archivo PDF eliminado correctamente: " + pdfFilePath);
+                    }
+                })
+                .doOnError(e -> {
+                    System.err.println("Error al enviar el correo: " + e.getMessage());
+                });
     }
 
     private String generateSuccessEmailBody() {
