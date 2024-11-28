@@ -86,9 +86,13 @@ public class UserPromoterServiceImpl implements UserPromoterService {
                 })
                 .flatMap(userPromoterRepository::save)
                 .flatMap(savedUser -> {
-                    // Crear la wallet después de guardar el usuario
+                    // Creamos la wallet
                     return walletService.createWalletPromoter(savedUser.getUserPromoterId(), 1)
-                            .then(Mono.just(savedUser)); // Retorna el usuario con la billetera creada
+                            .flatMap(wallet -> {
+                                // Asignamos el walletId generado al userPromoter
+                                savedUser.setWalletId(wallet.getWalletId());
+                                return userPromoterRepository.save(savedUser);
+                            });
                 })
                 .flatMap(savedUser -> {
                     String emailBody = generatePromoterRegistrationEmailBody(savedUser, randomPassword);
