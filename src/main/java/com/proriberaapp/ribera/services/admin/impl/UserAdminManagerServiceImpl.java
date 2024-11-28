@@ -28,7 +28,7 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
 
     @Override
     public Mono<TokenDto> login(LoginRequest loginRequest) {
-        return userAdminRepository.findByUsernameOrEmail(loginRequest.username(), loginRequest.email())
+        return userAdminRepository.findByEmail(loginRequest.email())
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.NO_CONTENT, "user not found")))
                 .filter(user -> user.getStatus() == StatesUser.ACTIVE)
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "user is not active")))
