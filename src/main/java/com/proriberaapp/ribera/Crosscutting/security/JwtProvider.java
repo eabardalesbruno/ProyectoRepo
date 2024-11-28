@@ -60,7 +60,7 @@ public class JwtProvider {
                 .claim("roles", userDetails.getAuthorities())
                 .claim("permissions", userDetails.getPermission())
                 .claim("state", userDetails.getStatus())
-                
+
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
@@ -84,6 +84,7 @@ public class JwtProvider {
     public Integer getIdFromToken(String token) {
         return getClaimsFromToken(token.substring(7)).get("id", Integer.class);
     }
+
     public String getDocumentFromToken(String token) {
         return getClaimsFromToken(token.substring(7)).get("document", String.class);
     }

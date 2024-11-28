@@ -38,33 +38,38 @@ public class InvoiceDomain {
     private UUID id;
     private BigDecimal totalIgv;
     private BigDecimal subtotal;
+    private BigDecimal totalDiscount;
+    private BigDecimal percentageDiscount;
     private double tc = 3.2;
 
     // Este constructor sirve para crear una factura con los datos necesarios para
     // enviarla a la API
-    public InvoiceDomain(
-            InvoiceClientDomain client,
-            int paymentBookId,
-            double igvPercentaje,
-            int lastCorrelative,
-            InvoiceCurrency currency,
-            List<InvoiceItemDomain> items) {
-        this.taxPercentaje = igvPercentaje;
-        if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
-            this.tc = 0;
-        }
-        this.client = client;
-        this.items = items;
-        this.id = UUID.randomUUID();
-        this.paymentBookId = paymentBookId;
-        this.correlative = lastCorrelative + 1;
-        this.createdAt = Date.from(Instant.now());
-        this.currency = currency;
-        this.status = InvoiceStatus.PENDINGTOSEND;
-        this.calculatedTotals();
-        this.calculateInvoiceTypeName();
-        this.calculateInvoiceSerieName();
-    }
+    /*
+     * public InvoiceDomain(
+     * InvoiceClientDomain client,
+     * int paymentBookId,
+     * double igvPercentaje,
+     * int lastCorrelative,
+     * InvoiceCurrency currency,
+     * List<InvoiceItemDomain> items) {
+     * this.taxPercentaje = igvPercentaje;
+     * if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
+     * this.tc = 0;
+     * }
+     * this.client = client;
+     * this.items = items;
+     * this.id = UUID.randomUUID();
+     * this.percentageDiscount = new BigDecimal(0);
+     * this.paymentBookId = paymentBookId;
+     * this.correlative = lastCorrelative + 1;
+     * this.createdAt = Date.from(Instant.now());
+     * this.currency = currency;
+     * this.status = InvoiceStatus.PENDINGTOSEND;
+     * this.calculatedTotals();
+     * this.calculateInvoiceTypeName();
+     * this.calculateInvoiceSerieName();
+     * }
+     */
 
     /*
      * public InvoiceDomain(InvoiceClientDomain client,
@@ -89,33 +94,38 @@ public class InvoiceDomain {
      * this.calculateInvoiceSerieName();
      * }
      */
-    public InvoiceDomain(InvoiceClientDomain client,
-            int paymentBookId,
-            int lastCorrelative,
-            InvoiceCurrency currency) {
-        this.client = client;
-        if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
-            this.tc = 0;
-        }
-        this.items = new ArrayList<>();
-        this.id = UUID.randomUUID();
-        this.paymentBookId = paymentBookId;
-        this.correlative = lastCorrelative + 1;
-        this.taxPercentaje = 18;
-        this.createdAt = Date.from(Instant.now());
-        this.currency = currency;
-        this.status = InvoiceStatus.PENDINGTOSEND;
-        this.calculatedTotals();
-        this.calculateInvoiceTypeName();
-        this.calculateInvoiceSerieName();
-    }
+    /*
+     * public InvoiceDomain(InvoiceClientDomain client,
+     * int paymentBookId,
+     * int lastCorrelative,
+     * InvoiceCurrency currency) {
+     * this.client = client;
+     * if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
+     * this.tc = 0;
+     * }
+     * this.percentageDiscount = new BigDecimal(0);
+     * this.items = new ArrayList<>();
+     * this.id = UUID.randomUUID();
+     * this.paymentBookId = paymentBookId;
+     * this.correlative = lastCorrelative + 1;
+     * this.taxPercentaje = 18;
+     * this.createdAt = Date.from(Instant.now());
+     * this.currency = currency;
+     * this.status = InvoiceStatus.PENDINGTOSEND;
+     * this.calculatedTotals();
+     * this.calculateInvoiceTypeName();
+     * this.calculateInvoiceSerieName();
+     * }
+     */
 
-    public InvoiceDomain(InvoiceClientDomain client, int paymentBookId, double percentajeIgv, InvoiceCurrency currency,
-            InvoiceType typeP) {
+    public InvoiceDomain(InvoiceClientDomain client, Integer paymentBookId, double percentajeIgv,
+            InvoiceCurrency currency,
+            InvoiceType typeP, BigDecimal percentagDiscount) {
         this.client = client;
         if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
             this.tc = 0;
         }
+        this.percentageDiscount = percentagDiscount;
         this.items = new ArrayList<>();
         this.id = UUID.randomUUID();
         this.paymentBookId = paymentBookId;
@@ -125,47 +135,50 @@ public class InvoiceDomain {
         this.currency = currency;
         this.status = InvoiceStatus.PENDINGTOSEND;
         this.type = typeP.name();
-        this.calculatedTotals();
+        /* this.calculatedTotals(); */
         this.calculateInvoiceSerieName();
 
     }
 
-    public InvoiceDomain(InvoiceClientDomain client,
-            int paymentBookId,
-            double percentajeIgv,
-            int lastCorrelative,
-            InvoiceCurrency currency) {
-        this.client = client;
-        if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
-            this.tc = 0;
-        }
-        this.items = new ArrayList<>();
-        this.id = UUID.randomUUID();
-        this.paymentBookId = paymentBookId;
-        this.correlative = lastCorrelative + 1;
-        this.taxPercentaje = percentajeIgv;
-        this.createdAt = Date.from(Instant.now());
-        this.currency = currency;
-        this.status = InvoiceStatus.PENDINGTOSEND;
-        this.calculatedTotals();
-
-        this.calculateInvoiceTypeName();
-        this.calculateInvoiceSerieName();
-    }
+    /*
+     * public InvoiceDomain(InvoiceClientDomain client,
+     * int paymentBookId,
+     * double percentajeIgv,
+     * int lastCorrelative,
+     * InvoiceCurrency currency) {
+     * this.client = client;
+     * if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
+     * this.tc = 0;
+     * }
+     * this.percentageDiscount = new BigDecimal(0);
+     * this.items = new ArrayList<>();
+     * this.id = UUID.randomUUID();
+     * this.paymentBookId = paymentBookId;
+     * this.correlative = lastCorrelative + 1;
+     * this.taxPercentaje = percentajeIgv;
+     * this.createdAt = Date.from(Instant.now());
+     * this.currency = currency;
+     * this.status = InvoiceStatus.PENDINGTOSEND;
+     * this.calculatedTotals();
+     * 
+     * this.calculateInvoiceTypeName();
+     * this.calculateInvoiceSerieName();
+     * }
+     */
 
     public void addItem(InvoiceItemDomain item) {
         item.setPercentajeIgv(this.taxPercentaje);
         item.calculatedTotals(false);
         this.items.add(item);
+        this.calculatedTotals();
 
     }
 
     public void addItemWithIncludedIgv(InvoiceItemDomain item) {
         item.setPercentajeIgv(this.taxPercentaje);
         item.calculatedTotals(true);
-        this.calculatedTotals();
         this.items.add(item);
-
+        this.calculatedTotals();
     }
 
     public void setCorrelative(int correlativeP) {
@@ -183,8 +196,10 @@ public class InvoiceDomain {
                 .map(InvoiceItemDomain::getIgv)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
-
-        this.totalPayment = subtotal.add(totalIgv).setScale(2, RoundingMode.HALF_UP);
+        this.totalDiscount = subtotal.add(totalIgv).multiply(percentageDiscount.divide(new BigDecimal(
+                100)))
+                .setScale(2, RoundingMode.HALF_UP);
+        this.totalPayment = subtotal.add(totalIgv).subtract(totalDiscount).setScale(2, RoundingMode.HALF_UP);
 
     }
 
@@ -210,6 +225,9 @@ public class InvoiceDomain {
 
     // Es una entidad parcial falta los
     public InvoiceEntity toEntity(int idType, int idStatus, int companyId, int idCurrency) {
+        if (this.getCorrelative() == 0) {
+            throw new IllegalArgumentException("El correlativo no puede ser 0");
+        }
         return InvoiceEntity.builder().idPaymentBook(this.paymentBookId)
                 .id(this.id)
                 .totalIgv(this.totalIgv.doubleValue())

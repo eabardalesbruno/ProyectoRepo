@@ -7,6 +7,7 @@ import com.proriberaapp.ribera.Api.controllers.payme.entity.TokenizeEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
+import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
@@ -668,14 +669,16 @@ public class PayMeService {
                                                                                 InvoiceDomain invoice = new InvoiceDomain(
                                                                                                 invoiceClientDomain,
                                                                                                 updatedBooking.getBookingId(),
-                                                                                                0, InvoiceCurrency.PEN);
+                                                                                                18.0,
+                                                                                                InvoiceCurrency.PEN,
+                                                                                                InvoiceType.BOLETA,
+                                                                                                new BigDecimal(0));
 
                                                                                 InvoiceItemDomain item = new InvoiceItemDomain(
                                                                                                 updatedBooking.getRoomName(),
                                                                                                 updatedBooking.getRoomDescription(),
                                                                                                 1,
-                                                                                                totalCost,
-                                                                                                true);
+                                                                                                totalCost);
                                                                                 invoice.addItemWithIncludedIgv(
                                                                                                 item);
                                                                                 return paymentBookRepository

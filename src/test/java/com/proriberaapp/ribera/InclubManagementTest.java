@@ -2,12 +2,15 @@ package com.proriberaapp.ribera;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties.Jwt;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.proriberaapp.ribera.Api.controllers.exception.CredentialsInvalidException;
+import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.services.client.LoginInclubService;
 import com.proriberaapp.ribera.services.client.VerifiedDiscountService;
 
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 @SpringBootTest
@@ -20,6 +23,9 @@ public class InclubManagementTest {
     @Autowired
     private VerifiedDiscountService membershipValidateDiscountService;
 
+    @Autowired
+    private JwtProvider jwtProvider;
+
     @Test
     void testLogin() {
         StepVerifier.create(loginInclubService.login("EV48427283", "password321 23"))
@@ -29,13 +35,27 @@ public class InclubManagementTest {
     @Test
     void testLoginSuccess() {
         StepVerifier.create(loginInclubService.login("EV48427283", "password321#"))
-                .expectNextMatches(responseLogin -> !responseLogin.isBlank()).verifyComplete();
+                .expectNextMatches(responseLogin -> !responseLogin.getValue().isBlank()).verifyComplete();
     }
 
     @Test
     void testLoginFail() {
         StepVerifier.create(loginInclubService.login("EV48427283", "password321 23"))
                 .expectError(CredentialsInvalidException.class).verify();
+    }
+
+    @Test
+    void testValidateToken() {
+        StepVerifier.create(Mono.just(jwtProvider.validateToken(
+                "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJFVjQ4NDI3MjgzIiwicm9sZXMiOlt7ImF1dGhvcml0eSI6IjEifV0sImlkIjoxNjgsImlhdCI6MTczMjgwOTEyMywiZXhwIjoxNzMyODQ1MTIzfQ.L3Cg4gMBlYYJN_23jfno-DDKyFfuMcJirVKCvBb4Y3JmAkbop-301_oXimlBFdF3")))
+                .expectNextMatches(isValid -> isValid).verifyComplete();
+    }
+
+    @Test
+    void testInValidateToken() {
+        StepVerifier.create(Mono.just(jwtProvider.validateToken(
+                "212eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJFVjQ4NDI3MjgzIiwicm9sZXMiOlt7ImF1dGhvcml0eSI6IjEifV0sImlkIjoxNjgsImlhdCI6MTczMjgwOTEyMywiZXhwIjoxNzMyODQ1MTIzfQ.L3Cg4gMBlYYJN_23jfno-DDKyFfuMcJirVKCvBb4Y3JmAkbop-301_oXimlBFdF3")))
+                .expectNextMatches(isValid -> !isValid).verifyComplete();
     }
 
     @Test

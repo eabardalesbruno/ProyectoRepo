@@ -13,6 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.proriberaapp.ribera.Api.controllers.client.dto.TokenValid;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseInclubLoginDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseValidateCredential;
 import com.proriberaapp.ribera.Api.controllers.exception.CredentialsInvalidException;
@@ -41,9 +43,9 @@ public class LoginInclubServiceImpl implements LoginInclubService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public Mono<String> login(String userName, String password) {
+    public Mono<TokenValid> login(String userName, String password) {
         WebClient webClient = WebClient.create(this.URL_LOGIN_USER);
-        Mono<String> response = this.userClientRepository.findByUsername(userName)
+        Mono<TokenValid> response = this.userClientRepository.findByUsername(userName)
                 .switchIfEmpty(
                         this.verifiedCredentialsInclub(userName, password)
                                 .flatMap(responseValidate -> {
@@ -61,6 +63,7 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                                                         .address(null)
                                                         .email(responseInclubLoginDto.getData().getEmail())
                                                         .googleEmail(null)
+
                                                         .userLevelId(1)
                                                         .countryId(76)
                                                         .role(1)
@@ -70,6 +73,7 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                                                         .registerTypeId(13)
                                                         .documentNumber(
                                                                 null)
+                                                        .documenttypeId(1)
                                                         .createdat(
                                                                 currentTimestamp)
                                                         .cellNumber(responseInclubLoginDto.getData().getTelephone())
@@ -86,7 +90,8 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                         return Mono.error(new CredentialsInvalidException());
                     }
                     ;
-                    return Mono.just(jwtUtil.generateToken(user));
+                    TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user));
+                    return Mono.just(tokenValid);
                 });
 
         return response;

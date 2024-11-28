@@ -221,7 +221,7 @@ public class UserController {
     @PostMapping("/login-inclub")
     public Mono<ResponseEntity<LoginResponse>> loginUserInclub(@RequestBody LoginRequestDTO request) {
         return this.loginInclubService.login(request.getUsername(), request.getPassword())
-                .map(token -> new ResponseEntity<>(new LoginResponse(token, "tokenizado"), HttpStatus.OK))
+                .map(token -> new ResponseEntity<>(new LoginResponse(token.getValue(), "tokenizado"), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
 

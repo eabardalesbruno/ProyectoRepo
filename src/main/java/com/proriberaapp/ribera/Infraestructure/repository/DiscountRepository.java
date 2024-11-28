@@ -14,15 +14,39 @@ import reactor.core.publisher.Mono;
 public interface DiscountRepository extends R2dbcRepository<DiscountEntity, Integer> {
 
     @Query("""
-            select COALESCE(SUM(DISTINCT d.percentage),0) as percentage,d.name,d.id from
+            select COALESCE(d.percentage,0) as percentage,d.name,d.id from
             discount d
             join discount_item di on di.iddiscount=d.id
-            where d.maxreservationnumber>(select count(pb.paymentbookid) from paymentbook pb
-            where pb.userclientid=:idUser and pb.applydiscount=true)
+            where d.maxreservationnumber>(select count(dp.id) from discount_payment_book dp where dp.iddiscount=d.id and date_part('year', dp.createdat)=:year
+                      and  dp.idclient=:idUser)
             and di.idpackage iN (:idPackage)
             and d.status=1
             GROUP BY d.name,d.id;
                     """)
-    Mono<DiscountEntity> getPercentajeWithItemsDiscount(int idUser, List<Integer> idPackage);
+    Mono<DiscountEntity> getDiscountWithItems(int idUser, List<Integer> idPackage);
+
+    @Query("""
+            select COALESCE(d.percentage,0) as percentage,d.name,d.id from
+                      discount d
+                      join discount_item di on di.iddiscount=d.id
+                      where d.maxreservationnumber>(select count(dp.id) from discount_payment_book dp where dp.iddiscount=d.id and date_part('year', dp.createdat)=:year
+                      and  dp.idclient=:idUser)
+                      and di.idpackage iN (:idPackage)
+                      and d.status=1
+                      GROUP BY d.name,d.id;
+                  """)
+    Mono<DiscountEntity> getDiscountWithItemsAndYear(int idUser, List<Integer> idPackage, String year);
+
+    @Query("""
+            select COALESCE(d.percentage,0) as percentage,d.name,d.id from
+                      discount d
+                      join discount_item di on di.iddiscount=d.id
+                      where d.maxreservationnumber>(select count(dp.id) from discount_payment_book dp where dp.iddiscount=d.id and date_part('year', dp.createdat)=date_part('year',CURRENT_DATE)
+                      and  dp.idclient=:idUser)
+                      and di.idpackage iN (:idPackage)
+                      and d.status=1
+                      GROUP BY d.name,d.id;
+                  """)
+    Mono<DiscountEntity> getDiscountWithItemsAndCurrentYear(int idUser, List<Integer> idPackage);
 
 }

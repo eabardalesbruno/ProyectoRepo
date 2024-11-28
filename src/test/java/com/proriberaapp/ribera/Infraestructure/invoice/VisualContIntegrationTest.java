@@ -23,6 +23,7 @@ import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceStatusEntity;
 import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceTypeEntity;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceStatus;
+import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 import com.proriberaapp.ribera.Domain.invoice.CompanyDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
@@ -75,9 +76,10 @@ public class VisualContIntegrationTest {
                 CompanyDomain company = new CompanyDomain("ddd", "1233", "wdwd", "dwdwd", "wdwdw", "wdwdw", "wdwd");
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
                                 "123456789",
-                                "");
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, 1, InvoiceCurrency.PEN);
-                invoice.addItemWithIncludedIgv(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(58), false));
+                                "", 1);
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
+                                new BigDecimal(0));
+                invoice.addItemWithIncludedIgv(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(58)));
                 invoice.calculatedTotals();
                 Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice, company);
                 StepVerifier.create(response)
@@ -93,11 +95,12 @@ public class VisualContIntegrationTest {
                 CompanyDomain company = new CompanyDomain("ddd", "1233", "wdwd", "dwdwd", "wdwdw", "wdwdw", "wdwd");
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
                                 "123456789",
-                                "");
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, 1, InvoiceCurrency.PEN);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50), false));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20), false));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30), false));
+                                "", 1);
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
+                                new BigDecimal(0));
+                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
                 invoice.calculatedTotals();
                 Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice, company);
 
@@ -113,11 +116,12 @@ public class VisualContIntegrationTest {
         public void testFormatJsonFacture() {
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "12345678912", "Av. Los Pinos",
                                 "123456789",
-                                "");
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 0, InvoiceCurrency.PEN);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50), false));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20), false));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30), false));
+                                "", 1);
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
+                                new BigDecimal(0));
+                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
                 JSONObject json = sunatInvoice.formatJson(invoice);
                 StepVerifier.create(Mono.just(json))
                                 .expectNextMatches(jsonObject -> {
@@ -145,11 +149,12 @@ public class VisualContIntegrationTest {
         public void testFormatJsonBoleta() {
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
                                 "123456789",
-                                "");
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 0, InvoiceCurrency.PEN);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50), false));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20), false));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30), false));
+                                "", 1);
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
+                                new BigDecimal(0));
+                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
                 JSONObject json = sunatInvoice.formatJson(invoice);
                 StepVerifier.create(Mono.just(json))
                                 .expectNextMatches(jsonObject -> {
@@ -175,11 +180,12 @@ public class VisualContIntegrationTest {
         public void testFormatBaseJson() {
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
                                 "123456789",
-                                "");
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 0, InvoiceCurrency.PEN);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50), false));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20), false));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30), false));
+                                "", 1);
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
+                                new BigDecimal(0));
+                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
                 invoice.calculatedTotals();
                 JSONObject json = sunatInvoice.formatJson(invoice);
                 StepVerifier.create(Mono.just(json))
@@ -223,15 +229,16 @@ public class VisualContIntegrationTest {
         }
 
         @Test
-        public void savedAndSenInvoice() {
+        public void savedAndSendInvoice() {
                 CompanyDomain company = new CompanyDomain("ddd", "1233", "wdwd", "dwdwd", "wdwdw", "wdwdw", "wdwd");
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
                                 "123456789",
-                                "");
-                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, 1, InvoiceCurrency.PEN);
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(80), false));
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(90), false));
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(110), false));
+                                "", 1);
+                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN,
+                                InvoiceType.BOLETA, new BigDecimal(0));
+                invoiceDomain.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(80)));
+                invoiceDomain.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(90)));
+                invoiceDomain.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(110)));
                 invoiceDomain.calculatedTotals();
                 List<InvoiceItemEntity> items = invoiceDomain.getItems()
                                 .stream()
