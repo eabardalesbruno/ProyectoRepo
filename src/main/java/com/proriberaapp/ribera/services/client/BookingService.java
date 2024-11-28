@@ -40,7 +40,7 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Flux<CalendarDate> calendarDate(Integer id);
 
-    Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest,Boolean isPromoter);
+    Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest,Boolean isPromoter, Boolean isReceptionist);
 
     Mono<BigDecimal> getRiberaPointsByBookingId(Integer bookingId);
 
