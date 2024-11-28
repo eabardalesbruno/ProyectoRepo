@@ -59,6 +59,9 @@ public class InvoiceEntity {
 
     @Column("correlative")
     private int correlative;
+
+    @Column("iduser")
+    private int idUser;
     /* private InvoiceTypeEntity type; */
     /* private InvoiceStatusEntity statusEntity; */
     /* private InvoiceStatusEntity status; */

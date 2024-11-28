@@ -86,19 +86,27 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
         invoiceMap.put("tipo_cambio", invoice.getTc());
         invoiceMap.put("porcentaje_igv", String.valueOf(invoice.getTaxPercentaje()));
         invoiceMap.put("fecha_de_emision", new SimpleDateFormat("dd-MM-yyyy").format(Date.from(Instant.now())));
-        invoiceMap.put("entidad_codigo", invoice.getClient().getIdentifier());
-        invoiceMap.put("entidad_tipo_de_documento",
-                InvoiceClientTypeDocument
-                        .getInvoiceClientTypeDocumentByLenght(invoice.getClient().getIdentifier().length())
-                        .getCode());
-        invoiceMap.put("entidad_numero_de_documento", invoice.getClient().getIdentifier());
+        invoiceMap.put("entidad_codigo", invoice.getClient().getName());
+        invoiceMap.put("entidad_tipo_de_documento", "0"); // Código para documento no especificado
+        invoiceMap.put("entidad_numero_de_documento", "99999999"); // Valor predeterminado para documento no
+        invoiceMap.put("entidad_direccion", "");
+        if (invoice.getClient().getIdentifier() != null && !invoice.getClient().getIdentifier().isEmpty()) {
+            String identifier = invoice.getClient().getIdentifier();
+            InvoiceClientTypeDocument documentType = InvoiceClientTypeDocument
+                    .getInvoiceClientTypeDocumentByLenght(identifier.length());
+            invoiceMap.put("entidad_tipo_de_documento", documentType.getCode());
+            invoiceMap.put("entidad_numero_de_documento", identifier);
+        }
+        if (invoice.getClient().getAddress() != null) {
+            invoiceMap.put("entidad_direccion", invoice.getClient().getAddress());
+
+        }
         invoiceMap.put("entidad_denominacion", invoice.getClient().getName());
-        invoiceMap.put("entidad_direccion", invoice.getClient().getAddress());
         invoiceMap.put("entidad_email", invoice.getClient().getEmail());
         invoiceMap.put("moneda", invoice.getCurrency().getDecimalPlaces());
         invoiceMap.put("number", String.valueOf(invoice.getCorrelative()));
         invoiceMap.put("codigo_unico", String.valueOf(invoice.getCorrelative()).concat("-").concat(
-                invoice.getClient().getIdentifier()));
+                invoice.getId().toString()));
         invoiceMap.put("descuento_global", 0);
         invoiceMap.put("total_descuento", 0);
         invoiceMap.put("total_anticipo", 0);

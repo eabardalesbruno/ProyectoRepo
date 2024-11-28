@@ -662,7 +662,8 @@ public class PayMeService {
                                                                                                 userClient.getDocumentNumber(),
                                                                                                 userClient.getAddress(),
                                                                                                 userClient.getCellNumber(),
-                                                                                                userClient.getEmail());
+                                                                                                userClient.getEmail(),
+                                                                                                updatedBooking.getUserClientId());
 
                                                                                 InvoiceDomain invoice = new InvoiceDomain(
                                                                                                 invoiceClientDomain,

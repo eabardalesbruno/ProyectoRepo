@@ -64,7 +64,7 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                                 join booking b on b.bookingid=pb.bookingid
                                 join paymentmethod pm on pm.paymentmethodid=pb.paymentmethodid
                                 join paymenttype pt on pt.paymenttypeid=pb.paymenttypeid
-                        join currencytype ct on ct.currencytypeid=pb.currencytypeid
+                                join currencytype ct on ct.currencytypeid=pb.currencytypeid
                                 join paymentsubtype psub on psub.paymentsubtypeid=pb.paymentsubtypeid
                                 left join invoice inv on inv.idpaymentbook=pb.paymentbookid
 

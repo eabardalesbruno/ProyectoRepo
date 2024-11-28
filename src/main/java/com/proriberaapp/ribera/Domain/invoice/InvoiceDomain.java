@@ -111,7 +111,7 @@ public class InvoiceDomain {
     }
 
     public InvoiceDomain(InvoiceClientDomain client, int paymentBookId, double percentajeIgv, InvoiceCurrency currency,
-            InvoiceType type) {
+            InvoiceType typeP) {
         this.client = client;
         if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
             this.tc = 0;
@@ -124,7 +124,7 @@ public class InvoiceDomain {
         this.createdAt = Date.from(Instant.now());
         this.currency = currency;
         this.status = InvoiceStatus.PENDINGTOSEND;
-        this.type = type.name();
+        this.type = typeP.name();
         this.calculatedTotals();
         this.calculateInvoiceSerieName();
 
@@ -188,22 +188,6 @@ public class InvoiceDomain {
 
     }
 
-    /* private void calculatedTotalPayment() { */
-    /*
-     * this.totalPayment = this.items.stream().map(item ->
-     * item.getTotal()).reduce(new BigDecimal(
-     */
-    /* 0.0), BigDecimal::add).setScale(2, RoundingMode.HALF_UP); */
-    /* } */
-
-    /* private void calculatedTotalIgv() { */
-    /*
-     * this.totalIgv = this.items.stream().map(item -> item.getIgv()).reduce(new
-     * BigDecimal(
-     */
-    /* 0.0), BigDecimal::add).setScale(2, RoundingMode.HALF_UP); */
-    /* } */
-
     public void calculateInvoiceTypeName() {
         this.type = InvoiceType.getInvoiceTypeByLenght(this.client.getIdentifier().length()).name();
     }
@@ -232,9 +216,9 @@ public class InvoiceDomain {
                 .idCurrency(idCurrency)
                 .tc(this.tc)
                 .keySupplier(this.keySupplier)
+                .idUser(this.client.getId())
                 .identifierClient(this.client.getIdentifier())
                 .serie(this.serie)
-                .correlative(this.correlative)
                 .supplierNote(this.supplierNote)
                 .totalPayment(this.totalPayment.doubleValue())
                 .createdAt(this.createdAt)
