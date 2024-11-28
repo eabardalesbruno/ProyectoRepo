@@ -32,6 +32,7 @@ public class UserClientServiceImpl implements UserClientService {
     private UserApiClient userApiClient;
     @Autowired
     private EmailService emailService;
+    private final WalletServiceImpl walletServiceImpl;
     /*
     @Override
     public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
@@ -183,9 +184,18 @@ public class UserClientServiceImpl implements UserClientService {
                 })
                 .flatMap(userClientRepository::save)
                 .flatMap(savedUser -> {
-                    String emailBody = generateUserRegistrationEmailBody(savedUser, randomPassword);
-                    return emailService.sendEmail(savedUser.getEmail(), "Confirmación de Registro", emailBody)
-                            .thenReturn(savedUser);
+                    // Creacion de  la wallet con el número de la wallet único
+                    return walletServiceImpl.createWalletUsuario(savedUser.getUserClientId(), 1) // Creamos la wallet
+                            .flatMap(wallet -> {
+                                // Asociamos el walletId al usuario
+                                savedUser.setWalletId(wallet.getWalletId()); // Establecemos el walletId en el usuario
+                                return userClientRepository.save(savedUser)
+                                        .flatMap(updatedUser -> {
+                                            String emailBody = generateUserRegistrationEmailBody(updatedUser, randomPassword);
+                                            return emailService.sendEmail(updatedUser.getEmail(), "Confirmación de Registro", emailBody)
+                                                    .thenReturn(updatedUser);
+                                        });
+                            });
                 });
     }
 

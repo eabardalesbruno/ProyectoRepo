@@ -190,19 +190,13 @@ public class UserController {
 
                     return userClientService.registerUser(user, finalPassword)
                             .flatMap(savedUser -> {
-                                // Creamos la wallet con el número de tarjeta único
-                                return walletServiceImpl.createWalletUsuario(savedUser.getUserClientId(), 1)
-                                        .flatMap(wallet -> {
-                                            // Asociamos la wallet al usuario registrado
-                                            savedUser.setWalletId(wallet.getWalletId());
-                                            if ("1".equals(request.googleAuth()) && (request.password() == null || request.password().isEmpty())) {
-                                                return userClientService.loginWithGoogle(request.email())
-                                                        .map(token -> new ResponseEntity<>(new LoginResponse(token, ""), HttpStatus.OK));
-                                            } else {
-                                                return userClientService.login(request.email(), finalPassword)
-                                                        .map(token -> new ResponseEntity<>(new LoginResponse(token, savedUser.getUserClientId().toString()), HttpStatus.OK));
-                                            }
-                                        });
+                                if ("1".equals(request.googleAuth()) && (request.password() == null || request.password().isEmpty())) {
+                                    return userClientService.loginWithGoogle(request.email())
+                                            .map(token -> new ResponseEntity<>(new LoginResponse(token, ""), HttpStatus.OK));
+                                } else {
+                                    return userClientService.login(request.email(), finalPassword)
+                                            .map(token -> new ResponseEntity<>(new LoginResponse(token, savedUser.getUserClientId().toString()), HttpStatus.OK));
+                                }
                             });
                 }))
                 .onErrorResume(e -> Mono.just(new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST)));
