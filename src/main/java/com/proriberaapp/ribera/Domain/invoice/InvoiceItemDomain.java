@@ -69,29 +69,28 @@ public class InvoiceItemDomain {
          */ }
 
     public void calculatedTotals(boolean isIgvIncluded) {
-        double percentajeIgvValue = this.percentajeIgv / 100;
+        double igvValue = this.percentajeIgv / 100;
         if (isIgvIncluded) {
             /*
              * this.total = priceUnit.multiply(new BigDecimal(quantity)).setScale(2,
              * RoundingMode.HALF_UP);
-             * this.valorUnitario = priceUnit
-             * .divide(new BigDecimal(percentajeIgvValue).add(new BigDecimal(1)), 2,
-             * RoundingMode.HALF_UP);
-             * this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2,
-             * RoundingMode.HALF_UP);
-             * this.igv = subtotal.multiply(new BigDecimal(percentajeIgvValue)).setScale(2,
+             */
+            /*
+             * this.igv = total.multiply(new BigDecimal(igvValue)).setScale(2,
              * RoundingMode.HALF_UP);
              */
+            /* this.subtotal = total.subtract(igv).setScale(2, RoundingMode.HALF_UP); */
+            /*
+             * this.valorUnitario = total.subtract(igv).setScale(2, RoundingMode.HALF_UP);
+             */
             this.total = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
-            this.igv = total.multiply(new BigDecimal(percentajeIgvValue)).setScale(2, RoundingMode.HALF_UP);
-            this.valorUnitario = priceUnit
-                    .divide(new BigDecimal(percentajeIgvValue).add(new BigDecimal(1)), 2,
-                            RoundingMode.HALF_UP);
-            this.subtotal = total.subtract(igv).setScale(2, RoundingMode.HALF_UP);
+            this.valorUnitario = priceUnit.divide(BigDecimal.valueOf(1 + igvValue), 2, RoundingMode.HALF_UP);
+            this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
+            this.igv = subtotal.multiply(BigDecimal.valueOf(igvValue)).setScale(2, RoundingMode.HALF_UP);
         } else {
             this.valorUnitario = priceUnit;
             this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
-            this.igv = subtotal.multiply(new BigDecimal(percentajeIgvValue)).setScale(2, RoundingMode.HALF_UP);
+            this.igv = subtotal.multiply(BigDecimal.valueOf(igvValue)).setScale(2, RoundingMode.HALF_UP);
             this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
             /*
              * this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2,
@@ -145,7 +144,7 @@ public class InvoiceItemDomain {
                 .code(this.codProductSunat)
                 .description(this.description)
                 .quantity(this.quantity)
-                .priceUnit(this.priceUnit.doubleValue())
+                .priceUnit(this.valorUnitario.doubleValue())
                 .subtotal(this.subtotal.doubleValue())
                 .total(this.total.doubleValue())
                 .igv(this.igv.doubleValue())

@@ -17,7 +17,6 @@ import reactor.core.publisher.Mono;
 
 import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceClientTypeDocument;
-import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 import com.proriberaapp.ribera.Domain.invoice.CompanyDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceBaseProcess;
@@ -160,7 +159,7 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
             itemJson.put("nombre_categoria", "");
             itemJson.put("codigo_producto_sunat", "90111800");
             itemJson.put("cantidad", item.getQuantity());
-            itemJson.put("valor_unitario", item.getValorUnitario().doubleValue()); // Precio sin IGV);
+            itemJson.put("valor_unitario", item.getValorUnitario().doubleValue());
             itemJson.put("precio_unitario", item.getPriceUnit().doubleValue());
             itemJson.put("igv", item.getIgv().doubleValue());
             itemJson.put("tipo_de_igv", "1");

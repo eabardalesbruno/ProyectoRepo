@@ -431,14 +431,15 @@ public class InvoiceTests {
                 InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN,
                                 InvoiceType.FACTURA,
                                 new BigDecimal(0.0));
-                invoiceDomain.addItem(
+                invoiceDomain.addItemWithIncludedIgv(
                                 new InvoiceItemDomain("Reserva Habitación Doble", "AAA", 2, new BigDecimal("100.00")));
-                invoiceDomain.addItem(new InvoiceItemDomain("Reserva Habitación Sencilla", "BBB", 1,
+                invoiceDomain.addItemWithIncludedIgv(new InvoiceItemDomain("Reserva Habitación Sencilla", "BBB", 1,
                                 new BigDecimal("80.00")));
-                invoiceDomain.addItem(new InvoiceItemDomain("Servicio WiFi", "CCC", 3, new BigDecimal("10.00")));
-                invoiceDomain.calculatedTotals();
+                invoiceDomain.addItemWithIncludedIgv(
+                                new InvoiceItemDomain("Servicio WiFi", "CCC", 3, new BigDecimal("10.00")));
                 invoiceDomain.setKeySupplier("wdwdwd");
                 invoiceDomain.setSupplierNote("No se acepto tu factura");
+                invoiceDomain.setLinkPdf("http://example.com");
                 invoiceDomain.setStatus(InvoiceStatus.REJECTED);
                 List<InvoiceItemEntity> items = invoiceDomain.getItems()
                                 .stream()
