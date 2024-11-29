@@ -4,13 +4,16 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface UserClientRepository extends R2dbcRepository<UserClientEntity, Integer> {
     Mono<UserClientEntity> findByEmail(String email);
     Mono<UserClientEntity> findByGoogleId(String googleId);
-    Mono<UserClientEntity> findByDocumentNumber(String documentNumber);
+
+    @Query(value = "SELECT * FROM userclient u WHERE u.documentnumber = :documentNumber")
+    Mono<UserClientEntity> findByDocumentNumber(@Param("documentNumber") String documentNumber);
     UserDataDTO save(UserDataDTO userDataDTO);
     Flux<UserClientEntity> findAll();
     Mono<UserClientEntity> findById(Integer id);

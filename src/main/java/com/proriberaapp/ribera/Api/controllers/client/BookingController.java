@@ -7,6 +7,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
+import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.services.client.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -37,12 +38,30 @@ public class BookingController {
         Integer userClientId = jtp.getIdFromToken(token);
         return bookingService.findAllByUserClientIdAndBookingStateIdIn(userClientId, stateId);
     }
+
+    @GetMapping("/find/booking-by-id")
+    public Mono<ViewBookingReturn> findById(
+            @RequestParam("stateId") Integer stateId,
+            @RequestParam("bookingId") Integer bookingId,
+            @RequestParam("userClientId") Integer userClientId,
+            @RequestHeader("Authorization") String token
+            ) {
+        return bookingService.findByUserClientIdAndBookingIdAndBookingStateIdIn(userClientId,bookingId, stateId);
+    }
+
     @GetMapping("/find/all/state/by-promoter")
     public Flux<ViewBookingReturn> findAllByStateBookingsByPromoter(
             @RequestParam("stateId") Integer stateId,
             @RequestHeader("Authorization") String token) {
         Integer userPromoterId = jtp.getIdFromToken(token);
         return bookingService.findAllByUserPromoterIdAndBookingStateIdIn(userPromoterId, stateId);
+    }
+    @GetMapping("/find/all/state/by-receptionist")
+    public Flux<ViewBookingReturn> findAllByStateBookingsByReceptionist(
+            @RequestParam("stateId") Integer stateId,
+            @RequestHeader("Authorization") String token) {
+        Integer receptionistId = jtp.getIdFromToken(token);
+        return bookingService.findAllByReceptionistIdAndBookingStateIdIn(receptionistId, stateId);
     }
 
     @GetMapping("/find/all/roomType")
@@ -142,16 +161,15 @@ public class BookingController {
                     Integer userClientId = jtp.getIdFromToken(token);
                     String document = jtp.getDocumentFromToken(token);
                     Boolean isPromoter = (document != null && !document.isEmpty());
-
-                    log.info("userClientId: {}", userClientId);
-                    log.info("bookingSaveRequest: {}", bookingSaveRequest);
-
-                    return new Object[]{userClientId, isPromoter};
+                    String authority = jtp.getAuthorityFromToken(token);
+                    Boolean isReceptionist = Role.ROLE_RECEPTIONIST.name().equalsIgnoreCase(authority);
+                    return new Object[]{userClientId, isPromoter,isReceptionist};
                 })
                 .flatMap(userInfo -> {
                     Integer userClientId = (Integer) userInfo[0];
                     Boolean isPromoter = (Boolean) userInfo[1];
-                    return bookingService.save(userClientId, bookingSaveRequest, isPromoter);
+                    Boolean isReceptionist = (Boolean) userInfo[2];
+                    return bookingService.save(userClientId, bookingSaveRequest, isPromoter, isReceptionist);
                 });
     }
 
@@ -164,7 +182,7 @@ public class BookingController {
                     log.info("bookingSaveRequest: {}", bookingSaveRequest);
                     return roomOfferId;
                 })
-                .flatMap(userClientId -> bookingService.save(0, bookingSaveRequest, false));
+                .flatMap(userClientId -> bookingService.save(0, bookingSaveRequest, false,false));
     }
 
     @GetMapping("/{bookingId}/costfinal")

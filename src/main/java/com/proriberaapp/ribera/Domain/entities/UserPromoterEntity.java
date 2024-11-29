@@ -65,6 +65,8 @@ public class UserPromoterEntity implements UserDetails {
     @Column("genderid")
     private Integer genderId;
 
+    @Column("walletid")
+    private Integer walletId;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

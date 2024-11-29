@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.services.client.UserApiClient;
 import com.proriberaapp.ribera.services.client.UserClientService;
 import com.proriberaapp.ribera.services.client.UserRegistrationService;
+import com.proriberaapp.ribera.services.client.impl.WalletServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,8 @@ public class UserController {
     @Autowired
     private UserApiClient userApiClient;
     private final UserRegistrationService userRegistrationService;
+    @Autowired
+    private WalletServiceImpl walletServiceImpl;
 
     @Autowired
     public UserController(UserRegistrationService userRegistrationService) {
