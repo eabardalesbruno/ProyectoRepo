@@ -6,7 +6,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.Membership
 
 import reactor.core.publisher.Mono;
 
-public interface LoadMembershipsService {
+public interface MembershipsService {
     Mono<List<MembershipDto>> loadMembershipsActives(String userName);
 
     Mono<List<MembershipDto>> loadAllMemberships(int userId);

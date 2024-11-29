@@ -12,13 +12,13 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseDa
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseInclubLoginDto;
 import com.proriberaapp.ribera.Infraestructure.repository.DiscountRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
-import com.proriberaapp.ribera.services.client.LoadMembershipsService;
+import com.proriberaapp.ribera.services.client.MembershipsService;
 import com.proriberaapp.ribera.services.client.VerifiedDiscountService;
 
 import reactor.core.publisher.Mono;
 
 @Service
-public class MembershipInclubValidateDiscountService implements VerifiedDiscountService, LoadMembershipsService {
+public class MembershipInclubValidateDiscountService implements VerifiedDiscountService, MembershipsService {
 
     @Value("${inclub.api.url.subscriptions}")
     private String URL_MEMBERSHIPS;

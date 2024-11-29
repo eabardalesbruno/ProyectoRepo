@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
+import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.services.client.LoginInclubService;
 import com.proriberaapp.ribera.services.client.UserApiClient;
@@ -297,6 +298,12 @@ public class UserController {
             @RequestHeader("Authorization") String token) {
         Integer idUserClient = jwtProvider.getIdFromToken(token);
         return userClientService.findUserDTOById(idUserClient);
+    }
+
+    @GetMapping("/find/discount")
+    public Mono<UserNameAndDiscountDto> getDiscount(@RequestHeader("Authorization") String token) {
+        Integer idUserClient = jwtProvider.getIdFromToken(token);
+        return this.userClientService.getPercentageDiscount(idUserClient);
     }
 
     @GetMapping("/promotor/{userPromotorId}")
