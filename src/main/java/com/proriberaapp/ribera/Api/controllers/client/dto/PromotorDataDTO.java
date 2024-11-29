@@ -17,6 +17,7 @@ public class PromotorDataDTO {
     private String firstName;
     private String lastName;
     private String address;
+    private Integer walletId;
 
 
     public Mono<PromotorDataDTO> convertTo(UserPromoterEntity promotor) {
@@ -29,7 +30,7 @@ public class PromotorDataDTO {
         promotorDTO.setDocumentNumber(promotor.getDocumentNumber());
         promotorDTO.setEmail(promotor.getEmail());
         promotorDTO.setAddress(promotor.getAddress());
-
+        promotorDTO.setWalletId(promotor.getWalletId());
         return Mono.just(promotorDTO);
     }
 }
