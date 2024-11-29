@@ -48,6 +48,8 @@ public class InvoiceItemEntity {
 
     @Column("serienumber")
     private String serieNumber;
+    @Column("totaldiscount")
+    private double totalDiscount;
 
     public InvoiceItemEntity(
             UUID idInvoice,

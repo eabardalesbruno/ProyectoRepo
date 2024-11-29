@@ -107,7 +107,7 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
         invoiceMap.put("codigo_unico", String.valueOf(invoice.getCorrelative()).concat("-").concat(
                 invoice.getId().toString()));
         invoiceMap.put("descuento_global", 0);
-        invoiceMap.put("total_descuento", 0);
+        invoiceMap.put("total_descuento", invoice.getTotalDiscount().doubleValue());
         invoiceMap.put("total_anticipo", 0);
         invoiceMap.put("total_anticipo", 0);
         invoiceMap.put("total_exportacion", 0);
@@ -163,7 +163,7 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
             itemJson.put("precio_unitario", item.getPriceUnit().doubleValue());
             itemJson.put("igv", item.getIgv().doubleValue());
             itemJson.put("tipo_de_igv", "1");
-            itemJson.put("descuento", 0);
+            itemJson.put("descuento", item.getDiscount());
             itemJson.put("subtotal", item.getSubtotal().doubleValue());
             itemJson.put("total", item.getTotal().doubleValue());
             itemJson.put("icbper", 0);

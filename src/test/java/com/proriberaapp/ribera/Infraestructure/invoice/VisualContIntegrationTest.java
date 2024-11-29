@@ -82,7 +82,7 @@ public class VisualContIntegrationTest {
                                 "123456789",
                                 "", 1);
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
-                                new BigDecimal(0));
+                                0);
                 invoice.addItemWithIncludedIgv(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(58)));
                 invoice.calculatedTotals();
                 Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice, company);
@@ -101,7 +101,7 @@ public class VisualContIntegrationTest {
                                 "123456789",
                                 "", 1);
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
-                                new BigDecimal(0));
+                                0);
                 invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
                 invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
                 invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
@@ -122,7 +122,7 @@ public class VisualContIntegrationTest {
                                 "123456789",
                                 "", 1);
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
-                                new BigDecimal(0));
+                                0);
                 invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
                 invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
                 invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
@@ -155,7 +155,7 @@ public class VisualContIntegrationTest {
                                 "123456789",
                                 "", 1);
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
-                                new BigDecimal(0));
+                                0);
                 invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
                 invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
                 invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
@@ -186,7 +186,7 @@ public class VisualContIntegrationTest {
                                 "123456789",
                                 "", 1);
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
-                                new BigDecimal(0));
+                                0);
                 invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
                 invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
                 invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
@@ -239,7 +239,7 @@ public class VisualContIntegrationTest {
                                 "123456789",
                                 "", 1);
                 InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN,
-                                InvoiceType.BOLETA, new BigDecimal(0));
+                                InvoiceType.BOLETA, 0);
                 invoiceDomain.addItemWithIncludedIgv(
                                 new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(100)));
                 Mono<InvoiceTypeEntity> invoiceTypeEntity = this.invoiceTypeRepsitory
@@ -334,11 +334,24 @@ public class VisualContIntegrationTest {
                                 "123456789",
                                 "", 1);
                 InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN,
-                                InvoiceType.BOLETA, new BigDecimal(0));
+                                InvoiceType.BOLETA, 0);
+                invoiceDomain.addItemWithIncludedIgv(
+                                new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(100)));
+                invoiceDomain.addItemWithIncludedIgv(
+                                new InvoiceItemDomain("Item 1", "aaa", 13, new BigDecimal(80.88)));
+                StepVerifier.create(this.invoiceService.save(invoiceDomain)).verifyComplete();
+        }
+
+        @Test
+        public void testSendInvoiceDiscount() {
+                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
+                                "123456789",
+                                "", 1);
+                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN,
+                                InvoiceType.BOLETA, 10);
                 invoiceDomain.addItemWithIncludedIgv(
                                 new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(100)));
 
                 StepVerifier.create(this.invoiceService.save(invoiceDomain)).verifyComplete();
-                ;
         }
 }

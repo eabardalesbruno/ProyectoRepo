@@ -1,13 +1,11 @@
 package com.proriberaapp.ribera.Domain.invoice;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 import java.math.RoundingMode;
 
-import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceEntity;
 import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceItemEntity;
 
 import lombok.AllArgsConstructor;
@@ -31,31 +29,14 @@ public class InvoiceItemDomain {
     private String unitOfMeasurement;
     private double percentajeIgv;
     private BigDecimal valorUnitario;
+    private double percentajeDiscount;
+    private BigDecimal discount;
 
-    // Este constructor sirve para crear un item de factura con los datos necesarios
-    // para
-    /*
-     * public InvoiceItemDomain(String name, String description, int quantity,
-     * double percentajeIgv,
-     * BigDecimal priceUnit) {
-     * this.name = name;
-     * this.codProductSunat = "631210";
-     * this.description = description;
-     * if (quantity <= 0) {
-     * throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
-     * }
-     * this.quantity = quantity;
-     * this.priceUnit = priceUnit;
-     * this.percentajeIgv = percentajeIgv;
-     * this.unitOfMeasurement = "ZZ";
-     * this.createdAt = DateFormat.getDateInstance().getCalendar().getTime();
-     * this.calculatedTotals(false);
-     * }
-     */
     public InvoiceItemDomain(String name, String description, int quantity, BigDecimal priceUnit) {
         this.name = name;
         this.codProductSunat = "631210";
         this.description = description;
+        this.percentajeDiscount = 0;
         if (quantity <= 0) {
             throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
         }
@@ -68,39 +49,51 @@ public class InvoiceItemDomain {
          * this.calculatedTotals(isIgvIncluded);
          */ }
 
-    public void calculatedTotals(boolean isIgvIncluded) {
+    /*
+     * public void calculatedTotals(boolean isIgvIncluded) {
+     * double igvValue = this.percentajeIgv / 100;
+     * if (isIgvIncluded) {
+     * this.total = priceUnit.multiply(new BigDecimal(quantity)).setScale(2,
+     * RoundingMode.HALF_UP);
+     * this.valorUnitario = priceUnit.divide(BigDecimal.valueOf(1 + igvValue), 2,
+     * RoundingMode.HALF_UP);
+     * this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2,
+     * RoundingMode.HALF_UP);
+     * this.igv = subtotal.multiply(BigDecimal.valueOf(igvValue)).setScale(2,
+     * RoundingMode.HALF_UP);
+     * } else {
+     * this.valorUnitario = priceUnit;
+     * this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2,
+     * RoundingMode.HALF_UP);
+     * this.igv = subtotal.multiply(BigDecimal.valueOf(igvValue)).setScale(2,
+     * RoundingMode.HALF_UP);
+     * this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
+     * }
+     * }
+     */
+    public void calculatedTotals(boolean isIgvIncluded, double percentageDiscountP) {
         double igvValue = this.percentajeIgv / 100;
+        this.percentajeDiscount = percentageDiscountP;
+        double discountValue = this.percentajeDiscount / 100;
         if (isIgvIncluded) {
-            /*
-             * this.total = priceUnit.multiply(new BigDecimal(quantity)).setScale(2,
-             * RoundingMode.HALF_UP);
-             */
-            /*
-             * this.igv = total.multiply(new BigDecimal(igvValue)).setScale(2,
-             * RoundingMode.HALF_UP);
-             */
-            /* this.subtotal = total.subtract(igv).setScale(2, RoundingMode.HALF_UP); */
-            /*
-             * this.valorUnitario = total.subtract(igv).setScale(2, RoundingMode.HALF_UP);
-             */
-            this.total = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
             this.valorUnitario = priceUnit.divide(BigDecimal.valueOf(1 + igvValue), 2, RoundingMode.HALF_UP);
-            this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
+            this.discount = valorUnitario.multiply(BigDecimal.valueOf(discountValue))
+                    .setScale(2, RoundingMode.HALF_UP);
+            this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP)
+                    .subtract(discount);
             this.igv = subtotal.multiply(BigDecimal.valueOf(igvValue)).setScale(2, RoundingMode.HALF_UP);
+            /*
+             * this.total = priceUnit.multiply(new
+             * BigDecimal(quantity)).subtract(discount).setScale(2,
+             * RoundingMode.HALF_UP);
+             */
+            this.total = igv.add(subtotal);
         } else {
             this.valorUnitario = priceUnit;
             this.subtotal = priceUnit.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
             this.igv = subtotal.multiply(BigDecimal.valueOf(igvValue)).setScale(2, RoundingMode.HALF_UP);
-            this.total = this.subtotal.add(this.igv).setScale(2, RoundingMode.HALF_UP);
-            /*
-             * this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2,
-             * RoundingMode.HALF_UP);
-             */
-            /*
-             * this.igv = subtotal.multiply(new BigDecimal(percentajeIgvValue)).setScale(2,
-             * RoundingMode.HALF_UP);
-             */
-            /* this.total = subtotal.add(igv).setScale(2, RoundingMode.HALF_UP); */
+            this.discount = subtotal.multiply(BigDecimal.valueOf(discountValue)).setScale(2, RoundingMode.HALF_UP);
+            this.total = subtotal.add(igv).subtract(discount).setScale(2, RoundingMode.HALF_UP);
         }
     }
 
@@ -148,6 +141,7 @@ public class InvoiceItemDomain {
                 .subtotal(this.subtotal.doubleValue())
                 .total(this.total.doubleValue())
                 .igv(this.igv.doubleValue())
+                .totalDiscount(this.discount.doubleValue())
                 .createdAt(this.createdAt)
                 .unitOfMeasurement(this.unitOfMeasurement)
                 .idInvoice(

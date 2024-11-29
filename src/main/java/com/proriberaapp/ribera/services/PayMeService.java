@@ -672,7 +672,7 @@ public class PayMeService {
                                                                                                 18.0,
                                                                                                 InvoiceCurrency.PEN,
                                                                                                 InvoiceType.BOLETA,
-                                                                                                new BigDecimal(0));
+                                                                                                0);
 
                                                                                 InvoiceItemDomain item = new InvoiceItemDomain(
                                                                                                 updatedBooking.getRoomName(),

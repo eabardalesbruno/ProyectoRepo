@@ -35,17 +35,17 @@ public class InvoiceDomain {
     private BigDecimal totalIgv;
     private BigDecimal subtotal;
     private BigDecimal totalDiscount;
-    private BigDecimal percentageDiscount;
+    private double percentajeDiscount;
     private double tc = 3.2;
 
     public InvoiceDomain(InvoiceClientDomain client, Integer paymentBookId, double percentajeIgv,
             InvoiceCurrency currency,
-            InvoiceType typeP, BigDecimal percentagDiscount) {
+            InvoiceType typeP, double percentajeDiscount) {
         this.client = client;
         if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
             this.tc = 0;
         }
-        this.percentageDiscount = percentagDiscount;
+        this.percentajeDiscount = percentajeDiscount;
         this.items = new ArrayList<>();
         this.id = UUID.randomUUID();
         this.paymentBookId = paymentBookId;
@@ -63,7 +63,7 @@ public class InvoiceDomain {
 
     public void addItem(InvoiceItemDomain item) {
         item.setPercentajeIgv(this.taxPercentaje);
-        item.calculatedTotals(false);
+        item.calculatedTotals(false, this.percentajeDiscount);
         this.items.add(item);
         this.calculatedTotals();
 
@@ -71,7 +71,7 @@ public class InvoiceDomain {
 
     public void addItemWithIncludedIgv(InvoiceItemDomain item) {
         item.setPercentajeIgv(this.taxPercentaje);
-        item.calculatedTotals(true);
+        item.calculatedTotals(true, this.percentajeDiscount);
         this.items.add(item);
         this.calculatedTotals();
     }
@@ -82,6 +82,24 @@ public class InvoiceDomain {
     }
 
     public void calculatedTotals() {
+        /*
+         * this.subtotal = items.stream()
+         * .map(InvoiceItemDomain::getSubtotal)
+         * .reduce(BigDecimal.ZERO, BigDecimal::add)
+         * .setScale(2, RoundingMode.HALF_UP);
+         * 
+         * this.totalIgv = items.stream()
+         * .map(InvoiceItemDomain::getIgv)
+         * .reduce(BigDecimal.ZERO, BigDecimal::add)
+         * .setScale(2, RoundingMode.HALF_UP);
+         * this.totalDiscount = items.stream()
+         * .map(InvoiceItemDomain::getDiscount)
+         * .reduce(BigDecimal.ZERO, BigDecimal::add)
+         * .setScale(2, RoundingMode.HALF_UP);
+         * this.totalPayment =
+         * subtotal.add(totalIgv).subtract(totalDiscount).setScale(2,
+         * RoundingMode.HALF_UP);
+         */
         this.subtotal = items.stream()
                 .map(InvoiceItemDomain::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
@@ -91,10 +109,14 @@ public class InvoiceDomain {
                 .map(InvoiceItemDomain::getIgv)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
-        this.totalDiscount = subtotal.add(totalIgv).multiply(percentageDiscount.divide(new BigDecimal(
-                100)))
+        this.totalDiscount = items.stream()
+                .map(InvoiceItemDomain::getDiscount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
-        this.totalPayment = subtotal.add(totalIgv).setScale(2, RoundingMode.HALF_UP);
+        this.totalPayment = items.stream()
+                .map(InvoiceItemDomain::getTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
 
     }
 
@@ -132,6 +154,8 @@ public class InvoiceDomain {
                 .tc(this.tc)
                 .keySupplier(this.keySupplier)
                 .serie(serie)
+                .totalDiscount(this.totalDiscount.doubleValue())
+                .percentageDiscount(this.percentajeDiscount)
                 .idUser(this.client.getId())
                 .correlative(this.getCorrelative())
                 .supplierNote(this.supplierNote)
