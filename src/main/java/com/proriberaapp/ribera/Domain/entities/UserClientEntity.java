@@ -65,6 +65,9 @@ public class UserClientEntity implements UserDetails {
     @Column("username")
     private String username;
 
+    @Column("walletid")
+    private Integer walletId;
+
     private StatesUser status;
     private Timestamp createdat;
 

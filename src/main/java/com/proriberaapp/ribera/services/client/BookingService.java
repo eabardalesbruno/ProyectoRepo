@@ -40,7 +40,7 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Flux<CalendarDate> calendarDate(Integer id);
 
-    Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest,Boolean isPromoter);
+    Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest,Boolean isPromoter, Boolean isReceptionist);
 
     Mono<BigDecimal> getRiberaPointsByBookingId(Integer bookingId);
 
@@ -51,6 +51,8 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
     Flux<ViewBookingReturn> findAllByDayBookingInitAndDayBookingEndAndUserClientIdAndBookingStateId(Timestamp dayBookingInit, Timestamp dayBookingEnd, Integer userClientId, Integer bookingStateId);
 
     Flux<ViewBookingReturn> findAllByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(Integer numberAdults, Integer numberChildren, Integer numberBabies, Integer userClientId, Integer bookingStateId);
+
+    Flux<BookingEntity> findBookingsByStateId(Integer bookingStateId);
 
     Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(
             Integer bookingStateId,

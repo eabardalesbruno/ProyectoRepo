@@ -19,6 +19,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
 
         Mono<BookingEntity> findByBookingStateId(BookingEntity bookingEntity);
 
+        Flux<BookingEntity> findAllByBookingStateId(Integer bookingStateId);
+
         Flux<BookingEntity> findAllByBookingStateIdIn(List<BookingEntity> bookingEntity);
 
         Flux<BookingEntity> findAllByUserClientIdAndBookingStateId(Integer userClientId, Integer bookingStateId);

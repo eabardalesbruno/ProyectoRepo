@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class JwtProvider {
@@ -92,6 +93,16 @@ public class JwtProvider {
     public List<Permission> getPermissionsFromToken(String token) {
         return getClaimsFromToken(token.substring(7)).get("permissions", List.class);
     }
+
+    public String getAuthorityFromToken(String token) {
+        Claims claims = getClaimsFromToken(token.substring(7));
+        List<Map<String, String>> roles = claims.get("roles", List.class);
+        if (roles != null && !roles.isEmpty()) {
+            return roles.get(0).get("authority");
+        }
+        return null;
+    }
+
 
     public Claims getClaimsFromToken(String token) {
         return Jwts.parserBuilder()
