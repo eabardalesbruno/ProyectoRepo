@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.ContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.EventContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
+import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import reactor.core.publisher.Flux;
@@ -49,4 +50,6 @@ public interface UserClientService {
     Mono<Void> sendEventContactInfo(EventContactInfo eventContactInfo);
 
     Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId);
+
+    Mono<CompanyDataDto> loadDataRuc(String ruc);
 }

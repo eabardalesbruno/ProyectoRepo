@@ -105,7 +105,9 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                                	 ct.currencytypename,
                                	 ct.currencytypeid,
                                  pb.percentagediscount,
-                                pb.totalcostwithoutdiscount
+                                pb.totalcostwithoutdiscount,
+                                pb.invoicedocumentnumber,
+                                pb.invoicetype
                                FROM paymentbook pb
                                JOIN userclient u ON u.userclientid = pb.userclientid
                                join booking b on b.bookingid=pb.bookingid

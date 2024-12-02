@@ -72,7 +72,7 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                                                         .username(responseInclubLoginDto.getData().getUsername())
                                                         .registerTypeId(13)
                                                         .documentNumber(
-                                                                null)
+                                                                responseInclubLoginDto.getData().getNroDocument())
                                                         .documenttypeId(1)
                                                         .createdat(
                                                                 currentTimestamp)

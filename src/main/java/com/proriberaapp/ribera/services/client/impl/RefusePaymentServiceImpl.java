@@ -279,22 +279,27 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                         if (paymenbook.getPendingpay() == 0) {
                                                 paymenbook.setPaymentstateid(2);
                                                 paymenbook.setPendingpay(1);
-                                                String identifierClient = paymenbook.getUseridentifierclient() != null
-                                                                ? paymenbook.getUseridentifierclient()
-                                                                : "99999999";
+                                                /*
+                                                 * String identifierClient = paymenbook.getUseridentifierclient() !=
+                                                 * null
+                                                 * ? paymenbook.getUseridentifierclient()
+                                                 * : "99999999";
+                                                 */
                                                 InvoiceClientDomain clientDomain = new InvoiceClientDomain(
                                                                 paymenbook.getUsername(),
-                                                                identifierClient,
+                                                                paymenbook.getInvoicedocumentnumber(),
                                                                 paymenbook.getUseraddress(), paymenbook.getUserphone(),
                                                                 paymenbook.getUseremail(),
                                                                 paymenbook.getUserclientid());
                                                 InvoiceCurrency invoiceCurrency = InvoiceCurrency
                                                                 .getInvoiceCurrencyByCurrency(
                                                                                 paymenbook.getCurrencytypename());
+                                                InvoiceType type = InvoiceType.getInvoiceTypeByName(
+                                                                paymenbook.getInvoicetype().toUpperCase());
                                                 InvoiceDomain invoiceDomain = new InvoiceDomain(
                                                                 clientDomain,
                                                                 paymenbook.getPaymentbookid(), 18, invoiceCurrency,
-                                                                InvoiceType.BOLETA, paymenbook.getPercentagediscount());
+                                                                type, paymenbook.getPercentagediscount());
                                                 invoiceDomain.addItemWithIncludedIgv(new InvoiceItemDomain(
                                                                 paymenbook.getRoomname(),
                                                                 paymenbook.getRoomname(), 1,

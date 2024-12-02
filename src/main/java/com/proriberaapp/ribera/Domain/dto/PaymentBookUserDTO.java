@@ -31,5 +31,7 @@ public class PaymentBookUserDTO {
     private int currencytypeid;
     private double percentagediscount;
     private double totalcostwithoutdiscount;
+    private String invoicedocumentnumber;
+    private String invoicetype;
 
 }

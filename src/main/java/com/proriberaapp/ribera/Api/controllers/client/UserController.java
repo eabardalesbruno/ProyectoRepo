@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
+import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.services.client.LoginInclubService;
@@ -19,8 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.proriberaapp.ribera.utils.GeneralMethods.generatePassword;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
 import org.springframework.web.reactive.function.client.WebClient;
 
 @RestController
@@ -44,11 +44,6 @@ public class UserController {
     public UserController(UserRegistrationService userRegistrationService) {
         this.userRegistrationService = userRegistrationService;
     }
-
-    @Value("${url.api.ruc}")
-    private String rucApi;
-    @Value("${url.api.ruc.token}")
-    private String rucApiToken;
 
     /*
      * @PostMapping("/register")
@@ -169,15 +164,8 @@ public class UserController {
      * 
      */
     @GetMapping("/consult-ruc/{ruc}")
-    public Mono<?> getMethodName(@PathVariable String ruc) {
-        WebClient client = WebClient.create(this.rucApi);
-        return client.get()
-                .uri(uriBuilder -> uriBuilder.queryParam("numero",
-                        ruc).build())
-                .header("authorization", "Bearer " + this.rucApiToken)
-                .retrieve()
-                .bodyToMono(Object.class);
-
+    public Mono<CompanyDataDto> getMethodName(@PathVariable String ruc) {
+        return this.userClientService.loadDataRuc(ruc);
     }
 
     @PostMapping("/register")

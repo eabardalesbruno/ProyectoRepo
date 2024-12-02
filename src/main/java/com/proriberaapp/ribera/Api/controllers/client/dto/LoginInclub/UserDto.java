@@ -12,4 +12,5 @@ public class UserDto {
     private String lastName;
     private String username;
     private String telephone;
+    private String nroDocument;
 }

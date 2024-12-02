@@ -83,4 +83,9 @@ public class PaymentBookEntity {
 
     @Column("totalcostwithoutdiscount")
     private double totalCostWithOutDiscount;
+
+    @Column("invoicedocumentnumber")
+    private String invoiceDocumentNumber;
+    @Column("invoicetype")
+    private String invoiceType;
 }

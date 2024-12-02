@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.EventContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
+import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
@@ -16,8 +17,11 @@ import com.proriberaapp.ribera.services.client.VerifiedDiscountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -39,6 +43,10 @@ public class UserClientServiceImpl implements UserClientService {
     @Autowired
     private VerifiedDiscountService verifiedDiscountService;
     private final WalletServiceImpl walletServiceImpl;
+    @Value("${url.api.ruc}")
+    private String rucApi;
+    @Value("${url.api.ruc.token}")
+    private String rucApiToken;
     /*
      * @Override
      * public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
@@ -702,6 +710,17 @@ public class UserClientServiceImpl implements UserClientService {
                 this.verifiedDiscountService.verifiedPercentajeDiscount(userId)).flatMap(tuple -> {
                     return Mono.just(new UserNameAndDiscountDto(tuple.getT1().getUsername(), tuple.getT2()));
                 });
+    }
+
+    @Override
+    public Mono<CompanyDataDto> loadDataRuc(String ruc) {
+        WebClient client = WebClient.create(this.rucApi);
+        return client.get()
+                .uri(uriBuilder -> uriBuilder.queryParam("numero",
+                        ruc).build())
+                .header("authorization", "Bearer " + this.rucApiToken)
+                .retrieve()
+                .bodyToMono(CompanyDataDto.class);
     }
 
 }
