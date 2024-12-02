@@ -78,6 +78,7 @@ public class SecurityConfig {
                                 "/api/excel/**",
                                 "/api/reports/**",
                                 "/api/v1/wallet/**",
+                                "/api/v1/booking/find/**",
                                 "/swagger-doc/**"
                         ).permitAll()
 

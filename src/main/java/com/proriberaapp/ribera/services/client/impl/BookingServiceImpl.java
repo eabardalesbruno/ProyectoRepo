@@ -624,9 +624,48 @@ public class BookingServiceImpl implements BookingService {
                                 })
                 );
     }
+
+    @Override
+    public Mono<ViewBookingReturn> findByUserClientIdAndBookingIdAndBookingStateIdIn(Integer userClientId,Integer bookingId, Integer bookingStateId) {
+        return bookingRepository.findViewBookingReturnByUserClientIdAndBookingIdAndBookingStateId(userClientId, bookingId, bookingStateId)
+                .flatMap(viewBookingReturn ->
+                        comfortTypeRepository.findAllByViewComfortType(viewBookingReturn.getBookingId())
+                                .collectList().map(comfortTypeEntity -> {
+                                    viewBookingReturn.setListComfortType(comfortTypeEntity);
+                                    return viewBookingReturn;
+                                })
+                )
+                .flatMap(viewBookingReturn ->
+                        bedsTypeRepository.findAllByViewBedsType(viewBookingReturn.getBookingId())
+                                .collectList().map(bedsTypeEntity -> {
+                                    viewBookingReturn.setListBedsType(bedsTypeEntity);
+                                    return viewBookingReturn;
+                                })
+                );
+    }
+
     @Override
     public Flux<ViewBookingReturn> findAllByUserPromoterIdAndBookingStateIdIn(Integer userPromoterId, Integer bookingStateId) {
         return bookingRepository.findAllViewBookingReturnByUsePromoterIdAndBookingStateId(userPromoterId, bookingStateId)
+                .flatMap(viewBookingReturn ->
+                        comfortTypeRepository.findAllByViewComfortType(viewBookingReturn.getBookingId())
+                                .collectList().map(comfortTypeEntity -> {
+                                    viewBookingReturn.setListComfortType(comfortTypeEntity);
+                                    return viewBookingReturn;
+                                })
+                )
+                .flatMap(viewBookingReturn ->
+                        bedsTypeRepository.findAllByViewBedsType(viewBookingReturn.getBookingId())
+                                .collectList().map(bedsTypeEntity -> {
+                                    viewBookingReturn.setListBedsType(bedsTypeEntity);
+                                    return viewBookingReturn;
+                                })
+                );
+    }
+
+    @Override
+    public Flux<ViewBookingReturn> findAllByReceptionistIdAndBookingStateIdIn(Integer receptionistId, Integer bookingStateId) {
+        return bookingRepository.findAllViewBookingReturnByReceptionistIdAndBookingStateId(receptionistId, bookingStateId)
                 .flatMap(viewBookingReturn ->
                         comfortTypeRepository.findAllByViewComfortType(viewBookingReturn.getBookingId())
                                 .collectList().map(comfortTypeEntity -> {
