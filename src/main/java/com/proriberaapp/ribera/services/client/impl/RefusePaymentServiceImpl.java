@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Domain.entities.RefuseEntity;
 import com.proriberaapp.ribera.Domain.entities.RefusePaymentEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
+import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
@@ -19,6 +20,8 @@ import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceTypeRep
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.RefusePaymentService;
 import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
+
+import java.math.BigDecimal;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -276,21 +279,32 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                         if (paymenbook.getPendingpay() == 0) {
                                                 paymenbook.setPaymentstateid(2);
                                                 paymenbook.setPendingpay(1);
+                                                /*
+                                                 * String identifierClient = paymenbook.getUseridentifierclient() !=
+                                                 * null
+                                                 * ? paymenbook.getUseridentifierclient()
+                                                 * : "99999999";
+                                                 */
                                                 InvoiceClientDomain clientDomain = new InvoiceClientDomain(
                                                                 paymenbook.getUsername(),
-                                                                paymenbook.getUseridentifierclient(),
+                                                                paymenbook.getInvoicedocumentnumber(),
                                                                 paymenbook.getUseraddress(), paymenbook.getUserphone(),
-                                                                paymenbook.getUseremail());
+                                                                paymenbook.getUseremail(),
+                                                                paymenbook.getUserclientid());
                                                 InvoiceCurrency invoiceCurrency = InvoiceCurrency
                                                                 .getInvoiceCurrencyByCurrency(
                                                                                 paymenbook.getCurrencytypename());
+                                                InvoiceType type = InvoiceType.getInvoiceTypeByName(
+                                                                paymenbook.getInvoicetype().toUpperCase());
                                                 InvoiceDomain invoiceDomain = new InvoiceDomain(
                                                                 clientDomain,
-                                                                paymenbook.getPaymentbookid(), 0, invoiceCurrency);
+                                                                paymenbook.getPaymentbookid(), 18, invoiceCurrency,
+                                                                type, paymenbook.getPercentagediscount());
                                                 invoiceDomain.addItemWithIncludedIgv(new InvoiceItemDomain(
                                                                 paymenbook.getRoomname(),
-                                                                paymenbook.getRoomname(), 1, paymenbook.getTotalCost(),
-                                                                true));
+                                                                paymenbook.getRoomname(), 1,
+                                                                BigDecimal.valueOf(paymenbook
+                                                                                .getTotalcostwithoutdiscount())));
                                                 invoiceDomain.calculatedTotals();
                                                 UserClientEntity userClientEntity = UserClientEntity.builder()
                                                                 .userClientId(paymenbook.getUserclientid())

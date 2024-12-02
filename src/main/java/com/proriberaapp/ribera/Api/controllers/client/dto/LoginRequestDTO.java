@@ -1,5 +1,8 @@
 package com.proriberaapp.ribera.Api.controllers.client.dto;
 
+import lombok.AllArgsConstructor;
+
+@AllArgsConstructor
 public class LoginRequestDTO {
     private String username;
 

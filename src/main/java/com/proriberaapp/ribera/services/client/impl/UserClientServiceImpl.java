@@ -5,16 +5,23 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.EventContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
+import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
+import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.UserApiClient;
 import com.proriberaapp.ribera.services.client.UserClientService;
+import com.proriberaapp.ribera.services.client.VerifiedDiscountService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -32,116 +39,142 @@ public class UserClientServiceImpl implements UserClientService {
     private UserApiClient userApiClient;
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private VerifiedDiscountService verifiedDiscountService;
     private final WalletServiceImpl walletServiceImpl;
+    @Value("${url.api.ruc}")
+    private String rucApi;
+    @Value("${url.api.ruc.token}")
+    private String rucApiToken;
     /*
-    @Override
-    public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
-        return userClientRepository.findByEmail(userClient.getEmail())
-                .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
-                .then(Mono.defer(() -> {
-                    validatePassword(userClient.getPassword());
-                    return userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
-                            .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
-                            .then(Mono.just(userClient));
-                }))
-                .map(userToSave -> {
-                    userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword())); // Cifra la contraseña
-                    return userToSave;
-                })
-                .flatMap(userClientRepository::save);
-    }
-
+     * @Override
+     * public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
+     * return userClientRepository.findByEmail(userClient.getEmail())
+     * .flatMap(existingUser -> Mono.error(new
+     * RuntimeException("El correo electrónico ya está registrado")))
+     * .then(Mono.defer(() -> {
+     * validatePassword(userClient.getPassword());
+     * return
+     * userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
+     * .flatMap(existingUser -> Mono.error(new
+     * RuntimeException("El número de documento ya está registrado")))
+     * .then(Mono.just(userClient));
+     * }))
+     * .map(userToSave -> {
+     * userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword())); //
+     * Cifra la contraseña
+     * return userToSave;
+     * })
+     * .flatMap(userClientRepository::save);
+     * }
+     * 
      */
 
-    /* 01072024 REGISTRO DE USUARIO SIN EMAIL
-    public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
-        // Obtener la fecha y hora actual
-        long currentTimeMillis = System.currentTimeMillis();
-        Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
-        // Establecer la fecha y hora de creación
-        userClient.setCreatedat(currentTimestamp);
-        return userClientRepository.findByEmail(userClient.getEmail())
-                .flatMap(existingUser -> {
-                    if ("1".equals(userClient.getGoogleAuth())) {
-                        if (existingUser.getPassword() != null) {
-                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
-                        } else {
-                            return Mono.just(existingUser);
-                        }
-                    } else {
-                        if (existingUser.getPassword() != null) {
-                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
-                        } else {
-                            return Mono.just(existingUser);
-                        }
-                    }
-                })
-                .switchIfEmpty(Mono.defer(() -> {
-                    if (!"1".equals(userClient.getGoogleAuth())) {
-                        validatePassword(userClient.getPassword());
-                    }
-                    return userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
-                            .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
-                            .then(Mono.just(userClient));
-                }))
-                .map(userToSave -> {
-                    if (!"1".equals(userToSave.getGoogleAuth())) {
-                        log.info("Cifrar contraseña");
-                        userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
-                    }
-                    return userToSave;
-                })
-                .flatMap(userClientRepository::save);
-    }
-
+    /*
+     * 01072024 REGISTRO DE USUARIO SIN EMAIL
+     * public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
+     * // Obtener la fecha y hora actual
+     * long currentTimeMillis = System.currentTimeMillis();
+     * Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
+     * // Establecer la fecha y hora de creación
+     * userClient.setCreatedat(currentTimestamp);
+     * return userClientRepository.findByEmail(userClient.getEmail())
+     * .flatMap(existingUser -> {
+     * if ("1".equals(userClient.getGoogleAuth())) {
+     * if (existingUser.getPassword() != null) {
+     * return Mono.error(new
+     * RuntimeException("El correo electrónico ya está registrado con una contraseña"
+     * ));
+     * } else {
+     * return Mono.just(existingUser);
+     * }
+     * } else {
+     * if (existingUser.getPassword() != null) {
+     * return Mono.error(new
+     * RuntimeException("El correo electrónico ya está registrado con una contraseña"
+     * ));
+     * } else {
+     * return Mono.just(existingUser);
+     * }
+     * }
+     * })
+     * .switchIfEmpty(Mono.defer(() -> {
+     * if (!"1".equals(userClient.getGoogleAuth())) {
+     * validatePassword(userClient.getPassword());
+     * }
+     * return
+     * userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
+     * .flatMap(existingUser -> Mono.error(new
+     * RuntimeException("El número de documento ya está registrado")))
+     * .then(Mono.just(userClient));
+     * }))
+     * .map(userToSave -> {
+     * if (!"1".equals(userToSave.getGoogleAuth())) {
+     * log.info("Cifrar contraseña");
+     * userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
+     * }
+     * return userToSave;
+     * })
+     * .flatMap(userClientRepository::save);
+     * }
+     * 
      */
-/* 02072024
-    public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
-        long currentTimeMillis = System.currentTimeMillis();
-        Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
-        userClient.setCreatedat(currentTimestamp);
-
-        return userClientRepository.findByEmail(userClient.getEmail())
-                .flatMap(existingUser -> {
-                    if ("1".equals(userClient.getGoogleAuth())) {
-                        if (existingUser.getPassword() != null) {
-                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
-                        } else {
-                            return Mono.just(existingUser);
-                        }
-                    } else {
-                        if (existingUser.getPassword() != null) {
-                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
-                        } else {
-                            return Mono.just(existingUser);
-                        }
-                    }
-                })
-                .switchIfEmpty(Mono.defer(() -> {
-                    if (!"1".equals(userClient.getGoogleAuth())) {
-                        validatePassword(userClient.getPassword());
-                    }
-                    return userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
-                            .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
-                            .then(Mono.just(userClient));
-                }))
-                .map(userToSave -> {
-                    if (!"2".equals(userToSave.getGoogleAuth())) {
-                        userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
-                    }
-                    return userToSave;
-                })
-                .flatMap(userClientRepository::save)
-                .flatMap(savedUser -> {
-                    // Generar el cuerpo del correo de confirmación
-                    String emailBody = generateUserRegistrationEmailBody(savedUser);
-                    // Enviar el correo de confirmación
-                    return emailService.sendEmail(savedUser.getEmail(), "Confirmación de Registro", emailBody)
-                            .thenReturn(savedUser);
-                });
-    }
-
- */
+    /*
+     * 02072024
+     * public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
+     * long currentTimeMillis = System.currentTimeMillis();
+     * Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
+     * userClient.setCreatedat(currentTimestamp);
+     * 
+     * return userClientRepository.findByEmail(userClient.getEmail())
+     * .flatMap(existingUser -> {
+     * if ("1".equals(userClient.getGoogleAuth())) {
+     * if (existingUser.getPassword() != null) {
+     * return Mono.error(new
+     * RuntimeException("El correo electrónico ya está registrado con una contraseña"
+     * ));
+     * } else {
+     * return Mono.just(existingUser);
+     * }
+     * } else {
+     * if (existingUser.getPassword() != null) {
+     * return Mono.error(new
+     * RuntimeException("El correo electrónico ya está registrado con una contraseña"
+     * ));
+     * } else {
+     * return Mono.just(existingUser);
+     * }
+     * }
+     * })
+     * .switchIfEmpty(Mono.defer(() -> {
+     * if (!"1".equals(userClient.getGoogleAuth())) {
+     * validatePassword(userClient.getPassword());
+     * }
+     * return
+     * userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
+     * .flatMap(existingUser -> Mono.error(new
+     * RuntimeException("El número de documento ya está registrado")))
+     * .then(Mono.just(userClient));
+     * }))
+     * .map(userToSave -> {
+     * if (!"2".equals(userToSave.getGoogleAuth())) {
+     * userToSave.setPassword(passwordEncoder.encode(userToSave.getPassword()));
+     * }
+     * return userToSave;
+     * })
+     * .flatMap(userClientRepository::save)
+     * .flatMap(savedUser -> {
+     * // Generar el cuerpo del correo de confirmación
+     * String emailBody = generateUserRegistrationEmailBody(savedUser);
+     * // Enviar el correo de confirmación
+     * return emailService.sendEmail(savedUser.getEmail(),
+     * "Confirmación de Registro", emailBody)
+     * .thenReturn(savedUser);
+     * });
+     * }
+     * 
+     */
 
     public Mono<UserClientEntity> registerUser(UserClientEntity userClient, String randomPassword) {
         long currentTimeMillis = System.currentTimeMillis();
@@ -152,13 +185,15 @@ public class UserClientServiceImpl implements UserClientService {
                 .flatMap(existingUser -> {
                     if ("1".equals(userClient.getGoogleAuth())) {
                         if (existingUser.getPassword() != null) {
-                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
+                            return Mono.error(new RuntimeException(
+                                    "El correo electrónico ya está registrado con una contraseña"));
                         } else {
                             return Mono.just(existingUser);
                         }
                     } else {
                         if (existingUser.getPassword() != null) {
-                            return Mono.error(new RuntimeException("El correo electrónico ya está registrado con una contraseña"));
+                            return Mono.error(new RuntimeException(
+                                    "El correo electrónico ya está registrado con una contraseña"));
                         } else {
                             return Mono.just(existingUser);
                         }
@@ -169,12 +204,15 @@ public class UserClientServiceImpl implements UserClientService {
                         validatePassword(userClient.getPassword());
                     }
                     return userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
-                            .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
+                            .flatMap(existingUser -> Mono
+                                    .error(new RuntimeException("El número de documento ya está registrado")))
                             .then(Mono.just(userClient));
                 }))
                 .map(userToSave -> {
-                    if ("1".equals(userToSave.getGoogleAuth()) && (userToSave.getPassword() == null || userToSave.getPassword().isEmpty())) {
-                        // Si googleAuth es "1" y no hay contraseña, establecer la contraseña como null para evitar el cifrado vacío
+                    if ("1".equals(userToSave.getGoogleAuth())
+                            && (userToSave.getPassword() == null || userToSave.getPassword().isEmpty())) {
+                        // Si googleAuth es "1" y no hay contraseña, establecer la contraseña como null
+                        // para evitar el cifrado vacío
                         userToSave.setPassword(null);
                     } else if (!"1".equals(userToSave.getGoogleAuth())) {
                         // Cifrar la contraseña si no es una autenticación de Google
@@ -184,15 +222,18 @@ public class UserClientServiceImpl implements UserClientService {
                 })
                 .flatMap(userClientRepository::save)
                 .flatMap(savedUser -> {
-                    // Creacion de  la wallet con el número de la wallet único
+                    // Creacion de la wallet con el número de la wallet único
                     return walletServiceImpl.createWalletUsuario(savedUser.getUserClientId(), 1) // Creamos la wallet
                             .flatMap(wallet -> {
                                 // Asociamos el walletId al usuario
                                 savedUser.setWalletId(wallet.getWalletId()); // Establecemos el walletId en el usuario
                                 return userClientRepository.save(savedUser)
                                         .flatMap(updatedUser -> {
-                                            String emailBody = generateUserRegistrationEmailBody(updatedUser, randomPassword);
-                                            return emailService.sendEmail(updatedUser.getEmail(), "Confirmación de Registro", emailBody)
+                                            String emailBody = generateUserRegistrationEmailBody(updatedUser,
+                                                    randomPassword);
+                                            return emailService
+                                                    .sendEmail(updatedUser.getEmail(), "Confirmación de Registro",
+                                                            emailBody)
                                                     .thenReturn(updatedUser);
                                         });
                             });
@@ -201,7 +242,8 @@ public class UserClientServiceImpl implements UserClientService {
 
     private void validatePassword(String password) {
         if (!password.matches("^(?=.*[0-9])(?=.*[a-zA-Z]).{8,}$")) {
-            throw new RuntimeException("La contraseña debe contener al menos una letra y un número, y tener una longitud mínima de 8 caracteres");
+            throw new RuntimeException(
+                    "La contraseña debe contener al menos una letra y un número, y tener una longitud mínima de 8 caracteres");
         }
     }
 
@@ -298,9 +340,11 @@ public class UserClientServiceImpl implements UserClientService {
                 "        <div class=\"content\">\n" +
                 "            <h1>Registro exitoso!</h1>\n" +
                 "            <p>Hola " + userClient.getFirstName() + ",</p>\n" +
-                "            <p>Gracias por registrarte a la plataforma. Su correo registrado es " + userClient.getEmail() + ".</p>\n" +
+                "            <p>Gracias por registrarte a la plataforma. Su correo registrado es "
+                + userClient.getEmail() + ".</p>\n" +
                 "            <p>Y su contraseña es " + tempPassword + "</p>\n" +
-                "            <p>Si tienes alguna consulta, envianos tu consulta por correo. Tener en cuenta si creo una cuenta google, omitir la contraseña.</p>\n" +
+                "            <p>Si tienes alguna consulta, envianos tu consulta por correo. Tener en cuenta si creo una cuenta google, omitir la contraseña.</p>\n"
+                +
                 "        </div>\n" +
                 "    </div>\n" +
                 "\n" +
@@ -354,7 +398,8 @@ public class UserClientServiceImpl implements UserClientService {
                 .then(Mono.defer(() -> {
                     validatePassword(userClient.getPassword());
                     return userClientRepository.findByDocumentNumber(userClient.getDocumentNumber())
-                            .flatMap(existingUser -> Mono.error(new RuntimeException("El número de documento ya está registrado")))
+                            .flatMap(existingUser -> Mono
+                                    .error(new RuntimeException("El número de documento ya está registrado")))
                             .then(Mono.just(userClient));
                 }))
                 .map(userToSave -> {
@@ -402,12 +447,13 @@ public class UserClientServiceImpl implements UserClientService {
     }
 
     /*
-    public Mono<String> checkAndGenerateToken(String email) {
-        return userClientRepository.findByEmailOrGoogleIdOrGoogleEmail(email, email, email)
-                .filter(user -> "1".equals(user.getGoogleAuth()))
-                .flatMap(user -> Mono.just(jwtUtil.generateToken(user)))
-                .switchIfEmpty(Mono.error(new RuntimeException("")));
-    }
+     * public Mono<String> checkAndGenerateToken(String email) {
+     * return userClientRepository.findByEmailOrGoogleIdOrGoogleEmail(email, email,
+     * email)
+     * .filter(user -> "1".equals(user.getGoogleAuth()))
+     * .flatMap(user -> Mono.just(jwtUtil.generateToken(user)))
+     * .switchIfEmpty(Mono.error(new RuntimeException("")));
+     * }
      */
 
     public Mono<TokenResult> checkAndGenerateToken(String email) {
@@ -656,6 +702,25 @@ public class UserClientServiceImpl implements UserClientService {
                 "    </div>" +
                 "</body>" +
                 "</html>";
+    }
+
+    @Override
+    public Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId) {
+        return Mono.zip(this.userClientRepository.findById(userId),
+                this.verifiedDiscountService.verifiedPercentajeDiscount(userId)).flatMap(tuple -> {
+                    return Mono.just(new UserNameAndDiscountDto(tuple.getT1().getUsername(), tuple.getT2()));
+                });
+    }
+
+    @Override
+    public Mono<CompanyDataDto> loadDataRuc(String ruc) {
+        WebClient client = WebClient.create(this.rucApi);
+        return client.get()
+                .uri(uriBuilder -> uriBuilder.queryParam("numero",
+                        ruc).build())
+                .header("authorization", "Bearer " + this.rucApiToken)
+                .retrieve()
+                .bodyToMono(CompanyDataDto.class);
     }
 
 }

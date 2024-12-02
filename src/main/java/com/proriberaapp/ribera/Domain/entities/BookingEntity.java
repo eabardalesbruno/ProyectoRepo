@@ -69,7 +69,8 @@ public class BookingEntity {
     @Column("createdat")
     private Timestamp createdAt;
 
-    public static BookingEntity createBookingEntity(Integer userClientId, BookingSaveRequest bookingSaveRequest, Integer numberOfDays, Boolean isPromotor, Boolean isReceptionist) {
+    public static BookingEntity createBookingEntity(Integer userClientId, BookingSaveRequest bookingSaveRequest,
+            Integer numberOfDays, Boolean isPromotor, Boolean isReceptionist) {
         ZoneId limaZoneId = ZoneId.of("America/Lima");
         return BookingEntity.builder()
                 .roomOfferId(bookingSaveRequest.getRoomOfferId())
@@ -106,6 +107,5 @@ public class BookingEntity {
 
         return duration.toMinutes() >= 60;
     }
-
 
 }
