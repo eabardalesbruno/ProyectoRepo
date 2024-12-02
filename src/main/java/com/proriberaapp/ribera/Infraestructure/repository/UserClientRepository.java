@@ -21,8 +21,6 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
 
     Flux<UserClientEntity> findAll();
 
-    Mono<UserClientEntity> findById(Integer id);
-
     Mono<Void> deleteById(Integer id);
 
     Mono<UserClientEntity> findByUserClientId(Integer userClientId);
