@@ -78,6 +78,12 @@ public class PaymentBookDetailsDTO {
     private String invoiceSerie;
     @Column("invoiceLinkPdf")
     private String invoiceLinkPdf;
+    @Column("percentagediscount")
+    private double percentageDiscount;
+    @Column("totaldiscount")
+    private double totalDiscount;
+    @Column("totalcostwithoutdiscount")
+    private double totalCostWithOutDiscount;
 
     @Override
     public String toString() {

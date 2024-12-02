@@ -74,4 +74,13 @@ public class PaymentBookEntity {
 
     @Column("pendingpay")
     private Integer pendingpay;
+
+    @Column("percentagediscount")
+    private double percentageDiscount;
+
+    @Column("totaldiscount")
+    private double totalDiscount;
+
+    @Column("totalcostwithoutdiscount")
+    private double totalCostWithOutDiscount;
 }
