@@ -11,6 +11,7 @@ import com.proriberaapp.ribera.services.client.UserRegistrationService;
 import com.proriberaapp.ribera.services.client.impl.WalletServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.proriberaapp.ribera.utils.GeneralMethods.generatePassword;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -40,6 +44,11 @@ public class UserController {
     public UserController(UserRegistrationService userRegistrationService) {
         this.userRegistrationService = userRegistrationService;
     }
+
+    @Value("${url.api.ruc}")
+    private String rucApi;
+    @Value("${url.api.ruc.token}")
+    private String rucApiToken;
 
     /*
      * @PostMapping("/register")
@@ -159,6 +168,17 @@ public class UserController {
      * }
      * 
      */
+    @GetMapping("/consult-ruc/{ruc}")
+    public Mono<?> getMethodName(@PathVariable String ruc) {
+        WebClient client = WebClient.create(this.rucApi);
+        return client.get()
+                .uri(uriBuilder -> uriBuilder.queryParam("numero",
+                        ruc).build())
+                .header("authorization", "Bearer " + this.rucApiToken)
+                .retrieve()
+                .bodyToMono(Object.class);
+
+    }
 
     @PostMapping("/register")
     public Mono<Object> registerUser(@RequestBody RegisterRequest request) {
