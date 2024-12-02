@@ -3,15 +3,13 @@ package com.proriberaapp.ribera.Api.controllers.client;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.AuthorizationResponse;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.TransactionNecessaryResponse;
 import com.proriberaapp.ribera.Domain.entities.WalletTransactionEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.WalletRepository;
 import com.proriberaapp.ribera.services.client.WalletService;
 import com.proriberaapp.ribera.services.client.WalletTransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -23,6 +21,7 @@ public class WalletController {
 
     private final WalletService walletService;
     private final WalletTransactionService walletTransactionService;
+    private final WalletRepository walletRepository;
 
     @PostMapping("/create-wallet")
     public Mono<Integer> createWallet(@RequestParam Integer userClientId, @RequestParam Integer currencyId) {
@@ -69,5 +68,17 @@ public class WalletController {
         return walletTransactionService.makeRecharge(walletId, transactioncatid, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
+    }
+
+    @GetMapping("/{walletId}")
+    public Mono<String> getCardNumber(@PathVariable String cardNumber) {
+        return walletRepository.findByCardNumber(cardNumber)
+                .map(walletEntity -> walletEntity.getCardNumber());
+    }
+
+    @GetMapping("/balance/{walletId}")
+    public Mono<BigDecimal> getBalance(@PathVariable Integer walletId) {
+        return walletRepository.findById(walletId)
+                .map(walletEntity -> walletEntity.getBalance());
     }
 }
