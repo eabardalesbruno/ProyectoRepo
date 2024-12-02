@@ -70,7 +70,7 @@ public class WalletController {
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }
 
-    @GetMapping("/{walletId}")
+    @GetMapping("/cardnumber/{walletId}")
     public Mono<String> getCardNumber(@PathVariable String cardNumber) {
         return walletRepository.findByCardNumber(cardNumber)
                 .map(walletEntity -> walletEntity.getCardNumber());
