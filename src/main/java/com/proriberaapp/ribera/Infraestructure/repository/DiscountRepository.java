@@ -38,7 +38,7 @@ public interface DiscountRepository extends R2dbcRepository<DiscountEntity, Inte
     Mono<DiscountEntity> getDiscountWithItemsAndYear(int idUser, List<Integer> idPackage, String year);
 
     @Query("""
-            select COALESCE(d.percentage,0) as percentage,d.name,d.id from
+            select d.id,COALESCE(d.percentage,0) as percentage,d.name,d.id from
                       discount d
                       join discount_item di on di.iddiscount=d.id
                       where d.maxreservationnumber>(select count(dp.id) from discount_payment_book dp where dp.iddiscount=d.id and date_part('year', dp.createdat)=date_part('year',CURRENT_DATE)
