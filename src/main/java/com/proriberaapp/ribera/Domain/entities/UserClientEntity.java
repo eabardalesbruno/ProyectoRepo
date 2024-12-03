@@ -70,6 +70,7 @@ public class UserClientEntity implements UserDetails {
 
     private StatesUser status;
     private Timestamp createdat;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority((role.toString())));

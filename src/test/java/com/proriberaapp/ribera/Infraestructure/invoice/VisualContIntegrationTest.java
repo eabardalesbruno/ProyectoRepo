@@ -23,6 +23,7 @@ import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceStatusEntity;
 import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceTypeEntity;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceStatus;
+import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 import com.proriberaapp.ribera.Domain.invoice.CompanyDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
@@ -34,6 +35,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceItemRep
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceStateRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceTypeRepsitory;
+import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
 
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -64,6 +66,9 @@ public class VisualContIntegrationTest {
         @Autowired
         private InvoiceItemRepository invoiceItemRepository;
 
+        @Autowired
+        private InvoiceServiceI invoiceService;
+
         @BeforeEach
         public void setUp() {
                 MockitoAnnotations.openMocks(this);
@@ -75,9 +80,10 @@ public class VisualContIntegrationTest {
                 CompanyDomain company = new CompanyDomain("ddd", "1233", "wdwd", "dwdwd", "wdwdw", "wdwdw", "wdwd");
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
                                 "123456789",
-                                "");
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, 1, InvoiceCurrency.PEN);
-                invoice.addItemWithIncludedIgv(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(58), false));
+                                "", 1);
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
+                                0);
+                invoice.addItemWithIncludedIgv(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(58)));
                 invoice.calculatedTotals();
                 Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice, company);
                 StepVerifier.create(response)
@@ -93,11 +99,12 @@ public class VisualContIntegrationTest {
                 CompanyDomain company = new CompanyDomain("ddd", "1233", "wdwd", "dwdwd", "wdwdw", "wdwdw", "wdwd");
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
                                 "123456789",
-                                "");
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, 1, InvoiceCurrency.PEN);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50), false));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20), false));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30), false));
+                                "", 1);
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
+                                0);
+                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
                 invoice.calculatedTotals();
                 Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice, company);
 
@@ -113,11 +120,12 @@ public class VisualContIntegrationTest {
         public void testFormatJsonFacture() {
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "12345678912", "Av. Los Pinos",
                                 "123456789",
-                                "");
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 0, InvoiceCurrency.PEN);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50), false));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20), false));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30), false));
+                                "", 1);
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
+                                0);
+                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
                 JSONObject json = sunatInvoice.formatJson(invoice);
                 StepVerifier.create(Mono.just(json))
                                 .expectNextMatches(jsonObject -> {
@@ -145,11 +153,12 @@ public class VisualContIntegrationTest {
         public void testFormatJsonBoleta() {
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
                                 "123456789",
-                                "");
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 0, InvoiceCurrency.PEN);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50), false));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20), false));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30), false));
+                                "", 1);
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
+                                0);
+                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
                 JSONObject json = sunatInvoice.formatJson(invoice);
                 StepVerifier.create(Mono.just(json))
                                 .expectNextMatches(jsonObject -> {
@@ -175,11 +184,12 @@ public class VisualContIntegrationTest {
         public void testFormatBaseJson() {
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
                                 "123456789",
-                                "");
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, 0, InvoiceCurrency.PEN);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50), false));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20), false));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30), false));
+                                "", 1);
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
+                                0);
+                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
                 invoice.calculatedTotals();
                 JSONObject json = sunatInvoice.formatJson(invoice);
                 StepVerifier.create(Mono.just(json))
@@ -223,55 +233,94 @@ public class VisualContIntegrationTest {
         }
 
         @Test
-        public void savedAndSenInvoice() {
+        public void savedAndSendInvoice() {
                 CompanyDomain company = new CompanyDomain("ddd", "1233", "wdwd", "dwdwd", "wdwdw", "wdwdw", "wdwd");
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
                                 "123456789",
-                                "");
-                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, 1, InvoiceCurrency.PEN);
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(80), false));
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(90), false));
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(110), false));
-                invoiceDomain.calculatedTotals();
-                List<InvoiceItemEntity> items = invoiceDomain.getItems()
-                                .stream()
-                                .map(item -> item.toEntity(invoiceDomain.getId()))
-                                .collect(Collectors.toList());
+                                "", 1);
+                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN,
+                                InvoiceType.BOLETA, 0);
+                invoiceDomain.addItemWithIncludedIgv(
+                                new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(100)));
                 Mono<InvoiceTypeEntity> invoiceTypeEntity = this.invoiceTypeRepsitory
                                 .findByName(invoiceDomain.getType())
                                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid type")));
                 Mono<CurrencyTypeEntity> currencyTypeEntity = this.currencyTypeRepository
                                 .findByCurrencyTypeName(invoiceDomain.getCurrency().getCurrency())
                                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid currency")));
-                Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoiceDomain, company);
-                Mono<InvoiceEntity> data = response.flatMap(responseInvoice -> {
-                        invoiceDomain.setKeySupplier(responseInvoice.getKey());
-                        invoiceDomain.setSupplierNote(responseInvoice.getSunat_note());
-                        invoiceDomain.setStatus(responseInvoice.isAceptada_por_sunat() ? InvoiceStatus.ACEPTED
-                                        : InvoiceStatus.REJECTED);
-                        return Mono.just(invoiceDomain);
-                }).flatMap(invoiceD -> {
-                        return Mono.zip(invoiceTypeEntity, this.invoiceStatusRepository
-                                        .findByName(invoiceDomain.getStatus().getStatus())
-                                        .switchIfEmpty(Mono.error(new IllegalArgumentException(
-                                                        "Invalid status"))),
-                                        currencyTypeEntity).flatMap(tuple -> {
-                                                InvoiceTypeEntity invoiceType = tuple.getT1();
-                                                invoiceDomain.setCorrelative(invoiceType.getCorrelative());
-                                                InvoiceStatusEntity invoiceStatus = tuple.getT2();
-                                                CurrencyTypeEntity currencyType = tuple.getT3();
-                                                InvoiceEntity entity = invoiceDomain.toEntity(invoiceType.getId(),
-                                                                invoiceStatus.getId(), 1,
-                                                                currencyType.getCurrencyTypeId());
-                                                return this.invoiceRepsitory.save(entity)
-                                                                .flatMap(savedEntity -> this.invoiceItemRepository
-                                                                                .saveAll(items)
-                                                                                .then(this.invoiceTypeRepsitory
-                                                                                                .addCorrelative(invoiceDomain
-                                                                                                                .getType()))
-                                                                                .then(Mono.just(savedEntity)));
-                                        });
-                });
+                Mono<InvoiceEntity> data = invoiceTypeEntity.flatMap(invoiceType -> {
+                        invoiceDomain.setCorrelative(invoiceType.getCorrelative());
+                        invoiceDomain.setSerie(invoiceType.getSerie());
+                        return Mono.zip(Mono.just(invoiceDomain), Mono.just(invoiceType));
+                }).flatMap(tuple -> Mono.zip(this.sunatInvoice.sendInvoice(
+                                tuple.getT1(), company),
+                                Mono.just(tuple.getT1()), Mono.just(tuple.getT2())))
+                                .flatMap(tuple -> {
+                                        InvoiceResponse responseInvoice = tuple.getT1();
+                                        InvoiceDomain invoiceDomainD = tuple.getT2();
+                                        InvoiceTypeEntity invoiceType = tuple.getT3();
+                                        invoiceDomainD.setKeySupplier(responseInvoice.getKey());
+                                        invoiceDomainD.setSupplierNote(responseInvoice.getSunat_note());
+                                        invoiceDomainD.setStatus(responseInvoice.isAceptada_por_sunat()
+                                                        ? InvoiceStatus.ACEPTED
+                                                        : InvoiceStatus.REJECTED);
+                                        invoiceDomain.setLinkPdf(responseInvoice.getLink_pdf());
+                                        return Mono.zip(Mono.just(invoiceDomainD), Mono.just(invoiceType));
+                                }).flatMap(tuple -> Mono.zip(Mono.just(tuple.getT1()),
+                                                this.invoiceStatusRepository
+                                                                .findByName(invoiceDomain.getStatus().getStatus()),
+                                                Mono.just(tuple.getT2()),
+                                                currencyTypeEntity))
+                                .flatMap(tuple -> {
+                                        InvoiceDomain invoiceDomainD = tuple.getT1();
+                                        InvoiceStatusEntity invoiceStatus = tuple.getT2();
+                                        InvoiceTypeEntity invoiceType = tuple.getT3();
+                                        CurrencyTypeEntity currencyType = tuple.getT4();
+                                        InvoiceEntity entity = invoiceDomainD.toEntity(invoiceType.getId(),
+                                                        invoiceStatus.getId(), 1,
+                                                        currencyType.getCurrencyTypeId());
+                                        List<InvoiceItemEntity> itemsD = invoiceDomainD.getItems()
+                                                        .stream()
+                                                        .map(item -> item.toEntity(invoiceDomain.getId()))
+                                                        .collect(Collectors.toList());
+                                        return this.invoiceRepsitory.save(entity)
+                                                        .flatMap(savedEntity -> this.invoiceItemRepository
+                                                                        .saveAll(itemsD)
+                                                                        .then(this.invoiceTypeRepsitory.addCorrelative(
+                                                                                        invoiceDomainD.getType()))
+                                                                        .then(Mono.just(savedEntity)));
+                                });
+                /*
+                 * Mono<InvoiceEntity> data = response.flatMap(responseInvoice -> {
+                 * invoiceDomain.setKeySupplier(responseInvoice.getKey());
+                 * invoiceDomain.setSupplierNote(responseInvoice.getSunat_note());
+                 * invoiceDomain.setStatus(responseInvoice.isAceptada_por_sunat() ?
+                 * InvoiceStatus.ACEPTED
+                 * : InvoiceStatus.REJECTED);
+                 * return Mono.just(invoiceDomain);
+                 * }).flatMap(invoiceD -> {
+                 * return Mono.zip(invoiceTypeEntity, this.invoiceStatusRepository
+                 * .findByName(invoiceDomain.getStatus().getStatus())
+                 * .switchIfEmpty(Mono.error(new IllegalArgumentException(
+                 * "Invalid status"))),
+                 * currencyTypeEntity).flatMap(tuple -> {
+                 * InvoiceTypeEntity invoiceType = tuple.getT1();
+                 * invoiceDomain.setCorrelative(invoiceType.getCorrelative());
+                 * InvoiceStatusEntity invoiceStatus = tuple.getT2();
+                 * CurrencyTypeEntity currencyType = tuple.getT3();
+                 * InvoiceEntity entity = invoiceDomain.toEntity(invoiceType.getId(),
+                 * invoiceStatus.getId(), 1,
+                 * currencyType.getCurrencyTypeId());
+                 * return this.invoiceRepsitory.save(entity)
+                 * .flatMap(savedEntity -> this.invoiceItemRepository
+                 * .saveAll(items)
+                 * .then(this.invoiceTypeRepsitory
+                 * .addCorrelative(invoiceDomain
+                 * .getType()))
+                 * .then(Mono.just(savedEntity)));
+                 * });
+                 * });
+                 */
 
                 System.out.println("LLEGO ANTES DE VERIFICAR");
                 StepVerifier.create(data)
@@ -279,4 +328,30 @@ public class VisualContIntegrationTest {
                                 .verifyComplete();
         }
 
+        @Test
+        public void testSendInvoiceWithSave() {
+                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
+                                "123456789",
+                                "", 1);
+                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN,
+                                InvoiceType.BOLETA, 0);
+                invoiceDomain.addItemWithIncludedIgv(
+                                new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(100)));
+                invoiceDomain.addItemWithIncludedIgv(
+                                new InvoiceItemDomain("Item 1", "aaa", 13, new BigDecimal(80.88)));
+                StepVerifier.create(this.invoiceService.save(invoiceDomain)).verifyComplete();
+        }
+
+        @Test
+        public void testSendInvoiceDiscount() {
+                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
+                                "123456789",
+                                "", 1);
+                InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN,
+                                InvoiceType.BOLETA, 10);
+                invoiceDomain.addItemWithIncludedIgv(
+                                new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(100)));
+
+                StepVerifier.create(this.invoiceService.save(invoiceDomain)).verifyComplete();
+        }
 }

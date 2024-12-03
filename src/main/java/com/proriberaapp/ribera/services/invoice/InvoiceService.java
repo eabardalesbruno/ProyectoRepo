@@ -58,6 +58,7 @@ public class InvoiceService implements InvoiceServiceI {
                                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid currency")));
                 Mono<InvoiceResponse> response = invoiceTypeEntity.flatMap(invoiceType -> {
                         invoiceDomain.setCorrelative(invoiceType.getCorrelative());
+                        invoiceDomain.setSerie(invoiceType.getSerie());
                         return sunatInvoice.sendInvoice(invoiceDomain, company);
                 });
                 return response.flatMap(responseInvoice -> {

@@ -8,22 +8,141 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+
+import com.proriberaapp.ribera.Domain.entities.ExcelEntity;
+import com.proriberaapp.ribera.services.admin.ReportManagerService;
+
 import reactor.core.publisher.Mono;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ExcelServiceImpl {
 
+    private final ReportManagerService reportManagerService;
+
+    public ExcelServiceImpl(ReportManagerService reportManagerService) {
+        this.reportManagerService = reportManagerService;
+    }
+
+    public Mono<ByteArrayResource> generateExcelFromEntitiesByMonth(List<ExcelEntity> entities) {
+        try (InputStream is = new ClassPathResource("template.xlsm").getInputStream();
+                Workbook workbook = new XSSFWorkbook(is)) {
+
+            Map<String, List<ExcelEntity>> dataByMonth = entities.stream()
+                    .collect(Collectors.groupingBy(entity -> {
+                        int month = entity.getCreatedAt().getMonthValue();
+                        return getMonthName(month);
+                    }));
+
+            for (Map.Entry<String, List<ExcelEntity>> entry : dataByMonth.entrySet()) {
+                String sheetName = entry.getKey();
+                List<ExcelEntity> monthlyData = entry.getValue();
+
+                Sheet sheet = workbook.getSheet(sheetName);
+                if (sheet == null) {
+                    System.out.println("Hoja " + sheetName + " no encontrada en la plantilla. Se omite.");
+                    continue;
+                }
+
+                int startRow = 1;
+                DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+
+                for (ExcelEntity entity : monthlyData) {
+                    Row row = sheet.createRow(startRow++);
+
+                    String currency = switch (entity.getIdCurrency()) {
+                        case 1 -> "Soles";
+                        case 2 -> "Dolares";
+                        default -> "Moneda desconocida";
+                    };
+
+                    String formattedDate = entity.getCreatedAt().toLocalDate().format(dateFormatter);
+
+                    Map<String, Object> columnMapping = Map.of(
+                            "SerieDoc", entity.getSerie(),
+                            "Ruc_Prov", entity.getIdentifierClient().toString(),
+                            "Fecha", formattedDate,
+                            "Moneda", currency,
+                            "ValorTC", entity.getTc(),
+                            "Igv", entity.getTotalIgv(),
+                            "Total", entity.getTotalPayment());
+
+                    Row headerRow = sheet.getRow(0);
+                    if (headerRow == null) {
+                        throw new RuntimeException("La fila de cabeceras está vacía o no existe.");
+                    }
+
+                    for (int cellIndex = 0; cellIndex < headerRow.getLastCellNum(); cellIndex++) {
+                        Cell headerCell = headerRow.getCell(cellIndex);
+                        if (headerCell == null)
+                            continue;
+
+                        String headerName = headerCell.getStringCellValue();
+                        Object value = columnMapping.get(headerName);
+
+                        Cell cell = row.createCell(cellIndex);
+                        if (value != null) {
+                            cell.setCellValue(value.toString());
+                        } else {
+                            cell.setCellValue("");
+                        }
+                    }
+                }
+            }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            workbook.write(out);
+
+            ByteArrayResource resource = new ByteArrayResource(out.toByteArray());
+            System.out.println("Archivo Excel generado correctamente con datos organizados por mes.");
+            return Mono.just(resource);
+
+        } catch (IOException e) {
+            return Mono.error(new RuntimeException("Error al generar el archivo Excel", e));
+        }
+    }
+
+    private String getMonthName(int month) {
+        switch (month) {
+            case 1:
+                return "Enero";
+            case 2:
+                return "Febrero";
+            case 3:
+                return "Marzo";
+            case 4:
+                return "Abril";
+            case 5:
+                return "Mayo";
+            case 6:
+                return "Junio";
+            case 7:
+                return "Julio";
+            case 8:
+                return "Agosto";
+            case 9:
+                return "Septiembre";
+            case 10:
+                return "Octubre";
+            case 11:
+                return "Noviembre";
+            case 12:
+                return "Diciembre";
+            default:
+                throw new IllegalArgumentException("Mes inválido: " + month);
+        }
+    }
+
     public Mono<ByteArrayResource> generateExcelWithMonthlyData() {
-        //Cambiar por las listas de informacion en funcion de sus fechas
-        //Verificar que los campos insertados son texto o numericos
-        //Verificar que no me vole los macros del archivo
 
         Map<String, List<Map<String, Object>>> monthlyData = new HashMap<>();
 
@@ -77,7 +196,7 @@ public class ExcelServiceImpl {
         monthlyData.put("Enero", List.of(eneroData1));
 
         try (InputStream is = new ClassPathResource("template.xlsm").getInputStream();
-             Workbook workbook = new XSSFWorkbook(is)) {
+                Workbook workbook = new XSSFWorkbook(is)) {
 
             for (Map.Entry<String, List<Map<String, Object>>> entry : monthlyData.entrySet()) {
                 String sheetName = entry.getKey();
@@ -103,7 +222,7 @@ public class ExcelServiceImpl {
             workbook.write(out);
 
             ByteArrayResource resource = new ByteArrayResource(out.toByteArray());
-            System.out.println("Archivo Excel generado correctamente.");
+            System.out.println("Archivo Excel con data estática generado correctamente.");
             return Mono.just(resource);
         } catch (IOException e) {
             return Mono.error(new RuntimeException("Error generating Excel file", e));

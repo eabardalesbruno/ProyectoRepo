@@ -2,18 +2,14 @@ package com.proriberaapp.ribera.Domain.invoice;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.time.Instant;
 
 import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceEntity;
-import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceItemEntity;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
-import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceSerie;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceStatus;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 
@@ -38,84 +34,18 @@ public class InvoiceDomain {
     private UUID id;
     private BigDecimal totalIgv;
     private BigDecimal subtotal;
+    private BigDecimal totalDiscount;
+    private double percentajeDiscount;
     private double tc = 3.2;
 
-    // Este constructor sirve para crear una factura con los datos necesarios para
-    // enviarla a la API
-    public InvoiceDomain(
-            InvoiceClientDomain client,
-            int paymentBookId,
-            double igvPercentaje,
-            int lastCorrelative,
+    public InvoiceDomain(InvoiceClientDomain client, Integer paymentBookId, double percentajeIgv,
             InvoiceCurrency currency,
-            List<InvoiceItemDomain> items) {
-        this.taxPercentaje = igvPercentaje;
-        if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
-            this.tc = 0;
-        }
-        this.client = client;
-        this.items = items;
-        this.id = UUID.randomUUID();
-        this.paymentBookId = paymentBookId;
-        this.correlative = lastCorrelative + 1;
-        this.createdAt = Date.from(Instant.now());
-        this.currency = currency;
-        this.status = InvoiceStatus.PENDINGTOSEND;
-        this.calculatedTotals();
-        this.calculateInvoiceTypeName();
-        this.calculateInvoiceSerieName();
-    }
-
-    /*
-     * public InvoiceDomain(InvoiceClientDomain client,
-     * int paymentBookId,
-     * int lastCorrelative,
-     * InvoiceCurrency currency,
-     * List<InvoiceItemDomain> items) {
-     * this.client = client;
-     * this.items = items;
-     * if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
-     * this.tc = 0;
-     * }
-     * this.id = UUID.randomUUID();
-     * this.paymentBookId = paymentBookId;
-     * this.correlative = lastCorrelative + 1;
-     * this.taxPercentaje = 18;
-     * this.createdAt = Date.from(Instant.now());
-     * this.currency = currency;
-     * this.status = InvoiceStatus.PENDINGTOSEND;
-     * this.calculatedTotals();
-     * this.calculateInvoiceTypeName();
-     * this.calculateInvoiceSerieName();
-     * }
-     */
-    public InvoiceDomain(InvoiceClientDomain client,
-            int paymentBookId,
-            int lastCorrelative,
-            InvoiceCurrency currency) {
+            InvoiceType typeP, double percentajeDiscount) {
         this.client = client;
         if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
             this.tc = 0;
         }
-        this.items = new ArrayList<>();
-        this.id = UUID.randomUUID();
-        this.paymentBookId = paymentBookId;
-        this.correlative = lastCorrelative + 1;
-        this.taxPercentaje = 18;
-        this.createdAt = Date.from(Instant.now());
-        this.currency = currency;
-        this.status = InvoiceStatus.PENDINGTOSEND;
-        this.calculatedTotals();
-        this.calculateInvoiceTypeName();
-        this.calculateInvoiceSerieName();
-    }
-
-    public InvoiceDomain(InvoiceClientDomain client, int paymentBookId, double percentajeIgv, InvoiceCurrency currency,
-            InvoiceType type) {
-        this.client = client;
-        if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
-            this.tc = 0;
-        }
+        this.percentajeDiscount = percentajeDiscount;
         this.items = new ArrayList<>();
         this.id = UUID.randomUUID();
         this.paymentBookId = paymentBookId;
@@ -124,56 +54,52 @@ public class InvoiceDomain {
         this.createdAt = Date.from(Instant.now());
         this.currency = currency;
         this.status = InvoiceStatus.PENDINGTOSEND;
-        this.type = type.name();
-        this.calculatedTotals();
-        this.calculateInvoiceSerieName();
-
-    }
-
-    public InvoiceDomain(InvoiceClientDomain client,
-            int paymentBookId,
-            double percentajeIgv,
-            int lastCorrelative,
-            InvoiceCurrency currency) {
-        this.client = client;
-        if (currency.compareTo(InvoiceCurrency.PEN) == 0) {
-            this.tc = 0;
-        }
-        this.items = new ArrayList<>();
-        this.id = UUID.randomUUID();
-        this.paymentBookId = paymentBookId;
-        this.correlative = lastCorrelative + 1;
-        this.taxPercentaje = percentajeIgv;
-        this.createdAt = Date.from(Instant.now());
-        this.currency = currency;
-        this.status = InvoiceStatus.PENDINGTOSEND;
-        this.calculatedTotals();
-
-        this.calculateInvoiceTypeName();
-        this.calculateInvoiceSerieName();
+        this.type = typeP.name();
+        /* this.calculatedTotals(); */
+        /*
+         * this.calculateInvoiceSerieName();
+         */
     }
 
     public void addItem(InvoiceItemDomain item) {
         item.setPercentajeIgv(this.taxPercentaje);
-        item.calculatedTotals(false);
+        item.calculatedTotals(false, this.percentajeDiscount);
         this.items.add(item);
+        this.calculatedTotals();
 
     }
 
     public void addItemWithIncludedIgv(InvoiceItemDomain item) {
         item.setPercentajeIgv(this.taxPercentaje);
-        item.calculatedTotals(true);
-        this.calculatedTotals();
+        item.calculatedTotals(true, this.percentajeDiscount);
         this.items.add(item);
-
+        this.calculatedTotals();
     }
 
     public void setCorrelative(int correlativeP) {
         this.correlative = correlativeP;
-        this.calculateInvoiceSerieName();
+
     }
 
     public void calculatedTotals() {
+        /*
+         * this.subtotal = items.stream()
+         * .map(InvoiceItemDomain::getSubtotal)
+         * .reduce(BigDecimal.ZERO, BigDecimal::add)
+         * .setScale(2, RoundingMode.HALF_UP);
+         * 
+         * this.totalIgv = items.stream()
+         * .map(InvoiceItemDomain::getIgv)
+         * .reduce(BigDecimal.ZERO, BigDecimal::add)
+         * .setScale(2, RoundingMode.HALF_UP);
+         * this.totalDiscount = items.stream()
+         * .map(InvoiceItemDomain::getDiscount)
+         * .reduce(BigDecimal.ZERO, BigDecimal::add)
+         * .setScale(2, RoundingMode.HALF_UP);
+         * this.totalPayment =
+         * subtotal.add(totalIgv).subtract(totalDiscount).setScale(2,
+         * RoundingMode.HALF_UP);
+         */
         this.subtotal = items.stream()
                 .map(InvoiceItemDomain::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
@@ -183,38 +109,30 @@ public class InvoiceDomain {
                 .map(InvoiceItemDomain::getIgv)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
-
-        this.totalPayment = subtotal.add(totalIgv).setScale(2, RoundingMode.HALF_UP);
+        this.totalDiscount = items.stream()
+                .map(InvoiceItemDomain::getDiscount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
+        this.totalPayment = items.stream()
+                .map(InvoiceItemDomain::getTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
 
     }
-
-    /* private void calculatedTotalPayment() { */
-    /*
-     * this.totalPayment = this.items.stream().map(item ->
-     * item.getTotal()).reduce(new BigDecimal(
-     */
-    /* 0.0), BigDecimal::add).setScale(2, RoundingMode.HALF_UP); */
-    /* } */
-
-    /* private void calculatedTotalIgv() { */
-    /*
-     * this.totalIgv = this.items.stream().map(item -> item.getIgv()).reduce(new
-     * BigDecimal(
-     */
-    /* 0.0), BigDecimal::add).setScale(2, RoundingMode.HALF_UP); */
-    /* } */
 
     public void calculateInvoiceTypeName() {
         this.type = InvoiceType.getInvoiceTypeByLenght(this.client.getIdentifier().length()).name();
     }
 
-    public void calculateInvoiceSerieName() {
-        int maxDigits = 4;
-        String prefix = InvoiceSerie.getInvoiceSerieByName(this.getType()).name();
-        String endWith = "0".repeat(maxDigits - prefix.length() - String.valueOf(this.correlative).length());
-        this.serie = prefix.concat(endWith).concat(String.valueOf(this.correlative));
-    }
-
+    /*
+     * public void calculateInvoiceSerieName() {
+     * int maxDigits = 4;
+     * String prefix = InvoiceSerie.getInvoiceSerieByName(this.getType()).name();
+     * String endWith = "0".repeat(maxDigits - prefix.length() -
+     * String.valueOf(this.correlative).length());
+     * this.serie = prefix.concat(endWith).concat(String.valueOf(this.correlative));
+     * }
+     */
     @Override
     public String toString() {
         return "InvoiceDomain [client=" + client + ", subtotal=" + subtotal + ", correlative=" + correlative
@@ -226,16 +144,22 @@ public class InvoiceDomain {
 
     // Es una entidad parcial falta los
     public InvoiceEntity toEntity(int idType, int idStatus, int companyId, int idCurrency) {
+        if (this.getCorrelative() == 0) {
+            throw new IllegalArgumentException("El correlativo no puede ser 0");
+        }
         return InvoiceEntity.builder().idPaymentBook(this.paymentBookId)
                 .id(this.id)
                 .totalIgv(this.totalIgv.doubleValue())
                 .idCurrency(idCurrency)
                 .tc(this.tc)
                 .keySupplier(this.keySupplier)
-                .identifierClient(this.client.getIdentifier())
-                .serie(this.serie)
-                .correlative(this.correlative)
+                .serie(serie)
+                .totalDiscount(this.totalDiscount.doubleValue())
+                .percentageDiscount(this.percentajeDiscount)
+                .idUser(this.client.getId())
+                .correlative(this.getCorrelative())
                 .supplierNote(this.supplierNote)
+                .identifierClient(this.client.getIdentifier())
                 .totalPayment(this.totalPayment.doubleValue())
                 .createdAt(this.createdAt)
                 .idStatus(idStatus)

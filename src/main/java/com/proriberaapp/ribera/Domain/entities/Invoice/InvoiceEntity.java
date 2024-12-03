@@ -59,6 +59,15 @@ public class InvoiceEntity {
 
     @Column("correlative")
     private int correlative;
+
+    @Column("iduser")
+    private int idUser;
+
+    @Column("totaldiscount")
+    private double totalDiscount;
+    @Column("percentagediscount")
+    private double percentageDiscount;
+
     /* private InvoiceTypeEntity type; */
     /* private InvoiceStatusEntity statusEntity; */
     /* private InvoiceStatusEntity status; */
@@ -79,6 +88,8 @@ public class InvoiceEntity {
             int idCurrency,
             int correlative,
             int paymentBookId,
+            double percentageDiscount,
+            double totalDiscount,
             String serie,
             String supplierNote,
             Double totalPayment,
@@ -87,6 +98,8 @@ public class InvoiceEntity {
         this.id = id;
         this.tc = tc;
         this.idCurrency = idCurrency;
+        this.totalDiscount = totalDiscount;
+        this.percentageDiscount = percentageDiscount;
         this.totalIgv = totalIgv;
         this.idType = idType;
         this.idStatus = idStatus;

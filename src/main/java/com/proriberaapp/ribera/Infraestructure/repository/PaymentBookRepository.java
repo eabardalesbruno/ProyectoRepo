@@ -56,7 +56,10 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                                 psub.paymentsubtypedesc as "paymentSubtype",
                                 ct.currencytypedescription as "currencyType",
                                 inv.serie as "invoiceSerie",
-                                inv.linkpdf as "invoiceLinkPdf"
+                                inv.linkpdf as "invoiceLinkPdf",
+                                pb.totaldiscount as "totalDiscount",
+                                pb.totalcostwithoutdiscount as "totalCostWithOutDiscount",
+                                pb.percentagediscount as "percentageDiscount"
                                 from     paymentbook pb
                                 join userclient uc on uc.userclientid=pb.userclientid
                                 join documenttype dt on dt.documenttypeid=uc.documenttypeid
@@ -64,7 +67,7 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                                 join booking b on b.bookingid=pb.bookingid
                                 join paymentmethod pm on pm.paymentmethodid=pb.paymentmethodid
                                 join paymenttype pt on pt.paymenttypeid=pb.paymenttypeid
-                        join currencytype ct on ct.currencytypeid=pb.currencytypeid
+                                join currencytype ct on ct.currencytypeid=pb.currencytypeid
                                 join paymentsubtype psub on psub.paymentsubtypeid=pb.paymentsubtypeid
                                 left join invoice inv on inv.idpaymentbook=pb.paymentbookid
 
@@ -100,8 +103,11 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                                 r.roomname as roomName,
                                 r.roomnumber as roomNumber,
                                	 ct.currencytypename,
-                               	 ct.currencytypeid
-
+                               	 ct.currencytypeid,
+                                 pb.percentagediscount,
+                                pb.totalcostwithoutdiscount,
+                                pb.invoicedocumentnumber,
+                                pb.invoicetype
                                FROM paymentbook pb
                                JOIN userclient u ON u.userclientid = pb.userclientid
                                join booking b on b.bookingid=pb.bookingid

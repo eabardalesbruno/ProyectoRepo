@@ -46,6 +46,11 @@ public class InvoiceItemEntity {
     @Column("idinvoice")
     private UUID idInvoice;
 
+    @Column("serienumber")
+    private String serieNumber;
+    @Column("totaldiscount")
+    private double totalDiscount;
+
     public InvoiceItemEntity(
             UUID idInvoice,
             String name,
