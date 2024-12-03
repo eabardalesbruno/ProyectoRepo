@@ -279,12 +279,6 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                         if (paymenbook.getPendingpay() == 0) {
                                                 paymenbook.setPaymentstateid(2);
                                                 paymenbook.setPendingpay(1);
-                                                /*
-                                                 * String identifierClient = paymenbook.getUseridentifierclient() !=
-                                                 * null
-                                                 * ? paymenbook.getUseridentifierclient()
-                                                 * : "99999999";
-                                                 */
                                                 InvoiceClientDomain clientDomain = new InvoiceClientDomain(
                                                                 paymenbook.getUsername(),
                                                                 paymenbook.getInvoicedocumentnumber(),

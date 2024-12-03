@@ -707,7 +707,8 @@ public class UserClientServiceImpl implements UserClientService {
     @Override
     public Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId) {
         return Mono.zip(this.userClientRepository.findById(userId),
-                this.verifiedDiscountService.verifiedPercentajeDiscount(userId)).flatMap(tuple -> {
+                this.verifiedDiscountService.verifiedPercentajeDiscount(userId))
+                .flatMap(tuple -> {
                     return Mono.just(new UserNameAndDiscountDto(tuple.getT1().getUsername(), tuple.getT2()));
                 });
     }

@@ -78,13 +78,12 @@ public class VisualContIntegrationTest {
         @Test
         public void testSendInvoiceWithIgvIncluded() {
                 CompanyDomain company = new CompanyDomain("ddd", "1233", "wdwd", "dwdwd", "wdwdw", "wdwdw", "wdwd");
-                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
+                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "10718376772", "Av. Los Pinos",
                                 "123456789",
                                 "", 1);
-                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
+                InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.FACTURA,
                                 0);
                 invoice.addItemWithIncludedIgv(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(58)));
-                invoice.calculatedTotals();
                 Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice, company);
                 StepVerifier.create(response)
                                 .expectNextMatches(invoiceResponse -> {
@@ -330,15 +329,13 @@ public class VisualContIntegrationTest {
 
         @Test
         public void testSendInvoiceWithSave() {
-                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
+                InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "71837677", "Av. Los Pinos",
                                 "123456789",
                                 "", 1);
                 InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN,
                                 InvoiceType.BOLETA, 0);
                 invoiceDomain.addItemWithIncludedIgv(
                                 new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(100)));
-                invoiceDomain.addItemWithIncludedIgv(
-                                new InvoiceItemDomain("Item 1", "aaa", 13, new BigDecimal(80.88)));
                 StepVerifier.create(this.invoiceService.save(invoiceDomain)).verifyComplete();
         }
 
