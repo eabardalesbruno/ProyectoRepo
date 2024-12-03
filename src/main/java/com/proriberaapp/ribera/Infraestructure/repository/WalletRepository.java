@@ -12,7 +12,8 @@ public interface WalletRepository extends R2dbcRepository<WalletEntity, Integer>
 
     Mono<WalletEntity> findByCardNumber(String cardNumber);
     Mono<WalletEntity> findById (Integer walletId);
-
+    Mono<WalletEntity> findByUserClientId(Integer userClientId);
+    Mono<WalletEntity> findByUserPromoterId(Integer userPromoterId);
 
 
 
