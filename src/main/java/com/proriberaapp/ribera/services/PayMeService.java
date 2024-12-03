@@ -7,6 +7,7 @@ import com.proriberaapp.ribera.Api.controllers.payme.entity.TokenizeEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
+import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
@@ -521,7 +522,8 @@ public class PayMeService {
          */
 
         public Mono<TransactionNecessaryResponse> savePayment(Integer idUser,
-                        AuthorizationResponse authorizationResponse) {
+                        AuthorizationResponse authorizationResponse, String invoiceType, String invoiceDocumentNumber,
+                        double totalDiscount, double percentageDiscount, double totalCostWithOutDiscount) {
                 PayMeAuthorization payMeAuthorization = AuthorizationResponse.create(idUser, Role.ROLE_USER,
                                 authorizationResponse);
                 if (Objects.equals(payMeAuthorization.getStatusCode(), "01")) {
@@ -537,84 +539,14 @@ public class PayMeService {
                                                                         "Error al procesar el pago. Intente nuevamente."))
                                                         .then(Mono.just(new TransactionNecessaryResponse(false))));
                 } else {
-                        /*
-                         * return authorizationRepository.save(payMeAuthorization)
-                         * .flatMap(savedAuthorization ->
-                         * userClientRepository.findById(idUser)
-                         * .flatMap(userClient ->
-                         * bookingRepository.findByBookingId(savedAuthorization.getIdBooking())
-                         * .flatMap(booking -> {
-                         * if (booking.getBookingStateId() == 3) {
-                         * booking.setBookingStateId(2);
-                         * return bookingRepository.save(booking);
-                         * } else {
-                         * return Mono.just(booking);
-                         * }
-                         * })
-                         * .flatMap(updatedBooking -> {
-                         * BigDecimal monto = new
-                         * BigDecimal(authorizationResponse.getTransaction().getAmount());
-                         * 
-                         * PaymentBookEntity paymentBook = PaymentBookEntity.builder()
-                         * .bookingId(updatedBooking.getBookingId())
-                         * .userClientId(updatedBooking.getUserClientId())
-                         * .refuseReasonId(1)
-                         * .cancelReasonId(1)
-                         * .paymentMethodId(5)
-                         * .paymentStateId(1)
-                         * .paymentTypeId(6)
-                         * .paymentSubTypeId(1)
-                         * .currencyTypeId(1)
-                         * .amount(monto.divide(BigDecimal.valueOf(100000)))
-                         * .description("Pago exitoso")
-                         * .paymentDate(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Lima"))))
-                         * .operationCode(authorizationResponse.getId())
-                         * .note("Nota de pago")
-                         * .totalCost(monto.divide(BigDecimal.valueOf(100000)))
-                         * .imageVoucher("Pago con Tarjeta")
-                         * .totalPoints(0)
-                         * .paymentComplete(true)
-                         * .pendingpay(0)
-                         * .build();
-                         * 
-                         * return paymentBookRepository.save(paymentBook)
-                         * .then(sendSuccessEmail(userClient.getEmail()))
-                         * .thenReturn(new TransactionNecessaryResponse(true));
-                         * })
-                         * )
-                         * )
-                         * .onErrorResume(e ->
-                         * authorizationRepository.findById(idUser)
-                         * .flatMap(savedAuthorization ->
-                         * bookingRepository.findByBookingId(savedAuthorization.getIdBooking())
-                         * .flatMap(booking -> {
-                         * booking.setBookingStateId(3);
-                         * return bookingRepository.save(booking);
-                         * })
-                         * )
-                         * .flatMap(updatedBooking ->
-                         * userClientRepository.findById(idUser)
-                         * .flatMap(userClient -> sendErrorEmail(userClient.getEmail(), e.getMessage()))
-                         * .then(Mono.error(e))
-                         * )
-                         * );
-                         */
+
                         return authorizationRepository.save(payMeAuthorization)
                                         .flatMap(savedAuthorization -> userClientRepository.findById(idUser)
                                                         .flatMap(userClient -> bookingRepository
                                                                         .findByBookingId(savedAuthorization
                                                                                         .getIdBooking())
                                                                         .flatMap(booking -> {
-                                                                                /*
-                                                                                 * if (booking.getBookingStateId() == 3)
-                                                                                 * {
-                                                                                 * booking.setBookingStateId(2);
-                                                                                 * return bookingRepository
-                                                                                 * .save(booking);
-                                                                                 * } else {
-                                                                                 * return Mono.just(booking);
-                                                                                 * }
-                                                                                 */
+
                                                                                 if (booking.getBookingStateId() == 3) {
                                                                                         booking.setBookingStateId(2);
                                                                                 }
@@ -631,6 +563,31 @@ public class PayMeService {
                                                                                 BigDecimal totalCost = monto.divide(
                                                                                                 BigDecimal.valueOf(
                                                                                                                 100000));
+                                                                                InvoiceType type = InvoiceType
+                                                                                                .getInvoiceTypeByName(
+                                                                                                                invoiceType.toUpperCase());
+                                                                                InvoiceClientDomain invoiceClientDomain = new InvoiceClientDomain(
+                                                                                                userClient.getFirstName(),
+                                                                                                invoiceDocumentNumber,
+                                                                                                userClient.getAddress(),
+                                                                                                userClient.getCellNumber(),
+                                                                                                userClient.getEmail(),
+                                                                                                updatedBooking.getUserClientId());
+                                                                                InvoiceDomain invoice = new InvoiceDomain(
+                                                                                                invoiceClientDomain,
+                                                                                                updatedBooking.getBookingId(),
+                                                                                                18.0,
+                                                                                                InvoiceCurrency.PEN,
+                                                                                                type,
+                                                                                                percentageDiscount);
+
+                                                                                InvoiceItemDomain item = new InvoiceItemDomain(
+                                                                                                updatedBooking.getRoomName(),
+                                                                                                updatedBooking.getRoomDescription(),
+                                                                                                1,
+                                                                                                totalCost);
+                                                                                invoice.addItemWithIncludedIgv(
+                                                                                                item);
                                                                                 PaymentBookEntity paymentBook = PaymentBookEntity
                                                                                                 .builder()
                                                                                                 .bookingId(updatedBooking
@@ -656,27 +613,13 @@ public class PayMeService {
                                                                                                 .totalPoints(0)
                                                                                                 .paymentComplete(true)
                                                                                                 .pendingpay(1)
+                                                                                                .totalDiscount(totalDiscount)
+                                                                                                .percentageDiscount(
+                                                                                                                percentageDiscount)
+                                                                                                .totalCostWithOutDiscount(
+                                                                                                                totalCostWithOutDiscount)
                                                                                                 .build();
-                                                                                InvoiceClientDomain invoiceClientDomain = new InvoiceClientDomain(
-                                                                                                userClient.getFirstName(),
-                                                                                                userClient.getDocumentNumber(),
-                                                                                                userClient.getAddress(),
-                                                                                                userClient.getCellNumber(),
-                                                                                                userClient.getEmail());
 
-                                                                                InvoiceDomain invoice = new InvoiceDomain(
-                                                                                                invoiceClientDomain,
-                                                                                                updatedBooking.getBookingId(),
-                                                                                                0, InvoiceCurrency.PEN);
-
-                                                                                InvoiceItemDomain item = new InvoiceItemDomain(
-                                                                                                updatedBooking.getRoomName(),
-                                                                                                updatedBooking.getRoomDescription(),
-                                                                                                1,
-                                                                                                totalCost,
-                                                                                                true);
-                                                                                invoice.addItemWithIncludedIgv(
-                                                                                                item);
                                                                                 return paymentBookRepository
                                                                                                 .save(paymentBook)
                                                                                                 .flatMap(paymentBookR -> {

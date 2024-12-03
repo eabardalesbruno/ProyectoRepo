@@ -10,14 +10,17 @@ import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.reactive.function.client.WebClient;
 import com.proriberaapp.ribera.Domain.invoice.SunatInvoice;
+import com.proriberaapp.ribera.services.client.UserClientService;
+
 import reactor.core.publisher.Mono;
 
 import com.nimbusds.jose.shaded.gson.JsonObject;
+import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceClientTypeDocument;
-import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 import com.proriberaapp.ribera.Domain.invoice.CompanyDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceBaseProcess;
@@ -33,6 +36,10 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
     @Value("${sunat.api.token}")
     private String token;
 
+    /*
+     * @Autowired
+     * private UserClientService userClientService;
+     */
     /* public VisualContIntegration() { */
     /* this.url = "https://e-vf.softwareintegrado.com/vc-cpe/api/v1"; */
     /*
@@ -43,8 +50,34 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
 
     @Override
     public Mono<InvoiceResponse> sendInvoice(InvoiceDomain invoice, CompanyDomain company) {
-        WebClient client = this.configureFetchVisualCont();
         JSONObject invoiceJson = this.formatJson(invoice);
+        /*
+         * JSONObject invoiceJson = this.formatJson(invoice);
+         * Mono<JSONObject> invoiceJsonMono = Mono.just(invoiceJson);
+         * if (invoice.getType() == InvoiceType.FACTURA.name()) {
+         * invoiceJsonMono = invoiceJsonMono
+         * .zipWith(this.userClientService.loadDataRuc(invoice.getClient().getIdentifier
+         * ()))
+         * .map(tuple -> {
+         * JSONObject invoiceJsonData = tuple.getT1();
+         * CompanyDataDto companyData = tuple.getT2();
+         * invoiceJsonData.getJSONObject("invoice").put("entidad_denominacion",
+         * companyData.getRazonSocial());
+         * invoiceJsonData.getJSONObject("invoice").put("entidad_direccion",
+         * companyData.getDireccion());
+         * return invoiceJsonData;
+         * });
+         * 
+         * }
+         * return invoiceJsonMono.flatMap(invoiceJsonData ->
+         * this.sendToFacturator(invoiceJsonData));
+         */
+        return this.sendToFacturator(invoiceJson);
+
+    }
+
+    private Mono<InvoiceResponse> sendToFacturator(JSONObject invoiceJson) {
+        WebClient client = this.configureFetchVisualCont();
         Mono<InvoiceResponse> response = client.post()
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Token token=" + this.token)
@@ -58,6 +91,7 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
                 })
                 .bodyToMono(String.class).map(json -> {
                     JSONObject jsonResponse = new JSONObject(json);
+                    System.out.println(jsonResponse);
                     JSONObject invoiceResponse = jsonResponse.getJSONObject("invoice");
                     String key = invoiceResponse.getString("key");
                     boolean aceptada_por_sunat = invoiceResponse.getBoolean("aceptada_por_sunat");
@@ -86,21 +120,29 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
         invoiceMap.put("tipo_cambio", invoice.getTc());
         invoiceMap.put("porcentaje_igv", String.valueOf(invoice.getTaxPercentaje()));
         invoiceMap.put("fecha_de_emision", new SimpleDateFormat("dd-MM-yyyy").format(Date.from(Instant.now())));
-        invoiceMap.put("entidad_codigo", invoice.getClient().getIdentifier());
-        invoiceMap.put("entidad_tipo_de_documento",
-                InvoiceClientTypeDocument
-                        .getInvoiceClientTypeDocumentByLenght(invoice.getClient().getIdentifier().length())
-                        .getCode());
-        invoiceMap.put("entidad_numero_de_documento", invoice.getClient().getIdentifier());
+        invoiceMap.put("entidad_codigo", invoice.getClient().getName());
+        invoiceMap.put("entidad_tipo_de_documento", "0"); // Código para documento no especificado
+        invoiceMap.put("entidad_numero_de_documento", "99999999"); // Valor predeterminado para documento no
+        invoiceMap.put("entidad_direccion", "");
+        if (invoice.getClient().getIdentifier() != null && !invoice.getClient().getIdentifier().isEmpty()) {
+            String identifier = invoice.getClient().getIdentifier();
+            InvoiceClientTypeDocument documentType = InvoiceClientTypeDocument
+                    .getInvoiceClientTypeDocumentByLenght(identifier.length());
+            invoiceMap.put("entidad_tipo_de_documento", documentType.getCode());
+            invoiceMap.put("entidad_numero_de_documento", identifier);
+        }
+        if (invoice.getClient().getAddress() != null) {
+            invoiceMap.put("entidad_direccion", invoice.getClient().getAddress());
+
+        }
         invoiceMap.put("entidad_denominacion", invoice.getClient().getName());
-        invoiceMap.put("entidad_direccion", invoice.getClient().getAddress());
         invoiceMap.put("entidad_email", invoice.getClient().getEmail());
         invoiceMap.put("moneda", invoice.getCurrency().getDecimalPlaces());
         invoiceMap.put("number", String.valueOf(invoice.getCorrelative()));
         invoiceMap.put("codigo_unico", String.valueOf(invoice.getCorrelative()).concat("-").concat(
-                invoice.getClient().getIdentifier()));
+                invoice.getId().toString()));
         invoiceMap.put("descuento_global", 0);
-        invoiceMap.put("total_descuento", 0);
+        invoiceMap.put("total_descuento", invoice.getTotalDiscount().doubleValue());
         invoiceMap.put("total_anticipo", 0);
         invoiceMap.put("total_anticipo", 0);
         invoiceMap.put("total_exportacion", 0);
@@ -152,11 +194,11 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
             itemJson.put("nombre_categoria", "");
             itemJson.put("codigo_producto_sunat", "90111800");
             itemJson.put("cantidad", item.getQuantity());
-            itemJson.put("valor_unitario", item.getValorUnitario().doubleValue()); // Precio sin IGV);
+            itemJson.put("valor_unitario", item.getValorUnitario().doubleValue());
             itemJson.put("precio_unitario", item.getPriceUnit().doubleValue());
             itemJson.put("igv", item.getIgv().doubleValue());
             itemJson.put("tipo_de_igv", "1");
-            itemJson.put("descuento", 0);
+            itemJson.put("descuento", item.getDiscount());
             itemJson.put("subtotal", item.getSubtotal().doubleValue());
             itemJson.put("total", item.getTotal().doubleValue());
             itemJson.put("icbper", 0);
@@ -203,6 +245,10 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
                             sunat_responsecode, link_pdf);
                 });
         return response;
+    }
+
+    private Mono<Void> loadDataRuc(String ruc) {
+        return Mono.empty();
     }
 
     @Override

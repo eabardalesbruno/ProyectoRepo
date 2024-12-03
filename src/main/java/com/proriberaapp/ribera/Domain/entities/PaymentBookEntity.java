@@ -74,4 +74,18 @@ public class PaymentBookEntity {
 
     @Column("pendingpay")
     private Integer pendingpay;
+
+    @Column("percentagediscount")
+    private double percentageDiscount;
+
+    @Column("totaldiscount")
+    private double totalDiscount;
+
+    @Column("totalcostwithoutdiscount")
+    private double totalCostWithOutDiscount;
+
+    @Column("invoicedocumentnumber")
+    private String invoiceDocumentNumber;
+    @Column("invoicetype")
+    private String invoiceType;
 }

@@ -572,7 +572,10 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                     .imageVoucher(paymentBookEntity.getImageVoucher())
                                     .totalPoints(paymentBookEntity.getTotalPoints())
                                     .paymentComplete(paymentBookEntity.getPaymentComplete())
-                                    .pendingPay(paymentBookEntity.getPendingpay());
+                                    .pendingPay(paymentBookEntity.getPendingpay())
+                                    .totalDiscount(paymentBookEntity.getTotalDiscount())
+                                    .percentageDiscount(paymentBookEntity.getPercentageDiscount())
+                                    .totalCostWithOutDiscount(paymentBookEntity.getTotalCostWithOutDiscount());
 
                             if (userClient != null) {
                                 builder.userClientName(userClient.getFirstName());
