@@ -36,8 +36,10 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
     @Value("${sunat.api.token}")
     private String token;
 
-    @Autowired
-    private UserClientService userClientService;
+    /*
+     * @Autowired
+     * private UserClientService userClientService;
+     */
     /* public VisualContIntegration() { */
     /* this.url = "https://e-vf.softwareintegrado.com/vc-cpe/api/v1"; */
     /*
@@ -49,21 +51,28 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
     @Override
     public Mono<InvoiceResponse> sendInvoice(InvoiceDomain invoice, CompanyDomain company) {
         JSONObject invoiceJson = this.formatJson(invoice);
-        Mono<JSONObject> invoiceJsonMono = Mono.just(invoiceJson);
-        if (invoice.getType() == InvoiceType.FACTURA.name()) {
-            invoiceJsonMono = invoiceJsonMono
-                    .zipWith(this.userClientService.loadDataRuc(invoice.getClient().getIdentifier()))
-                    .map(tuple -> {
-                        JSONObject invoiceJsonData = tuple.getT1();
-                        CompanyDataDto companyData = tuple.getT2();
-                        invoiceJsonData.getJSONObject("invoice").put("entidad_denominacion",
-                                companyData.getRazonSocial());
-                        invoiceJsonData.getJSONObject("invoice").put("entidad_direccion", companyData.getDireccion());
-                        return invoiceJsonData;
-                    });
-
-        }
-        return invoiceJsonMono.flatMap(invoiceJsonData -> this.sendToFacturator(invoiceJsonData));
+        /*
+         * JSONObject invoiceJson = this.formatJson(invoice);
+         * Mono<JSONObject> invoiceJsonMono = Mono.just(invoiceJson);
+         * if (invoice.getType() == InvoiceType.FACTURA.name()) {
+         * invoiceJsonMono = invoiceJsonMono
+         * .zipWith(this.userClientService.loadDataRuc(invoice.getClient().getIdentifier
+         * ()))
+         * .map(tuple -> {
+         * JSONObject invoiceJsonData = tuple.getT1();
+         * CompanyDataDto companyData = tuple.getT2();
+         * invoiceJsonData.getJSONObject("invoice").put("entidad_denominacion",
+         * companyData.getRazonSocial());
+         * invoiceJsonData.getJSONObject("invoice").put("entidad_direccion",
+         * companyData.getDireccion());
+         * return invoiceJsonData;
+         * });
+         * 
+         * }
+         * return invoiceJsonMono.flatMap(invoiceJsonData ->
+         * this.sendToFacturator(invoiceJsonData));
+         */
+        return this.sendToFacturator(invoiceJson);
 
     }
 
