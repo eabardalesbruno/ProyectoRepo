@@ -23,8 +23,7 @@ public class PayMeController {
 
     @PostMapping("create-nonce")
     public Mono<NonceResponse> nonce(
-            @RequestHeader("Authorization") String token
-    ) {
+            @RequestHeader("Authorization") String token) {
         Integer idUser = jtp.getIdFromToken(token);
         return paymeService.getNonce();
     }
@@ -33,12 +32,17 @@ public class PayMeController {
     public Mono<TransactionNecessaryResponse> savePayment(
             @RequestHeader("Authorization") String token,
             @RequestBody AuthorizationResponse authorizationResponse,
-            @RequestHeader("IdBooking") Integer idBooking
-    ) {
+            @RequestHeader("IdBooking") Integer idBooking,
+            @RequestHeader("percentageDiscount") double percentageDiscount,
+            @RequestHeader("totalDiscount") double totalDiscount,
+            @RequestHeader("invoiceType") String invoiceType,
+            @RequestHeader("totalCostWithOutDiscount") double totalCostWithOutDiscount,
+            @RequestHeader("invoiceDocumentNumber") String invoiceDocumentNumber) {
         Integer idUser = jtp.getIdFromToken(token);
         authorizationResponse.setIdBooking(idBooking);
         try {
-            return paymeService.savePayment(idUser, authorizationResponse);
+            return paymeService.savePayment(idUser, authorizationResponse, invoiceType, invoiceDocumentNumber,
+                    totalDiscount, percentageDiscount, totalCostWithOutDiscount);
         } catch (Exception e) {
             log.error("Error al guardar el pago", e);
             return Mono.error(e);
@@ -47,8 +51,7 @@ public class PayMeController {
 
     @GetMapping
     public Flux<TokenizeEntity> getPayments(
-            @RequestHeader("Authorization") String token
-    ) {
+            @RequestHeader("Authorization") String token) {
         Integer idUser = jtp.getIdFromToken(token);
         return paymeService.getPayments(idUser);
     }
