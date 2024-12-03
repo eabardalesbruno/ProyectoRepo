@@ -19,6 +19,7 @@ import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceResponse;
 import com.proriberaapp.ribera.Domain.invoice.SunatInvoice;
 import com.proriberaapp.ribera.Infraestructure.repository.CurrencyTypeRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.DiscountRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceItemRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceStateRepository;
@@ -43,6 +44,9 @@ public class InvoiceService implements InvoiceServiceI {
         private InvoiceStateRepository invoiceStatusRepository;
 
         @Autowired
+        private DiscountRepository discountRepository;
+
+        @Autowired
         private SunatInvoice sunatInvoice;
 
         @Autowired
@@ -51,6 +55,14 @@ public class InvoiceService implements InvoiceServiceI {
         @Override
         public Mono<Void> save(InvoiceDomain invoiceDomain) {
                 invoiceDomain.calculatedTotals();
+                Mono<Void> discountMono = Mono.defer(() -> {
+                        if (invoiceDomain.getPercentajeDiscount() > 0) {
+                                return this.discountRepository.createInvoicePaymentBook(
+                                                1, invoiceDomain.getPaymentBookId(),
+                                                invoiceDomain.getClient().getId());
+                        }
+                        return Mono.empty();
+                });
                 CompanyDomain company = new CompanyDomain("ddd", "1233", "wdwd", "dwdwd", "wdwdw", "wdwdw", "wdwd");
                 Mono<InvoiceDomain> invoiceDomainaMono = Mono.just(invoiceDomain);
                 List<InvoiceItemEntity> items = invoiceDomain.getItems()
@@ -68,6 +80,7 @@ public class InvoiceService implements InvoiceServiceI {
                                                 return invoiceDomain;
                                         });
                 }
+
                 Mono<InvoiceTypeEntity> invoiceTypeEntity = this.invoiceTypeRepsitory
                                 .findByName(invoiceDomain.getType())
                                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid type")));
@@ -80,13 +93,7 @@ public class InvoiceService implements InvoiceServiceI {
                         invoice.setCorrelative(invoiceType.getCorrelative());
                         invoice.setSerie(invoiceType.getSerie());
                         return sunatInvoice.sendInvoice(invoice, company);
-                }); /*
-                     * invoiceTypeEntity.flatMap(invoiceType -> {
-                     * invoiceDomain.setCorrelative(invoiceType.getCorrelative());
-                     * invoiceDomain.setSerie(invoiceType.getSerie());
-                     * return sunatInvoice.sendInvoice(invoiceDomain, company);
-                     * });
-                     */
+                });
                 return response.flatMap(responseInvoice -> {
                         invoiceDomain.setKeySupplier(responseInvoice.getKey());
                         invoiceDomain.setSupplierNote(responseInvoice.getSunat_note());
@@ -113,6 +120,7 @@ public class InvoiceService implements InvoiceServiceI {
                                                                                 .then(this.invoiceTypeRepsitory
                                                                                                 .addCorrelative(invoiceDomain
                                                                                                                 .getType()))
+                                                                                .then(discountMono)
                                                                                 .then(Mono.just(savedEntity)));
                                         });
                 }).then();

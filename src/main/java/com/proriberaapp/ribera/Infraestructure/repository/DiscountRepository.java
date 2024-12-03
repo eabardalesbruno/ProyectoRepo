@@ -38,7 +38,7 @@ public interface DiscountRepository extends R2dbcRepository<DiscountEntity, Inte
     Mono<DiscountEntity> getDiscountWithItemsAndYear(int idUser, List<Integer> idPackage, String year);
 
     @Query("""
-            select d.id,COALESCE(d.percentage,0) as percentage,d.name,d.id from
+            select COALESCE(d.percentage,0) as percentage,d.name,d.id from
                       discount d
                       join discount_item di on di.iddiscount=d.id
                       where d.maxreservationnumber>(select count(dp.id) from discount_payment_book dp where dp.iddiscount=d.id and date_part('year', dp.createdat)=date_part('year',CURRENT_DATE)
@@ -48,5 +48,11 @@ public interface DiscountRepository extends R2dbcRepository<DiscountEntity, Inte
                       GROUP BY d.name,d.id;
                   """)
     Mono<DiscountEntity> getDiscountWithItemsAndCurrentYear(int idUser, List<Integer> idPackage);
+
+    @Query("""
+            INSERT INTO discount_payment_book (idclient,idpaymentbook, iddiscount, createdat)
+            VALUES (:idClient,:idPaymentBook, :idDiscount, CURRENT_TIMESTAMP);
+            """)
+    Mono<Void> createInvoicePaymentBook(int idDiscount, int idPaymentBook, int idClient);
 
 }
