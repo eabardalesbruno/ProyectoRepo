@@ -71,8 +71,8 @@ public class WalletController {
     }
 
     @GetMapping("/cardnumber/{walletId}")
-    public Mono<String> getCardNumber(@PathVariable String cardNumber) {
-        return walletRepository.findByCardNumber(cardNumber)
+    public Mono<String> getCardNumber(@PathVariable Integer walletId) {
+        return walletRepository.findById(walletId)
                 .map(walletEntity -> walletEntity.getCardNumber());
     }
 
@@ -81,4 +81,17 @@ public class WalletController {
         return walletRepository.findById(walletId)
                 .map(walletEntity -> walletEntity.getBalance());
     }
+
+    @GetMapping("/{walletId}")
+    public Mono<String> getWalletIdForUserOrPromoter(@PathVariable Integer walletId) {
+        return walletRepository.findById(walletId)
+                .flatMap(wallet -> {
+                    if (wallet.getUserClientId() != null || wallet.getUserPromoterId() != null) {
+                        return Mono.just("ID : " + wallet.getWalletId());
+                    } else {
+                        return Mono.error(new IllegalArgumentException("La wallet no está asociada ni a un usuario ni a un promotor."));
+                    }
+                });
+    }
+
 }
