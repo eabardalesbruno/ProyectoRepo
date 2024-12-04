@@ -241,6 +241,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                                                 clientDomain,
                                                                 paymenbook.getPaymentbookid(), 18, invoiceCurrency,
                                                                 type, paymenbook.getPercentagediscount());
+                                                invoiceDomain.setOperationCode(paymenbook.getOperationcode());
                                                 invoiceDomain.addItemWithIncludedIgv(new InvoiceItemDomain(
                                                                 paymenbook.getRoomname(),
                                                                 paymenbook.getRoomname(), 1,

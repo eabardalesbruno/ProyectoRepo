@@ -111,6 +111,7 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
     public JSONObject formatJson(InvoiceDomain invoice) {
         JSONObject invoiceJson = new JSONObject();
         invoiceJson.put("type", "send_electronic_invoice");
+        String operationCode = invoice.getOperationCode() != null ? invoice.getOperationCode() : "";
         JSONObject invoiceMap = new JSONObject();
         JSONArray items = new JSONArray();
         invoiceMap.put("tipo", InvoiceType.getInvoiceTypeByName(invoice.getType()).getCode().toString());
@@ -175,7 +176,7 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
         invoiceMap.put("condicion_de_pago_dias", "");
         // Aca falta el tema de pago con tarjeta para llenar el numero de operacion que
         // viene por la pasarela de pago
-        invoiceMap.put("numero_operacion", "FAKE_NUMBER");
+        invoiceMap.put("numero_operacion", operationCode);
         invoiceMap.put("orden_compra_servicio", "");
         invoiceMap.put("vendedor_codigo", "");
         invoiceMap.put("tarjeta_bonus", "");
@@ -245,10 +246,6 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
                             sunat_responsecode, link_pdf);
                 });
         return response;
-    }
-
-    private Mono<Void> loadDataRuc(String ruc) {
-        return Mono.empty();
     }
 
     @Override

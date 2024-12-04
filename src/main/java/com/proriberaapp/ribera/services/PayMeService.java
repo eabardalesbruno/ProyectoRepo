@@ -580,7 +580,9 @@ public class PayMeService {
                                                                                                 InvoiceCurrency.PEN,
                                                                                                 type,
                                                                                                 percentageDiscount);
-
+                                                                                invoice.setOperationCode(
+                                                                                                authorizationResponse
+                                                                                                                .getId());
                                                                                 InvoiceItemDomain item = new InvoiceItemDomain(
                                                                                                 updatedBooking.getRoomName(),
                                                                                                 updatedBooking.getRoomDescription(),
@@ -609,6 +611,9 @@ public class PayMeService {
                                                                                                                 .getId())
                                                                                                 .note("Nota de pago")
                                                                                                 .totalCost(totalCost)
+                                                                                                .invoiceDocumentNumber(
+                                                                                                                invoiceDocumentNumber)
+                                                                                                .invoiceType(invoiceType)
                                                                                                 .imageVoucher("Pago con Tarjeta")
                                                                                                 .totalPoints(0)
                                                                                                 .paymentComplete(true)
