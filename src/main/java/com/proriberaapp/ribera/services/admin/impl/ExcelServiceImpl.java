@@ -55,26 +55,49 @@ public class ExcelServiceImpl {
                 int startRow = 1;
                 DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-
                 for (ExcelEntity entity : monthlyData) {
                     Row row = sheet.createRow(startRow++);
 
+                    String codDoc = switch (entity.getIdtype()) {
+                        // en el excel hay más casos, en la tb solo hay 1 y 2
+                        case 1 -> "01"; // Factura
+                        case 2 -> "03"; // Boleta
+                        default -> "00"; // Otros
+                    };
+                    String correlative = String.format("%08d", entity.getCorrelative());
                     String currency = switch (entity.getIdCurrency()) {
                         case 1 -> "Soles";
                         case 2 -> "Dolares";
                         default -> "Moneda desconocida";
                     };
 
+                    String condPago = "CONTADO";
+                    int tipoOpe = 1;
+                    int isc = 0;
+                    String formattedTc = String.format("%.2f", entity.getTc());
                     String formattedDate = entity.getCreatedAt().toLocalDate().format(dateFormatter);
+                    String bienServ = "4";
+                    String modalidad = "1";
+                    String detraccion = "0";
 
-                    Map<String, Object> columnMapping = Map.of(
-                            "SerieDoc", entity.getSerie(),
-                            "Ruc_Prov", entity.getIdentifierClient().toString(),
-                            "Fecha", formattedDate,
-                            "Moneda", currency,
-                            "ValorTC", entity.getTc(),
-                            "Igv", entity.getTotalIgv(),
-                            "Total", entity.getTotalPayment());
+                    Map<String, Object> columnMapping = new HashMap<>();
+                    columnMapping.put("CodDoc", codDoc);
+                    columnMapping.put("SerieDoc", entity.getSerie());
+                    columnMapping.put("NroDocDel", correlative);
+                    columnMapping.put("Cond_Pago", condPago);
+                    columnMapping.put("Ruc_Prov", entity.getIdentifierClient().toString());
+                    columnMapping.put("Fecha", formattedDate);
+                    columnMapping.put("Moneda", currency);
+                    columnMapping.put("ValorTC", formattedTc);
+                    columnMapping.put("Tipo_Ope", tipoOpe);
+                    columnMapping.put("Neto", entity.getSubtotal());
+                    columnMapping.put("Igv", entity.getTotalIgv());
+                    columnMapping.put("Isc", isc);
+                    columnMapping.put("Total", entity.getTotalPayment());
+                    columnMapping.put("D_Bie_Servic", bienServ);
+                    
+                    columnMapping.put("Modalidad", modalidad);
+                    columnMapping.put("Detraccion", detraccion);
 
                     Row headerRow = sheet.getRow(0);
                     if (headerRow == null) {
