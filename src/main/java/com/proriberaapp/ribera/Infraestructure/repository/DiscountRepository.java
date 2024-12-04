@@ -49,4 +49,10 @@ public interface DiscountRepository extends R2dbcRepository<DiscountEntity, Inte
                   """)
     Mono<DiscountEntity> getDiscountWithItemsAndCurrentYear(int idUser, List<Integer> idPackage);
 
+    @Query("""
+            INSERT INTO discount_payment_book (idclient,idpaymentbook, iddiscount, createdat)
+            VALUES (:idClient,:idPaymentBook, :idDiscount, CURRENT_TIMESTAMP);
+            """)
+    Mono<Void> createInvoicePaymentBook(int idDiscount, int idPaymentBook, int idClient);
+
 }

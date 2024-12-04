@@ -34,25 +34,31 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
     @Override
     public Mono<List<MembershipDto>> loadMembershipsActives(String username) {
         return this.loadMembershipsInsortInclub(username)
-                .flatMap(s -> Mono.just(s.stream().filter(p -> p.getIdStatus() == 1).toList()));
+                .flatMap(s -> {
+                    List<MembershipDto> activeMemberships = s.stream().filter(p -> p.getIdStatus() == 1).toList();
+                    return activeMemberships.isEmpty() ? Mono.just(null) : Mono.just(activeMemberships);
+                });
 
     }
 
     private Mono<List<MembershipDto>> loadMembershipsInsortInclub(String username) {
-        return this.loadDataUserRiber(username).flatMap(user -> {
-            String uri = URL_MEMBERSHIPS.concat("/").concat(String.valueOf(user.getData().getId()));
-            return Mono.just(uri);
-        }).flatMap(uri -> {
-            WebClient webClient = WebClient.create(uri);
-            return webClient.get()
-                    .retrieve()
-                    .bodyToMono(ResponseDataMembershipDto.class)
-                    .flatMap(response -> {
-                        List<MembershipDto> data = response.getData().stream()
-                                .filter(p -> p.getIdFamilyPackage() == 2).toList();
-                        return data.size() > 0 ? Mono.just(data) : Mono.empty();
-                    });
-        });
+        return this.loadDataUserRiber(username)
+                .flatMap(user -> {
+                    String uri = URL_MEMBERSHIPS.concat("/").concat(String.valueOf(user.getData().getId()));
+                    return Mono.just(uri);
+                }).flatMap(uri -> {
+                    WebClient webClient = WebClient.create(uri);
+                    return webClient.get()
+                            .retrieve()
+                            .bodyToMono(ResponseDataMembershipDto.class)
+                            .flatMap(response -> {
+                                List<MembershipDto> data = response.getData().stream()
+                                        .filter(p -> p.getIdFamilyPackage() == 2).toList();
+                                return data.size() > 0 ? Mono.just(data) : Mono.empty();
+                            }).onErrorResume(e -> {
+                                return Mono.just(List.of());
+                            });
+                });
 
     }
 
@@ -63,8 +69,9 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                 .retrieve()
                 .bodyToMono(
                         ResponseInclubLoginDto.class)
-                .switchIfEmpty(Mono.error(new RuntimeException("Error al cargar datos de usuario")));
-
+                .onErrorResume(e -> {
+                    return Mono.empty();
+                });
     }
 
     @Override

@@ -167,6 +167,7 @@ public class InvoiceDomain {
                 .linkpdf(linkPdf)
                 .subtotal(this.subtotal.doubleValue())
                 .idType(idType)
+                .nameCliente(this.getClient().getName())
                 .build();
 
     }
