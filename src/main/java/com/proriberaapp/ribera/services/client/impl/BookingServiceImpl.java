@@ -27,12 +27,14 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -195,119 +197,112 @@ public class BookingServiceImpl implements BookingService {
                 .switchIfEmpty(Mono.just("Habitación no encontrada"));
     }
 
+
+    public static String getMonthDayOfWeekAndNumber(Timestamp timestamp) {
+        // Formateador para el mes, día de la semana abreviados y número de día
+        SimpleDateFormat formatter = new SimpleDateFormat("MMM EEE d", Locale.ENGLISH);
+
+        // Convertir el Timestamp a Date y formatearlo
+        return formatter.format(timestamp);
+    }
+
+    public static String getAbbreviatedMonth(Timestamp timestamp) {
+        SimpleDateFormat monthFormatter = new SimpleDateFormat("MMM", Locale.ENGLISH);
+        return monthFormatter.format(timestamp);
+    }
+
+    // Función para obtener el día de la semana abreviado
+    public static String getAbbreviatedDayOfWeek(Timestamp timestamp) {
+        SimpleDateFormat dayFormatter = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        return dayFormatter.format(timestamp);
+    }
+
+    // Función para obtener el número del día
+    public static int getDayNumber(Timestamp timestamp) {
+        SimpleDateFormat dayNumberFormatter = new SimpleDateFormat("d", Locale.ENGLISH);
+        return Integer.parseInt(dayNumberFormatter.format(timestamp));
+    }
+
+
+    public static long calculateDaysDifference(Timestamp dayBookingInit, Timestamp dayBookingEnd) {
+        if (dayBookingInit == null || dayBookingEnd == null) {
+            throw new IllegalArgumentException("Both Timestamps must be non-null");
+        }
+
+        // Convertir los Timestamp a LocalDate
+        LocalDate startDate = dayBookingInit.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        LocalDate endDate = dayBookingEnd.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+
+        // Calcular la diferencia de días
+        return ChronoUnit.DAYS.between(startDate, endDate);
+    }
     // Método para generar el cuerpo del correo electrónico con el nombre de la habitación
     private String generateEmailBody(BookingEntity bookingEntity, String roomName) {
-        String body = "<!DOCTYPE html>\n" +
-                "<html lang=\"es\">\n" +
-                "<head>\n" +
-                "    <meta charset=\"UTF-8\">\n" +
-                "    <title>Bienvenido</title>\n" +
-                "    <style>\n" +
-                "        body {\n" +
-                "            font-family: Arial, sans-serif;\n" +
-                "            margin: 0;\n" +
-                "            padding: 0;\n" +
-                "            color: black;\n" +
-                "            background-color: white;\n" +
-                "        }\n" +
-                "        .header {\n" +
-                "            width: 100%;\n" +
-                "            position: relative;\n" +
-                "            background-color: white;\n" +
-                "            padding: 20px 0;\n" +
-                "        }\n" +
-                "        .logo-left {\n" +
-                "            width: 50px;\n" +
-                "            position: absolute;\n" +
-                "            top: 10px;\n" +
-                "            left: 10px;\n" +
-                "        }\n" +
-                "        .banner {\n" +
-                "            width: 100%;\n" +
-                "            display: block;\n" +
-                "            margin: 0 auto;\n" +
-                "        }\n" +
-                "        .container {\n" +
-                "            width: 500px;\n" +
-                "            background-color: #f4f4f4;\n" +
-                "            margin: 20px auto;\n" +
-                "            padding: 20px;\n" +
-                "            border-radius: 10px;\n" +
-                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
-                "            text-align: center;\n" +
-                "        }\n" +
-                "        .content {\n" +
-                "            text-align: left;\n" +
-                "            padding: 20px;\n" +
-                "        }\n" +
-                "        .content h3 {\n" +
-                "            margin: 10px 0;\n" +
-                "        }\n" +
-                "        .content p {\n" +
-                "            margin: 10px 0;\n" +
-                "        }\n" +
-                "        .button {\n" +
-                "            display: block;\n" +
-                "            width: 200px;\n" +
-                "            margin: 20px auto;\n" +
-                "            padding: 10px;\n" +
-                "            background-color: green;\n" +
-                "            color: white;\n" +
-                "            text-align: center;\n" +
-                "            border-radius: 5px;\n" +
-                "            text-decoration: none;\n" +
-                "        }\n" +
-                "        .footer {\n" +
-                "            width: 100%;\n" +
-                "            text-align: center;\n" +
-                "            margin: 20px 0;\n" +
-                "        }\n" +
-                "        .help-section {\n" +
-                "            width: 500px;\n" +
-                "            background-color: #f4f4f4;\n" +
-                "            margin: 20px auto;\n" +
-                "            padding: 20px;\n" +
-                "            border-radius: 10px;\n" +
-                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
-                "            text-align: center;\n" +
-                "        }\n" +
-                "    </style>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <div class=\"header\">\n" +
-                "        <!-- Encabezado con logo -->\n" +
-                "        <img class=\"logo-left\" src=\"https://bit.ly/4d7FuGX\" alt=\"Logo Izquierda\">\n" +
-                "    </div>\n" +
-                "\n" +
-                "    <!-- Imagen de banner -->\n" +
-                "    <img class=\"banner\" src=\"https://bit.ly/46vO7sq\" alt=\"Bienvenido\">\n" +
-                "\n" +
-                "    <!-- Contenedor con el contenido del mensaje -->\n" +
-                "    <div class=\"container\">\n" +
-                "        <div class=\"content\">\n" +
-                "            <h1>Gracias por su preferencia!</h1>\n" +
-                "            <h3>Estimado cliente</h3>\n" +
-                "            <p>Se completo exitosamente el registro de su reserva de: <strong>" + roomName + "</strong>. Por favor, no se olvide de pagar su reserva.</p>\n" +
-                "            <div style=\"background-color: #e0e0e0; padding: 10px; border-radius: 5px;\">\n" +
-                "                <p><strong>Los datos de tu reserva</strong></p>\n" +
-                "                <p>Habitacion: " + roomName + "</p>\n" +
-                "                <p>Costo: " + bookingEntity.getCostFinal() + "</p>\n" +
-                "                <p>Fecha de inicio: " + bookingEntity.getDayBookingInit() + "</p>\n" +
-                "                <p>Fecha de fin: " + bookingEntity.getDayBookingEnd() + "</p>\n" +
-                "            </div>\n" +
-                "            <a href=\"https://cieneguillariberadelrio.online/bookings/disponibles\" class=\"button\">Pagar ahora</a>\n" +
-                "            <p>Recuerde que el pago lo puede realizar mediante deposito en nuestra cuenta a traves de agente BCP, agencias o cualquier metodo de pago dentro de la plataforma. De no completar el proceso de pago en 60 minutos se anulara de manera automatica\n" +
-                "        </div>\n" +
-                "    </div>\n" +
-                "\n" +
-                "    <!-- Sección de ayuda -->\n" +
-                "    <div class=\"help-section\">\n" +
-                "        <h3>Necesitas ayuda?</h3>\n" +
-                "        <p>Envie sus comentarios e informacion de errores a <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">informesyreservas@cieneguilladelrio.com</a></p>\n" +
-                "    </div>\n" +
-                "</body>\n" +
-                "</html>";
+        String monthInit = getAbbreviatedMonth(bookingEntity.getDayBookingInit());
+        String monthEnd = getAbbreviatedMonth(bookingEntity.getDayBookingEnd());
+        int dayInit = getDayNumber(bookingEntity.getDayBookingInit());
+        int dayEnd = getDayNumber(bookingEntity.getDayBookingEnd());
+        long dayInterval = calculateDaysDifference(bookingEntity.getDayBookingInit(), bookingEntity.getDayBookingEnd());
 
+        String body = "<!DOCTYPE html>" +
+                "<html lang=\"es\">" +
+                "<head>" +
+                "    <meta charset=\"UTF-8\">" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                "    <title>Bienvenido</title>" +
+                "    <style>" +
+                "        body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: black; background-color: #F6F7FB; }" +
+                "        .header { width: 100%; position: relative; background-color: white; padding: 20px 0; }" +
+                "        .logo-left { width: 50px; position: absolute; top: 10px; left: 10px; }" +
+                "        .banner { width: 100%; display: block; margin: 0 auto; }" +
+                "        .container { width: 100%; background-color: #FFFFFF; margin: 0px auto 0; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center; }" +
+                "        .content { text-align: left; padding: 20px; }" +
+                "        .content h3 { margin: 10px 0; }" +
+                "        .content p { margin: 10px 0; color : #353535 !important}" +
+                "        .table-layout { width: 30%; margin-right: auto; border-collapse: collapse; table-layout: auto; }" +
+                "        .table-layout td { vertical-align: top; padding-top: 0px; text-align: left; }" +
+                "        .button { min-width: 90%; display: inline-block; padding: 10px; background-color: #025928; color: white !important; text-align: center; text-decoration: none; border-radius: 0px; }" +
+                "        .footer { width: 100%; text-align: left; padding-top: 0px; padding-left: 40px; margin: 20px 0; color: #9D9D9D !important }" +
+                "        .help-section { width: 100%; background-color: #FFFFFF; margin: 10px auto; padding: 10px 40px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: left; color: #384860; }" +
+                "        .content-data { padding: 10px; background-color: #F9F9F9; max-width: 400px; color : #353535 !important}" +
+                "    </style>" +
+                "</head>" +
+                "<body>" +
+                "    <div class=\"header\">" +
+                "        <img class=\"logo-left\" src=\"https://i.postimg.cc/7PsVyMZz/Email-Template-Header.png\" alt=\"Logo Izquierda\">" +
+                "    </div>" +
+                "    <img class=\"banner\" src=\"https://i.postimg.cc/pX3JmW8X/Image.png\" alt=\"Bienvenido\">" +
+                "    <div class=\"container\">" +
+                "        <div class=\"content\">" +
+                "            <h3  style=\"color: #384860 !important; font-weight: bold\">Estimado cliente</h3>" +
+                "            <p>Se completó exitosamente el registro de su reserva de: <strong>"+roomName+"</strong>. Por favor, no se olvide de pagar su reserva.</p>" +
+                "            <div class=\"content-data\">" +
+                "                <p style=\"font-size: 1rem; font-weight: 600; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; padding-top: 10px; padding-bottom: 20px\">Los datos de tu reserva</p>" +
+                "                <table class=\"table-layout\">" +
+                "                    <tr><td>Entrada</td><td>Salida</td></tr>" +
+                "                    <tr><td><span style=\"font-size: 1.05rem; font-weight: 500;\">"+monthInit+" "+dayInit+"</span></td><td><span style=\"font-size: 1.05rem; font-weight: 500;\">"+monthEnd+" "+dayEnd+"</span></td></tr>" +
+                "                </table>" +
+                "                <p>Duracion de estancia: <br> <strong>"+dayInterval+" días</strong></p>" +
+                "                <p>Seleccion de reserva: <br> <strong>"+roomName+"</strong></p>" +
+                "                <a href=\"https://cieneguillariberadelrio.online/bookings/disponibles\" class=\"button\">Pagar ahora</a>" +
+                "            </div>" +
+                "            <p style=\"padding: 10px 0 0 0; color: #384860\">Recuerde que el pago lo puede realizar mediante deposito en nuestra cuenta a través de agente BCP, agencias o cualquier método de pago dentro de la plataforma usando este enlace: <a href=\"mailto:informesyreservas@cieneguilladelrio.com\"> www.riberadelrio/reservas.com</a></p>" +
+                "        </div>" +
+                "    </div>" +
+                "    <div class=\"help-section\">" +
+                "        <h3>¿Necesitas ayuda?</h3>" +
+                "        <p>Envia tus comentarios e informacion de errores a <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">informesyreservas@cieneguilladelrio.com</a></p>" +
+                "    </div>" +
+                "    <div class=\"footer\">" +
+                "        <p>Si prefiere no recibir este tipo de correo electrónico, ¿no quiere más correos electrónicos de Ribera? <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">Darse de baja</a>. <br> Valle Encantado S.A.C, Perú. <br> © 2023 Inclub</p>" +
+                "    </div>" +
+                "</body>" +
+                "</html>";
         return body;
     }
 
