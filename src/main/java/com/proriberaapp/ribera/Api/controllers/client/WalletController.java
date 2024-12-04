@@ -1,15 +1,18 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.WalletTransactionDTO;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.AuthorizationResponse;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.TransactionNecessaryResponse;
 import com.proriberaapp.ribera.Domain.entities.WalletTransactionEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.WalletTransactionRepository;
 import com.proriberaapp.ribera.services.client.WalletService;
 import com.proriberaapp.ribera.services.client.WalletTransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -22,6 +25,7 @@ public class WalletController {
     private final WalletService walletService;
     private final WalletTransactionService walletTransactionService;
     private final WalletRepository walletRepository;
+    private final WalletTransactionRepository walletTransactionRepository;
 
     @PostMapping("/create-wallet")
     public Mono<Integer> createWallet(@RequestParam Integer userClientId, @RequestParam Integer currencyId) {
@@ -92,6 +96,11 @@ public class WalletController {
                         return Mono.error(new IllegalArgumentException("La wallet no está asociada ni a un usuario ni a un promotor."));
                     }
                 });
+    }
+
+    @GetMapping("/transaction-details")
+    public Flux<WalletTransactionDTO> getTransactionDetails(@RequestParam Integer walletId) {
+        return walletTransactionRepository.findTransactionDetailsByWalletId(walletId);
     }
 
 }

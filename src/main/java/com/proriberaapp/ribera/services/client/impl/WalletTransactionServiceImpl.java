@@ -11,7 +11,6 @@ import com.proriberaapp.ribera.services.client.WalletTransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
@@ -392,7 +391,6 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
         return body;
     }
-
 
     @Override
     public Mono<WalletTransactionEntity> makeWithdrawal(Integer walletId, Integer transactionCatId, BigDecimal amount) {
