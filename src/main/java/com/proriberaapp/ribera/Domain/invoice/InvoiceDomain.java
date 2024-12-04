@@ -24,6 +24,7 @@ public class InvoiceDomain {
     private String serie;
     private String supplierNote;
     private String linkPdf;
+    private String operationCode;
     private int correlative;
     private BigDecimal totalPayment;
     private List<InvoiceItemDomain> items;
@@ -168,6 +169,7 @@ public class InvoiceDomain {
                 .subtotal(this.subtotal.doubleValue())
                 .idType(idType)
                 .nameCliente(this.getClient().getName())
+                .operationCode(operationCode)
                 .build();
 
     }

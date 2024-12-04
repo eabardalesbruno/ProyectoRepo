@@ -69,6 +69,8 @@ public class InvoiceEntity {
     private double percentageDiscount;
     @Column("nameclient")
     private String nameCliente;
+    @Column("operationcode")
+    private String operationCode;
 
     /* private InvoiceTypeEntity type; */
     /* private InvoiceStatusEntity statusEntity; */
