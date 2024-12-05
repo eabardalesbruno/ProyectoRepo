@@ -9,6 +9,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CompanyDataDto {
     private String razonSocial;
-    private String ruc;
     private String direccion;
+    private String numeroDocumento;
+    private String estado;
+    private String condicion;
 }
