@@ -84,7 +84,7 @@ public class VisualContIntegrationTest {
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.FACTURA,
                                 0);
                 invoice.addItemWithIncludedIgv(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(58)));
-                Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice, company);
+                Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice);
                 StepVerifier.create(response)
                                 .expectNextMatches(invoiceResponse -> {
                                         System.out.println(invoiceResponse);
@@ -105,7 +105,7 @@ public class VisualContIntegrationTest {
                 invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
                 invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
                 invoice.calculatedTotals();
-                Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice, company);
+                Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice);
 
                 StepVerifier.create(response)
                                 .expectNextMatches(invoiceResponse -> {
@@ -233,7 +233,6 @@ public class VisualContIntegrationTest {
 
         @Test
         public void savedAndSendInvoice() {
-                CompanyDomain company = new CompanyDomain("ddd", "1233", "wdwd", "dwdwd", "wdwdw", "wdwdw", "wdwd");
                 InvoiceClientDomain client = new InvoiceClientDomain("Juan Perez", "78804372", "Av. Los Pinos",
                                 "123456789",
                                 "", 1);
@@ -252,7 +251,7 @@ public class VisualContIntegrationTest {
                         invoiceDomain.setSerie(invoiceType.getSerie());
                         return Mono.zip(Mono.just(invoiceDomain), Mono.just(invoiceType));
                 }).flatMap(tuple -> Mono.zip(this.sunatInvoice.sendInvoice(
-                                tuple.getT1(), company),
+                                tuple.getT1()),
                                 Mono.just(tuple.getT1()), Mono.just(tuple.getT2())))
                                 .flatMap(tuple -> {
                                         InvoiceResponse responseInvoice = tuple.getT1();
