@@ -18,11 +18,9 @@ import com.proriberaapp.ribera.services.client.UserClientService;
 
 import reactor.core.publisher.Mono;
 
-import com.nimbusds.jose.shaded.gson.JsonObject;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceClientTypeDocument;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
-import com.proriberaapp.ribera.Domain.invoice.CompanyDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceBaseProcess;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
@@ -36,42 +34,9 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
     @Value("${sunat.api.token}")
     private String token;
 
-    /*
-     * @Autowired
-     * private UserClientService userClientService;
-     */
-    /* public VisualContIntegration() { */
-    /* this.url = "https://e-vf.softwareintegrado.com/vc-cpe/api/v1"; */
-    /*
-     * this.token =
-     * "4a4ea1cca6c51af7f30b567cd7fa0bd5bc22abaea0bac119bdc4a00bc5edc6fd";
-     */
-    /* } */
-
     @Override
-    public Mono<InvoiceResponse> sendInvoice(InvoiceDomain invoice, CompanyDomain company) {
+    public Mono<InvoiceResponse> sendInvoice(InvoiceDomain invoice) {
         JSONObject invoiceJson = this.formatJson(invoice);
-        /*
-         * JSONObject invoiceJson = this.formatJson(invoice);
-         * Mono<JSONObject> invoiceJsonMono = Mono.just(invoiceJson);
-         * if (invoice.getType() == InvoiceType.FACTURA.name()) {
-         * invoiceJsonMono = invoiceJsonMono
-         * .zipWith(this.userClientService.loadDataRuc(invoice.getClient().getIdentifier
-         * ()))
-         * .map(tuple -> {
-         * JSONObject invoiceJsonData = tuple.getT1();
-         * CompanyDataDto companyData = tuple.getT2();
-         * invoiceJsonData.getJSONObject("invoice").put("entidad_denominacion",
-         * companyData.getRazonSocial());
-         * invoiceJsonData.getJSONObject("invoice").put("entidad_direccion",
-         * companyData.getDireccion());
-         * return invoiceJsonData;
-         * });
-         * 
-         * }
-         * return invoiceJsonMono.flatMap(invoiceJsonData ->
-         * this.sendToFacturator(invoiceJsonData));
-         */
         return this.sendToFacturator(invoiceJson);
 
     }

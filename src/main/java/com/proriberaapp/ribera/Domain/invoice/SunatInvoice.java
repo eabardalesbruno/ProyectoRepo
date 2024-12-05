@@ -5,7 +5,7 @@ import org.json.JSONObject;
 import reactor.core.publisher.Mono;
 
 public interface SunatInvoice {
-    Mono<InvoiceResponse> sendInvoice(InvoiceDomain invoice, CompanyDomain company);
+    Mono<InvoiceResponse> sendInvoice(InvoiceDomain invoice);
 
     Mono<InvoiceResponseStatus> getInvoiceStatus(String invoiceId);
 

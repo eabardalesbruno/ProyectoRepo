@@ -1,17 +1,23 @@
 package com.proriberaapp.ribera.services.invoice;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import com.proriberaapp.ribera.Domain.dto.ChangeCurrencyDto;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.entities.CurrencyTypeEntity;
 import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceEntity;
 import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceItemEntity;
 import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceStatusEntity;
 import com.proriberaapp.ribera.Domain.entities.Invoice.InvoiceTypeEntity;
+import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceStatus;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 import com.proriberaapp.ribera.Domain.invoice.CompanyDomain;
@@ -31,6 +37,12 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class InvoiceService implements InvoiceServiceI {
+
+        @Value("${url.api.tipo-cambio}")
+        private String urlApiTipoCambio;
+
+        @Value("${url.api.tipo-cambio.token}")
+        private String tokenApiTipoCambio;
         @Autowired
         private InvoiceTypeRepsitory invoiceTypeRepsitory;
         @Autowired
@@ -52,6 +64,16 @@ public class InvoiceService implements InvoiceServiceI {
         @Autowired
         private UserClientService userClientService;
 
+        private Mono<ChangeCurrencyDto> loadChangeCurrency() {
+                String today = LocalDate.now().toString();
+                WebClient webClient = WebClient.create(urlApiTipoCambio);
+                return webClient.get().uri(uriBuilder -> uriBuilder.queryParam("date",
+                                today).build()).header("Authorization",
+                                                this.tokenApiTipoCambio)
+                                .retrieve()
+                                .bodyToMono(ChangeCurrencyDto.class);
+        }
+
         @Override
         public Mono<Void> save(InvoiceDomain invoiceDomain) {
                 invoiceDomain.calculatedTotals();
@@ -63,7 +85,6 @@ public class InvoiceService implements InvoiceServiceI {
                         }
                         return Mono.empty();
                 });
-                CompanyDomain company = new CompanyDomain("ddd", "1233", "wdwd", "dwdwd", "wdwdw", "wdwdw", "wdwd");
                 Mono<InvoiceDomain> invoiceDomainaMono = Mono.just(invoiceDomain);
                 List<InvoiceItemEntity> items = invoiceDomain.getItems()
                                 .stream()
@@ -80,6 +101,15 @@ public class InvoiceService implements InvoiceServiceI {
                                                 return invoiceDomain;
                                         });
                 }
+                if (invoiceDomain.getCurrency().equals(InvoiceCurrency.USD)) {
+                        invoiceDomainaMono = invoiceDomainaMono
+                                        .zipWith(this.loadChangeCurrency())
+                                        .map(tuple -> {
+                                                ChangeCurrencyDto currencyType = tuple.getT2();
+                                                invoiceDomain.setTc(currencyType.getPrecioVenta());
+                                                return invoiceDomain;
+                                        });
+                }
 
                 Mono<InvoiceTypeEntity> invoiceTypeEntity = this.invoiceTypeRepsitory
                                 .findByName(invoiceDomain.getType())
@@ -92,7 +122,7 @@ public class InvoiceService implements InvoiceServiceI {
                         InvoiceTypeEntity invoiceType = tuple.getT2();
                         invoice.setCorrelative(invoiceType.getCorrelative());
                         invoice.setSerie(invoiceType.getSerie());
-                        return sunatInvoice.sendInvoice(invoice, company);
+                        return sunatInvoice.sendInvoice(invoice);
                 });
                 return response.flatMap(responseInvoice -> {
                         invoiceDomain.setKeySupplier(responseInvoice.getKey());
