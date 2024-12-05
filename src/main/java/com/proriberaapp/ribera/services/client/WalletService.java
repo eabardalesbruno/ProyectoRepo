@@ -12,9 +12,9 @@ public interface WalletService {
 
 
   Mono<String> generateUniqueAccountNumber(Integer userId);
-
   Mono<WalletEntity> createWalletUsuario(Integer userClientId, Integer currencyId);
   Mono<WalletEntity> createWalletPromoter(Integer userPromoterId, Integer currencyId);
+
 
 
 
