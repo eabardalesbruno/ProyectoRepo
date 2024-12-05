@@ -39,8 +39,14 @@ public class ExcelEntity {
     // private Date createdAt;
     private LocalDateTime createdAt;
 
+    @Column("idtype")
+    private int idtype;
+
     @Column("idcurrency")
     private int idCurrency;
+
+    @Column("correlative")
+    private int correlative;
 
     @Column("tc")
     private double tc;
@@ -48,15 +54,18 @@ public class ExcelEntity {
     @Column("totaligv")
     private double totalIgv;
 
+    @Column("subtotal")
+    private double subtotal;
+
     @Column("totalpayment")
     private double totalPayment;
 
     @Override
     public String toString() {
-        return "ExcelEntity [keySupplier=" + keySupplier + ", id=" + id + ", serie=" + serie + 
-               ", identifierClient=" + identifierClient + ", createdAt=" + createdAt + 
-               ", idCurrency=" + idCurrency + ", tc=" + tc + ", totalIgv=" + totalIgv + 
-               ", totalPayment=" + totalPayment + "]";
+        return "ExcelEntity [keySupplier=" + keySupplier + ", id=" + id + ", serie=" + serie +
+                ", identifierClient=" + identifierClient + ", createdAt=" + createdAt + ", idtype=" + idtype +
+                ", idCurrency=" + idCurrency + ", correlative=" + correlative + ", tc=" + tc + ", totalIgv=" + totalIgv
+                + ", subtotal=" + subtotal +
+                ", totalPayment=" + totalPayment + "]";
     }
 }
-
