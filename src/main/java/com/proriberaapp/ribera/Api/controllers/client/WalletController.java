@@ -41,10 +41,15 @@ public class WalletController {
 
     @PostMapping("/transfer")
     public Mono<ResponseEntity<WalletTransactionEntity>> transfer(@RequestParam Integer walletIdOrigin, @RequestParam(required = false) Integer walletIdDestiny, @RequestParam(required = false) String emailDestiny, @RequestParam(required = false) String cardNumber, @RequestParam BigDecimal amount, @RequestParam(required = false) String motiveDescription) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return Mono.just(ResponseEntity.badRequest().body(null));
+        }
+
         return walletTransactionService.makeTransfer(walletIdOrigin, walletIdDestiny, emailDestiny, cardNumber, amount, motiveDescription)
-                .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
+                .map(ResponseEntity::ok)
+                .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().build()));
     }
+
 
     @PostMapping("/payment")
     public Mono<ResponseEntity<WalletTransactionEntity>> payment(Integer walletId, Integer transactioncatid, Integer bookingId) {
