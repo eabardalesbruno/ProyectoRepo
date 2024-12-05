@@ -57,15 +57,26 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                                 .then(walletRepository.save(walletEntityDestiny))
                                 .flatMap(savedDestiny -> generateUniqueOperationCode()
                                         .flatMap(operationCode -> {
-                                            WalletTransactionEntity transaction = WalletTransactionEntity.builder()
+                                            WalletTransactionEntity senderTransaction = WalletTransactionEntity.builder()
                                                     .walletId(walletIdOrigin)
                                                     .currencyTypeId(walletEntityOrigin.getCurrencyTypeId())
-                                                    .transactionCategoryId(1)
+                                                    .transactionCategoryId(1) // Categoría: Envío
                                                     .amount(amount)
                                                     .description("Transferencia a " + walletEntityDestiny.getCardNumber())
                                                     .motivedescription(motiveDescription != null && !motiveDescription.trim().isEmpty()
                                                             ? motiveDescription
                                                             : null)
+                                                    .operationCode(operationCode)
+                                                    .inicialDate(Timestamp.valueOf(LocalDateTime.now()))
+                                                    .avalibleDate(Timestamp.valueOf(LocalDateTime.now().plusDays(1)))
+                                                    .build();
+
+                                            WalletTransactionEntity recipientTransaction = WalletTransactionEntity.builder()
+                                                    .walletId(walletIdDestiny)
+                                                    .currencyTypeId(walletEntityDestiny.getCurrencyTypeId())
+                                                    .transactionCategoryId(6) // Categoría: Recepción
+                                                    .amount(amount)
+                                                    .description("Transferencia recibida de " + walletEntityOrigin.getCardNumber())
                                                     .operationCode(operationCode)
                                                     .inicialDate(Timestamp.valueOf(LocalDateTime.now()))
                                                     .avalibleDate(Timestamp.valueOf(LocalDateTime.now().plusDays(1)))
@@ -86,10 +97,11 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                                                                 .flatMap(emailBody -> emailService.sendEmail(emailDestinyActual, "Has Recibido Fondos", emailBody));
                                                     });
 
-                                            return walletTransactionRepository.save(transaction)
+                                            return walletTransactionRepository.save(senderTransaction)
+                                                    .then(walletTransactionRepository.save(recipientTransaction))
                                                     .then(sendOriginEmail)
                                                     .then(sendDestinyEmail)
-                                                    .thenReturn(transaction);
+                                                    .thenReturn(senderTransaction);
                                         }));
                     });
                 });
