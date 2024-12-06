@@ -38,6 +38,7 @@ public class UserPromoterServiceImpl implements UserPromoterService {
     @Autowired
     private EmailService emailService;
     private final WalletServiceImpl walletService;
+
     @Override
     public Mono<TokenDto> login(LoginRequest loginRequest) {
         return userPromoterRepository.findByUsernameOrEmail(loginRequest.username(), loginRequest.email())
@@ -46,9 +47,22 @@ public class UserPromoterServiceImpl implements UserPromoterService {
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "user is not active")))
                 .filter(user -> passwordEncoder.matches(loginRequest.password(), user.getPassword()))
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "bad credentials")))
+                .flatMap(user -> {
+                    if (user.getWalletId() == null) {
+                        // Crea una nueva wallet si el usuario no tiene una asociada
+                        return walletService.createWalletUsuario(user.getUserPromoterId(), 1)
+                                .flatMap(wallet -> {
+                                    user.setWalletId(wallet.getWalletId());
+                                    return userPromoterRepository.save(user).thenReturn(user);
+                                });
+                    } else {
+                        return Mono.just(user);
+                    }
+                })
                 .map(user -> new TokenDto(jwtProvider.generateTokenPromoter(user)))
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "error generating token")));
     }
+
     public Mono<UserPromoterEntity> register(UserPromoterEntity userPromoter, String randomPassword) {
         long currentTimeMillis = System.currentTimeMillis();
         Timestamp currentTimestamp = new Timestamp(currentTimeMillis);

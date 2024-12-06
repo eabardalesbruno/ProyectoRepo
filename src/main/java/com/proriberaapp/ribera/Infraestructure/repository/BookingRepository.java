@@ -207,4 +207,15 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                                                 """)
         Mono<BookingAndRoomNameDto> getRoomNameAndDescriptionfindByBookingId(int bookinId);
 
+        @Query("""
+        SELECT *
+        FROM booking
+        WHERE roomofferid = :roomOfferId
+          AND (daybookinginit < :offerTimeEnd AND daybookingend > :offerTimeInit)
+          AND (bookingstateid != 4)
+    """)
+        Flux<BookingEntity> findConflictingBookings(@Param("roomOfferId") Integer roomOfferId,
+                                                    @Param("offerTimeInit") LocalDateTime offerTimeInit,
+                                                    @Param("offerTimeEnd") LocalDateTime offerTimeEnd);
+
 }
