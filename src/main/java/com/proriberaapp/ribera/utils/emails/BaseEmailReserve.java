@@ -62,11 +62,20 @@ public class BaseEmailReserve {
                                     font-family:'Product Sans', sans-serif;
 
                                 }
+                                .header{
+                                position: relative;
+                                }
 
-                                .header img {
+                                .header img.banner {
                                     width: 100%;
                                     border-top-left-radius: 8px;
                                     border-top-right-radius: 8px;
+                                }
+                                .header img.logo {
+                                    width: 105px;
+                                    top:25.5px;
+                                    right: 22px;
+                                    position: absolute;
                                 }
                                 .body {
                                     padding: 40px;
@@ -90,7 +99,7 @@ public class BaseEmailReserve {
                                 <table class="container" cellpadding="0" cellspacing="0">
                                     <tr>
                                         <td class="header">
-                                            <img class="banner" src="https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.jpg" alt="Bienvenido"/>
+                                            <img class="banner" src="https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png" alt="Bienvenido"/>
                                         </td>
                                     </tr>
                                     <tr>

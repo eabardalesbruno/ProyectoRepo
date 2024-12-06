@@ -615,7 +615,6 @@ public class BookingServiceImpl implements BookingService {
                     int dayEnd = getDayNumber(bookingEntity.getDayBookingEnd());
                     long dayInterval = calculateDaysDifference(bookingEntity.getDayBookingInit(),
                             bookingEntity.getDayBookingEnd());
-
                     baseEmailReserve.addEmailHandler(new ConfirmReserveBooking(
                             monthInit,
                             monthEnd,

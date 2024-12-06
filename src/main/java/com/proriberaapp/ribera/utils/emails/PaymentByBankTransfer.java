@@ -20,18 +20,18 @@ public class PaymentByBankTransfer implements EmailHandler {
     @Override
     public String execute() {
         String body = """
-                <p>Hola, %clientName</p>
-                <p>
+                <p class="font-size">Hola, %clientName</p>
+                <p class="font-size">
                 Muchas gracias por tu reserva. Ya estas más cerca en disfrutar con nosotros
                 </p>
-                <p>
-                El total de tu estancia es de: <strong>S/. %amount</strong>
+                <p class="font-size">
+                El total de tu estancia es de: <strong class="strong-text">S/. %amount</strong>
                 </p>
-                <p>
+                <p class="font-size">
                 Para confirmar la reserva realizaremos la verificación de tu pago.
                 </p>
-                <p>
-                <strong>En menos de 48 hr recibirás un correo electrónico</strong> con la constancia de confirmación donde estará el detalle de tu reserva.
+                <p class="font-size">
+                <strong class="strong-text">En menos de 48 hr recibirás un correo electrónico</strong> con la constancia de confirmación donde estará el detalle de tu reserva.
                 </p>
                 """;
         return body.replaceAll("%clientName", clientName).replace("%amount", String.valueOf(
@@ -40,7 +40,14 @@ public class PaymentByBankTransfer implements EmailHandler {
 
     @Override
     public String getStyles() {
-        return "";
+        return """
+                .font-size {
+                 font-size: 16px;
+                 }
+                .strong-text {
+                color:#384860;
+                }
+                                """;
     }
 
 }

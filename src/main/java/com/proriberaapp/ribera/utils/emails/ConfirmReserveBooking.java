@@ -35,13 +35,13 @@ public class ConfirmReserveBooking implements EmailHandler {
     public String execute() {
         String body = """
                 <p>Estimado(a) %clientName</p>
-                <p>Se completo exitosamente el registro de su reserva: <strong>%roomName</strong>. Por favor, no se olvide de pagar su reserva.
+                <p>Se completo exitosamente el registro de su reserva: <strong class="font-italic">%roomName</strong>. Por favor, no se olvide de pagar su reserva.
                  </p>
                 <div class="card">
                     <p style="font-size: 1rem; font-weight: 600; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; padding-top: 10px; padding-bottom: 20px">Los datos de tu reserva</p>
                 <table class=table-layout>
                     <tr><td>
-                    <img src="https://s3.us-east-2.amazonaws.com/backoffice.documents/email/logo1.svg" alt="calendario"/>
+                    <img src="https://s3.us-east-2.amazonaws.com/backoffice.documents/email/calendario.png" alt="calendario"/>
                     Entrada</td><td>Salida</td></tr>
                     <tr><td><span style="font-size: 1.05rem; font-weight: 500;">%monthInit %dayInit</span></td>
                     <td><span style="font-size: 1.05rem; font-weight: 500;">%monthEnd %dayEnd</span></td>
@@ -69,6 +69,9 @@ public class ConfirmReserveBooking implements EmailHandler {
                 .card{
                     width: 333px;}
                 .button { min-width: 90%; display: inline-block; padding: 10px; background-color: #025928; color: white !important; text-align: center; text-decoration: none; border-radius: 0px; }
+                .font-italic{
+                    font-style: italic;
+                }
                 """;
     }
 
