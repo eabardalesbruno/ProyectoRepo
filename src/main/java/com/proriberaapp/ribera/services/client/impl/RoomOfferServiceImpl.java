@@ -67,7 +67,12 @@ public class RoomOfferServiceImpl implements RoomOfferService {
     @Override
     public Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd,
                                                   Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity, Integer adultExtra) {
-        return roomOfferRepository.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity, kidCapacity, adultCapacity, adultMayorCapacity, adultExtra)
+        return roomOfferRepository.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity, kidCapacity,
+                        adultCapacity, adultMayorCapacity, adultExtra)
+                .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
+                                roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
+                        .hasElements()
+                        .map(hasConflicts -> !hasConflicts))
                 .flatMap(roomOffer -> servicesRepository.findAllViewComfortReturn(roomOffer.getRoomOfferId())
                         .collectList()
                         .flatMap(comfortList -> {
