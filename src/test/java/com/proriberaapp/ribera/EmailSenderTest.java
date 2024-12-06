@@ -12,6 +12,7 @@ import com.proriberaapp.ribera.utils.emails.BookingEmailDto;
 import com.proriberaapp.ribera.utils.emails.ConfirmPaymentByBankTransferAndCard;
 import com.proriberaapp.ribera.utils.emails.ConfirmReserveBooking;
 import com.proriberaapp.ribera.utils.emails.PaymentByBankTransfer;
+
 import com.proriberaapp.ribera.utils.emails.RejectedPaymentTemplateEmail;
 
 import reactor.test.StepVerifier;
@@ -68,6 +69,7 @@ public class EmailSenderTest {
         StepVerifier.create(emailService.sendEmail(to, subject, emailBody)).verifyComplete();
     }
 
+
     @Test
     void testSendEmailRejectPayment() {
         BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
@@ -78,4 +80,5 @@ public class EmailSenderTest {
         String emailBody = baseEmailReserve.execute();
         StepVerifier.create(emailService.sendEmail(to, subject, emailBody)).verifyComplete();
     }
+
 }

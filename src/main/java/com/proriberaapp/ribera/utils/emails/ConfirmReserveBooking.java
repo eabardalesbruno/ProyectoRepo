@@ -68,7 +68,6 @@ public class ConfirmReserveBooking implements EmailHandler {
         return """
                 .card{
                     width: 333px;}
-
                 .font-italic{
                     font-style: italic;
                 }

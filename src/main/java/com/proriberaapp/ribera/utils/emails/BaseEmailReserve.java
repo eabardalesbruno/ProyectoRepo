@@ -50,7 +50,9 @@ public class BaseEmailReserve {
                                 padding-top: 40px;
                                     font-family: Arial, sans-serif;
                                 }
+
                 .button { width: 90%; display: inline-block; padding: 10px; background-color: #025928; color: white !important; text-align: center; text-decoration: none; border-radius: 0px; }
+
                 .card{
                     background-color: rgb(246, 247, 251);
                     padding: 24px;}

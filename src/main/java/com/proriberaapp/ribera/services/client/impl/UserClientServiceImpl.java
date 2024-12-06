@@ -414,7 +414,17 @@ public class UserClientServiceImpl implements UserClientService {
         return userClientRepository.findByEmail(email)
                 .flatMap(user -> {
                     if (passwordEncoder.matches(password, user.getPassword())) {
-                        return Mono.just(jwtUtil.generateToken(user));
+                        //Se verifica si al momento de loguearse el usuario tiene una wallet creada y si no tiene se le crea una
+                        if (user.getWalletId() == null) {
+                            return walletServiceImpl.createWalletUsuario(user.getUserClientId(), 1)
+                                    .flatMap(wallet -> {
+                                        user.setWalletId(wallet.getWalletId());
+                                        return userClientRepository.save(user)
+                                                .thenReturn(jwtUtil.generateToken(user));
+                                    });
+                        } else {
+                            return Mono.just(jwtUtil.generateToken(user));
+                        }
                     } else {
                         return Mono.error(new RuntimeException("Credenciales inválidas"));
                     }
