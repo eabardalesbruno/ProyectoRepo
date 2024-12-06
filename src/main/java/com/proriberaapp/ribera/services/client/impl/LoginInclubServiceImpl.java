@@ -42,6 +42,9 @@ public class LoginInclubServiceImpl implements LoginInclubService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private WalletServiceImpl walletServiceImpl;
+
     @Override
     public Mono<TokenValid> login(String userName, String password) {
         WebClient webClient = WebClient.create(this.URL_LOGIN_USER);
@@ -89,13 +92,26 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                     if (!this.passwordEncoder.matches(password, user.getPassword())) {
                         return Mono.error(new CredentialsInvalidException());
                     }
-                    ;
-                    TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user));
-                    return Mono.just(tokenValid);
+                    // Verificar si el usuario tiene una wallet asociada
+                    if (user.getWalletId() == null) {
+                        // Si no tiene wallet, crear una nueva
+                        return walletServiceImpl.createWalletUsuario(user.getUserClientId(), 1)
+                                .flatMap(wallet -> {
+                                    // Asociamos la wallet al usuario
+                                    user.setWalletId(wallet.getWalletId());
+                                    return userClientRepository.save(user)  // Guardamos el usuario con la wallet
+                                            .thenReturn(user); // Continuamos con el flujo
+                                });
+                    } else {
+                        return Mono.just(user); // Si ya tiene wallet, no hacemos nada
+                    }
+                })
+                .flatMap(user -> {
+                    TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user)); // Generar token
+                    return Mono.just(tokenValid); // Devolvemos el token
                 });
 
         return response;
-
     }
 
     @Override
