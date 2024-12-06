@@ -68,7 +68,7 @@ public class ConfirmReserveBooking implements EmailHandler {
         return """
                 .card{
                     width: 333px;}
-                .button { min-width: 90%; display: inline-block; padding: 10px; background-color: #025928; color: white !important; text-align: center; text-decoration: none; border-radius: 0px; }
+
                 .font-italic{
                     font-style: italic;
                 }
