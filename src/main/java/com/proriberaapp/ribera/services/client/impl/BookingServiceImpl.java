@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
@@ -35,6 +36,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
@@ -890,5 +893,22 @@ public class BookingServiceImpl implements BookingService {
                     return bookingFeedingRepository.save(bookingFeeding);
                 })
                 .then();
+    }
+
+    @Override
+    public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateId(Integer stateId, Integer month) {
+        return bookingRepository.findBookingsWithPaymentByStateId(stateId, month);
+    }
+
+    @Override
+    public Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month) {
+        return bookingRepository.findBookingsWithPaymentByStateId(stateId, month)
+                .map(BookingWithPaymentDTO::getTotalPayment)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime date) {
+        return bookingRepository.findBookingsWithPaymentByStateIdAndDate(stateId, date);
     }
 }

@@ -9,9 +9,9 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import com.proriberaapp.ribera.Domain.entities.ExcelEntity;
-import com.proriberaapp.ribera.services.admin.ReportManagerService;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
 
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 import java.io.ByteArrayOutputStream;
@@ -24,27 +24,22 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ExcelServiceImpl {
 
-    private final ReportManagerService reportManagerService;
-
-    public ExcelServiceImpl(ReportManagerService reportManagerService) {
-        this.reportManagerService = reportManagerService;
-    }
-
-    public Mono<ByteArrayResource> generateExcelFromEntitiesByMonth(List<ExcelEntity> entities) {
+    public Mono<ByteArrayResource> generateExcelFromEntitiesByMonth(List<BookingWithPaymentDTO> entities) {
         try (InputStream is = new ClassPathResource("template.xlsm").getInputStream();
                 Workbook workbook = new XSSFWorkbook(is)) {
 
-            Map<String, List<ExcelEntity>> dataByMonth = entities.stream()
+            Map<String, List<BookingWithPaymentDTO>> dataByMonth = entities.stream()
                     .collect(Collectors.groupingBy(entity -> {
-                        int month = entity.getCreatedAt().getMonthValue();
+                        int month = entity.getCreateDatInvoice().getMonthValue();
                         return getMonthName(month);
                     }));
 
-            for (Map.Entry<String, List<ExcelEntity>> entry : dataByMonth.entrySet()) {
+            for (Map.Entry<String, List<BookingWithPaymentDTO>> entry : dataByMonth.entrySet()) {
                 String sheetName = entry.getKey();
-                List<ExcelEntity> monthlyData = entry.getValue();
+                List<BookingWithPaymentDTO> monthlyData = entry.getValue();
 
                 Sheet sheet = workbook.getSheet(sheetName);
                 if (sheet == null) {
@@ -55,10 +50,10 @@ public class ExcelServiceImpl {
                 int startRow = 1;
                 DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-                for (ExcelEntity entity : monthlyData) {
+                for (BookingWithPaymentDTO entity : monthlyData) {
                     Row row = sheet.createRow(startRow++);
 
-                    String codDoc = switch (entity.getIdtype()) {
+                    String codDoc = switch (entity.getIdType()) {
                         // en el excel hay más casos, en la tb solo hay 1 y 2
                         case 1 -> "01"; // Factura
                         case 2 -> "03"; // Boleta
@@ -75,7 +70,7 @@ public class ExcelServiceImpl {
                     int tipoOpe = 1;
                     int isc = 0;
                     String formattedTc = String.format("%.2f", entity.getTc());
-                    String formattedDate = entity.getCreatedAt().toLocalDate().format(dateFormatter);
+                    String formattedDate = entity.getCreateDatInvoice().toLocalDate().format(dateFormatter);
                     String bienServ = "4";
                     String modalidad = "1";
                     String detraccion = "0";
@@ -95,7 +90,7 @@ public class ExcelServiceImpl {
                     columnMapping.put("Isc", isc);
                     columnMapping.put("Total", entity.getTotalPayment());
                     columnMapping.put("D_Bie_Servic", bienServ);
-                    
+
                     columnMapping.put("Modalidad", modalidad);
                     columnMapping.put("Detraccion", detraccion);
 
