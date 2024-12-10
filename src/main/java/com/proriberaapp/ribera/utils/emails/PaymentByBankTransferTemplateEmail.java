@@ -2,12 +2,12 @@ package com.proriberaapp.ribera.utils.emails;
 
 import java.math.BigDecimal;
 
-public class PaymentByBankTransfer implements EmailHandler {
+public class PaymentByBankTransferTemplateEmail implements EmailHandler {
     private EmailHandler nextHandler;
     private String clientName;
     private BigDecimal amount;
 
-    public PaymentByBankTransfer(String clientName, BigDecimal amount) {
+    public PaymentByBankTransferTemplateEmail(String clientName, BigDecimal amount) {
         this.clientName = clientName;
         this.amount = amount;
     }

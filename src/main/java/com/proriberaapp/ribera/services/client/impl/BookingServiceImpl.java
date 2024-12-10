@@ -15,7 +15,7 @@ import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.PartnerPointsService;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
-import com.proriberaapp.ribera.utils.emails.ConfirmReserveBooking;
+import com.proriberaapp.ribera.utils.emails.ConfirmReserveBookingTemplateEmail;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -618,7 +618,7 @@ public class BookingServiceImpl implements BookingService {
                     int dayEnd = getDayNumber(bookingEntity.getDayBookingEnd());
                     long dayInterval = calculateDaysDifference(bookingEntity.getDayBookingInit(),
                             bookingEntity.getDayBookingEnd());
-                    baseEmailReserve.addEmailHandler(new ConfirmReserveBooking(
+                    baseEmailReserve.addEmailHandler(new ConfirmReserveBookingTemplateEmail(
                             monthInit,
                             monthEnd,
                             String.valueOf(dayInit),

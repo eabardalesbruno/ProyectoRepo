@@ -95,6 +95,9 @@ public class BaseEmailReserve {
                                     border-radius: 8px;
                                     box-sizing: border-box;
                                 }
+                                .font-italic{
+                                    font-style: italic;
+                                }
                 %STYLES
                                     </style>
                                 </head>
