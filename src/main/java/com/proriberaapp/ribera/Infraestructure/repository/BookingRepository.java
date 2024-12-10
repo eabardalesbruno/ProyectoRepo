@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -217,5 +218,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
         Flux<BookingEntity> findConflictingBookings(@Param("roomOfferId") Integer roomOfferId,
                                                     @Param("offerTimeInit") LocalDateTime offerTimeInit,
                                                     @Param("offerTimeEnd") LocalDateTime offerTimeEnd);
+
+        @Query("SELECT SUM(b.costFinal) FROM booking b WHERE b.userpromotorid = :userPromoterId AND b.bookingStateId = :bookingStateId")
+        Mono<BigDecimal> findTotalAmountByUserPromoterIdAndBookingStateId(@Param("userPromoterId") Integer userPromoterId, @Param("bookingStateId") Integer bookingStateId);
 
 }

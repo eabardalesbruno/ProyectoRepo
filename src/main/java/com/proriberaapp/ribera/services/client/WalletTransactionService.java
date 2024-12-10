@@ -10,13 +10,15 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public interface WalletTransactionService {
 
     Mono<WalletTransactionEntity> makeTransfer (Integer walletIdOrigin, Integer walletIdDestiny , String emailDestiny, String cardNumber, BigDecimal amount , String motiveDescription);
     Mono<WalletTransactionEntity> makeWithdrawal(Integer walletId, Integer transactioncatid, BigDecimal amount);
     Mono<WalletTransactionEntity> makeDeposit(Integer walletId, Integer transactioncatid, BigDecimal amount);
-    Mono<WalletTransactionEntity> makePayment(Integer walletId, Integer transactioncatid,  Integer bookingId);
+    Mono<String> makePayment(Integer walletId, List<Integer> bookingIds);
     Mono<WalletTransactionEntity> makeRecharge(Integer walletId, Integer transactioncatid, BigDecimal amount);
     Mono<WalletEntity> findWalletByEmail(String email);
+    Mono<BigDecimal> getTotalAmountForPromoter(Integer userPromoterId);
 }
