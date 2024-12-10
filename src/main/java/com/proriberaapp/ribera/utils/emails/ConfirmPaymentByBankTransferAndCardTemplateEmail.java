@@ -25,12 +25,13 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                     <table class="table-layout">
                     <tbody>
                          <tr>
-                            <td width="433">
-                            <table>
+                            <td style="height: 320px;
+                    width: 433px;">
+                            <table style="height: 100%;">
                             <tbody>
                             <tr>
-                            <td width="433">
-                            <img src="%imgSrc" width="433" class="img" alt="calendario"/>
+                            <td>
+                            <img src="%imgSrc"  class="img" alt="calendario"/>
                             </td>
                             </tr>
                             </tbody>
@@ -39,8 +40,7 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                             <td width="16"></td>
 
                              <td class="container-data">
-                             <table width="100%" style="padding-top: 17px;
-                padding-bottom: 17px;
+                             <table width="100%" style="
                 box-sizing: border-box;">
                                 <tbody>
                                 <tr>
@@ -75,16 +75,17 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                                 </tr>
                                 <tr>
                                 <td>
-                                <table>
+                                <table style="width:100%">
                                 <tbody>
                                 <tr>
-                                <td>
+                                <td width="100">
                                 <p class="no-margin">Checkin:</p>
                                 <p class="no-margin"><strong>%dateCheckIn</strong></p>
                                 </td>
-                                <td width="180">
+                                <td width="200">
                                 </td>
-                                <td>
+                                <td style="width: 100px;
+                text-align: end;">
                                 <p class="no-margin">Checkout:</p>
                                 <p class="no-margin"><strong>%dateCheckOut</strong></p>
                                 </td>
@@ -101,12 +102,12 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                                 </tr>
                                 <tr>
                                 <td>
-                                <p class="no-margin">Duración total de estancia:<strong> %days <strong>días</p>
+                                <p class="no-margin">Duración total de estancia:<strong> %days <strong>noches</p>
                                 </td>
                                 </tr>
                                 <tr>
                                 <td>
-                                <p class="no-margin">Cantidad de personas: <strong>4 adultos, 2 niños<strong></p>
+                                <p class="no-margin">Cantidad de personas: <strong>%cantidadPersonas<strong></p>
                                 </td>
                                 </tr>
                                 <tr>
@@ -134,7 +135,8 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
 
                 </div>
                    <p class="font">
-                    Este correo es solo de carácter informativo, no es un comprobante de pago, en caso de no poder usar la reservación, por favor llamar con 2 días de anticipación.
+                    Este correo es solo de carácter informativo, no es un comprobante de pago, en caso de no poder usar la reservación, por favor <br> llamar con 2 días de anticipación.
+                    <br>
                 Muchas gracias.
                     </p>
 
@@ -148,12 +150,18 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                 .replace("%dateCheckOut", bookingEmailDto.getDateCheckOut())
                 .replace("%hourCheckIn", bookingEmailDto.getHourCheckIn())
                 .replace("%days", String.valueOf(bookingEmailDto.getDays()))
-                .replace("%location", bookingEmailDto.getLocation());
+                .replace("%location", bookingEmailDto.getLocation())
+                .replace("%cantidadPersonas", bookingEmailDto.getCantidadPersonas());
     }
 
     @Override
     public String getStyles() {
         return """
+                .img{
+                width: 100% !important;
+                height: 100% !important;
+                    object-fit: cover;
+                }
                 .check-in{
                 margin:0;font-size:12px;
                 color:#216D42;
@@ -190,7 +198,7 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                                 font-family: 'Product Sans', sans-serif;
                              }
                             .card{
-                            width: 847px;
+                            width: 900px;
                             padding: 14px 24px;
                             }
                             .strong-text {

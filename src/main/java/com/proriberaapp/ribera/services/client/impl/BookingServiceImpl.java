@@ -479,6 +479,11 @@ public class BookingServiceImpl implements BookingService {
             return Mono.error(
                     new CustomException(HttpStatus.BAD_REQUEST, "El número total de personas debe ser entre 2 y 7"));
         }
+        int totalAdults = bookingSaveRequest.getNumberAdult() +
+                bookingSaveRequest.getNumberAdultExtra() +
+                bookingSaveRequest.getNumberAdultMayor();
+        int totalChildren = bookingSaveRequest.getNumberBaby() +
+                bookingSaveRequest.getNumberChild();
 
         if (bookingSaveRequest.getNumberBaby() < 0 ||
                 bookingSaveRequest.getNumberAdult() < 0 ||
@@ -557,7 +562,8 @@ public class BookingServiceImpl implements BookingService {
                                                                                 bookingSaveRequest.getFeedingIDs(),
                                                                                 bookingSaveRequest.getTotalCapacity())
                                                                                 .then(sendBookingConfirmationEmail(
-                                                                                        savedBooking, roomName)
+                                                                                        savedBooking, roomName,
+                                                                                        totalAdults, totalChildren)
                                                                                         .then(Mono.just(savedBooking)));
                                                                     });
                                                         }
@@ -608,7 +614,8 @@ public class BookingServiceImpl implements BookingService {
 
     // Método para enviar el correo de confirmación de reserva con el nombre de la
     // habitación
-    private Mono<BookingEntity> sendBookingConfirmationEmail(BookingEntity bookingEntity, String roomName) {
+    private Mono<BookingEntity> sendBookingConfirmationEmail(BookingEntity bookingEntity, String roomName,
+            int totalChildren, int totalAdults) {
         return userClientRepository.findByUserClientId(bookingEntity.getUserClientId())
                 .flatMap(userClient -> {
                     BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
@@ -627,7 +634,8 @@ public class BookingServiceImpl implements BookingService {
                             dayInterval,
                             roomName,
                             userClient.getFirstName(),
-                            String.valueOf(bookingEntity.getBookingId())));
+                            String.valueOf(bookingEntity.getBookingId()),
+                            totalAdults, totalChildren));
                     String emailBody = baseEmailReserve.execute();
                     // Generar el cuerpo del correo electrónico con el nombre de la habitación
                     /* String emailBody = generateEmailBody(bookingEntity, roomName); */

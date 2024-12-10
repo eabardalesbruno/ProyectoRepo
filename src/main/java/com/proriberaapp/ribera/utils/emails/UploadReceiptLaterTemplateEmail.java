@@ -7,10 +7,12 @@ public class UploadReceiptLaterTemplateEmail implements EmailHandler {
     private EmailHandler nextHandler;
     private String clientName;
     private String code;
+    private String bookingId;
 
-    public UploadReceiptLaterTemplateEmail(String clientName, String code) {
+    public UploadReceiptLaterTemplateEmail(String clientName, String code, String bookingId) {
         this.clientName = clientName;
         this.code = code;
+        this.bookingId = bookingId;
 
     }
 
@@ -21,14 +23,14 @@ public class UploadReceiptLaterTemplateEmail implements EmailHandler {
 
     @Override
     public String execute() {
-        String toDay = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")).toString();
+        String toDay = LocalDate.now().plusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")).toString();
         String body = """
                   <p class="font-size">
                   Estimado, %clientName
-                  Este es un recordatorio de que la siguiente reserva %code no cuenta con la evidencia o imagen del pago. Le agradecería  que nos envíen  la imagen del pago lo más ante posible a más tardar a las 11:59 PM de %toDay.
+                  Este es un recordatorio de que la siguiente reserva  %code  no cuenta con la evidencia o imagen del pago. Le agradecería  que nos envíen  la imagen del pago lo más ante posible a más tardar a las 11:59 PM de %toDay.
                   </p>
                       <p class="font-size">
-                <a href="https://www.cieneguillariberadelrio.com/bookings/disponibles" class="button">Subir comprobante de pago</a>
+                <a href="http://localhost:4200/payment-method/%bookingId?token=%code" class="button">Subir comprobante de pago</a>
                   </p>
                      <p class="font-size">
                    Si tienes alguna consulta o quieres agregar algún dato extra, envíanos tu consulta por correo o canal de whatsapp. Recuerde que el pago lo puede realizar mediante deposito en nuestra cuenta a través de agente BCP, agencias o cualquier método de pago dentro de la plataforma usando este enlace:
@@ -37,7 +39,9 @@ public class UploadReceiptLaterTemplateEmail implements EmailHandler {
                     </a>
                    </p>
                    """;
-        return body.replaceAll("%clientName", clientName).replaceAll("%code", code).replace("%toDay", toDay);
+        return body.replaceAll("%clientName", clientName).replaceAll("%code", code).replace("%toDay", toDay).replaceAll(
+                "%bookingId",
+                bookingId);
     }
 
     @Override
