@@ -199,7 +199,7 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                              }
                             .card{
                             width: 900px;
-                            padding: 14px 24px;
+                            padding: 24px;
                             }
                             .strong-text {
                             color:#384860;
