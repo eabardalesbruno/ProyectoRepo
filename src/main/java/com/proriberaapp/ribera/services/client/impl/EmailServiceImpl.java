@@ -33,7 +33,7 @@ public class EmailServiceImpl implements EmailService {
         return Mono.fromRunnable(() -> {
             try {
                 MimeMessage message = mailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message, true);
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
                 helper.setFrom("notificacionesinclub@inclub.site");
                 helper.setTo(to);
                 helper.setSubject(subject);
@@ -62,6 +62,7 @@ public class EmailServiceImpl implements EmailService {
             }
         }).then();
     }
+
     @Override
     public Mono<Void> sendEmailWithAttachment(String toEmail, String body, String subject, String attachmentPath) {
         return Mono.defer(() -> {
@@ -104,50 +105,51 @@ public class EmailServiceImpl implements EmailService {
     }
 }
 /*
-@Service
-public class EmailServiceImpl implements EmailService {
-
-    private final JavaMailSender mailSender;
-    private final EmailLogRepository emailLogRepository;
-
-    @Autowired
-    public EmailServiceImpl(JavaMailSender mailSender, EmailLogRepository emailLogRepository) {
-        this.mailSender = mailSender;
-        this.emailLogRepository = emailLogRepository;
-    }
-
-    @Override
-    public Mono<Void> sendEmail(String to, String subject, String body) {
-        return Mono.fromRunnable(() -> {
-            try {
-                SimpleMailMessage message = new SimpleMailMessage();
-                message.setFrom("notificacionesribera@inresorts.club");
-                message.setTo(to);
-                message.setSubject(subject);
-                message.setText(body);
-                mailSender.send(message);
-
-                EmailLogEntity emailLog = EmailLogEntity.builder()
-                        .recipient(to)
-                        .subject(subject)
-                        .body(body)
-                        .sentDate(Timestamp.valueOf(LocalDateTime.now()))
-                        .status("SENT")
-                        .build();
-
-                emailLogRepository.save(emailLog).block();
-            } catch (Exception e) {
-                EmailLogEntity emailLog = EmailLogEntity.builder()
-                        .recipient(to)
-                        .subject(subject)
-                        .body(body)
-                        .sentDate(Timestamp.valueOf(LocalDateTime.now()))
-                        .status("FAILED")
-                        .build();
-
-                emailLogRepository.save(emailLog).block();
-            }
-        }).then();
-    }
-}
+ * @Service
+ * public class EmailServiceImpl implements EmailService {
+ * 
+ * private final JavaMailSender mailSender;
+ * private final EmailLogRepository emailLogRepository;
+ * 
+ * @Autowired
+ * public EmailServiceImpl(JavaMailSender mailSender, EmailLogRepository
+ * emailLogRepository) {
+ * this.mailSender = mailSender;
+ * this.emailLogRepository = emailLogRepository;
+ * }
+ * 
+ * @Override
+ * public Mono<Void> sendEmail(String to, String subject, String body) {
+ * return Mono.fromRunnable(() -> {
+ * try {
+ * SimpleMailMessage message = new SimpleMailMessage();
+ * message.setFrom("notificacionesribera@inresorts.club");
+ * message.setTo(to);
+ * message.setSubject(subject);
+ * message.setText(body);
+ * mailSender.send(message);
+ * 
+ * EmailLogEntity emailLog = EmailLogEntity.builder()
+ * .recipient(to)
+ * .subject(subject)
+ * .body(body)
+ * .sentDate(Timestamp.valueOf(LocalDateTime.now()))
+ * .status("SENT")
+ * .build();
+ * 
+ * emailLogRepository.save(emailLog).block();
+ * } catch (Exception e) {
+ * EmailLogEntity emailLog = EmailLogEntity.builder()
+ * .recipient(to)
+ * .subject(subject)
+ * .body(body)
+ * .sentDate(Timestamp.valueOf(LocalDateTime.now()))
+ * .status("FAILED")
+ * .build();
+ * 
+ * emailLogRepository.save(emailLog).block();
+ * }
+ * }).then();
+ * }
+ * }
  */

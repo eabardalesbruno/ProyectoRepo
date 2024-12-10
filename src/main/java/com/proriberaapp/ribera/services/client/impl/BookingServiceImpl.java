@@ -14,6 +14,9 @@ import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.PartnerPointsService;
+import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
+import com.proriberaapp.ribera.utils.emails.ConfirmReserveBooking;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -608,8 +611,26 @@ public class BookingServiceImpl implements BookingService {
     private Mono<BookingEntity> sendBookingConfirmationEmail(BookingEntity bookingEntity, String roomName) {
         return userClientRepository.findByUserClientId(bookingEntity.getUserClientId())
                 .flatMap(userClient -> {
+                    BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+                    String monthInit = getAbbreviatedMonth(bookingEntity.getDayBookingInit());
+                    String monthEnd = getAbbreviatedMonth(bookingEntity.getDayBookingEnd());
+                    int dayInit = getDayNumber(bookingEntity.getDayBookingInit());
+                    int dayEnd = getDayNumber(bookingEntity.getDayBookingEnd());
+                    long dayInterval = calculateDaysDifference(bookingEntity.getDayBookingInit(),
+                            bookingEntity.getDayBookingEnd());
+                    baseEmailReserve.addEmailHandler(new ConfirmReserveBooking(
+                            monthInit,
+                            monthEnd,
+                            String.valueOf(dayInit),
+                            String.valueOf(
+                                    dayEnd),
+                            dayInterval,
+                            roomName,
+                            userClient.getFirstName(),
+                            String.valueOf(bookingEntity.getBookingId())));
+                    String emailBody = baseEmailReserve.execute();
                     // Generar el cuerpo del correo electrónico con el nombre de la habitación
-                    String emailBody = generateEmailBody(bookingEntity, roomName);
+                    /* String emailBody = generateEmailBody(bookingEntity, roomName); */
                     // Enviar el correo electrónico utilizando el servicio de correo
                     return emailService.sendEmail(userClient.getEmail(), "Confirmación de Reserva", emailBody)
                             .thenReturn(bookingEntity);
@@ -851,7 +872,8 @@ public class BookingServiceImpl implements BookingService {
                                 bookingFeeding.setFeedingId(feedingId);
 
                                 // Calcular el monto (precio del alimento * capacidad total)
-                                BigDecimal feedingAmount = feedingEntity.getCost().multiply(BigDecimal.valueOf(totalCapacity));
+                                BigDecimal feedingAmount = feedingEntity.getCost()
+                                        .multiply(BigDecimal.valueOf(totalCapacity));
                                 bookingFeeding.setBookingfeedingamout(feedingAmount.floatValue());
                                 System.out.println("feedingAmount: " + feedingAmount);
                                 System.out.println("bookingFeeding: " + bookingFeeding.getFeedingId());
