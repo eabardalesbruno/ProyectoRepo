@@ -37,7 +37,7 @@ public class EmailSenderTest {
                 5,
                 "Habitacion 1",
                 "Antony Inga Atunga",
-                "1", 1, 0));
+                "1", ""));
         String emailBody = baseEmailReserve.execute();
         StepVerifier.create(emailService.sendEmail(to, subject, emailBody)).verifyComplete();
     }
