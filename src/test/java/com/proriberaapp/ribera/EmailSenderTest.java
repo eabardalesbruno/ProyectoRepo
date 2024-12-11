@@ -37,7 +37,7 @@ public class EmailSenderTest {
                 5,
                 "Habitacion 1",
                 "Antony Inga Atunga",
-                "1", 1, 0));
+                "1", ""));
         String emailBody = baseEmailReserve.execute();
         StepVerifier.create(emailService.sendEmail(to, subject, emailBody)).verifyComplete();
     }
@@ -98,7 +98,7 @@ public class EmailSenderTest {
     void testSendEmailUploadReceiptLater() {
         BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
         baseEmailReserve.addEmailHandler(new UploadReceiptLaterTemplateEmail("Antony Inga Atunga",
-                "OP -0183066", "12"));
+                "OP -0183066", "12", "http://localhost:4200"));
         String emailBody = baseEmailReserve.execute();
         StepVerifier.create(emailService.sendEmail(to, subject, emailBody)).verifyComplete();
     }

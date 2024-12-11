@@ -401,8 +401,7 @@ public class PayMeService {
         private final BookingRepository bookingRepository;
         private final EmailService emailService;
         private final InvoiceServiceI invoiceService;
-        @Autowired
-        private RefusePaymentService refusePaymentService;
+        private final RefusePaymentService refusePaymentService;
 
         @Value("${pay_me.client_id}")
         private String CLIENT_ID;
@@ -547,18 +546,34 @@ public class PayMeService {
                                                                         "Error al procesar el pago. Intente nuevamente."))
                                                         .then(Mono.just(new TransactionNecessaryResponse(false))));
                 } else {
-
                         return authorizationRepository.save(payMeAuthorization)
-                                        .flatMap(savedAuthorization -> userClientRepository.findById(idUser)
+                                        .doOnSubscribe(subscription -> System.out.println("Subscription started"))
+                                        .doOnError(e -> System.err.println("Error occurred: " + e.getMessage()))
+                                        .switchIfEmpty(Mono.error(new HttpStatusCodeException(HttpStatus.BAD_REQUEST,
+                                                        "Error al guardar el pago") {
+                                        }))
+                                        .flatMap(savedAuthorization ->
+
+                                        userClientRepository.findById(idUser)
+                                                        .doOnNext(userClient -> System.out
+                                                                        .println("User found: " + userClient))
                                                         .flatMap(userClient -> bookingRepository
                                                                         .findByBookingId(savedAuthorization
                                                                                         .getIdBooking())
-                                                                        .flatMap(booking -> {
+                                                                        .switchIfEmpty(Mono.error(
+                                                                                        new HttpStatusCodeException(
+                                                                                                        HttpStatus.BAD_REQUEST,
+                                                                                                        "Error al guardar el pago") {
+                                                                                        }))
 
+                                                                        .flatMap(booking -> {
                                                                                 if (booking.getBookingStateId() == 3) {
                                                                                         booking.setBookingStateId(2);
                                                                                 }
                                                                                 return bookingRepository.save(booking)
+                                                                                                .doOnNext(savedBooking -> System.out
+                                                                                                                .println("Booking saved: "
+                                                                                                                                + savedBooking))
                                                                                                 .flatMap(b -> this.bookingRepository
                                                                                                                 .getRoomNameAndDescriptionfindByBookingId(
                                                                                                                                 b.getBookingId()));
@@ -632,19 +647,44 @@ public class PayMeService {
                                                                                                 .totalCostWithOutDiscount(
                                                                                                                 totalCostWithOutDiscount)
                                                                                                 .build();
-
                                                                                 return paymentBookRepository
                                                                                                 .save(paymentBook)
                                                                                                 .flatMap(paymentBookR -> {
                                                                                                         invoice.setPaymentBookId(
                                                                                                                         paymentBookR.getPaymentBookId());
-                                                                                                        return this.invoiceService
-                                                                                                                        .save(invoice);
+                                                                                                        /*
+                                                                                                         * return this.
+                                                                                                         * invoiceService
+                                                                                                         * .save(
+                                                                                                         * invoice)
+                                                                                                         * .flatMap(
+                                                                                                         * invoiceR -> {
+                                                                                                         * return
+                                                                                                         * sendSuccessEmail(
+                                                                                                         * userClient.
+                                                                                                         * getEmail(),
+                                                                                                         * paymentBookR.
+                                                                                                         * getPaymentBookId
+                                                                                                         * ())
+                                                                                                         * .onErrorResume
+                                                                                                         * (e -> {
+                                                                                                         * System.out
+                                                                                                         * .println(
+                                                                                                         * "Error al enviar correo"
+                                                                                                         * );
+                                                                                                         * return
+                                                                                                         * Mono.error(
+                                                                                                         * e);
+                                                                                                         * });
+                                                                                                         * });
+                                                                                                         */
+                                                                                                        return Mono.zip(this.invoiceService
+                                                                                                                        .save(invoice),
+                                                                                                                        sendSuccessEmail(
+                                                                                                                                        userClient.getEmail(),
+                                                                                                                                        paymentBookR.getPaymentBookId()));
 
                                                                                                 })
-                                                                                                .then(sendSuccessEmail(
-                                                                                                                userClient.getEmail(),
-                                                                                                                paymentBook.getPaymentBookId()))
                                                                                                 .thenReturn(new TransactionNecessaryResponse(
                                                                                                                 true));
                                                                         })))
@@ -662,9 +702,11 @@ public class PayMeService {
                                                                                         e.getMessage()))
                                                                         .then(Mono.error(e))));
                 }
+
         }
 
         private Mono<Void> sendSuccessEmail(String email, int paymentBookId) {
+                System.out.println("Enviando correo de pago exitoso" + paymentBookId);
                 return this.refusePaymentService.getPaymentDetails(paymentBookId)
                                 .map(paymentDetails -> {
                                         String nombres = (String) paymentDetails.get("Nombres");
@@ -684,10 +726,10 @@ public class PayMeService {
                                         ConfirmPaymentByBankTransferAndCardTemplateEmail confirmReserveBookingTemplateEmail = new ConfirmPaymentByBankTransferAndCardTemplateEmail(
                                                         nombres, bookingEmailDto);
                                         baseEmailReserve.addEmailHandler(confirmReserveBookingTemplateEmail);
+                                        System.out.println("Email body: " + baseEmailReserve.execute());
                                         return baseEmailReserve.execute();
 
-                                }).flatMap(emailBody -> emailService.sendEmail(email, "Pago Exitoso", emailBody))
-                                .then();
+                                }).flatMap(emailBody -> emailService.sendEmail(email, "Pago Exitoso", emailBody));
         }
 
         private String generateSuccessEmailBody() {
