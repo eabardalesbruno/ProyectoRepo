@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
@@ -14,7 +15,7 @@ import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.PartnerPointsService;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
-import com.proriberaapp.ribera.utils.emails.ConfirmReserveBooking;
+import com.proriberaapp.ribera.utils.emails.ConfirmReserveBookingTemplateEmail;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
@@ -615,7 +618,7 @@ public class BookingServiceImpl implements BookingService {
                     int dayEnd = getDayNumber(bookingEntity.getDayBookingEnd());
                     long dayInterval = calculateDaysDifference(bookingEntity.getDayBookingInit(),
                             bookingEntity.getDayBookingEnd());
-                    baseEmailReserve.addEmailHandler(new ConfirmReserveBooking(
+                    baseEmailReserve.addEmailHandler(new ConfirmReserveBookingTemplateEmail(
                             monthInit,
                             monthEnd,
                             String.valueOf(dayInit),
@@ -890,5 +893,22 @@ public class BookingServiceImpl implements BookingService {
                     return bookingFeedingRepository.save(bookingFeeding);
                 })
                 .then();
+    }
+
+    @Override
+    public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateId(Integer stateId, Integer month) {
+        return bookingRepository.findBookingsWithPaymentByStateId(stateId, month);
+    }
+
+    @Override
+    public Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month) {
+        return bookingRepository.findBookingsWithPaymentByStateId(stateId, month)
+                .map(BookingWithPaymentDTO::getTotalPayment)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime date) {
+        return bookingRepository.findBookingsWithPaymentByStateIdAndDate(stateId, date);
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -18,8 +19,12 @@ public class ExcelController {
     private final ReportManagerService reportManagerService;
 
     @GetMapping("/download")
-    public Mono<ResponseEntity<ByteArrayResource>> downloadExcel() {
-        return reportManagerService.findAll()
+    public Mono<ResponseEntity<ByteArrayResource>> downloadExcel(
+        @RequestParam Integer stateId, 
+        @RequestParam Integer month
+    ) { 
+        return reportManagerService.generateBookingReport(stateId, month)
+
                 .collectList()
                 .flatMap(excelServiceImpl::generateExcelFromEntitiesByMonth)
                 .map(resource -> ResponseEntity.ok()

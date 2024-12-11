@@ -1,11 +1,11 @@
 package com.proriberaapp.ribera.utils.emails;
 
-public class ConfirmPaymentByBankTransferAndCard implements EmailHandler {
+public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHandler {
     private EmailHandler nextHandler;
     private String clientName;
     private BookingEmailDto bookingEmailDto;
 
-    public ConfirmPaymentByBankTransferAndCard(String clientName, BookingEmailDto bookingEmailDto) {
+    public ConfirmPaymentByBankTransferAndCardTemplateEmail(String clientName, BookingEmailDto bookingEmailDto) {
         this.clientName = clientName;
         this.bookingEmailDto = bookingEmailDto;
     }

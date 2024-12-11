@@ -9,7 +9,7 @@ import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.PaymentBookService;
 import com.proriberaapp.ribera.services.client.S3Uploader;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
-import com.proriberaapp.ribera.utils.emails.PaymentByBankTransfer;
+import com.proriberaapp.ribera.utils.emails.PaymentByBankTransferTemplateEmail;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -724,7 +724,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                 .flatMap(room -> {
                     String roomName = room.getRoomName(); // Extract roomName
                     BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
-                    baseEmailReserve.addEmailHandler(new PaymentByBankTransfer(userName, paymentBook.getTotalCost()));
+                    baseEmailReserve.addEmailHandler(
+                            new PaymentByBankTransferTemplateEmail(userName, paymentBook.getTotalCost()));
                     /*
                      * String emailBody = generatePaymentConfirmationEmailBody(paymentBook,
                      * roomName);

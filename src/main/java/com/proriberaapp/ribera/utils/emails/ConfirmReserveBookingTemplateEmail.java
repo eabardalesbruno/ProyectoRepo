@@ -1,6 +1,6 @@
 package com.proriberaapp.ribera.utils.emails;
 
-public class ConfirmReserveBooking implements EmailHandler {
+public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
     private EmailHandler nextHandler;
     private String monthInit;
     private String monthEnd;
@@ -11,7 +11,7 @@ public class ConfirmReserveBooking implements EmailHandler {
     private String clientName;
     private String bookingId;
 
-    public ConfirmReserveBooking(
+    public ConfirmReserveBookingTemplateEmail(
             String monthInit,
             String monthEnd,
             String dayInit,
@@ -40,12 +40,43 @@ public class ConfirmReserveBooking implements EmailHandler {
                 <div class="card">
                     <p style="font-size: 1rem; font-weight: 600; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; padding-top: 10px; padding-bottom: 20px">Los datos de tu reserva</p>
                 <table class=table-layout>
-                    <tr><td>
+                <tbody>
+                <tr>
+                    <td>
+                    <table>
+                    <tbody>
+                    <tr>
+                    <td rowspan="3" style="padding-left:10px">
                     <img src="https://s3.us-east-2.amazonaws.com/backoffice.documents/email/calendario.png" alt="calendario"/>
-                    Entrada</td><td>Salida</td></tr>
-                    <tr><td><span style="font-size: 1.05rem; font-weight: 500;">%monthInit %dayInit</span></td>
-                    <td><span style="font-size: 1.05rem; font-weight: 500;">%monthEnd %dayEnd</span></td>
+                    </td>
                     </tr>
+
+                    <tr>
+                    <td>
+                    Entrada
+                    </td>
+                    <td rowspan="3" class="border">
+                    </td>
+                    <td style="padding-left:20px">
+                    Salida
+                    </td>
+                    </tr>
+                    <tr>
+                    <td>
+                    %monthInit
+                    <strong style="font-size:24px">%dayInit</strong>
+                    </td>
+                    <td style="padding-left:20px">
+                    %monthEnd
+                    <strong style="font-size:24px">%dayEnd</strong>
+                    </td>
+
+                    </tr>
+                    </tbody>
+                    </table>
+                    <td>
+                </tr>
+                </tbody>
                 </table>
                 <p>Duracion de estancia: <br> <strong>%dayInterval días</strong></p>
                 <p>Seleccion de reserva: <br> <strong>%roomName</strong></p>
@@ -66,12 +97,20 @@ public class ConfirmReserveBooking implements EmailHandler {
     @Override
     public String getStyles() {
         return """
-                .card{
-                    width: 333px;}
-                .button { min-width: 90%; display: inline-block; padding: 10px; background-color: #025928; color: white !important; text-align: center; text-decoration: none; border-radius: 0px; }
-                .font-italic{
-                    font-style: italic;
+                .border{
+                border-right: 2px;
+                border-style: solid;
+                padding-right: 10px;
+                border-left: none;
+                border-bottom: none;
+                border-color:#E5E5E5;
+                border-top: none;
                 }
+                .card{
+                    width: 333px;
+                    border-radius: 8px;
+                    }
+
                 """;
     }
 
