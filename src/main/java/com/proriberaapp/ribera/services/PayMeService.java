@@ -15,10 +15,16 @@ import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.EmailService;
+import com.proriberaapp.ribera.services.client.RefusePaymentService;
 import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
+import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
+import com.proriberaapp.ribera.utils.emails.BookingEmailDto;
+import com.proriberaapp.ribera.utils.emails.ConfirmPaymentByBankTransferAndCardTemplateEmail;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -395,6 +401,8 @@ public class PayMeService {
         private final BookingRepository bookingRepository;
         private final EmailService emailService;
         private final InvoiceServiceI invoiceService;
+        @Autowired
+        private RefusePaymentService refusePaymentService;
 
         @Value("${pay_me.client_id}")
         private String CLIENT_ID;
@@ -635,7 +643,8 @@ public class PayMeService {
 
                                                                                                 })
                                                                                                 .then(sendSuccessEmail(
-                                                                                                                userClient.getEmail()))
+                                                                                                                userClient.getEmail(),
+                                                                                                                paymentBook.getPaymentBookId()))
                                                                                                 .thenReturn(new TransactionNecessaryResponse(
                                                                                                                 true));
                                                                         })))
@@ -655,9 +664,30 @@ public class PayMeService {
                 }
         }
 
-        private Mono<Void> sendSuccessEmail(String email) {
-                String emailBody = generateSuccessEmailBody();
-                return emailService.sendEmail(email, "Pago Exitoso", emailBody);
+        private Mono<Void> sendSuccessEmail(String email, int paymentBookId) {
+                return this.refusePaymentService.getPaymentDetails(paymentBookId)
+                                .map(paymentDetails -> {
+                                        String nombres = (String) paymentDetails.get("Nombres");
+                                        Integer codigoReserva = (Integer) paymentDetails.get("Codigo Reserva");
+                                        String checkIn = (String) paymentDetails.get("Check In");
+                                        String checkOut = (String) paymentDetails.get("Check Out");
+                                        long duracionEstancia = (long) paymentDetails.get("Duración Estancia");
+                                        String cantidadPersonas = (String) paymentDetails.get("Cantidad de Personas");
+                                        String imagen = (String) paymentDetails.get("Imagen");
+                                        String roomName = (String) paymentDetails.get("RoomName");
+                                        BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+                                        BookingEmailDto bookingEmailDto = new BookingEmailDto(
+                                                        roomName, nombres, codigoReserva.toString(), checkIn, checkOut,
+                                                        checkIn, imagen, (int) duracionEstancia,
+                                                        "Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico Etapa III, Cercado de Lima 15593",
+                                                        cantidadPersonas);
+                                        ConfirmPaymentByBankTransferAndCardTemplateEmail confirmReserveBookingTemplateEmail = new ConfirmPaymentByBankTransferAndCardTemplateEmail(
+                                                        nombres, bookingEmailDto);
+                                        baseEmailReserve.addEmailHandler(confirmReserveBookingTemplateEmail);
+                                        return baseEmailReserve.execute();
+
+                                }).flatMap(emailBody -> emailService.sendEmail(email, "Pago Exitoso", emailBody))
+                                .then();
         }
 
         private String generateSuccessEmailBody() {
@@ -907,7 +937,7 @@ public class PayMeService {
                                                                         }
                                                                 })
                                                                 .flatMap(updatedBooking -> sendSuccessEmail(
-                                                                                userClient.getEmail()))
+                                                                                userClient.getEmail(), 1))
                                                                 .thenReturn(new TransactionNecessaryResponse(true))))
                                 .onErrorResume(e -> userClientRepository.findById(idUser)
                                                 .flatMap(userClient -> sendErrorEmail(userClient.getEmail(),

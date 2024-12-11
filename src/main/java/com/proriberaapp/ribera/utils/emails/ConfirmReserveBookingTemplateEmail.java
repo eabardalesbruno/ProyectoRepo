@@ -10,6 +10,7 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
     private String roomName;
     private String clientName;
     private String bookingId;
+    private String totalPeoples;
 
     public ConfirmReserveBookingTemplateEmail(
             String monthInit,
@@ -19,7 +20,7 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
             long dayInterval,
             String roomName,
             String clientName,
-            String bookingId) {
+            String bookingId, String totalPeoples) {
         this.monthInit = monthInit;
         this.monthEnd = monthEnd;
         this.dayInit = dayInit;
@@ -28,14 +29,15 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
         this.roomName = roomName;
         this.clientName = clientName;
         this.bookingId = bookingId;
+        this.totalPeoples = totalPeoples;
 
     }
 
     @Override
     public String execute() {
         String body = """
-                <p>Estimado(a) %clientName</p>
-                <p>Se completo exitosamente el registro de su reserva: <strong class="font-italic">%roomName</strong>. Por favor, no se olvide de pagar su reserva.
+                <p class="font-size">Estimado(a) %clientName</p>
+                <p class="font-size">Se completo exitosamente el registro de su reserva: <strong class="font-italic">%roomName</strong>. Por favor, no se olvide de pagar su reserva.
                  </p>
                 <div class="card">
                     <p style="font-size: 1rem; font-weight: 600; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; padding-top: 10px; padding-bottom: 20px">Los datos de tu reserva</p>
@@ -46,7 +48,7 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
                     <table>
                     <tbody>
                     <tr>
-                    <td rowspan="3" style="padding-left:10px">
+                    <td rowspan="3" style="padding-right:10px">
                     <img src="https://s3.us-east-2.amazonaws.com/backoffice.documents/email/calendario.png" alt="calendario"/>
                     </td>
                     </tr>
@@ -78,11 +80,14 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
                 </tr>
                 </tbody>
                 </table>
-                <p>Duracion de estancia: <br> <strong>%dayInterval días</strong></p>
-                <p>Seleccion de reserva: <br> <strong>%roomName</strong></p>
+                <p>Duracion de estancia: <br> <strong>%dayInterval noche</strong></p>
+                <p>Seleccion de reserva: <br> <strong>%roomName
+                    <br>
+                    para %totalPeoples
+                </strong></p>
                 <a href="https://www.cieneguillariberadelrio.com/payment-method/%bookingId" class="button">Pagar ahora</a>
                     </div>
-                    <p>
+                    <p class="font-size">
                     Recuerde que el pago lo puede realizar mediante deposito en nuestra cuenta a través de agente BCP, agencias o cualquier método de pago dentro de la plataforma usando este enlace:
                     <a href="https://www.cieneguillariberadelrio.com/payment-method/%bookingId">www.riberadelrio/reservas.com</a>
                     </p>
@@ -91,7 +96,8 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
                 .replace("%monthInit", monthInit).replace("%monthEnd", monthEnd)
                 .replace("%dayInit", dayInit).replace("%dayEnd", dayEnd)
                 .replace("%dayInterval", String.valueOf(dayInterval))
-                .replaceAll("%bookingId", String.valueOf(bookingId));
+                .replaceAll("%bookingId", String.valueOf(bookingId))
+                .replace("%totalPeoples", String.valueOf(totalPeoples));
     }
 
     @Override

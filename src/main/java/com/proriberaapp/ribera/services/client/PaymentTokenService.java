@@ -10,12 +10,19 @@ import java.util.Map;
 public interface PaymentTokenService {
 
     Mono<String> generateAndSaveToken(Integer bookingId, Integer paymentBookId);
+
+    Mono<String> generateAndSaveToken(Integer bookingId, Integer paymentBookId, String emailUser);
+
     Mono<BookingEntity> findBookingByPaymentToken(String paymentToken);
+
     Mono<Integer> findBookingIdByPaymentToken(String paymentToken);
+
     Mono<Boolean> isPaymentTokenActive(String paymentToken);
 
     Mono<PaymentBookEntity> getPaymentBookIfTokenActive(String paymentToken);
+
     Mono<PaymentBookEntity> findById(Integer id);
+
     Mono<Map<String, Object>> getPaymentBookIfTokenActiveWithDetails(String paymentToken);
 
 }
