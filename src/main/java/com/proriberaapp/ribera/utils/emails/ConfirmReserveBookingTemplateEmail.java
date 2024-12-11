@@ -10,8 +10,7 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
     private String roomName;
     private String clientName;
     private String bookingId;
-    private int totalAdults;
-    private int totalChildren;
+    private String totalPeoples;
 
     public ConfirmReserveBookingTemplateEmail(
             String monthInit,
@@ -21,7 +20,7 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
             long dayInterval,
             String roomName,
             String clientName,
-            String bookingId, int totalAdults, int totalChildren) {
+            String bookingId, String totalPeoples) {
         this.monthInit = monthInit;
         this.monthEnd = monthEnd;
         this.dayInit = dayInit;
@@ -30,8 +29,7 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
         this.roomName = roomName;
         this.clientName = clientName;
         this.bookingId = bookingId;
-        this.totalAdults = totalAdults;
-        this.totalChildren = totalChildren;
+        this.totalPeoples = totalPeoples;
 
     }
 
@@ -85,7 +83,7 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
                 <p>Duracion de estancia: <br> <strong>%dayInterval noche</strong></p>
                 <p>Seleccion de reserva: <br> <strong>%roomName
                     <br>
-                    para %totalAdults adultos y %totalChildren niños
+                    para %totalPeoples
                 </strong></p>
                 <a href="https://www.cieneguillariberadelrio.com/payment-method/%bookingId" class="button">Pagar ahora</a>
                     </div>
@@ -99,8 +97,7 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
                 .replace("%dayInit", dayInit).replace("%dayEnd", dayEnd)
                 .replace("%dayInterval", String.valueOf(dayInterval))
                 .replaceAll("%bookingId", String.valueOf(bookingId))
-                .replace("%totalAdults", String.valueOf(totalAdults))
-                .replace("%totalChildren", String.valueOf(totalChildren));
+                .replace("%totalPeoples", String.valueOf(totalPeoples));
     }
 
     @Override

@@ -14,6 +14,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.PartnerPointsService;
+import com.proriberaapp.ribera.utils.TransformDate;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.ConfirmReserveBookingTemplateEmail;
 
@@ -203,57 +204,15 @@ public class BookingServiceImpl implements BookingService {
                 .switchIfEmpty(Mono.just("Habitación no encontrada"));
     }
 
-    public static String getMonthDayOfWeekAndNumber(Timestamp timestamp) {
-        // Formateador para el mes, día de la semana abreviados y número de día
-        SimpleDateFormat formatter = new SimpleDateFormat("MMM EEE d", Locale.ENGLISH);
-
-        // Convertir el Timestamp a Date y formatearlo
-        return formatter.format(timestamp);
-    }
-
-    public static String getAbbreviatedMonth(Timestamp timestamp) {
-        SimpleDateFormat monthFormatter = new SimpleDateFormat("MMM", Locale.ENGLISH);
-        return monthFormatter.format(timestamp);
-    }
-
-    // Función para obtener el día de la semana abreviado
-    public static String getAbbreviatedDayOfWeek(Timestamp timestamp) {
-        SimpleDateFormat dayFormatter = new SimpleDateFormat("EEE", Locale.ENGLISH);
-        return dayFormatter.format(timestamp);
-    }
-
-    // Función para obtener el número del día
-    public static int getDayNumber(Timestamp timestamp) {
-        SimpleDateFormat dayNumberFormatter = new SimpleDateFormat("d", Locale.ENGLISH);
-        return Integer.parseInt(dayNumberFormatter.format(timestamp));
-    }
-
-    public static long calculateDaysDifference(Timestamp dayBookingInit, Timestamp dayBookingEnd) {
-        if (dayBookingInit == null || dayBookingEnd == null) {
-            throw new IllegalArgumentException("Both Timestamps must be non-null");
-        }
-
-        // Convertir los Timestamp a LocalDate
-        LocalDate startDate = dayBookingInit.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-
-        LocalDate endDate = dayBookingEnd.toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-
-        // Calcular la diferencia de días
-        return ChronoUnit.DAYS.between(startDate, endDate);
-    }
-
     // Método para generar el cuerpo del correo electrónico con el nombre de la
     // habitación
     private String generateEmailBody(BookingEntity bookingEntity, String roomName) {
-        String monthInit = getAbbreviatedMonth(bookingEntity.getDayBookingInit());
-        String monthEnd = getAbbreviatedMonth(bookingEntity.getDayBookingEnd());
-        int dayInit = getDayNumber(bookingEntity.getDayBookingInit());
-        int dayEnd = getDayNumber(bookingEntity.getDayBookingEnd());
-        long dayInterval = calculateDaysDifference(bookingEntity.getDayBookingInit(), bookingEntity.getDayBookingEnd());
+        String monthInit = TransformDate.getAbbreviatedMonth(bookingEntity.getDayBookingInit());
+        String monthEnd = TransformDate.getAbbreviatedMonth(bookingEntity.getDayBookingEnd());
+        int dayInit = TransformDate.getDayNumber(bookingEntity.getDayBookingInit());
+        int dayEnd = TransformDate.getDayNumber(bookingEntity.getDayBookingEnd());
+        long dayInterval = TransformDate.calculateDaysDifference(bookingEntity.getDayBookingInit(),
+                bookingEntity.getDayBookingEnd());
 
         String body = "<!DOCTYPE html>" +
                 "<html lang=\"es\">" +
@@ -484,7 +443,11 @@ public class BookingServiceImpl implements BookingService {
                 bookingSaveRequest.getNumberAdultMayor();
         int totalChildren = bookingSaveRequest.getNumberBaby() +
                 bookingSaveRequest.getNumberChild();
-
+        String totalPeoples = TransformDate.calculatePersons(bookingSaveRequest.getNumberAdult(),
+                bookingSaveRequest.getNumberChild(),
+                bookingSaveRequest.getNumberBaby(),
+                bookingSaveRequest.getNumberAdultExtra(),
+                bookingSaveRequest.getNumberAdultMayor());
         if (bookingSaveRequest.getNumberBaby() < 0 ||
                 bookingSaveRequest.getNumberAdult() < 0 ||
                 bookingSaveRequest.getNumberAdultExtra() < 0 ||
@@ -563,7 +526,7 @@ public class BookingServiceImpl implements BookingService {
                                                                                 bookingSaveRequest.getTotalCapacity())
                                                                                 .then(sendBookingConfirmationEmail(
                                                                                         savedBooking, roomName,
-                                                                                        totalAdults, totalChildren)
+                                                                                        totalPeoples)
                                                                                         .then(Mono.just(savedBooking)));
                                                                     });
                                                         }
@@ -615,16 +578,17 @@ public class BookingServiceImpl implements BookingService {
     // Método para enviar el correo de confirmación de reserva con el nombre de la
     // habitación
     private Mono<BookingEntity> sendBookingConfirmationEmail(BookingEntity bookingEntity, String roomName,
-            int totalChildren, int totalAdults) {
+            String totalPeoples) {
         return userClientRepository.findByUserClientId(bookingEntity.getUserClientId())
                 .flatMap(userClient -> {
                     BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
-                    String monthInit = getAbbreviatedMonth(bookingEntity.getDayBookingInit());
-                    String monthEnd = getAbbreviatedMonth(bookingEntity.getDayBookingEnd());
-                    int dayInit = getDayNumber(bookingEntity.getDayBookingInit());
-                    int dayEnd = getDayNumber(bookingEntity.getDayBookingEnd());
-                    long dayInterval = calculateDaysDifference(bookingEntity.getDayBookingInit(),
-                            bookingEntity.getDayBookingEnd());
+                    String monthInit = TransformDate.getAbbreviatedMonth(bookingEntity.getDayBookingInit());
+                    String monthEnd = TransformDate.getAbbreviatedMonth(bookingEntity.getDayBookingEnd());
+                    int dayInit = TransformDate.getDayNumber(bookingEntity.getDayBookingInit());
+                    int dayEnd = TransformDate.getDayNumber(bookingEntity.getDayBookingEnd());
+                    long dayInterval = TransformDate
+                            .calculateDaysDifference(bookingEntity.getDayBookingInit(),
+                                    bookingEntity.getDayBookingEnd());
                     baseEmailReserve.addEmailHandler(new ConfirmReserveBookingTemplateEmail(
                             monthInit,
                             monthEnd,
@@ -635,7 +599,7 @@ public class BookingServiceImpl implements BookingService {
                             roomName,
                             userClient.getFirstName(),
                             String.valueOf(bookingEntity.getBookingId()),
-                            totalAdults, totalChildren));
+                            totalPeoples));
                     String emailBody = baseEmailReserve.execute();
                     // Generar el cuerpo del correo electrónico con el nombre de la habitación
                     /* String emailBody = generateEmailBody(bookingEntity, roomName); */
