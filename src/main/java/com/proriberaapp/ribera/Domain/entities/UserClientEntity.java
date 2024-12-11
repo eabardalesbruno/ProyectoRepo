@@ -101,4 +101,13 @@ public class UserClientEntity implements UserDetails {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "UserClientEntity{" +
+                "userClientId=" + userClientId +
+                ", registerTypeId=" + registerTypeId +
+                ", userLevelId=" + userLevelId +
+                ", countryId=" + countryId;
+    }
+
 }

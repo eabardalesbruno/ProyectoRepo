@@ -33,4 +33,6 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
     @Query("SELECT * FROM userclient uc WHERE uc.userclientid IN (SELECT b.userclientid FROM booking b WHERE b.userpromotorid = :userpromotorid)")
     Flux<UserClientEntity> findByUserPromotorId(Integer userpromotorid);
 
+    @Query("SELECT COUNT(*) FROM userclient")
+    Mono<Long> countUsers();
 }

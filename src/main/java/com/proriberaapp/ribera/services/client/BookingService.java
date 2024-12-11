@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
@@ -83,4 +84,11 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
     Mono<Boolean> deleteBooking(Integer bookingId);
 
     Mono<Void> saveBookingWithFeedings(BookingFeedingDto requestDTO);
+
+    Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateId(Integer stateId, Integer month);
+
+    Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month);
+
+    Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime date);
+
 }

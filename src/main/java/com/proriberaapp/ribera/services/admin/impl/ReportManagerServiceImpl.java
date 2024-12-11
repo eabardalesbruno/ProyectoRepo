@@ -1,19 +1,32 @@
 package com.proriberaapp.ribera.services.admin.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
 import com.proriberaapp.ribera.Domain.entities.ExcelEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.ExcelRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.admin.ReportManagerService;
+import com.proriberaapp.ribera.services.client.BookingService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
 public class ReportManagerServiceImpl implements ReportManagerService {
     private final ExcelRepository excelRepository;
+    private final PaymentBookRepository paymentBookRepository;
+    private final UserClientRepository userClientRepository;
+    private final BookingService bookingService;
 
     @Override
     public Flux<ExcelEntity> findAll() {
@@ -43,5 +56,30 @@ public class ReportManagerServiceImpl implements ReportManagerService {
     @Override
     public Flux<ExcelEntity> findAllWithTotalPaymentGreaterThan(Double minTotalPayment) {
         return excelRepository.findAllWithTotalPaymentGreaterThan(minTotalPayment);
+    }
+
+    @Override
+    public Mono<Long> countByRefuseReasonIdAndPendingPay(int refuseReasonId, int pendingPay) {
+        return paymentBookRepository.countByRefuseReasonIdAndPendingPay(refuseReasonId, pendingPay);
+    }
+
+    @Override
+    public Mono<Long> countUsers() {
+        return userClientRepository.countUsers();
+    }
+
+    @Override
+    public Flux<BookingWithPaymentDTO> generateBookingReport(Integer stateId, Integer month) {
+        return bookingService.findBookingsWithPaymentByStateId(stateId, month);
+    }
+
+    @Override
+    public Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month) {
+        return bookingService.totalPaymentSum(stateId, month);
+    }
+
+    @Override
+    public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime date) {
+        return bookingService.findBookingsWithPaymentByStateIdAndDate(stateId, date);
     }
 }
