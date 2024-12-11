@@ -9,6 +9,7 @@ import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.UploadReceiptLaterTemplateEmail;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -34,6 +35,9 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
 
     @Autowired
     private EmailService emailService;
+
+    @Value("${url.base.frontend}")
+    private String urlBaseFrontend;
 
     @Autowired
     public PaymentTokenServiceImpl(
@@ -77,7 +81,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
                 BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
                 baseEmailReserve.addEmailHandler(
                         new UploadReceiptLaterTemplateEmail(userClientEntity.getFirstName(), token,
-                                bookingId.toString()));
+                                bookingId.toString(), urlBaseFrontend));
                 String body = baseEmailReserve.execute();
                 return emailService.sendEmail(emailUser, "Pago de reserva", body);
             }).thenReturn(token);

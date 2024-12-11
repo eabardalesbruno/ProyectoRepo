@@ -565,8 +565,7 @@ public class PayMeService {
                                                                                                         HttpStatus.BAD_REQUEST,
                                                                                                         "Error al guardar el pago") {
                                                                                         }))
-                                                                        .doOnNext(booking -> System.out.println(
-                                                                                        "Booking found: " + booking))
+
                                                                         .flatMap(booking -> {
                                                                                 if (booking.getBookingStateId() == 3) {
                                                                                         booking.setBookingStateId(2);
