@@ -16,7 +16,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/wallet")
@@ -115,4 +117,14 @@ public class WalletController {
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(null)));
     }
 
+    @GetMapping("/details")
+    public Mono<ResponseEntity<Map<String, Object>>> getBookingDetailsForPromoter(@RequestParam Integer walletId){
+        return walletTransactionService.getBookingDetailsForPromoter(walletId)
+                .map(response -> ResponseEntity.ok().body(response))
+                .onErrorResume(error -> {
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("error", error.getMessage());
+                    return Mono.just(ResponseEntity.badRequest().body(errorResponse));
+                });
+    }
 }

@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 public interface WalletTransactionService {
 
@@ -21,4 +22,5 @@ public interface WalletTransactionService {
     Mono<WalletTransactionEntity> makeRecharge(Integer walletId, Integer transactioncatid, BigDecimal amount);
     Mono<WalletEntity> findWalletByEmail(String email);
     Mono<BigDecimal> getTotalAmountForPromoter(Integer userPromoterId);
+    Mono<Map<String, Object>> getBookingDetailsForPromoter(Integer walletId);
 }

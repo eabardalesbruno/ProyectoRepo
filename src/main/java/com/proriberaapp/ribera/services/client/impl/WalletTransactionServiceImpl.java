@@ -19,7 +19,9 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import static com.proriberaapp.ribera.services.PDFGeneratorService.generatePdfFromHtml;
@@ -401,6 +403,46 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                                         walletEntity.getUserPromoterId(), 3)
                                 .map(totalAmount -> totalAmount != null ? totalAmount : BigDecimal.ZERO)
                 );
+    }
+
+    @Override
+    public Mono<Map<String, Object>> getBookingDetailsForPromoter(Integer walletId) {
+        return walletRepository.findById(walletId)
+                .flatMap(walletEntity -> {
+                    Integer userPromoterId = walletEntity.getUserPromoterId();
+                    if (userPromoterId == null) {
+                        return Mono.error(new Exception("La wallet no tiene un promotor asociado."));
+                    }
+
+                    // Obtener todas las reservas asociadas al promotor con estado 'Pendiente' (id 3)
+                    return bookingRepository.findByUserPromotorIdAndBookingStateId(userPromoterId, 3)
+                            .flatMap(booking ->
+                                    roomOfferRepository.findById(booking.getRoomOfferId()) // Obtener los detalles de la oferta de habitación
+                                            .flatMap(roomOffer -> roomRepository.findById(roomOffer.getRoomId()) // Obtener la información de la habitación
+                                                    .map(room -> {
+                                                        Map<String, Object> bookingDetails = new HashMap<>();
+                                                        bookingDetails.put("bookingId", booking.getBookingId());
+                                                        bookingDetails.put("roomName", room.getRoomName());  // Nombre de la habitación
+                                                        bookingDetails.put("costFinal", booking.getCostFinal()); // Costo final
+                                                        bookingDetails.put("bookingState", "Pendiente"); // Estado de la reserva (se asume que el estado es Pendiente ya que filtramos por bookingStateId=3)
+                                                        return bookingDetails;
+                                                    })
+                                            )
+                            )
+                            .collectList() // Recoger todos los detalles en una lista
+                            .map(details -> {
+                                // Calcular el total de las reservas pendientes
+                                BigDecimal total = details.stream()
+                                        .map(booking -> (BigDecimal) booking.get("costFinal"))
+                                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                                // Crear la respuesta con el total y los detalles de las reservas
+                                Map<String, Object> response = new HashMap<>();
+                                response.put("total", total);
+                                response.put("details", details);
+                                return response;
+                            });
+                });
     }
 
 

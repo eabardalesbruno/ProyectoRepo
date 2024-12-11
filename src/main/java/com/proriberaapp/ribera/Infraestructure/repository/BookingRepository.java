@@ -222,4 +222,5 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
         @Query("SELECT SUM(b.costFinal) FROM booking b WHERE b.userpromotorid = :userPromoterId AND b.bookingStateId = :bookingStateId")
         Mono<BigDecimal> findTotalAmountByUserPromoterIdAndBookingStateId(@Param("userPromoterId") Integer userPromoterId, @Param("bookingStateId") Integer bookingStateId);
 
+        Flux<BookingEntity> findByUserPromotorIdAndBookingStateId ( Integer userPromotorId, Integer bookingStateId);
 }
