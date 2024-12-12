@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
-import reactor.util.function.Tuples;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +39,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     private final CurrencyTypeRepository currencyTypeRepository;
     private final RoomOfferRepository roomOfferRepository;
     private final RoomRepository roomRepository;
+    private final PaymentBookRepository paymentBookRepository;
 
     @Override
     public Mono<WalletTransactionEntity> makeTransfer(Integer walletIdOrigin, Integer walletIdDestiny, String emailDestiny, String cardNumber, BigDecimal amount, String motiveDescription) {
@@ -193,6 +193,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
                             return bookingRepository.save(booking)
                                     .flatMap(savedBooking -> {
+                                        // Crear la transacción en wallet
                                         WalletTransactionEntity transaction = WalletTransactionEntity.builder()
                                                 .walletId(walletEntity.getWalletId())
                                                 .currencyTypeId(walletEntity.getCurrencyTypeId())
@@ -205,7 +206,10 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                                                 .build();
 
                                         return walletTransactionRepository.save(transaction)
-                                                .flatMap(savedTransaction -> sendPdfToUser(walletEntity, savedBooking, transaction));
+                                                .flatMap(savedTransaction -> {
+                                                    return registerPaymentBook(savedBooking, walletEntity, savedTransaction)
+                                                            .then(sendPdfToUser(walletEntity, savedBooking, savedTransaction));
+                                                });
                                     });
                         }))
                 .then(Mono.just("Pago procesado con éxito para todas las reservas."));
@@ -240,6 +244,30 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                                         }))));
     }
 
+    private Mono<Void> registerPaymentBook(BookingEntity booking, WalletEntity walletEntity, WalletTransactionEntity transaction) {
+
+        Integer userClientId = booking.getUserClientId() != null
+                ? booking.getUserClientId()
+                : walletEntity.getUserPromoterId();
+
+        PaymentBookEntity paymentBook = PaymentBookEntity.builder()
+                .bookingId(booking.getBookingId())
+                .userClientId(userClientId)
+                .paymentMethodId(5)
+                .paymentStateId(1)
+                .paymentTypeId(4)
+                .currencyTypeId(walletEntity.getCurrencyTypeId())
+                .amount(booking.getCostFinal())
+                .description("Pago asociado a la reserva")
+                .paymentDate(Timestamp.valueOf(LocalDateTime.now()))
+                .operationCode(transaction.getOperationCode())
+                .totalCost(booking.getCostFinal())
+                .paymentComplete(true)
+                .refuseReasonId(1)
+                .build();
+
+        return paymentBookRepository.save(paymentBook).then();
+    }
 
     private Mono<Tuple3<String, String,String>> getEmailAndLastNameByWalletOwner(WalletEntity walletEntity) {
         if (walletEntity.getUserClientId() != null) {
@@ -414,29 +442,26 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                         return Mono.error(new Exception("La wallet no tiene un promotor asociado."));
                     }
 
-                    // Obtener todas las reservas asociadas al promotor con estado 'Pendiente' (id 3)
                     return bookingRepository.findByUserPromotorIdAndBookingStateId(userPromoterId, 3)
                             .flatMap(booking ->
-                                    roomOfferRepository.findById(booking.getRoomOfferId()) // Obtener los detalles de la oferta de habitación
-                                            .flatMap(roomOffer -> roomRepository.findById(roomOffer.getRoomId()) // Obtener la información de la habitación
+                                    roomOfferRepository.findById(booking.getRoomOfferId())
+                                            .flatMap(roomOffer -> roomRepository.findById(roomOffer.getRoomId())
                                                     .map(room -> {
                                                         Map<String, Object> bookingDetails = new HashMap<>();
                                                         bookingDetails.put("bookingId", booking.getBookingId());
-                                                        bookingDetails.put("roomName", room.getRoomName());  // Nombre de la habitación
-                                                        bookingDetails.put("costFinal", booking.getCostFinal()); // Costo final
-                                                        bookingDetails.put("bookingState", "Pendiente"); // Estado de la reserva (se asume que el estado es Pendiente ya que filtramos por bookingStateId=3)
+                                                        bookingDetails.put("roomName", room.getRoomName());
+                                                        bookingDetails.put("costFinal", booking.getCostFinal());
+                                                        bookingDetails.put("bookingState", "Pendiente");
                                                         return bookingDetails;
                                                     })
                                             )
                             )
-                            .collectList() // Recoger todos los detalles en una lista
+                            .collectList()
                             .map(details -> {
-                                // Calcular el total de las reservas pendientes
                                 BigDecimal total = details.stream()
                                         .map(booking -> (BigDecimal) booking.get("costFinal"))
                                         .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                                // Crear la respuesta con el total y los detalles de las reservas
                                 Map<String, Object> response = new HashMap<>();
                                 response.put("total", total);
                                 response.put("details", details);
