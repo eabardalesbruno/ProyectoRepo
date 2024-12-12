@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -250,8 +251,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                                   JOIN room r ON ro.roomid = r.roomid
                                   JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
                                   join userclient u on i.iduser = u.userclientid
-                                                          WHERE b.bookingstateid = :stateId AND
-                                                          (:month = 0 OR EXTRACT(MONTH FROM i.createdat) = :month)
+                                  WHERE b.bookingstateid = :stateId
+                                  AND (:month = 0 OR TO_CHAR(i.createdat, 'MM/YYYY') = CAST((:month) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE))
                                                                                                     """)
   Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateId(Integer stateId, Integer month);
 
@@ -312,5 +313,69 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
         Flux<BookingEntity> findConflictingBookings(@Param("roomOfferId") Integer roomOfferId,
                                                     @Param("offerTimeInit") LocalDateTime offerTimeInit,
                                                     @Param("offerTimeEnd") LocalDateTime offerTimeEnd);
+
+  @Query("""
+    SELECT COALESCE(trunc(sum(i.totalpayment)::numeric, 2),0)
+    FROM booking b
+    JOIN paymentbook p ON b.bookingid = p.bookingid AND p.pendingpay = 1
+    JOIN invoice i ON p.paymentbookid = i.idpaymentbook
+    join paymentmethod p2  on p.paymentmethodid = p2.paymentmethodid
+    join paymentsubtype p3 on p.paymentsubtypeid = p3.paymentsubtypeid
+    JOIN roomoffer ro ON b.roomofferid = ro.roomofferid
+    JOIN room r ON ro.roomid = r.roomid
+    JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
+    join userclient u on i.iduser = u.userclientid
+    WHERE b.bookingstateid = :stateId
+    AND (TO_CHAR(i.createdat, 'MM/YYYY') = CAST((:month) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE))
+  """)
+  Mono<BigDecimal> getTotalSalesByMonth(Integer stateId, Integer month);
+
+  @Query("""
+    SELECT COALESCE(trunc(sum(i.totalpayment)::numeric, 2),0)
+    FROM booking b
+    JOIN paymentbook p ON b.bookingid = p.bookingid AND p.pendingpay = 1
+    JOIN invoice i ON p.paymentbookid = i.idpaymentbook
+    join paymentmethod p2  on p.paymentmethodid = p2.paymentmethodid
+    join paymentsubtype p3 on p.paymentsubtypeid = p3.paymentsubtypeid
+    JOIN roomoffer ro ON b.roomofferid = ro.roomofferid
+    JOIN room r ON ro.roomid = r.roomid
+    JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
+    join userclient u on i.iduser = u.userclientid
+    WHERE b.bookingstateid = :stateId
+    AND (TO_CHAR(i.createdat, 'MM/YYYY') = CASE :month WHEN 1 THEN TO_CHAR(CURRENT_DATE + interval '-1 month', 'MM/YYYY')
+    								  	ELSE CAST((:month-1) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE) END)
+  """)
+  Mono<BigDecimal> getTotalSalesBeforeMonth(Integer stateId, Integer month);
+
+  @Query("""
+    SELECT COUNT(*)
+          FROM booking bo
+          JOIN roomoffer r ON r.roomofferid = bo.roomofferid
+          JOIN room rid ON rid.roomid = r.roomid
+          JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid
+          JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid
+          JOIN userclient us ON us.userclientid = bo.userclientid
+          JOIN bedroom be ON be.roomid = rid.roomid
+          JOIN bedstype bt ON bt.bedtypeid = be.bedtypeid
+          WHERE bo.bookingstateid = 4
+          AND (:month = 0 OR TO_CHAR(bo.createdat, 'MM/YYYY') = CAST((:month) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE))
+  """)
+  Mono<Long> getTotalCancellSales(Integer month);
+
+  @Query("""
+    SELECT COUNT(*)
+          FROM booking bo
+          JOIN roomoffer r ON r.roomofferid = bo.roomofferid
+          JOIN room rid ON rid.roomid = r.roomid
+          JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid
+          JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid
+          JOIN userclient us ON us.userclientid = bo.userclientid
+          JOIN bedroom be ON be.roomid = rid.roomid
+          JOIN bedstype bt ON bt.bedtypeid = be.bedtypeid
+          WHERE bo.bookingstateid = 4
+          AND (TO_CHAR(bo.createdat, 'MM/YYYY') = CASE :month WHEN 1 THEN TO_CHAR(CURRENT_DATE + interval '-1 month', 'MM/YYYY')
+          								  	ELSE CAST((:month-1) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE) END)
+  """)
+  Mono<Long> getTotalCancellLastSales(Integer month);
 
 }

@@ -33,6 +33,10 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
     @Query("SELECT * FROM userclient uc WHERE uc.userclientid IN (SELECT b.userclientid FROM booking b WHERE b.userpromotorid = :userpromotorid)")
     Flux<UserClientEntity> findByUserPromotorId(Integer userpromotorid);
 
-    @Query("SELECT COUNT(*) FROM userclient")
-    Mono<Long> countUsers();
+    @Query("SELECT COUNT(*) FROM userclient WHERE (:month = 0 OR TO_CHAR(createdat, 'MM/YYYY') = CAST((:month) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE))")
+    Mono<Long> countUsers(Integer month);
+
+    @Query("SELECT COUNT(*) FROM userclient WHERE (TO_CHAR(createdat, 'MM/YYYY') = CASE :month WHEN 1 THEN TO_CHAR(CURRENT_DATE + interval '-1 month', 'MM/YYYY') ELSE CAST((:month-1) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE) END)")
+    Mono<Long> countLastUsers(Integer month);
+
 }

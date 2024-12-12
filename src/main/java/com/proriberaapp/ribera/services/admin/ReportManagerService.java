@@ -1,6 +1,8 @@
 package com.proriberaapp.ribera.services.admin;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalCancellDTO;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalSalesDTO;
 import com.proriberaapp.ribera.Domain.entities.ExcelEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,12 +26,14 @@ public interface ReportManagerService {
 
     Mono<Long> countByRefuseReasonIdAndPendingPay(int refuseReasonId, int pendingPay);
 
-    Mono<Long> countUsers();
-
     Flux<BookingWithPaymentDTO> generateBookingReport(Integer stateId, Integer month);
 
     Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month);
 
+    Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month);
+
     Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime date);
+
+    Mono<TotalCancellDTO> TotalCancellSales(Integer month);
 
 }

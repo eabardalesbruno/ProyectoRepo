@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalUsersDTO;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.EventContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
@@ -732,6 +733,18 @@ public class UserClientServiceImpl implements UserClientService {
                 .header("authorization", "Bearer " + this.rucApiToken)
                 .retrieve()
                 .bodyToMono(CompanyDataDto.class);
+    }
+
+    @Override
+    public Mono<TotalUsersDTO> countUsers(Integer month) {
+        TotalUsersDTO resp = new TotalUsersDTO();
+        return userClientRepository.countUsers(month).flatMap(totalUsers -> {
+            resp.setTotalMonth(totalUsers);
+            return userClientRepository.countLastUsers(month).flatMap(totalUsersLast -> {
+                resp.setTotalLastMonth(totalUsersLast);
+                return Mono.just(resp);
+            });
+        });
     }
 
 }

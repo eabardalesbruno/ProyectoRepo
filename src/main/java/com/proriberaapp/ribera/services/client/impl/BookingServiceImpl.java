@@ -1,8 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
-import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
 import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Domain.dto.BookingFeedingDto;
@@ -908,7 +906,32 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month) {
+        TotalSalesDTO resp = new TotalSalesDTO();
+        return bookingRepository.getTotalSalesByMonth(stateId, month).flatMap(totalMonth -> {
+            return bookingRepository.getTotalSalesBeforeMonth(stateId, month).flatMap(totalLastMonth -> {
+                resp.setTotalMonth(totalMonth);
+                resp.setTotalLastMonth(totalLastMonth);
+                return Mono.just(resp);
+            });
+        });
+    }
+
+    @Override
     public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime date) {
         return bookingRepository.findBookingsWithPaymentByStateIdAndDate(stateId, date);
     }
+
+    @Override
+    public Mono<TotalCancellDTO> totalPaymentMonthSum(Integer month) {
+        TotalCancellDTO resp = new TotalCancellDTO();
+        return bookingRepository.getTotalCancellSales(month).flatMap(totalMonth -> {
+            return bookingRepository.getTotalCancellLastSales(month).flatMap(totalLastMonth -> {
+                resp.setTotalMonth(totalMonth);
+                resp.setTotalLastMonth(totalLastMonth);
+                return Mono.just(resp);
+            });
+        });
+    }
+
 }
