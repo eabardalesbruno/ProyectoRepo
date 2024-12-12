@@ -1,6 +1,8 @@
 package com.proriberaapp.ribera.services.admin.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalCancellDTO;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalSalesDTO;
 import com.proriberaapp.ribera.Domain.entities.ExcelEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.ExcelRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
@@ -64,11 +66,6 @@ public class ReportManagerServiceImpl implements ReportManagerService {
     }
 
     @Override
-    public Mono<Long> countUsers() {
-        return userClientRepository.countUsers();
-    }
-
-    @Override
     public Flux<BookingWithPaymentDTO> generateBookingReport(Integer stateId, Integer month) {
         return bookingService.findBookingsWithPaymentByStateId(stateId, month);
     }
@@ -79,7 +76,18 @@ public class ReportManagerServiceImpl implements ReportManagerService {
     }
 
     @Override
+    public Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month) {
+        return bookingService.totalPaymentMonthSum(stateId, month);
+    }
+
+    @Override
     public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime date) {
         return bookingService.findBookingsWithPaymentByStateIdAndDate(stateId, date);
     }
+
+    @Override
+    public Mono<TotalCancellDTO> TotalCancellSales(Integer month) {
+        return bookingService.totalPaymentMonthSum(month);
+    }
+
 }
