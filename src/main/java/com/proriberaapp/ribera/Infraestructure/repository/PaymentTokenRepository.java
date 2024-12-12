@@ -17,6 +17,7 @@ public interface PaymentTokenRepository extends R2dbcRepository<PaymentTokenEnti
     Mono<PaymentTokenEntity> generateAndSaveToken(String paymentToken, Integer bookingId, Integer paymentBookId);
 
     Mono<BookingEntity> findBookingByPaymentToken(String paymentToken);
+
     @Query("SELECT bookingid FROM paymenttoken WHERE paymenttoken = :paymentToken")
     Mono<Integer> findBookingIdByPaymentToken(String paymentToken);
 

@@ -24,7 +24,7 @@ public class PayLaterTemplateEmail implements EmailHandler {
     public String execute() {
         String body = """
                  <p class="font-size">Hola %clientName, este correo es para recordarte de que mantiene un pago pendiente de su reserva de:
-                <strong class="font-italic"> Departamento estándar vista jardín </strong>. Tienes plazo de realizar tu pago %paymentLimitHours horas. Pasando ese limite se anulara tu reserva.</p>
+                <strong class="font-italic"> %roomName </strong>. Tienes plazo de realizar tu pago %paymentLimitHours horas. Pasando ese limite se anulara tu reserva.</p>
                  <div class="card">
                     <p class="center">
                         <img src="https://s3.us-east-2.amazonaws.com/backoffice.documents/email/access-alarms.png"/>
@@ -63,9 +63,7 @@ public class PayLaterTemplateEmail implements EmailHandler {
                 .center{
                     text-align: center;
                 }
-                .font-size{
-                    font-size: 16px;
-                }
+
                 .button{
                     width: 199px !important;
                     }

@@ -98,6 +98,9 @@ public class BaseEmailReserve {
                                 .font-italic{
                                     font-style: italic;
                                 }
+                .font-size{
+                                    font-size: 16px;
+                                }
                 %STYLES
                                     </style>
                                 </head>

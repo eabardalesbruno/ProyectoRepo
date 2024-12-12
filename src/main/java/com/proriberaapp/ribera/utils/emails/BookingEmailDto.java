@@ -16,5 +16,6 @@ public class BookingEmailDto {
     private String hourCheckIn;
     private String imgSrc;
     private int days;
-    private String location = "Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico Etapa III, Cercado de Lima 15593";
+    private String location;
+    private String cantidadPersonas;
 }

@@ -37,7 +37,7 @@ public class EmailSenderTest {
                 5,
                 "Habitacion 1",
                 "Antony Inga Atunga",
-                "1"));
+                "1", ""));
         String emailBody = baseEmailReserve.execute();
         StepVerifier.create(emailService.sendEmail(to, subject, emailBody)).verifyComplete();
     }
@@ -63,7 +63,8 @@ public class EmailSenderTest {
                 "15/06/2021",
                 "12:00",
                 "https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/apartments/feb6ae4a-75dd-4db9-8d31-a0ba9a462c22-resized_IMG_7568.jpg",
-                5, "Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico Etapa III, Cercado de Lima 15593");
+                5, "Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico Etapa III, Cercado de Lima 15593",
+                "2 niños");
         baseEmailReserve.addEmailHandler(new ConfirmPaymentByBankTransferAndCardTemplateEmail(
                 "Antony Inga Atunga",
                 bookingEmailDto));
@@ -96,9 +97,8 @@ public class EmailSenderTest {
     @Test
     void testSendEmailUploadReceiptLater() {
         BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
-        baseEmailReserve.addEmailHandler(new UploadReceiptLaterTemplateEmail(
-                "Antony Inga Atunga",
-                "OP -0183066"));
+        baseEmailReserve.addEmailHandler(new UploadReceiptLaterTemplateEmail("Antony Inga Atunga",
+                "OP -0183066", "12", "http://localhost:4200"));
         String emailBody = baseEmailReserve.execute();
         StepVerifier.create(emailService.sendEmail(to, subject, emailBody)).verifyComplete();
     }
