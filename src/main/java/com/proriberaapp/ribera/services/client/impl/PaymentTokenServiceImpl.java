@@ -2,9 +2,14 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
+import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.PaymentBookService;
 import com.proriberaapp.ribera.services.client.PaymentTokenService;
+import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
+import com.proriberaapp.ribera.utils.emails.UploadReceiptLaterTemplateEmail;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -27,6 +32,12 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
     private final PaymentTypeRepository paymentTypeRepository;
     private final PaymentSubtypeRepository paymentSubtypeRepository;
     private final CurrencyTypeRepository currencyTypeRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Value("${url.base.frontend}")
+    private String urlBaseFrontend;
 
     @Autowired
     public PaymentTokenServiceImpl(
@@ -56,8 +67,47 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
     public Mono<String> generateAndSaveToken(Integer bookingId, Integer paymentBookId) {
         String token = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
-        return paymentTokenRepository.generateAndSaveToken(token, bookingId, paymentBookId)
+        return paymentTokenRepository.generateAndSaveToken(token, bookingId,
+                paymentBookId)
                 .thenReturn(token);
+    }
+
+    @Override
+    public Mono<String> generateAndSaveToken(Integer bookingId, Integer paymentBookId, String emailUser) {
+        LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
+        String token = UUID.randomUUID().toString();
+        Mono<String> a = Mono.defer(() -> {
+            return userClientRepository.findByUserClientId(paymentBookId).flatMap(userClientEntity -> {
+                BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+                baseEmailReserve.addEmailHandler(
+                        new UploadReceiptLaterTemplateEmail(userClientEntity.getFirstName(), token,
+                                bookingId.toString(), urlBaseFrontend));
+                String body = baseEmailReserve.execute();
+                return emailService.sendEmail(emailUser, "Pago de reserva", body);
+            }).thenReturn(token);
+        });
+        return paymentTokenRepository.generateAndSaveToken(token, bookingId,
+                paymentBookId).then(a);
+        /*
+         * return Mono.zip(paymentTokenRepository.generateAndSaveToken(token, bookingId,
+         * paymentBookId), Mono.just(token))
+         * .doOnNext(tuples -> System.out.println("Tuples received: "
+         * + tuples))
+         * .flatMap(tuples -> {
+         * BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+         * baseEmailReserve.addEmailHandler(new
+         * UploadReceiptLaterTemplateEmail(emailUser, token));
+         * String body = baseEmailReserve.execute();
+         * return emailService.sendEmail(emailUser, "Pago de reserva",
+         * body).thenReturn(tuples.getT2());
+         * });
+         */
+        /*
+         * .doOnError(error -> System.err.println("Error occurred: " +
+         * error.getMessage()))
+         * .thenReturn(token);
+         */
+
     }
 
     @Override
@@ -69,6 +119,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
     public Mono<Integer> findBookingIdByPaymentToken(String paymentToken) {
         return paymentTokenRepository.findBookingIdByPaymentToken(paymentToken);
     }
+
     @Override
     public Mono<Boolean> isPaymentTokenActive(String paymentToken) {
         return paymentTokenRepository.findByPaymentToken(paymentToken)
@@ -91,6 +142,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
                     }
                 });
     }
+
     @Override
     public Mono<PaymentBookEntity> findById(Integer id) {
         return paymentBookRepository.findById(id);
@@ -105,20 +157,29 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
                     if (now.before(paymentTokenEntity.getEndDate())) {
                         return paymentBookService.getPaymentBookById(paymentTokenEntity.getPaymentBookId())
                                 .flatMap(paymentBook -> {
-                                    Mono<BookingEntity> bookingMono = bookingRepository.findById(paymentBook.getBookingId());
-                                    Mono<UserClientEntity> userClientMono = userClientRepository.findById(paymentBook.getUserClientId());
-                                    Mono<PaymentMethodEntity> paymentMethodMono = paymentMethodRepository.findById(paymentBook.getPaymentMethodId());
-                                    Mono<PaymentStateEntity> paymentStateMono = paymentStateRepository.findById(paymentBook.getPaymentStateId());
-                                    Mono<PaymentTypeEntity> paymentTypeMono = paymentTypeRepository.findById(paymentBook.getPaymentTypeId());
-                                    Mono<PaymentSubtypeEntity> paymentSubtypeMono = paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId());
-                                    Mono<CurrencyTypeEntity> currencyTypeMono = currencyTypeRepository.findById(paymentBook.getCurrencyTypeId());
+                                    Mono<BookingEntity> bookingMono = bookingRepository
+                                            .findById(paymentBook.getBookingId());
+                                    Mono<UserClientEntity> userClientMono = userClientRepository
+                                            .findById(paymentBook.getUserClientId());
+                                    Mono<PaymentMethodEntity> paymentMethodMono = paymentMethodRepository
+                                            .findById(paymentBook.getPaymentMethodId());
+                                    Mono<PaymentStateEntity> paymentStateMono = paymentStateRepository
+                                            .findById(paymentBook.getPaymentStateId());
+                                    Mono<PaymentTypeEntity> paymentTypeMono = paymentTypeRepository
+                                            .findById(paymentBook.getPaymentTypeId());
+                                    Mono<PaymentSubtypeEntity> paymentSubtypeMono = paymentSubtypeRepository
+                                            .findById(paymentBook.getPaymentSubTypeId());
+                                    Mono<CurrencyTypeEntity> currencyTypeMono = currencyTypeRepository
+                                            .findById(paymentBook.getCurrencyTypeId());
 
-                                    return Mono.zip(bookingMono, userClientMono, paymentMethodMono, paymentStateMono, paymentTypeMono, paymentSubtypeMono, currencyTypeMono)
+                                    return Mono
+                                            .zip(bookingMono, userClientMono, paymentMethodMono, paymentStateMono,
+                                                    paymentTypeMono, paymentSubtypeMono, currencyTypeMono)
                                             .map(tuple -> {
                                                 Map<String, Object> response = new HashMap<>();
                                                 response.put("active", true);
                                                 response.put("paymentBook", paymentBook);
-                                                response.put("details", new Object[]{
+                                                response.put("details", new Object[] {
                                                         Map.of("type", "booking", "data", tuple.getT1()),
                                                         Map.of("type", "userClient", "data", tuple.getT2()),
                                                         Map.of("type", "paymentMethod", "data", tuple.getT3()),
@@ -127,7 +188,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
                                                         Map.of("type", "paymentSubType", "data", tuple.getT6()),
                                                         Map.of("type", "currencyType", "data", tuple.getT7()),
 
-                                                });
+                                            });
                                                 response.put("token", paymentToken);
                                                 response.put("linkPayment", linkPayment);
                                                 response.put("status", 1);
@@ -139,7 +200,7 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
                         Map<String, Object> response = new HashMap<>();
                         response.put("active", false);
                         response.put("paymentBook", null);
-                        response.put("details", new Object[]{});
+                        response.put("details", new Object[] {});
                         response.put("token", paymentToken);
                         response.put("linkPayment", linkPayment);
                         response.put("status", 0);
@@ -148,4 +209,5 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
                     }
                 });
     }
+
 }

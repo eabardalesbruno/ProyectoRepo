@@ -174,6 +174,7 @@ public class UserController {
             return Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
         }
         return userClientService.findByEmail(request.email())
+
                 .flatMap(existingUser -> Mono.error(new RuntimeException("El correo electrónico ya está registrado")))
                 .switchIfEmpty(Mono.defer(() -> {
                     String finalPassword = request.password() == null || request.password().isEmpty()
