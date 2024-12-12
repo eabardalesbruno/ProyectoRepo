@@ -274,7 +274,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
             return userClientRepository.findById(walletEntity.getUserClientId())
                     .flatMap(user -> Mono.zip(
                             Mono.just(user.getEmail()),
-                            Mono.just(user.getUsername()),
+                            Mono.just(user.getFirstName() + " " + user.getLastName()),
                             Mono.just(user.getDocumentNumber())
                     ))
                     .switchIfEmpty(Mono.error(new Exception("Cliente no encontrado.")));
@@ -282,7 +282,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
             return userPromoterRepository.findById(walletEntity.getUserPromoterId())
                     .flatMap(promoter -> Mono.zip(
                             Mono.just(promoter.getEmail()),
-                            Mono.just(promoter.getUsername()),
+                            Mono.just(promoter.getFirstName() + " " + promoter.getLastName()),
                             Mono.just(promoter.getDocumentNumber())
                     ))
                     .switchIfEmpty(Mono.error(new Exception("Promotor no encontrado.")));
@@ -394,12 +394,10 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                 "</head>\n" +
                 "<body>\n" +
                 "    <div class=\"header\">\n" +
-                "        <!-- Encabezado con logos -->\n" +
-                "        <img class=\"logo-left\" src=\"https://bit.ly/4d7FuGX\" alt=\"Logo Izquierda\">\n" +
                 "    </div>\n" +
                 "\n" +
                 "    <!-- Imagen de banner -->\n" +
-                "    <img class=\"banner\" src=\"https://bit.ly/46vO7sq\" alt=\"Bienvenido\">\n" +
+                "    <img class=\"banner\" src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Bienvenido\">\n" +
                 "\n" +
                 "    <!-- Contenedor blanco con el contenido del mensaje -->\n" +
                 "    <div class=\"container\">\n" +
@@ -606,9 +604,8 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                 "</head>\n" +
                 "<body>\n" +
                 "    <div class=\"header\">\n" +
-                "        <img class=\"logo-left\" src=\"https://bit.ly/4d7FuGX\" alt=\"Logo Izquierda\">\n" +
                 "    </div>\n" +
-                "    <img class=\"banner\" src=\"https://bit.ly/46vO7sq\" alt=\"Bienvenido\">\n" +
+                "    <img class=\"banner\" src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Bienvenido\">\n" +
                 "    <div class=\"container\">\n" +
                 "        <div class=\"content\">\n" +
                 "            <h1>Transferencia Exitosa</h1>\n" +
@@ -693,17 +690,15 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                 "</head>\n" +
                 "<body>\n" +
                 "    <div class=\"header\">\n" +
-                "        <img class=\"logo-left\" src=\"https://bit.ly/4d7FuGX\" alt=\"Logo Izquierda\">\n" +
                 "    </div>\n" +
-                "    <img class=\"banner\" src=\"https://bit.ly/46vO7sq\" alt=\"Bienvenido\">\n" +
+                "    <img class=\"banner\" src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Bienvenido\">\n" +
                 "    <div class=\"container\">\n" +
                 "        <div class=\"content\">\n" +
-                "            <h1>Recibiste Fondos</h1>\n" +
+                "            <h1>Recibiste Fondos a la Wallet</h1>\n" +
                 "            <h3>Estimado cliente,</h3>\n" +
                 "            <p>¡Felicidades! Has recibido los fondos de una transferencia exitosa.</p>\n" +
                 "            <div style=\"background-color: #e0e0e0; padding: 10px; border-radius: 5px;\">\n" +
                 "                <p><strong>Detalles de la Transferencia</strong></p>\n" +
-                "                <p><strong>Nombre de quien realizó la transferencia:</strong> " + walletEntityOrigin + "</p>\n" +
                 "                <p><strong>Monto Recibido:</strong> S/." + amount + "</p>\n" +
                 "                <p><strong>Fecha de Transacción:</strong> " + formattedDate + "</p>\n" +
                 "            </div>\n" +
