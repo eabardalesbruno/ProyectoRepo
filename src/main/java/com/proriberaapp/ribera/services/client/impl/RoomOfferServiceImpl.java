@@ -3,10 +3,14 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOffer;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOfferFiltro;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
+import com.proriberaapp.ribera.Domain.entities.FeedingEntity;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.Infraestructure.viewRepository.RoomOfferViewRepository;
 import com.proriberaapp.ribera.services.client.RoomOfferService;
+import com.proriberaapp.ribera.utils.TransformDate;
+
+import ch.qos.logback.core.helpers.Transform;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +34,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
     private final QuotationRoomOfferRepository quotationRoomOfferRepository;
     private final ServicesRepository servicesRepository;
     private final BedroomRepository bedroomRepository;
+    private final FeedingRepository feedingRepository;
     @Value("${room.offer.ratio.base}")
     private Integer RATIO_BASE;
     @Value("${room.offer.ratio.ribera}")
@@ -39,15 +44,17 @@ public class RoomOfferServiceImpl implements RoomOfferService {
 
     @Override
     public Mono<RoomOfferEntity> save(RoomOfferEntity entity) {
-        /*if (entity.getNumberDays() == null) {
-            entity.setPoints(calculatePoints(entity.getCost(), RATIO_BASE));
-            entity.setInResortPoints(calculatePoints(entity.getCost(), RATIO_INRESORT));
-            entity.setRiberaPoints(calculatePoints(entity.getCost(), RATIO_RIBERA));
-        } else {
-            entity.setPoints(null);
-            entity.setInResortPoints(null);
-            entity.setRiberaPoints(null);
-        }*/
+        /*
+         * if (entity.getNumberDays() == null) {
+         * entity.setPoints(calculatePoints(entity.getCost(), RATIO_BASE));
+         * entity.setInResortPoints(calculatePoints(entity.getCost(), RATIO_INRESORT));
+         * entity.setRiberaPoints(calculatePoints(entity.getCost(), RATIO_RIBERA));
+         * } else {
+         * entity.setPoints(null);
+         * entity.setInResortPoints(null);
+         * entity.setRiberaPoints(null);
+         * }
+         */
         entity.setPoints(null);
         entity.setInResortPoints(null);
         entity.setRiberaPoints(null);
@@ -60,17 +67,74 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                 filters.roomTypeId(),
                 filters.capacity() != null ? filters.capacity().toString() : null,
                 filters.offerTimeInit(),
-                filters.offerTimeEnd()
-        );
+                filters.offerTimeEnd());
     }
 
     @Override
-    public Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd,
-                                                  Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity, Integer adultExtra) {
-        return roomOfferRepository.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity, kidCapacity,
-                        adultCapacity, adultMayorCapacity, adultExtra)
+    public Flux<ViewRoomOfferReturn> findFilteredV2(Integer roomTypeId, LocalDateTime offerTimeInit,
+            LocalDateTime offerTimeEnd,
+            Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
+            Integer adultExtraCapacity, Integer infantCapacity, List<Integer> feedingsSelected) {
+        Integer adultCapacityDefault = adultCapacity == 0 ? 1 : adultCapacity;
+        Integer kidCapacityDefault = kidCapacity == 0 ? 1 : adultCapacity;
+        Integer totalKidCapacity = kidCapacityDefault + infantCapacity;
+        Integer totalAdultCapacity = adultCapacityDefault + adultMayorCapacity + adultExtraCapacity;
+        Flux<FeedingEntity> feedings = this.feedingRepository.findAllById(feedingsSelected);
+        return roomOfferRepository.findFilteredV2(roomTypeId, offerTimeInit, offerTimeEnd,
+                totalKidCapacity,
+                totalAdultCapacity)
                 .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
-                                roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
+                        roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
+                        .hasElements()
+                        .map(hasConflicts -> !hasConflicts))
+                .flatMap(roomOffer -> servicesRepository.findAllViewComfortReturn(roomOffer.getRoomOfferId())
+                        .collectList()
+                        .flatMap(comfortList -> {
+                            roomOffer.setTotalPerson(TransformDate.calculatePersonsAdultAndKids(
+                                    adultCapacityDefault, kidCapacityDefault, infantCapacity, adultExtraCapacity,
+                                    adultMayorCapacity));
+                            roomOffer.setListAmenities(comfortList);
+                            BigDecimal totalCostKids = roomOffer.getKidcost()
+                                    .multiply(BigDecimal.valueOf(kidCapacityDefault))
+                                    .add(roomOffer.getInfantcost().multiply(BigDecimal.valueOf(infantCapacity)));
+                            BigDecimal totalCostAdult = roomOffer.getAdultextracost()
+                                    .multiply(BigDecimal.valueOf(adultExtraCapacity))
+                                    .add(roomOffer.getAdultcost().multiply(
+                                            BigDecimal.valueOf(
+                                                    adultCapacityDefault)))
+                                    .add(roomOffer.getAdultmayorcost().multiply(
+                                            BigDecimal.valueOf(
+                                                    adultMayorCapacity)));
+                            roomOffer.setCosttotal(totalCostAdult.add(totalCostKids));
+                            return bedroomRepository.findAllViewBedroomReturn(roomOffer.getRoomId())
+                                    .collectList()
+                                    .map(bedroomList -> {
+                                        roomOffer.setListBedroomReturn(bedroomList);
+                                        return roomOffer;
+                                    });
+                        }))
+                .collectSortedList(Comparator.comparing(ViewRoomOfferReturn::getRoomOfferId))
+                .flatMapMany(Flux::fromIterable)
+                .flatMap(roomOffer -> feedings.collectList()
+                        .map(feedingList -> {
+                            BigDecimal totalCostFeeding = feedingList.stream().reduce(BigDecimal.ZERO,
+                                    (subtotal, element) -> subtotal.add(element.getCost()), BigDecimal::add);
+                            roomOffer.setCosttotal(roomOffer.getCosttotal().add(totalCostFeeding));
+                            roomOffer.setListFeeding(feedingList);
+                            return roomOffer;
+                        }));
+
+    }
+
+    @Override
+    public Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit,
+            LocalDateTime offerTimeEnd,
+            Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
+            Integer adultExtra) {
+        return roomOfferRepository.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity, kidCapacity,
+                adultCapacity, adultMayorCapacity, adultExtra)
+                .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
+                        roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
                         .hasElements()
                         .map(hasConflicts -> !hasConflicts))
                 .flatMap(roomOffer -> servicesRepository.findAllViewComfortReturn(roomOffer.getRoomOfferId())
@@ -88,7 +152,6 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                 .flatMapMany(Flux::fromIterable);
     }
 
-
     @Override
     public Flux<RoomOfferEntity> saveAll(List<RoomOfferEntity> entity) {
         return roomOfferRepository.findAllByRoomIdInAndOfferTypeIdIn(entity, entity)
@@ -96,10 +159,10 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                 .flatMapMany(entities -> roomOfferRepository.saveAll(
                         entity.stream().peek(roomOfferEntity -> {
                             roomOfferEntity.setPoints(calculatePoints(roomOfferEntity.getCost(), RATIO_BASE));
-                            roomOfferEntity.setInResortPoints(calculatePoints(roomOfferEntity.getCost(), RATIO_INRESORT));
+                            roomOfferEntity
+                                    .setInResortPoints(calculatePoints(roomOfferEntity.getCost(), RATIO_INRESORT));
                             roomOfferEntity.setRiberaPoints(calculatePoints(roomOfferEntity.getCost(), RATIO_RIBERA));
-                        }).filter(entity1 -> !entities.contains(entity1)).toList()
-                ));
+                        }).filter(entity1 -> !entities.contains(entity1)).toList()));
     }
 
     @Override
@@ -120,14 +183,12 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                             log.info("Comfort: {}", comfort);
                             service.setListAmenities(comfort);
                             return service;
-                        })
-                )
+                        }))
                 .flatMap(service -> bedroomRepository.findAllViewBedroomReturn(service.getRoomId())
                         .collectList().map(bedroom -> {
                             service.setListBedroomReturn(bedroom);
                             return service;
-                        })
-                );
+                        }));
     }
 
     @Override
@@ -139,8 +200,9 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                         return Mono.error(new IllegalArgumentException("Solo se puede poner inactiva una oferta, " +
                                 "no se puede eliminar si tiene reservas"));
                     }
-                    return quotationRoomOfferRepository.deleteAllByRoomOfferId(id).then(comfortRoomOfferDetailRepository.deleteAllByRoomOfferId(id)
-                            .then(roomOfferRepository.deleteById(id)));
+                    return quotationRoomOfferRepository.deleteAllByRoomOfferId(id)
+                            .then(comfortRoomOfferDetailRepository.deleteAllByRoomOfferId(id)
+                                    .then(roomOfferRepository.deleteById(id)));
                 });
     }
 
@@ -149,13 +211,15 @@ public class RoomOfferServiceImpl implements RoomOfferService {
         return roomOfferRepository.findByRoomIdAndState(entity.getRoomId(), 1)
                 .flatMap(existingActiveOffer -> {
                     if (!existingActiveOffer.getRoomOfferId().equals(entity.getRoomOfferId())) {
-                        return Mono.error(new IllegalArgumentException("Ya existe una oferta activa para este alojamiento."));
+                        return Mono.error(
+                                new IllegalArgumentException("Ya existe una oferta activa para este alojamiento."));
                     }
                     return quotationRoomOfferRepository.findAllByRoomOfferId(entity.getRoomOfferId())
                             .hasElements()
                             .flatMap(hasElements -> {
                                 if (!hasElements && entity.getState() == 1) {
-                                    return Mono.error(new IllegalArgumentException("No se puede activar una oferta que no tiene cotizaciones"));
+                                    return Mono.error(new IllegalArgumentException(
+                                            "No se puede activar una oferta que no tiene cotizaciones"));
                                 }
                                 return roomOfferRepository.save(entity);
                             });
@@ -165,13 +229,12 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                 .hasElements()
                                 .flatMap(hasElements -> {
                                     if (!hasElements && entity.getState() == 1) {
-                                        return Mono.error(new IllegalArgumentException("No se puede activar una oferta que no tiene cotizaciones"));
+                                        return Mono.error(new IllegalArgumentException(
+                                                "No se puede activar una oferta que no tiene cotizaciones"));
                                     }
                                     return roomOfferRepository.save(entity);
-                                })
-                );
+                                }));
     }
-
 
     private Integer calculatePoints(BigDecimal price, Integer points) {
         return price.intValue() / points;
