@@ -6,10 +6,13 @@ import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.WalletTransactionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple3;
+import org.springframework.http.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +43,10 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     private final RoomOfferRepository roomOfferRepository;
     private final RoomRepository roomRepository;
     private final PaymentBookRepository paymentBookRepository;
+    @Value("${url.api.tipo-cambio}")
+    private String urlApiTipoCambio;
+    @Value("${url.api.tipo-cambio.token}")
+    private String tokenApiTipoCambio;
 
     @Override
     public Mono<WalletTransactionEntity> makeTransfer(Integer walletIdOrigin, Integer walletIdDestiny, String emailDestiny, String cardNumber, BigDecimal amount, String motiveDescription) {
@@ -254,7 +261,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                 .bookingId(booking.getBookingId())
                 .userClientId(userClientId)
                 .paymentMethodId(5)
-                .paymentStateId(1)
+                .paymentStateId(2)
                 .paymentTypeId(4)
                 .currencyTypeId(walletEntity.getCurrencyTypeId())
                 .amount(booking.getCostFinal())
@@ -264,6 +271,8 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                 .totalCost(booking.getCostFinal())
                 .paymentComplete(true)
                 .refuseReasonId(1)
+                .totalPoints(0)
+                .invoiceDocumentNumber("N/A")
                 .build();
 
         return paymentBookRepository.save(paymentBook).then();
@@ -714,6 +723,21 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
         return Mono.just(body);
     }
 
+    @Override
+    public Map<String, Object> getExchangeRate(String date) {
+        String url = urlApiTipoCambio + "?date=" + date;
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", "application/json");
+        headers.set("Authorization", tokenApiTipoCambio);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
+
+        return response.getBody();
+    }
 
     private Mono<String> generateUniqueOperationCode() {
         return Mono.fromSupplier(() -> {
