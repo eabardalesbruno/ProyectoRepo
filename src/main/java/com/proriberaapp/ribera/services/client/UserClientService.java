@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalUsersDTO;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.EventContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
@@ -52,4 +53,7 @@ public interface UserClientService {
     Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId);
 
     Mono<CompanyDataDto> loadDataRuc(String ruc);
+
+    Mono<TotalUsersDTO> countUsers(Integer month);
+
 }

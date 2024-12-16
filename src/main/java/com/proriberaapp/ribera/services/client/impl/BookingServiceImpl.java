@@ -1,8 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
-import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
 import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Domain.dto.BookingFeedingDto;
@@ -32,16 +30,12 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -375,7 +369,7 @@ public class BookingServiceImpl implements BookingService {
      * @Override
      * public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest
      * bookingSaveRequest) {
-     * 
+     *
      * if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
      * return Mono.error(new CustomException(HttpStatus.
      * BAD_REQUEST,"La fecha de inicio no puede ser anterior al día actual"));
@@ -388,17 +382,17 @@ public class BookingServiceImpl implements BookingService {
      * return Mono.error(new CustomException(HttpStatus.BAD_REQUEST,
      * "Debe seleccionar al menos un huésped"));
      * }
-     * 
+     *
      * Integer numberOfDays =
      * calculateDaysBetween(bookingSaveRequest.getDayBookingInit(),
      * bookingSaveRequest.getDayBookingEnd());
-     * 
+     *
      * Mono<RoomOfferEntity> roomOfferEntityMono =
      * roomOfferRespository.findById(bookingSaveRequest.getRoomOfferId());
-     * 
+     *
      * BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId,
      * bookingSaveRequest, numberOfDays);
-     * 
+     *
      * return bookingRepository.findExistingBookings(
      * bookingEntity.getRoomOfferId(),
      * bookingEntity.getDayBookingInit(),
@@ -875,12 +869,63 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month) {
         return bookingRepository.findBookingsWithPaymentByStateId(stateId, month)
-                .map(BookingWithPaymentDTO::getTotalPayment)
+                .map(BookingWithPaymentDTO::getTotalCost)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     @Override
-    public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime date) {
-        return bookingRepository.findBookingsWithPaymentByStateIdAndDate(stateId, date);
+    public Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month) {
+        TotalSalesDTO resp = new TotalSalesDTO();
+        return bookingRepository.getTotalSalesByMonth(stateId, month).flatMap(totalMonth -> {
+            return bookingRepository.getTotalSalesBeforeMonth(stateId, month).flatMap(totalLastMonth -> {
+                resp.setTotalMonth(totalMonth);
+                resp.setTotalLastMonth(totalLastMonth);
+                return Mono.just(resp);
+            });
+        });
     }
+
+    @Override
+    public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime dateini, LocalDateTime datefin) {
+        return bookingRepository.findBookingsWithPaymentByStateIdAndDate(stateId, dateini, datefin);
+    }
+
+    @Override
+    public Mono<TotalCalculationMonthsDTO> totalPaymentMonthSum(Integer month) {
+        TotalCalculationMonthsDTO resp = new TotalCalculationMonthsDTO();
+        return bookingRepository.getTotalCancellSales(month).flatMap(totalMonth -> {
+            return bookingRepository.getTotalCancellLastSales(month).flatMap(totalLastMonth -> {
+                resp.setTotalMonth(totalMonth);
+                resp.setTotalLastMonth(totalLastMonth);
+                return Mono.just(resp);
+            });
+        });
+    }
+
+    @Override
+    public Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month) {
+        return bookingRepository.findBookingsWithResumeByStateId(stateId, month);
+    }
+
+    @Override
+    public Mono<BigDecimal> getTotalBeforeYear() {
+        return bookingRepository.getTotalBeforeYear();
+    }
+
+    @Override
+    public Mono<Long> getTotalActiveClients(Integer stateId, Integer month) {
+        return bookingRepository.getTotalActiveClients(stateId, month);
+    }
+
+    @Override
+    public Mono<TotalCalculationMonthsDTO> getTotalActiveClientsMonths(Integer stateId, Integer month) {
+        TotalCalculationMonthsDTO resp = new TotalCalculationMonthsDTO();
+        return bookingRepository.getTotalActiveClients(stateId, month).flatMap(totalMonth ->
+                bookingRepository.getTotalActiveClientsMonths(stateId, month).flatMap(lastTotalMonth -> {
+                resp.setTotalMonth(totalMonth);
+                resp.setTotalLastMonth(lastTotalMonth);
+                return Mono.just(resp);
+        }));
+    }
+
 }
