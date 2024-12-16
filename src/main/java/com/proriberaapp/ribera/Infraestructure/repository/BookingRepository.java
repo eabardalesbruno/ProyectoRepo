@@ -315,7 +315,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                                                     @Param("offerTimeEnd") LocalDateTime offerTimeEnd);
 
 @Query("""
-    SELECT COALESCE(trunc(sum(i.totalpayment)::numeric, 2),0)
+    SELECT COALESCE(trunc(sum(p.totalcost)::numeric, 2),0)
     FROM booking b
     JOIN paymentbook p ON b.bookingid = p.bookingid AND p.pendingpay = 1
     JOIN invoice i ON p.paymentbookid = i.idpaymentbook
@@ -331,7 +331,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
   Mono<BigDecimal> getTotalSalesByMonth(Integer stateId, Integer month);
 
   @Query("""
-    SELECT COALESCE(trunc(sum(i.totalpayment)::numeric, 2),0)
+    SELECT COALESCE(trunc(sum(p.totalcost)::numeric, 2),0)
     FROM booking b
     JOIN paymentbook p ON b.bookingid = p.bookingid AND p.pendingpay = 1
     JOIN invoice i ON p.paymentbookid = i.idpaymentbook
