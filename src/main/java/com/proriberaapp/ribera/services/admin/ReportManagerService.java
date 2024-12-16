@@ -1,7 +1,8 @@
 package com.proriberaapp.ribera.services.admin;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingResumenPaymentDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalCancellDTO;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalCalculationMonthsDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalSalesDTO;
 import com.proriberaapp.ribera.Domain.entities.ExcelEntity;
 import reactor.core.publisher.Flux;
@@ -32,8 +33,16 @@ public interface ReportManagerService {
 
     Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month);
 
-    Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime date);
+    Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime dateini, LocalDateTime datefin);
 
-    Mono<TotalCancellDTO> TotalCancellSales(Integer month);
+    Mono<TotalCalculationMonthsDTO> TotalCancellSales(Integer month);
+
+    Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month);
+
+    Mono<BigDecimal> getTotalBeforeYear();
+
+    Mono<Long> getTotalActiveClients(Integer stateId, Integer month);
+
+    Mono<TotalCalculationMonthsDTO> getTotalActiveClientsMonths(Integer stateId, Integer month);
 
 }

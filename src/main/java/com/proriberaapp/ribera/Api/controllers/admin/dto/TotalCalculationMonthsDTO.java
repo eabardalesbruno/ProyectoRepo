@@ -5,13 +5,13 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class TotalCancellDTO {
+public class TotalCalculationMonthsDTO {
 
     private Long totalMonth;
 
     private Long totalLastMonth;
 
-    public TotalCancellDTO() {
+    public TotalCalculationMonthsDTO() {
 
     }
 }

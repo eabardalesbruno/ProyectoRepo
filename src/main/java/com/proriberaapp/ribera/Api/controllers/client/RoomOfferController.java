@@ -12,6 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/room-offer")
@@ -39,10 +40,24 @@ public class RoomOfferController {
             @Nullable @RequestParam Integer roomId,
             @Nullable @RequestParam Integer roomOfferId,
             @Nullable @RequestParam Integer roomTypeId,
-            @Nullable @RequestParam String typeRoom
-    ) {
+            @Nullable @RequestParam String typeRoom) {
         SearchFiltersRoomOffer filters = new SearchFiltersRoomOffer(roomId, roomOfferId, roomTypeId, typeRoom);
         return roomOfferService.viewRoomOfferReturn(filters);
+    }
+
+    @GetMapping("/filter-v2")
+    public Flux<ViewRoomOfferReturn> getFilteredRoomOffersV2(
+            @RequestParam(required = false) Integer roomTypeId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offerTimeInit,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offerTimeEnd,
+            @RequestParam(required = false) Integer infantCapacity,
+            @RequestParam(required = false) Integer kidCapacity,
+            @RequestParam(required = false) Integer adultCapacity,
+            @RequestParam(required = false) Integer adultMayorCapacity,
+            @RequestParam(required = false) Integer adultExtra,
+            @RequestParam(required = false) List<Integer> feedings) {
+        return roomOfferService.findFilteredV2(roomTypeId, offerTimeInit, offerTimeEnd, kidCapacity, adultCapacity,
+                adultMayorCapacity, adultExtra, infantCapacity, feedings);
     }
 
     @GetMapping("/filter")
@@ -55,7 +70,8 @@ public class RoomOfferController {
             @RequestParam(required = false) Integer adultCapacity,
             @RequestParam(required = false) Integer adultMayorCapacity,
             @RequestParam(required = false) Integer adultExtra) {
-        return roomOfferService.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity, kidCapacity, adultCapacity, adultMayorCapacity, adultExtra);
+        return roomOfferService.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity, kidCapacity,
+                adultCapacity, adultMayorCapacity, adultExtra);
     }
 
     @PostMapping
@@ -64,7 +80,8 @@ public class RoomOfferController {
     }
 
     @PutMapping("{id}")
-    public Mono<RoomOfferEntity> updateRoomOffer(@PathVariable Integer id, @RequestBody RoomOfferEntity roomOfferEntity) {
+    public Mono<RoomOfferEntity> updateRoomOffer(@PathVariable Integer id,
+            @RequestBody RoomOfferEntity roomOfferEntity) {
         roomOfferEntity.setRoomOfferId(id);
         return roomOfferService.update(roomOfferEntity);
     }
