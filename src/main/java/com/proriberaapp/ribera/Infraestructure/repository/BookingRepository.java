@@ -314,7 +314,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                                                     @Param("offerTimeInit") LocalDateTime offerTimeInit,
                                                     @Param("offerTimeEnd") LocalDateTime offerTimeEnd);
 
-  @Query("""
+@Query("""
     SELECT COALESCE(trunc(sum(i.totalpayment)::numeric, 2),0)
     FROM booking b
     JOIN paymentbook p ON b.bookingid = p.bookingid AND p.pendingpay = 1
@@ -481,5 +481,10 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                                           ELSE CAST((:month-1) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE) END)
   """)
   Mono<Long> getTotalActiveClientsMonths(Integer stateId, Integer month);
+
+  @Query("SELECT SUM(b.costFinal) FROM booking b WHERE b.userpromotorid = :userPromoterId AND b.bookingStateId = :bookingStateId")
+  Mono<BigDecimal> findTotalAmountByUserPromoterIdAndBookingStateId(@Param("userPromoterId") Integer userPromoterId, @Param("bookingStateId") Integer bookingStateId);
+
+  Flux<BookingEntity> findByUserPromotorIdAndBookingStateId ( Integer userPromotorId, Integer bookingStateId);
 
 }

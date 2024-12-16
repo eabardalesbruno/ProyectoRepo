@@ -53,7 +53,7 @@ public class PDFGeneratorService {
                 + "    <div class=\"container\">"
                 + "        <div class=\"header\">"
                 + "            <div class=\"logo\">"
-                + "                <img src=\"logo-ribera.svg\" alt=\"Logo\" />"
+                + "                <img src=\"https://i.postimg.cc/xT6NS6R9/Color-4x.png\" alt=\"Logo\" />"
                 + "            </div>"
                 + "            <div class=\"header-text\">"
                 + "                <h1>CONSTANCIA DE PAGO WALLET</h1>"
