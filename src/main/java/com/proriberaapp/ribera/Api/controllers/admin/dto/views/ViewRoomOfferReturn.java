@@ -146,6 +146,12 @@ public class ViewRoomOfferReturn {
     Integer pointinresort; // Pts sem: 200 pts Pts fds: 300
     String pointinresortstring; // Pts sem: 200 pts Pts fds: 300
     String totalPerson;
+    BigDecimal amountFeeding;
+    Integer infantsReserve;
+    Integer kidsReserve;
+    Integer adultsReserve;
+    Integer adultsMayorReserve;
+    Integer adultsExtraReserve;
 
     public static ViewRoomOfferReturn convertTo(Readable row) {
         return ViewRoomOfferReturn.builder()
