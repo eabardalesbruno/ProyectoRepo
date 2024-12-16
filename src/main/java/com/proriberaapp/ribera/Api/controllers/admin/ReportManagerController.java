@@ -1,12 +1,8 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
-import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalCancellDTO;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalSalesDTO;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalUsersDTO;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.ExcelEntity;
-import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.admin.ReportManagerService;
 import com.proriberaapp.ribera.services.client.BookingService;
 
@@ -47,9 +43,14 @@ public class ReportManagerController {
         return reportManagerService.generateBookingReport(stateId, month);
     }
 
+    @GetMapping("/bookings/resumeByStateId")
+    public Flux<BookingResumenPaymentDTO> getResumePaymentByStateId(@RequestParam Integer stateId, Integer month) {
+        return reportManagerService.findBookingsWithResumeByStateId(stateId, month);
+    }
+
     @GetMapping("/bookings/stateIdAndDate")
-    public Flux<BookingWithPaymentDTO> getBookingsByStateIdAndDate(@RequestParam Integer stateId, LocalDateTime date) {
-        return reportManagerService.findBookingsWithPaymentByStateIdAndDate(stateId, date);
+    public Flux<BookingWithPaymentDTO> getBookingsByStateIdAndDate(@RequestParam Integer stateId, @RequestParam(required = false) LocalDateTime dateini, @RequestParam(required = false) LocalDateTime datefin) {
+        return reportManagerService.findBookingsWithPaymentByStateIdAndDate(stateId, dateini, datefin);
     }
 
     @GetMapping("/count-users")
@@ -68,8 +69,25 @@ public class ReportManagerController {
     }
 
     @GetMapping("/total-sales-cancell")
-    public Mono<TotalCancellDTO> TotalCancellSales(@RequestParam Integer month) {
+    public Mono<TotalCalculationMonthsDTO> TotalCancellSales(@RequestParam Integer month) {
         return reportManagerService.TotalCancellSales(month);
+    }
+
+    @GetMapping("/total-before-year")
+    public Mono<BigDecimal> getTotalBeforeYear() {
+        return reportManagerService.getTotalBeforeYear();
+    }
+
+    @GetMapping("/total-active-clients")
+    public Mono<Long> totalActiveClients(
+            @RequestParam(required = false) Integer stateId, @RequestParam Integer month) {
+        return reportManagerService.getTotalActiveClients(stateId, month);
+    }
+
+    @GetMapping("/total-active-clients-months")
+    public Mono<TotalCalculationMonthsDTO> totalActiveClientsMonths(
+            @RequestParam(required = false) Integer stateId, @RequestParam Integer month) {
+        return reportManagerService.getTotalActiveClientsMonths(stateId, month);
     }
 
 }

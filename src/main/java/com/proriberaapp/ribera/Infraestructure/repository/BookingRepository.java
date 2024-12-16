@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingResumenPaymentDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
@@ -299,10 +300,9 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                                   JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
                                   join userclient u on i.iduser = u.userclientid
                                                           WHERE b.bookingstateid = :stateId
-                                                          AND (:date IS NULL OR DATE(i.createdat) = :date)
-
+                                                          AND ((:dateini IS NULL AND :datefin IS NULL) OR (DATE(i.createdat) >= :dateini AND DATE(i.createdat) <= :datefin))
                                                                                                     """)
-  Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime date);
+  Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime dateini, LocalDateTime datefin);
         @Query("""
         SELECT *
         FROM booking
@@ -377,5 +377,109 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
           								  	ELSE CAST((:month-1) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE) END)
   """)
   Mono<Long> getTotalCancellLastSales(Integer month);
+
+  @Query("""
+          SELECT
+         	t.invoice_createdat,
+         	t.roomtypename,
+         	sum(t.totalcost) totalcost
+             FROM (SELECT
+                     b.bookingid,
+                     b.roomofferid,
+                     b.bookingstateid,
+                     b.userclientid,
+                     b.userpromotorid,
+                     b.costfinal,
+                     TO_CHAR(b.createdat, 'MM/YYYY') as booking_createdat,
+                     p.totalcost,
+                     p.paymentbookid,
+                     p2.paymentmethodid,
+                     p2.description,
+                     p3.paymentsubtypeid,
+                     p3.paymentsubtypedesc,
+                     rt.roomtypename AS roomtypename,
+                     i.keysupplier,
+                     i.id AS invoice_id,
+                     i.serie,
+                     i.correlative,
+                     i.subtotal,
+                     i.identifierclient,
+                     TO_CHAR(i.createdat, 'MM/YYYY') AS invoice_createdat,
+                     i.idtype,
+                     i.idcurrency,
+                     i.tc,
+                     i.totaligv,
+                     i.totalpayment,
+                     i.iduser,
+                     i.nameclient,
+                     u.username
+                  FROM booking b
+                     JOIN paymentbook p ON b.bookingid = p.bookingid AND p.pendingpay = 1
+                     JOIN invoice i ON p.paymentbookid = i.idpaymentbook
+                     JOIN paymentmethod p2  on p.paymentmethodid = p2.paymentmethodid
+                     JOIN paymentsubtype p3 on p.paymentsubtypeid = p3.paymentsubtypeid
+                     JOIN roomoffer ro ON b.roomofferid = ro.roomofferid
+                     JOIN room r ON ro.roomid = r.roomid
+                     JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
+                     JOIN userclient u on i.iduser = u.userclientid
+                     WHERE b.bookingstateid = :stateId
+                     AND (:month = 0 OR TO_CHAR(i.createdat, 'MM/YYYY') = CAST((:month) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE))
+         			) t
+         		GROUP BY t.invoice_createdat, t.roomtypename
+         		ORDER BY t.invoice_createdat
+          """)
+  Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month);
+
+  @Query("""
+    SELECT
+    	COALESCE(sum(p.totalcost), 0) totalcost
+    FROM booking b
+    JOIN paymentbook p ON b.bookingid = p.bookingid AND p.pendingpay = 1
+    JOIN invoice i ON p.paymentbookid = i.idpaymentbook
+    JOIN paymentmethod p2  on p.paymentmethodid = p2.paymentmethodid
+    JOIN paymentsubtype p3 on p.paymentsubtypeid = p3.paymentsubtypeid
+    JOIN roomoffer ro ON b.roomofferid = ro.roomofferid
+    JOIN room r ON ro.roomid = r.roomid
+    JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
+    JOIN userclient u on i.iduser = u.userclientid
+    WHERE b.bookingstateid = 2
+    AND EXTRACT(YEAR FROM i.createdat) = EXTRACT(YEAR FROM CURRENT_DATE - INTERVAL '1 years')
+  """)
+  Mono<BigDecimal> getTotalBeforeYear();
+
+  @Query("""
+    SELECT
+      count(*) countClient
+    FROM booking b
+    JOIN paymentbook p ON b.bookingid = p.bookingid AND p.pendingpay = 1
+    JOIN invoice i ON p.paymentbookid = i.idpaymentbook
+    JOIN paymentmethod p2  on p.paymentmethodid = p2.paymentmethodid
+    JOIN paymentsubtype p3 on p.paymentsubtypeid = p3.paymentsubtypeid
+    JOIN roomoffer ro ON b.roomofferid = ro.roomofferid
+    JOIN room r ON ro.roomid = r.roomid
+    JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
+    JOIN userclient u on i.iduser = u.userclientid
+    WHERE (:stateId IS NULL OR b.bookingstateid = :stateId)
+    AND (:month = 0 OR TO_CHAR(b.createdat, 'MM/YYYY') = CAST((:month) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE))
+  """)
+  Mono<Long> getTotalActiveClients(Integer stateId, Integer month);
+
+  @Query("""
+    SELECT
+      count(*) countClient
+    FROM booking b
+    JOIN paymentbook p ON b.bookingid = p.bookingid AND p.pendingpay = 1
+    JOIN invoice i ON p.paymentbookid = i.idpaymentbook
+    JOIN paymentmethod p2  on p.paymentmethodid = p2.paymentmethodid
+    JOIN paymentsubtype p3 on p.paymentsubtypeid = p3.paymentsubtypeid
+    JOIN roomoffer ro ON b.roomofferid = ro.roomofferid
+    JOIN room r ON ro.roomid = r.roomid
+    JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
+    JOIN userclient u on i.iduser = u.userclientid
+    WHERE (:stateId IS NULL OR b.bookingstateid = :stateId)
+    AND (TO_CHAR(b.createdat, 'MM/YYYY') = CASE :month WHEN 1 THEN TO_CHAR(CURRENT_DATE + interval '-1 month', 'MM/YYYY')
+                                          ELSE CAST((:month-1) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE) END)
+  """)
+  Mono<Long> getTotalActiveClientsMonths(Integer stateId, Integer month);
 
 }

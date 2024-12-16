@@ -30,16 +30,12 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Service
@@ -373,7 +369,7 @@ public class BookingServiceImpl implements BookingService {
      * @Override
      * public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest
      * bookingSaveRequest) {
-     * 
+     *
      * if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
      * return Mono.error(new CustomException(HttpStatus.
      * BAD_REQUEST,"La fecha de inicio no puede ser anterior al día actual"));
@@ -386,17 +382,17 @@ public class BookingServiceImpl implements BookingService {
      * return Mono.error(new CustomException(HttpStatus.BAD_REQUEST,
      * "Debe seleccionar al menos un huésped"));
      * }
-     * 
+     *
      * Integer numberOfDays =
      * calculateDaysBetween(bookingSaveRequest.getDayBookingInit(),
      * bookingSaveRequest.getDayBookingEnd());
-     * 
+     *
      * Mono<RoomOfferEntity> roomOfferEntityMono =
      * roomOfferRespository.findById(bookingSaveRequest.getRoomOfferId());
-     * 
+     *
      * BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId,
      * bookingSaveRequest, numberOfDays);
-     * 
+     *
      * return bookingRepository.findExistingBookings(
      * bookingEntity.getRoomOfferId(),
      * bookingEntity.getDayBookingInit(),
@@ -873,7 +869,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month) {
         return bookingRepository.findBookingsWithPaymentByStateId(stateId, month)
-                .map(BookingWithPaymentDTO::getTotalPayment)
+                .map(BookingWithPaymentDTO::getTotalCost)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
@@ -890,13 +886,13 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime date) {
-        return bookingRepository.findBookingsWithPaymentByStateIdAndDate(stateId, date);
+    public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime dateini, LocalDateTime datefin) {
+        return bookingRepository.findBookingsWithPaymentByStateIdAndDate(stateId, dateini, datefin);
     }
 
     @Override
-    public Mono<TotalCancellDTO> totalPaymentMonthSum(Integer month) {
-        TotalCancellDTO resp = new TotalCancellDTO();
+    public Mono<TotalCalculationMonthsDTO> totalPaymentMonthSum(Integer month) {
+        TotalCalculationMonthsDTO resp = new TotalCalculationMonthsDTO();
         return bookingRepository.getTotalCancellSales(month).flatMap(totalMonth -> {
             return bookingRepository.getTotalCancellLastSales(month).flatMap(totalLastMonth -> {
                 resp.setTotalMonth(totalMonth);
@@ -904,6 +900,32 @@ public class BookingServiceImpl implements BookingService {
                 return Mono.just(resp);
             });
         });
+    }
+
+    @Override
+    public Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month) {
+        return bookingRepository.findBookingsWithResumeByStateId(stateId, month);
+    }
+
+    @Override
+    public Mono<BigDecimal> getTotalBeforeYear() {
+        return bookingRepository.getTotalBeforeYear();
+    }
+
+    @Override
+    public Mono<Long> getTotalActiveClients(Integer stateId, Integer month) {
+        return bookingRepository.getTotalActiveClients(stateId, month);
+    }
+
+    @Override
+    public Mono<TotalCalculationMonthsDTO> getTotalActiveClientsMonths(Integer stateId, Integer month) {
+        TotalCalculationMonthsDTO resp = new TotalCalculationMonthsDTO();
+        return bookingRepository.getTotalActiveClients(stateId, month).flatMap(totalMonth ->
+                bookingRepository.getTotalActiveClientsMonths(stateId, month).flatMap(lastTotalMonth -> {
+                resp.setTotalMonth(totalMonth);
+                resp.setTotalLastMonth(lastTotalMonth);
+                return Mono.just(resp);
+        }));
     }
 
 }
