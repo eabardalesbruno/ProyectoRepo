@@ -75,10 +75,13 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                         LocalDateTime offerTimeEnd,
                         Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
                         Integer adultExtraCapacity, Integer infantCapacity, List<Integer> feedingsSelected) {
-                Integer adultCapacityDefault = adultCapacity == 0 ? 1 : adultCapacity;
-                Integer kidCapacityDefault = kidCapacity == 0 ? 1 : kidCapacity;
+                int totalAdultRequest = adultCapacity + adultMayorCapacity + adultExtraCapacity;
+                int totalKidRequest = kidCapacity + infantCapacity;
+                Integer adultCapacityDefault = totalAdultRequest == 0 ? 1 : adultCapacity;
+                Integer kidCapacityDefault = totalKidRequest == 0 ? (adultCapacityDefault > 1) ? 0 : 1 : kidCapacity;
                 Integer totalKidCapacity = kidCapacityDefault + infantCapacity;
                 Integer totalAdultCapacity = adultCapacityDefault + adultMayorCapacity + adultExtraCapacity;
+
                 Integer totalCapacity = totalKidCapacity + totalAdultCapacity;
                 Flux<FeedingEntity> feedings = this.feedingRepository.findAllById(feedingsSelected);
                 return roomOfferRepository.findFilteredV2(roomTypeId, offerTimeInit, offerTimeEnd,
