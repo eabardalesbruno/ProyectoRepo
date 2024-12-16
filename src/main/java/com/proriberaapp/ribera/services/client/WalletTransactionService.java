@@ -23,4 +23,5 @@ public interface WalletTransactionService {
     Mono<WalletEntity> findWalletByEmail(String email);
     Mono<BigDecimal> getTotalAmountForPromoter(Integer userPromoterId);
     Mono<Map<String, Object>> getBookingDetailsForPromoter(Integer walletId);
+    Map<String, Object> getExchangeRate(String date);
 }
