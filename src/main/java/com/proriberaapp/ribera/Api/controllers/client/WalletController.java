@@ -129,4 +129,17 @@ public class WalletController {
                     return Mono.just(ResponseEntity.badRequest().body(errorResponse));
                 });
     }
+
+    @GetMapping("/exchange-rate/{date}")
+    public ResponseEntity<?> getExchangeRate(@PathVariable String date) {
+        try {
+            Map<String, Object> exchangeRate = walletTransactionService.getExchangeRate(date);
+            return ResponseEntity.ok(exchangeRate);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
 }
