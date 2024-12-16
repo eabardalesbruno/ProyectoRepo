@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.utils;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Random;
 
@@ -16,7 +17,18 @@ public class GeneralMethods {
 
     public static boolean esNombreDeMes(String nombre) {
         return List.of("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio",
-                        "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
+                "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
                 .contains(nombre);
+    }
+
+    public static BigDecimal calculateCostTotal(float adultCost, float adultExtraCost, float adultMayorCost,
+            float kidCost, float infantCost, int numberAdult,
+            int numberAdultExtra,
+            int numberAdultMayor,
+            int numberBaby,
+            int numberChild, int numberDays) {
+        return new BigDecimal(adultCost * numberAdult + adultExtraCost * numberAdultExtra
+                + adultMayorCost * numberAdultMayor + kidCost * numberChild + infantCost * numberBaby)
+                .multiply(new BigDecimal(numberDays));
     }
 }

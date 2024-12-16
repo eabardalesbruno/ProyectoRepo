@@ -8,14 +8,22 @@ import com.proriberaapp.ribera.services.BaseService;
 import reactor.core.publisher.Flux;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface RoomOfferService extends BaseService<RoomOfferEntity, RoomOfferEntity> {
 
-    Flux<ViewRoomOfferReturn> viewRoomOfferReturn(SearchFiltersRoomOffer filters);
+        Flux<ViewRoomOfferReturn> viewRoomOfferReturn(SearchFiltersRoomOffer filters);
 
-    Flux<RoomOfferEntity> findByFilters(SearchFiltersRoomOfferFiltro filters);
+        Flux<RoomOfferEntity> findByFilters(SearchFiltersRoomOfferFiltro filters);
 
-    Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit, LocalDateTime offerTimeEnd,
-                                           Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity, Integer adultExtra);
+        Flux<ViewRoomOfferReturn> findFilteredV2(Integer roomTypeId, LocalDateTime offerTimeInit,
+                        LocalDateTime offerTimeEnd,
+                        Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
+                        Integer adultExtraCapacity, Integer infantCapacity, List<Integer> feedingsSelected);
+
+        Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit,
+                        LocalDateTime offerTimeEnd,
+                        Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
+                        Integer adultExtra);
 
 }
