@@ -2,6 +2,8 @@ package com.proriberaapp.ribera.Api.controllers.admin.dto.views;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BedroomReturn;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ListAmenities;
+import com.proriberaapp.ribera.Domain.entities.FeedingEntity;
+
 import io.r2dbc.spi.Readable;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,78 +18,81 @@ import java.util.List;
 @Builder
 public class ViewRoomOfferReturn {
     /*
-    Integer roomId;
-    Integer roomOfferId;
-    Integer roomTypeId;
-
-    Integer item;
-
-    //TODO: propondo cambiar de funcion, donde ahora se marcara la fecha de inicio y fin
-    //LocalDateTime offerTimeInit, // 11/01/2024
-    //LocalDateTime offerTimeEnd, // 11/01/2024
-    //String offerTimeString, // 11/01/2024 11:46
-
-    String numberRoom;
-    String typeRoom;
-
-    String image;
-    String capacity;
-
-    String description;
-    Integer bedrooms;
-    String squareMeters;
-    Boolean oceanViewBalcony;
-    Boolean balconyOverLookingPool;
-
-    List<BedroomReturn> listBedroomReturn;
-    List<ListAmenities> listAmenities;
-
-    BigDecimal costRegular; //Cost. Adulto: S/.60.00 TODO: no tenemos tabla de costos
-    String costRegularString; //Cost. Adulto: S/.60.00 TODO: no tenemos tabla de costos
-    BigDecimal costTotal;
-    String costTotalString;
-    BigDecimal costExchange; //Cost. Adult. canje: S/.50.00
-    String costExchangeString; //Cost. Adult. canje: S/.50.00
-    BigDecimal costTotalExchange;
-    String costTotalExchangeString;
-    Integer pointRibera; //Pts sem: 200 pts Pts fds: 300
-    String pointRiberaString; //Pts sem: 200 pts Pts fds: 300
-    Integer pointInResort; //Pts sem: 200 pts Pts fds: 300
-    String pointInResortString; //Pts sem: 200 pts Pts fds: 300
-
-
-public static ViewRoomOfferReturn convertTo(Readable row) {
-    return ViewRoomOfferReturn.builder()
-            .roomId(row.get("roomid", Integer.class))
-            .roomOfferId(row.get("roomofferid", Integer.class))
-            .roomTypeId(row.get("roomtypeid", Integer.class))
-            .item(row.get("item", Integer.class))
-            //.offerTimeInit(row.get("offertimeinit", LocalDateTime.class))
-            //.offerTimeEnd(row.get("offertimeend", LocalDateTime.class))
-            //.offerTimeString(row.get("offertimestring", String.class))
-            .numberRoom(row.get("numberroom", String.class))
-            .typeRoom(row.get("typeroom", String.class))
-            .image(row.get("image", String.class))
-            .capacity(row.get("capacity", String.class))
-            .description(row.get("description", String.class))
-            .bedrooms(row.get("bedrooms", Integer.class))
-            .squareMeters(row.get("squaremeters", String.class))
-            .oceanViewBalcony(row.get("oceanviewbalcony", Boolean.class))
-            .balconyOverLookingPool(row.get("balconyoverlookingpool", Boolean.class))
-            .costRegular(row.get("costregular", BigDecimal.class))
-            .costRegularString(row.get("costregularstring", String.class))
-            .costTotal(row.get("costtotal", BigDecimal.class))
-            .costTotalString(row.get("costtotalstring", String.class))
-            .costExchange(row.get("costexchange", BigDecimal.class))
-            .costExchangeString(row.get("costexchangestring", String.class))
-            .costTotalExchange(row.get("costtotalexchange", BigDecimal.class))
-            .costTotalExchangeString(row.get("costtotalexchangestring", String.class))
-            .pointRibera(row.get("pointribera", Integer.class))
-            .pointRiberaString(row.get("pointriberastring", String.class))
-            .pointInResort(row.get("pointinresort", Integer.class))
-            .pointInResortString(row.get("pointinresortstring", String.class))
-            .build();
-}
+     * Integer roomId;
+     * Integer roomOfferId;
+     * Integer roomTypeId;
+     * 
+     * Integer item;
+     * 
+     * //TODO: propondo cambiar de funcion, donde ahora se marcara la fecha de
+     * inicio y fin
+     * //LocalDateTime offerTimeInit, // 11/01/2024
+     * //LocalDateTime offerTimeEnd, // 11/01/2024
+     * //String offerTimeString, // 11/01/2024 11:46
+     * 
+     * String numberRoom;
+     * String typeRoom;
+     * 
+     * String image;
+     * String capacity;
+     * 
+     * String description;
+     * Integer bedrooms;
+     * String squareMeters;
+     * Boolean oceanViewBalcony;
+     * Boolean balconyOverLookingPool;
+     * 
+     * List<BedroomReturn> listBedroomReturn;
+     * List<ListAmenities> listAmenities;
+     * 
+     * BigDecimal costRegular; //Cost. Adulto: S/.60.00 TODO: no tenemos tabla de
+     * costos
+     * String costRegularString; //Cost. Adulto: S/.60.00 TODO: no tenemos tabla de
+     * costos
+     * BigDecimal costTotal;
+     * String costTotalString;
+     * BigDecimal costExchange; //Cost. Adult. canje: S/.50.00
+     * String costExchangeString; //Cost. Adult. canje: S/.50.00
+     * BigDecimal costTotalExchange;
+     * String costTotalExchangeString;
+     * Integer pointRibera; //Pts sem: 200 pts Pts fds: 300
+     * String pointRiberaString; //Pts sem: 200 pts Pts fds: 300
+     * Integer pointInResort; //Pts sem: 200 pts Pts fds: 300
+     * String pointInResortString; //Pts sem: 200 pts Pts fds: 300
+     * 
+     * 
+     * public static ViewRoomOfferReturn convertTo(Readable row) {
+     * return ViewRoomOfferReturn.builder()
+     * .roomId(row.get("roomid", Integer.class))
+     * .roomOfferId(row.get("roomofferid", Integer.class))
+     * .roomTypeId(row.get("roomtypeid", Integer.class))
+     * .item(row.get("item", Integer.class))
+     * //.offerTimeInit(row.get("offertimeinit", LocalDateTime.class))
+     * //.offerTimeEnd(row.get("offertimeend", LocalDateTime.class))
+     * //.offerTimeString(row.get("offertimestring", String.class))
+     * .numberRoom(row.get("numberroom", String.class))
+     * .typeRoom(row.get("typeroom", String.class))
+     * .image(row.get("image", String.class))
+     * .capacity(row.get("capacity", String.class))
+     * .description(row.get("description", String.class))
+     * .bedrooms(row.get("bedrooms", Integer.class))
+     * .squareMeters(row.get("squaremeters", String.class))
+     * .oceanViewBalcony(row.get("oceanviewbalcony", Boolean.class))
+     * .balconyOverLookingPool(row.get("balconyoverlookingpool", Boolean.class))
+     * .costRegular(row.get("costregular", BigDecimal.class))
+     * .costRegularString(row.get("costregularstring", String.class))
+     * .costTotal(row.get("costtotal", BigDecimal.class))
+     * .costTotalString(row.get("costtotalstring", String.class))
+     * .costExchange(row.get("costexchange", BigDecimal.class))
+     * .costExchangeString(row.get("costexchangestring", String.class))
+     * .costTotalExchange(row.get("costtotalexchange", BigDecimal.class))
+     * .costTotalExchangeString(row.get("costtotalexchangestring", String.class))
+     * .pointRibera(row.get("pointribera", Integer.class))
+     * .pointRiberaString(row.get("pointriberastring", String.class))
+     * .pointInResort(row.get("pointinresort", Integer.class))
+     * .pointInResortString(row.get("pointinresortstring", String.class))
+     * .build();
+     * }
      */
     Integer roomId;
     Integer roomOfferId;
@@ -126,6 +131,7 @@ public static ViewRoomOfferReturn convertTo(Readable row) {
 
     List<BedroomReturn> listBedroomReturn;
     List<ListAmenities> listAmenities;
+    List<FeedingEntity> listFeeding;
 
     BigDecimal costregular; // Cost. Adulto: S/.60.00 TODO: no tenemos tabla de costos
     String costregularstring; // Cost. Adulto: S/.60.00 TODO: no tenemos tabla de costos
@@ -139,6 +145,14 @@ public static ViewRoomOfferReturn convertTo(Readable row) {
     String pointriberastring; // Pts sem: 200 pts Pts fds: 300
     Integer pointinresort; // Pts sem: 200 pts Pts fds: 300
     String pointinresortstring; // Pts sem: 200 pts Pts fds: 300
+    String totalPerson;
+    BigDecimal amountFeeding;
+    Integer infantsReserve;
+    Integer kidsReserve;
+    Integer adultsReserve;
+    Integer adultsMayorReserve;
+    Integer adultsExtraReserve;
+    Integer totalCapacity;
 
     public static ViewRoomOfferReturn convertTo(Readable row) {
         return ViewRoomOfferReturn.builder()
@@ -183,4 +197,3 @@ public static ViewRoomOfferReturn convertTo(Readable row) {
                 .build();
     }
 }
-
