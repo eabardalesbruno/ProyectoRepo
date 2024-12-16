@@ -16,6 +16,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/wallet")
@@ -44,19 +48,19 @@ public class WalletController {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             return Mono.just(ResponseEntity.badRequest().body(null));
         }
-
         return walletTransactionService.makeTransfer(walletIdOrigin, walletIdDestiny, emailDestiny, cardNumber, amount, motiveDescription)
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().build()));
     }
 
-
     @PostMapping("/payment")
-    public Mono<ResponseEntity<WalletTransactionEntity>> payment(Integer walletId, Integer transactioncatid, Integer bookingId) {
-        return walletTransactionService.makePayment(walletId, transactioncatid, bookingId)
-                .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
+    public Mono<ResponseEntity<Map<String, String>>> makePayment(@RequestParam Integer walletId, @RequestParam List<Integer> bookingIds) {
+        return walletTransactionService.makePayment(walletId, bookingIds)
+                .map(response -> ResponseEntity.ok(Collections.singletonMap("message", "Pago procesado con éxito para todas las reservas.")))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Collections.singletonMap("error", "Error al realizar el pago: " + e.getMessage()))));
     }
+
 
     @PostMapping("/withdraw")
     public Mono<ResponseEntity<WalletTransactionEntity>> withdrawal(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
@@ -108,4 +112,21 @@ public class WalletController {
         return walletTransactionRepository.findTransactionDetailsByWalletId(walletId);
     }
 
+    @GetMapping("/total-debt")
+    public Mono<ResponseEntity<BigDecimal>> getTotalDebt(@RequestParam Integer walletId) {
+        return walletTransactionService.getTotalAmountForPromoter(walletId)
+                .map(total -> ResponseEntity.ok(total))
+                .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(null)));
+    }
+
+    @GetMapping("/details")
+    public Mono<ResponseEntity<Map<String, Object>>> getBookingDetailsForPromoter(@RequestParam Integer walletId){
+        return walletTransactionService.getBookingDetailsForPromoter(walletId)
+                .map(response -> ResponseEntity.ok().body(response))
+                .onErrorResume(error -> {
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("error", error.getMessage());
+                    return Mono.just(ResponseEntity.badRequest().body(errorResponse));
+                });
+    }
 }

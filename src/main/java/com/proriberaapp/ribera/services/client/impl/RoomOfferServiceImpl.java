@@ -76,9 +76,10 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                         Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
                         Integer adultExtraCapacity, Integer infantCapacity, List<Integer> feedingsSelected) {
                 Integer adultCapacityDefault = adultCapacity == 0 ? 1 : adultCapacity;
-                Integer kidCapacityDefault = kidCapacity == 0 ? 1 : adultCapacity;
+                Integer kidCapacityDefault = kidCapacity == 0 ? 1 : kidCapacity;
                 Integer totalKidCapacity = kidCapacityDefault + infantCapacity;
                 Integer totalAdultCapacity = adultCapacityDefault + adultMayorCapacity + adultExtraCapacity;
+                Integer totalCapacity = totalKidCapacity + totalAdultCapacity;
                 Flux<FeedingEntity> feedings = this.feedingRepository.findAllById(feedingsSelected);
                 return roomOfferRepository.findFilteredV2(roomTypeId, offerTimeInit, offerTimeEnd,
                                 totalKidCapacity,
@@ -133,7 +134,9 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                                         BigDecimal.ZERO,
                                                                         (subtotal, element) -> subtotal
                                                                                         .add(element.getCost()),
-                                                                        BigDecimal::add);
+                                                                        BigDecimal::add).multiply(
+                                                                                        BigDecimal
+                                                                                                        .valueOf(totalCapacity));
                                                         roomOffer.setKidsReserve(kidCapacityDefault);
                                                         roomOffer.setAdultsReserve(adultCapacityDefault);
                                                         roomOffer.setAdultsMayorReserve(adultMayorCapacity);
