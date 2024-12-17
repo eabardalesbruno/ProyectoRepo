@@ -68,7 +68,7 @@ public class EmailServiceImpl implements EmailService {
         return Mono.defer(() -> {
             try {
                 MimeMessage message = mailSender.createMimeMessage();
-                MimeMessageHelper helper = new MimeMessageHelper(message, true);
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
                 helper.setFrom("notificacionesinclub@inclub.site");
                 helper.setTo(toEmail);
                 helper.setSubject(subject);

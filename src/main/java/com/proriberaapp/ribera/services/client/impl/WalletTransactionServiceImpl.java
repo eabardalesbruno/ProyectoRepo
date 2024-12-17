@@ -19,8 +19,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +49,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     private String urlApiTipoCambio;
     @Value("${url.api.tipo-cambio.token}")
     private String tokenApiTipoCambio;
+    private RefusePaymentServiceImpl refusePaymentService;
 
     @Override
     public Mono<WalletTransactionEntity> makeTransfer(Integer walletIdOrigin, Integer walletIdDestiny, String emailDestiny, String cardNumber, BigDecimal amount, String motiveDescription) {
@@ -127,13 +130,10 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
         return Mono.error(new Exception("Debe proporcionar walletIdDestiny, emailDestiny o cardNumber."));
     }
 
-
-
     private Mono<WalletEntity> findWalletByCardNumber(String cardNumber) {
         return walletRepository.findByCardNumber(cardNumber)
                 .switchIfEmpty(Mono.error(new Exception("No se encontró ninguna wallet asociada al número de tarjeta.")));
     }
-
 
     private Mono<WalletEntity> findWalletByUserOrPromoter(Mono<UserClientEntity> userMono, Mono<UserPromoterEntity> promoterMono) {
         return userMono
@@ -164,7 +164,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
         throw new IllegalArgumentException("Debe proporcionar email para buscar la wallet de destino.");
     }
 
-    //PARTE DE PAGO CON LA WALLET
+    //PAGO CON LA WALLET
     @Override
     public Mono<String> makePayment(Integer walletId, List<Integer> bookingIds) {
         return walletRepository.findById(walletId)
@@ -172,7 +172,6 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                     if (bookingIds.isEmpty()) {
                         return Mono.error(new RuntimeException("No se especificaron reservas para procesar."));
                     }
-
                     return Flux.fromIterable(bookingIds)
                             .flatMap(bookingRepository::findById)
                             .collectList()
@@ -180,11 +179,9 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                                 BigDecimal totalAmount = bookings.stream()
                                         .map(BookingEntity::getCostFinal)
                                         .reduce(BigDecimal.ZERO, BigDecimal::add);
-
                                 if (walletEntity.getBalance().compareTo(totalAmount) < 0) {
                                     return Mono.error(new RuntimeException("Saldo insuficiente."));
                                 }
-
                                 walletEntity.setBalance(walletEntity.getBalance().subtract(totalAmount));
                                 return walletRepository.save(walletEntity)
                                         .flatMap(savedWallet -> processAndRegisterTransactions(bookings, walletEntity));
@@ -200,7 +197,6 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
                             return bookingRepository.save(booking)
                                     .flatMap(savedBooking -> {
-                                        // Crear la transacción en wallet
                                         WalletTransactionEntity transaction = WalletTransactionEntity.builder()
                                                 .walletId(walletEntity.getWalletId())
                                                 .currencyTypeId(walletEntity.getCurrencyTypeId())
@@ -228,23 +224,42 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                         .flatMap(roomOffer -> roomRepository.findById(roomOffer.getRoomId())
                                 .flatMap(room -> currencyTypeRepository.findById(walletEntity.getCurrencyTypeId())
                                         .flatMap(currency -> {
+                                            String clientName = user.getFirstName() + " " + user.getLastName();
+                                            String roomName = room.getRoomName();
+                                            String imgSrc = room.getImage();
+                                            String titular = clientName;
+                                            String code = booking.getBookingId().toString();
+                                            LocalDate dateCheckIn = booking.getDayBookingInit().toLocalDateTime().toLocalDate();
+                                            LocalDate dateCheckOut = booking.getDayBookingEnd().toLocalDateTime().toLocalDate();
+                                            String dateCheckInStr = dateCheckIn.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                                            String dateCheckOutStr = dateCheckOut.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                                            long days = ChronoUnit.DAYS.between(dateCheckIn, dateCheckOut);
+                                            int cantidadPersonas = booking.getNumberAdults() + booking.getNumberAdultsExtra() +
+                                                    booking.getNumberAdultsMayor() + booking.getNumberChildren() + booking.getNumberBabies();
+                                            String hourCheckIn = String.valueOf(booking.getCheckout());
+                                            String location = "Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico Etapa III, Cercado de Lima 15593";
+                                            String emailBody = generateSuccessEmailBody(
+                                                    clientName, roomName, imgSrc, titular, code,
+                                                    dateCheckInStr, dateCheckOutStr, hourCheckIn, String.valueOf(days),
+                                                    String.valueOf(cantidadPersonas), location
+                                            );
                                             String pdfFilePath = System.getProperty("user.dir") + "/payment_receipt_" +
                                                     transaction.getWalletId() + "_" + System.currentTimeMillis() + ".pdf";
 
                                             try {
                                                 File pdfFile = generatePdfFromHtml(
                                                         transaction.getOperationCode(),
-                                                        user.getFirstName() + " " + user.getLastName(),
+                                                        clientName,
                                                         user.getDocumentNumber(),
                                                         currency.getCurrencyTypeDescription() + " Wallet",
                                                         LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")),
                                                         booking.getBookingId().toString(),
-                                                        room.getRoomName(),
+                                                        roomName,
                                                         booking.getCostFinal().setScale(2, RoundingMode.HALF_UP).toString(),
                                                         pdfFilePath
                                                 );
 
-                                                return sendSuccessEmail(user.getEmail(), pdfFilePath);
+                                                return sendSuccessEmail(user.getEmail(), pdfFilePath, emailBody);
                                             } catch (IOException e) {
                                                 return Mono.error(new RuntimeException("Error al generar el PDF", e));
                                             }
@@ -300,134 +315,283 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
         }
     }
 
-    private Mono<Void> sendSuccessEmail(String email, String pdfFilePath) {
+    private Mono<Void> sendSuccessEmail(String email, String pdfFilePath, String emailBody) {
         File pdfFile = new File(pdfFilePath);
         if (!pdfFile.exists()) {
-            return Mono.error(new RuntimeException("El archivo PDF no existe en la ruta especificada: " + pdfFile.getAbsolutePath()));
+            return Mono.error(new RuntimeException("El archivo PDF no existe: " + pdfFilePath));
         }
-        String emailBody = generateSuccessEmailBody();
 
-        return emailService.sendEmailWithAttachment(email, emailBody, "Constancia de Pago", pdfFilePath)
+        return emailService.sendEmailWithAttachment(email, emailBody, "Confirmación de Pago", pdfFilePath)
                 .doOnSuccess(v -> {
                     System.out.println("Correo enviado correctamente a: " + email);
-
                     if (pdfFile.delete()) {
                         System.out.println("Archivo PDF eliminado correctamente: " + pdfFilePath);
-                    } else {
-                        System.err.println("Error al eliminar el archivo PDF: " + pdfFilePath);
                     }
                 })
-                .doOnError(e -> {
-                    System.err.println("Error al enviar el correo a " + email + ": " + e.getMessage());
-                });
+                .doOnError(e -> System.err.println("Error al enviar el correo: " + e.getMessage()));
     }
 
-    private String generateSuccessEmailBody() {
-        String body = "<html>\n" +
-                "<head>\n" +
-                "    <title>Bienvenido</title>\n" +
-                "    <style>\n" +
-                "        body {\n" +
-                "            font-family: Arial, sans-serif;\n" +
-                "            margin: 0;\n" +
-                "            padding: 0;\n" +
-                "            color: black;\n" +
-                "            background-color: white; /* Color de fondo */\n" +
-                "        }\n" +
-                "        .header {\n" +
-                "            width: 100%;\n" +
-                "            position: relative;\n" +
-                "            background-color: white; /* Color de fondo del encabezado */\n" +
-                "            padding: 20px 0; /* Espaciado superior e inferior para el encabezado */\n" +
-                "        }\n" +
-                "        .logos-right {\n" +
-                "            position: absolute;\n" +
-                "            top: 10px;\n" +
-                "            right: 10px;\n" +
-                "            display: flex;\n" +
-                "            gap: 5px;\n" +
-                "        }\n" +
-                "        .logos-right img {\n" +
-                "            width: 30px;\n" +
-                "            height: 30px;\n" +
-                "        }\n" +
-                "        .logo-left {\n" +
-                "            width: 50px;\n" +
-                "            position: absolute;\n" +
-                "            top: 10px;\n" +
-                "            left: 10px;\n" +
-                "        }\n" +
-                "        .banner {\n" +
-                "            width: 540px;\n" +
-                "            border-top-left-radius: 20px;\n" +
-                "            border-top-right-radius: 20px;\n" +
-                "            display: block;\n" +
-                "            margin: 0 auto;\n" +
-                "        }\n" +
-                "        .container {\n" +
-                "            width: 500px;\n" +
-                "            background-color: #f4f4f4; /* Fondo blanco del contenido */\n" +
-                "            margin: 0 auto;\n" +
-                "            padding: 20px;\n" +
-                "            border-bottom-left-radius: 10px;\n" +
-                "            border-bottom-right-radius: 10px;\n" +
-                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
-                "        }\n" +
-                "        .content {\n" +
-                "            text-align: center;\n" +
-                "            padding: 20px;\n" +
-                "        }\n" +
-                "        .content h1 {\n" +
-                "            margin-top: 20px;\n" +
-                "            font-weight: bold;\n" +
-                "            font-style: italic;\n" +
-                "        }\n" +
-                "        .content h3, .content p {\n" +
-                "            margin: 10px 0;\n" +
-                "        }\n" +
-                "        .footer {\n" +
-                "            width: 100%;\n" +
-                "            text-align: center;\n" +
-                "            margin: 20px 0;\n" +
-                "        }\n" +
-                "        .help-section {\n" +
-                "            width: 500px;\n" +
-                "            background-color: #f4f4f4; /* Fondo blanco del contenido */\n" +
-                "            margin: 20px auto;\n" +
-                "            padding: 20px;\n" +
-                "            border-radius: 10px;\n" +
-                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
-                "            text-align: center;\n" +
-                "        }\n" +
-                "    </style>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <div class=\"header\">\n" +
-                "    </div>\n" +
-                "\n" +
-                "    <!-- Imagen de banner -->\n" +
-                "    <img class=\"banner\" src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Bienvenido\">\n" +
-                "\n" +
-                "    <!-- Contenedor blanco con el contenido del mensaje -->\n" +
-                "    <div class=\"container\">\n" +
-                "        <div class=\"content\">\n" +
-                "            <h1 style='text-align: center;'>Pago exitoso</h1>\n" +
-                "            <p>Estimado cliente,</p>\n" +
-                "            <p>Su pago ha sido procesado con exito.</p>\n" +
-                "            <p>Gracias por su confianza.</p>\n" +
-                "        </div>\n" +
-                "    </div>\n" +
-                "\n" +
-                "    <!-- Sección de ayuda -->\n" +
-                "    <div class=\"help-section\">\n" +
-                "        <h3>Necesitas ayuda?</h3>\n" +
-                "        <p>Comunicate con nosotros a traves de los siguientes medios:</p>\n" +
-                "        <p>Correo: informesyreservas@cieneguilladelrio.com</p>\n" +
-                "    </div>\n" +
-                "</body>\n" +
-                "</html>";
+    private String generateSuccessEmailBody(String clientName, String roomName, String imgSrc, String titular,
+                                            String code, String dateCheckIn, String dateCheckOut,
+                                            String hourCheckIn, String days, String cantidadPersonas, String location) {
 
-        return body;
+        return "<!DOCTYPE html>"
+                + "<html lang=\"es\">"
+                + "<head>"
+                + "    <meta charset=\"UTF-8\">"
+                + "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
+                + "    <title>Document</title>"
+                + "    <style>"
+                + "        body {"
+                + "            width: 100%;"
+                + "            background: rgb(246, 247, 251);"
+                + "            padding-bottom: 40px;"
+                + "            padding-top: 40px;"
+                + "            font-family: Arial, sans-serif;"
+                + "            margin: 0;"
+                + "        }"
+                + "        .button {"
+                + "            width: 90%;"
+                + "            display: inline-block;"
+                + "            padding: 10px;"
+                + "            background-color: #025928;"
+                + "            color: white !important;"
+                + "            text-align: center;"
+                + "            text-decoration: none;"
+                + "            border-radius: 0px;"
+                + "        }"
+                + "        .card {"
+                + "            background-color: rgb(246, 247, 251);"
+                + "            padding: 24px;"
+                + "        }"
+                + "        .container {"
+                + "            width: 100%;"
+                + "            max-width: 900px;"
+                + "            margin: 0 auto;"
+                + "            background-color: white;"
+                + "            border-radius: 8px;"
+                + "            box-sizing: border-box;"
+                + "            font-family: 'Product Sans', sans-serif;"
+                + "        }"
+                + "        .header {"
+                + "            position: relative;"
+                + "        }"
+                + "        .header img.banner {"
+                + "            width: 100%;"
+                + "            border-top-left-radius: 8px;"
+                + "            border-top-right-radius: 8px;"
+                + "        }"
+                + "        .header img.logo {"
+                + "            width: 105px;"
+                + "            top: 25.5px;"
+                + "            right: 22px;"
+                + "            position: absolute;"
+                + "        }"
+                + "        .body {"
+                + "            padding: 40px;"
+                + "            box-sizing: border-box;"
+                + "            font-family: 'Product Sans', sans-serif;"
+                + "        }"
+                + "        .footer-message {"
+                + "            width: 100%;"
+                + "            max-width: 900px;"
+                + "            background-color: white;"
+                + "            padding: 24px 40px;"
+                + "            border-radius: 8px;"
+                + "            box-sizing: border-box;"
+                + "            margin: 20px auto;"
+                + "            text-align: center;"
+                + "            font-family: Arial, sans-serif;"
+                + "        }"
+                + "        .font-italic {"
+                + "            font-style: italic;"
+                + "        }"
+                + "        .font-size {"
+                + "            font-size: 16px;"
+                + "        }"
+                + "        .extra-style {"
+                + "            color: #333;"
+                + "            font-weight: bold;"
+                + "        }"
+                + "        .img {"
+                + "            width: 100% !important;"
+                + "            height: 100% !important;"
+                + "            object-fit: cover;"
+                + "        }"
+                + "        .check-in {"
+                + "            margin: 0;"
+                + "            font-size: 12px;"
+                + "            color: #216D42;"
+                + "            font-weight: 400;"
+                + "        }"
+                + "        .room-name {"
+                + "            margin: 0;"
+                + "            font-size: 20px;"
+                + "        }"
+                + "        p.no-margin {"
+                + "            margin: 0;"
+                + "        }"
+                + "        .container-data {"
+                + "            vertical-align: baseline;"
+                + "            font-size: 14px;"
+                + "        }"
+                + "        .container-img {"
+                + "            width: 433px;"
+                + "            padding-right: 16px;"
+                + "        }"
+                + "        .container-img .img {"
+                + "            width: 433px;"
+                + "        }"
+                + "        .table-layout {"
+                + "            font-family: 'Product Sans', sans-serif;"
+                + "            width: 100%;"
+                + "        }"
+                + "        .hr {"
+                + "            border: 1px solid #E1E1E1;"
+                + "            margin: 0;"
+                + "        }"
+                + "        .font {"
+                + "            font-size: 16px;"
+                + "            font-family: 'Product Sans', sans-serif;"
+                + "        }"
+                + "        .card {"
+                + "            width: 100%;"
+                + "            padding: 24px;"
+                + "            box-sizing: border-box;"
+                + "        }"
+                + "        .strong-text {"
+                + "            color: #384860;"
+                + "            font-style: italic;"
+                + "        }"
+                + "    </style>"
+                + "</head>"
+                + "<body>"
+                + "    <table class=\"container\" cellpadding=\"0\" cellspacing=\"0\">"
+                + "        <tr>"
+                + "            <td class=\"header\">"
+                + "                <img class=\"banner\" src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Bienvenido\"/>"
+                + "            </td>"
+                + "        </tr>"
+                + "        <tr>"
+                + "            <td class=\"body\">"
+                + "                <p class=\"font\">Estimado(a), <strong>" + clientName + "</strong></p>"
+                + "                <p class=\"font\">El presente es para informar que se completó exitosamente el registro de su pago para la reserva de:"
+                + "                    <strong class=\"strong-text\">" + roomName + "</strong></p>"
+                + "                <div class=\"card\">"
+                + "                    <table class=\"table-layout\">"
+                + "                        <tbody>"
+                + "                            <tr>"
+                + "                                <td style=\"height: 320px; width: 433px;\">"
+                + "                                    <table style=\"height: 100%;\">"
+                + "                                        <tbody>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <img src=\"" + imgSrc + "\" class=\"img\" alt=\"calendario\" />"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                        </tbody>"
+                + "                                    </table>"
+                + "                                </td>"
+                + "                                <td width=\"16\"></td>"
+                + "                                <td class=\"container-data\">"
+                + "                                    <table width=\"100%\" style=\"box-sizing: border-box;\">"
+                + "                                        <tbody>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <p class=\"room-name\"><strong>" + roomName + "</strong></p>"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <p class=\"no-margin\">Titular de la reserva:</p>"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <p class=\"no-margin\"><strong>" + titular + "</strong></p>"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <p class=\"no-margin\">Código de reserva:</p>"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <p class=\"no-margin\"><strong>" + code + "</strong></p>"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <hr class=\"hr\" />"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <table style=\"width: 100%\">"
+                + "                                                        <tbody>"
+                + "                                                            <tr>"
+                + "                                                                <td width=\"100\">"
+                + "                                                                    <p class=\"no-margin\">Checkin:</p>"
+                + "                                                                    <p class=\"no-margin\"><strong>" + dateCheckIn + "</strong></p>"
+                + "                                                                </td>"
+                + "                                                                <td width=\"200\"></td>"
+                + "                                                                <td style=\"width: 100px; text-align: end;\">"
+                + "                                                                    <p class=\"no-margin\">Checkout:</p>"
+                + "                                                                    <p class=\"no-margin\"><strong>" + dateCheckOut + "</strong></p>"
+                + "                                                                </td>"
+                + "                                                            </tr>"
+                + "                                                        </tbody>"
+                + "                                                    </table>"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <p class=\"no-margin\">Hora de llegada aproximada: " + hourCheckIn + "</p>"
+                + "                                                    <p class=\"check-in\">(*) Recuerda que el check-in es a las 3:00 P.M.</p>"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <p class=\"no-margin\">Duración total de estancia:<strong> " + days + "</strong> noches</p>"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <p class=\"no-margin\">Cantidad de personas: <strong>" + cantidadPersonas + "</strong></p>"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <hr class=\"hr\" />"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                            <tr>"
+                + "                                                <td>"
+                + "                                                    <p class=\"no-margin\">Ubicación:</p>"
+                + "                                                    <p class=\"no-margin\"><strong>" + location + "</strong></p>"
+                + "                                                </td>"
+                + "                                            </tr>"
+                + "                                        </tbody>"
+                + "                                    </table>"
+                + "                                </td>"
+                + "                            </tr>"
+                + "                        </tbody>"
+                + "                    </table>"
+                + "                </div>"
+                + "                <p class=\"font\">"
+                + "                    Este correo es solo de carácter informativo, no es un comprobante de pago. En caso de no poder usar la reservación, por favor llamar con 2 días de anticipación.<br>"
+                + "                    Muchas gracias."
+                + "                </p>"
+                + "            </td>"
+                + "        </tr>"
+                + "    </table>"
+                + "    <div class=\"footer-message\">"
+                + "        <h3>¿Necesitas ayuda?</h3>"
+                + "        <p>Envía tus comentarios e información de errores a <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">informesyreservas@cieneguilladelrio.com</a></p>"
+                + "    </div>"
+                + "</body>"
+                + "</html>";
     }
 
     @Override
