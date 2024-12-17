@@ -55,6 +55,26 @@ public class TransformDate {
         return result.toString().trim();
     }
 
+    public static String calculatePersonsAdultAndKids(int numberAdults, int numberChildren, int numberBabies,
+            int numberAdultsExtra,
+            int numberAdultsMayor) {
+        StringBuilder result = new StringBuilder();
+        String prefixAdult = "Adulto";
+        String prefixChild = "Niño";
+        int numberTotalAdults = numberAdults + numberAdultsExtra + numberAdultsMayor;
+        int numberTotalChildren = numberChildren + numberBabies;
+        if (numberTotalAdults > 1) {
+            prefixAdult = "Adultos";
+        }
+        if (numberTotalChildren > 1) {
+            prefixChild = "Niños";
+        }
+        result.append(numberTotalAdults).append(" ").append(prefixAdult).append(" ").append(numberTotalChildren)
+                .append(" ").append(prefixChild);
+
+        return result.toString().trim();
+    }
+
     // Función para obtener el día de la semana abreviado
     public static String getAbbreviatedDayOfWeek(Timestamp timestamp) {
         SimpleDateFormat dayFormatter = new SimpleDateFormat("EEE", new Locale("es", "ES"));
