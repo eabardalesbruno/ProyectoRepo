@@ -35,6 +35,35 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
         Flux<RoomOfferEntity> findByFilters(Integer roomTypeId, String capacity, LocalDateTime offerTimeInit,
                         LocalDateTime offerTimeEnd);
 
+        /*
+         * @Query("""
+         * SELECT v.*
+         * FROM viewroomofferreturn v
+         * 
+         * WHERE (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId)
+         * AND (
+         * (:offerTimeInit IS NULL AND :offerTimeEnd IS NULL) OR
+         * (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NULL AND
+         * DATE(:offerTimeInit) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend)
+         * ) OR
+         * (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NOT NULL AND
+         * (
+         * DATE(v.offertimeend) BETWEEN DATE(:offerTimeInit) AND DATE(:offerTimeEnd) OR
+         * DATE(:offerTimeInit) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend)
+         * OR
+         * DATE(:offerTimeEnd) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend)
+         * )
+         * )
+         * )
+         * and v.roomofferid in(SELECT v.roomofferid
+         * FROM viewroomofferreturn v
+         * GROUP BY v.roomofferid
+         * HAVING sum(v.adultcapacity+v.adultextra+v.adultmayorcapacity)>=:adultCapacity
+         * and sum(v.kidcapacity+v.infantcapacity)>=:kidCapacity)
+         * 
+         * ORDER BY v.roomofferid ASC
+         * """)
+         */
         @Query("""
                         SELECT v.*
                                 FROM viewroomofferreturn v
@@ -53,17 +82,18 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
                                    )
                                   )
                                 )
-                                and   v.roomofferid in(SELECT v.roomofferid
-                             FROM viewroomofferreturn v
-                             GROUP BY v.roomofferid
-                        HAVING sum(v.adultcapacity+v.adultextra+v.adultmayorcapacity)>=:adultCapacity
-                        and sum(v.kidcapacity+v.infantcapacity)>=:kidCapacity)
+                                AND (:infantCapacity IS NULL OR v.infantcapacity >= :infantCapacity)
+                                AND (:kidCapacity IS NULL OR v.kidcapacity >= :kidCapacity)
+                                AND (:adultCapacity IS NULL OR v.adultcapacity >= :adultCapacity)
+                                AND (:adultMayorCapacity IS NULL OR v.adultmayorcapacity >= :adultMayorCapacity)
+                                AND (:adultExtra IS NULL OR v.adultextra >= :adultExtra)
 
                                 ORDER BY v.roomofferid ASC
                                              """)
         Flux<ViewRoomOfferReturn> findFilteredV2(Integer roomTypeId, LocalDateTime offerTimeInit,
                         LocalDateTime offerTimeEnd,
-                        Integer kidCapacity, Integer adultCapacity);
+                        Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
+                        Integer adultExtra);
 
         @Query("""
                         SELECT v.*, r.state, r.numberdays
