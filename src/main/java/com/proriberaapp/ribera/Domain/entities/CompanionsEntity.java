@@ -27,6 +27,9 @@ public class CompanionsEntity {
     @Column("birthdate")
     private Timestamp birthDate;
 
+    @Column("years")
+    private Integer years;
+
     @Column("countryid")
     private Integer countryId;
 

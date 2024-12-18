@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
+import com.proriberaapp.ribera.Domain.dto.CompanionsDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.CompanionsEntity;
 import com.proriberaapp.ribera.Domain.enums.Role;
@@ -234,11 +235,22 @@ public class BookingController {
     @PostMapping("/{bookingId}/companions")
     public Mono<Void> addCompanionsToBooking(@PathVariable Integer bookingId, @RequestBody List<CompanionsEntity> companionsEntities) {
         Flux<CompanionsEntity> companionsEntityFlux = Flux.fromIterable(companionsEntities);
+
         return companionsService.validateTotalCompanions(bookingId, companionsEntityFlux)
-                .thenMany(companionsEntityFlux.flatMap(companions -> {
-                    companions.setBookingId(bookingId);
-                    return companionsService.addCompanionBooking(companions);
+                .thenMany(companionsEntityFlux.flatMap(companion -> {
+                    companion.setBookingId(bookingId);
+                    return companionsService.calculateAgeandSave(companion);
                 })).then();
+    }
+
+    @GetMapping("/companions/dni/{dni}")
+    public ResponseEntity<CompanionsDto> getCompanionByDni(@PathVariable String dni) {
+        try {
+            CompanionsDto companion = companionsService.fetchCompanionByDni(dni).block();
+            return ResponseEntity.ok(companion);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
 }
