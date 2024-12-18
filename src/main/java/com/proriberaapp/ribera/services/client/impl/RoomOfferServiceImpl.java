@@ -87,40 +87,26 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                 + adultExtraCapacity;
                 Flux<FeedingEntity> feedings = this.feedingRepository.findAllById(feedingsSelected);
                 return roomOfferRepository.findFilteredV2(roomTypeId, offerTimeInit, offerTimeEnd,
-                                infantCapacity, kidCapacityDefault, adultCapacityDefault, adultMayorCapacity,
-                                adultExtraCapacity)
-                                .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
-                                                roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
-                                                .hasElements()
-                                                .map(hasConflicts -> !hasConflicts))
+                                kidCapacityDefault, adultCapacityDefault, adultMayorCapacity, adultExtraCapacity,
+                                infantCapacity)
+                                /*
+                                 * .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
+                                 * roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
+                                 * .hasElements()
+                                 * .map(hasConflicts -> !hasConflicts))
+                                 */
+                                .map(roomOffer -> {
+
+                                        roomOffer.setTotalPerson(TransformDate.calculatePersonsAdultAndKids(
+                                                        roomOffer.getAdultcapacity(), roomOffer.getKidcapacity(),
+                                                        roomOffer.getAdultmayorcapacity(), roomOffer.getAdultextra(),
+                                                        roomOffer.getInfantcapacity()));
+                                        return roomOffer;
+                                })
                                 .flatMap(roomOffer -> servicesRepository
                                                 .findAllViewComfortReturn(roomOffer.getRoomOfferId())
                                                 .collectList()
                                                 .flatMap(comfortList -> {
-                                                        roomOffer.setTotalPerson(
-                                                                        TransformDate.calculatePersonsAdultAndKids(
-                                                                                        adultCapacityDefault,
-                                                                                        kidCapacityDefault,
-                                                                                        infantCapacity,
-                                                                                        adultExtraCapacity,
-                                                                                        adultMayorCapacity));
-                                                        roomOffer.setListAmenities(comfortList);
-                                                        BigDecimal totalCostKids = roomOffer.getKidcost()
-                                                                        .multiply(BigDecimal
-                                                                                        .valueOf(kidCapacityDefault))
-                                                                        .add(roomOffer.getInfantcost()
-                                                                                        .multiply(BigDecimal.valueOf(
-                                                                                                        infantCapacity)));
-                                                        BigDecimal totalCostAdult = roomOffer.getAdultextracost()
-                                                                        .multiply(BigDecimal
-                                                                                        .valueOf(adultExtraCapacity))
-                                                                        .add(roomOffer.getAdultcost().multiply(
-                                                                                        BigDecimal.valueOf(
-                                                                                                        adultCapacityDefault)))
-                                                                        .add(roomOffer.getAdultmayorcost().multiply(
-                                                                                        BigDecimal.valueOf(
-                                                                                                        adultMayorCapacity)));
-                                                        roomOffer.setCosttotal(totalCostAdult.add(totalCostKids));
                                                         return bedroomRepository
                                                                         .findAllViewBedroomReturn(roomOffer.getRoomId())
                                                                         .collectList()
