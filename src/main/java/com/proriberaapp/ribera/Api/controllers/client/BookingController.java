@@ -7,8 +7,11 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
+import com.proriberaapp.ribera.Domain.entities.CompanionsEntity;
 import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.services.client.BookingService;
+import com.proriberaapp.ribera.services.client.CompanionsService;
+import com.proriberaapp.ribera.services.client.impl.CompanionServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +24,7 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/booking")
@@ -30,6 +34,7 @@ public class BookingController {
     private static final Logger log = LoggerFactory.getLogger(BookingController.class);
     private final JwtProvider jtp;
     private final BookingService bookingService;
+    private final CompanionServiceImpl companionsService;
 
     @GetMapping("/find/all/state")
     public Flux<ViewBookingReturn> findAllByStateBookings(
@@ -219,6 +224,21 @@ public class BookingController {
     public Mono<ResponseEntity<BookingEntity>> assignClientToBooking(@PathVariable Integer bookingId, @PathVariable Integer userId) {
         return bookingService.assignClientToBooking(bookingId, userId)
                 .map(ResponseEntity::ok);
+    }
+
+    @GetMapping("/{bookingId}/companionsDetails")
+    public Flux<CompanionsEntity> getCompanionsByBookingId(@PathVariable Integer bookingId){
+        return companionsService.getCompanionsByBookingId(bookingId);
+    }
+
+    @PostMapping("/{bookingId}/companions")
+    public Mono<Void> addCompanionsToBooking(@PathVariable Integer bookingId, @RequestBody List<CompanionsEntity> companionsEntities) {
+        Flux<CompanionsEntity> companionsEntityFlux = Flux.fromIterable(companionsEntities);
+        return companionsService.validateTotalCompanions(bookingId, companionsEntityFlux)
+                .thenMany(companionsEntityFlux.flatMap(companions -> {
+                    companions.setBookingId(bookingId);
+                    return companionsService.addCompanionBooking(companions);
+                })).then();
     }
 
 }
