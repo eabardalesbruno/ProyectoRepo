@@ -74,7 +74,8 @@ public class RoomOfferServiceImpl implements RoomOfferService {
         public Flux<ViewRoomOfferReturn> findFilteredV2(Integer roomTypeId, LocalDateTime offerTimeInit,
                         LocalDateTime offerTimeEnd,
                         Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
-                        Integer adultExtraCapacity, Integer infantCapacity, List<Integer> feedingsSelected) {
+                        Integer adultExtraCapacity, Integer infantCapacity, List<Integer> feedingsSelected,
+                        boolean isFirstState) {
                 int totalAdultRequest = adultCapacity + adultMayorCapacity + adultExtraCapacity;
                 int totalKidRequest = kidCapacity + infantCapacity;
                 Integer adultCapacityDefault = totalAdultRequest == 0 ? 1 : adultCapacity;
@@ -89,24 +90,20 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                 return roomOfferRepository.findFilteredV2(roomTypeId, offerTimeInit, offerTimeEnd,
                                 kidCapacityDefault, adultCapacityDefault, adultMayorCapacity, adultExtraCapacity,
                                 infantCapacity)
-                                /*
-                                 * .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
-                                 * roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
-                                 * .hasElements()
-                                 * .map(hasConflicts -> !hasConflicts))
-                                 */
+                                .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
+                                                roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
+                                                .hasElements()
+                                                .map(hasConflicts -> !hasConflicts))
                                 .map(roomOffer -> {
-
-                                        roomOffer.setTotalPerson(TransformDate.calculatePersonsAdultAndKids(
-                                                        roomOffer.getAdultcapacity(), roomOffer.getKidcapacity(),
-                                                        roomOffer.getAdultmayorcapacity(), roomOffer.getAdultextra(),
-                                                        roomOffer.getInfantcapacity()));
+                                        roomOffer.setTotalPerson(
+                                                        roomOffer.getMintotalcapacity().toString().concat(" Adultos"));
                                         return roomOffer;
                                 })
                                 .flatMap(roomOffer -> servicesRepository
                                                 .findAllViewComfortReturn(roomOffer.getRoomOfferId())
                                                 .collectList()
                                                 .flatMap(comfortList -> {
+                                                        roomOffer.setListAmenities(comfortList);
                                                         return bedroomRepository
                                                                         .findAllViewBedroomReturn(roomOffer.getRoomId())
                                                                         .collectList()
