@@ -153,6 +153,8 @@ public class ViewRoomOfferReturn {
     Integer adultsMayorReserve;
     Integer adultsExtraReserve;
     Integer totalCapacity;
+    Integer mintotalcapacity;
+    Integer maxtotalcapacity;
 
     public static ViewRoomOfferReturn convertTo(Readable row) {
         return ViewRoomOfferReturn.builder()

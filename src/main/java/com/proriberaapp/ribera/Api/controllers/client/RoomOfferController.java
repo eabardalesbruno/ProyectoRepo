@@ -57,7 +57,7 @@ public class RoomOfferController {
             @RequestParam(required = false) Integer adultExtra,
             @RequestParam(required = false) List<Integer> feedings) {
         return roomOfferService.findFilteredV2(roomTypeId, offerTimeInit, offerTimeEnd, kidCapacity, adultCapacity,
-                adultMayorCapacity, adultExtra, infantCapacity, feedings);
+                adultMayorCapacity, adultExtra, infantCapacity, feedings, true);
     }
 
     @GetMapping("/filter")

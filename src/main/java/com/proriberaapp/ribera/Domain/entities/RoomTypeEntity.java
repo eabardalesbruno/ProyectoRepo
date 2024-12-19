@@ -31,11 +31,15 @@ public class RoomTypeEntity {
     @Transient
     private RoomStateEntity roomState;
 
+    @Transient
+    private CategoryRoomType category;
+
     @Getter
     public enum RoomType {
         DEPARTAMENTO("Departamento"),
         HABITACION("Habitación"),
         SUITE("Suite");
+
         private final String value;
 
         RoomType(String value) {
