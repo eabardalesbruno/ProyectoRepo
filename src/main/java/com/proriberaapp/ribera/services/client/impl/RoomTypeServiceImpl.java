@@ -1,11 +1,15 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Domain.entities.CategoryRoomType;
+import com.proriberaapp.ribera.Domain.entities.RoomStateEntity;
 import com.proriberaapp.ribera.Domain.entities.RoomTypeEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomStateRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomTypeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -31,13 +35,12 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
     @Override
     public Flux<RoomTypeEntity> saveAll(List<RoomTypeEntity> entities) {
         return roomTypeRepository.findAllByRoomTypeNameIn(
-                        entities.stream().map(RoomTypeEntity::getRoomTypeName).toList())
+                entities.stream().map(RoomTypeEntity::getRoomTypeName).toList())
                 .collectList()
                 .flatMapMany(existingEntities -> roomTypeRepository.saveAll(
                         entities.stream().filter(entity -> !existingEntities.stream()
-                                        .anyMatch(existing -> existing.getRoomTypeName().equals(entity.getRoomTypeName())))
-                                .toList()
-                ));
+                                .anyMatch(existing -> existing.getRoomTypeName().equals(entity.getRoomTypeName())))
+                                .toList()));
     }
 
     @Override
@@ -58,23 +61,61 @@ public class RoomTypeServiceImpl implements com.proriberaapp.ribera.services.cli
                 .flatMap(rooms -> {
                     if (rooms.isEmpty()) {
                         return roomTypeRepository.findById(id)
-                                .switchIfEmpty(Mono.error(new IllegalArgumentException("No se encontro el tipo de habitacion")))
+                                .switchIfEmpty(Mono
+                                        .error(new IllegalArgumentException("No se encontro el tipo de habitacion")))
                                 .flatMap(roomTypeRepository::delete);
                     } else {
-                        return Mono.error(new IllegalArgumentException("No se puede eliminar el tipo de habitacion porque tiene alojamientos asociadas"));
+                        return Mono.error(new IllegalArgumentException(
+                                "No se puede eliminar el tipo de habitacion porque tiene alojamientos asociadas"));
                     }
                 });
     }
 
     @Override
     public Flux<RoomTypeEntity> getAllRoomTypes() {
-        return roomTypeRepository.findAllByOrderByRoomTypeIdAsc()
-                .concatMap(roomTypeEntity -> roomStateRepository.findById(roomTypeEntity.getRoomstateid())
-                        .map(roomState -> {
-                            roomTypeEntity.setRoomState(roomState);
-                            return roomTypeEntity;
-                        })
-                );
+
+        /*
+         * return roomTypeRepository.findAllByOrderByRoomTypeIdAsc()
+         * .concatMap(roomTypeEntity ->
+         * roomStateRepository.findById(roomTypeEntity.getRoomstateid())
+         * .map(roomState -> {
+         * roomTypeEntity.setRoomState(roomState);
+         * return roomTypeEntity;
+         * }));
+         */
+
+        return roomTypeRepository.findAllRoomTypeView().map(
+                roomTypeViewEntity -> {
+                    RoomTypeEntity roomTypeEntity = new RoomTypeEntity();
+                    CategoryRoomType categoryRoomType = CategoryRoomType.builder()
+                            .id(roomTypeViewEntity.getId())
+                            .name(roomTypeViewEntity.getName())
+                            .minChildrenCapacity(roomTypeViewEntity.getMinChildrenCapacity())
+                            .minTotalCapacity(roomTypeViewEntity.getMinTotalCapacity())
+                            .minAdultCapacity(roomTypeViewEntity.getMinAdultCapacity())
+                            .minTotalNumberIncludesChildren(roomTypeViewEntity.isMinTotalNumberIncludesChildren())
+                            .minIsTotalNumber(roomTypeViewEntity.isMinIsTotalNumber())
+                            .maxChildrenCapacity(roomTypeViewEntity.getMaxChildrenCapacity())
+                            .maxTotalCapacity(roomTypeViewEntity.getMaxTotalCapacity())
+                            .maxAdultCapacity(roomTypeViewEntity.getMaxAdultCapacity())
+                            .maxTotalNumberIncludesChildren(roomTypeViewEntity.isMaxTotalNumberIncludesChildren())
+                            .minInfantcapacity(roomTypeViewEntity.getMinInfantcapacity())
+                            .maxInfantcapacity(roomTypeViewEntity.getMaxInfantcapacity())
+                            .maxIsTotalNumber(roomTypeViewEntity.isMaxIsTotalNumber()).build();
+                    RoomStateEntity roomStateEntity = RoomStateEntity.builder()
+                            .roomStateId(roomTypeViewEntity.getRoomstateid())
+                            .roomStateName(roomTypeViewEntity.getRoomStateName())
+                            .roomStateDescription(roomTypeViewEntity.getRoomStateDescription()).build();
+                    roomTypeEntity.setRoomTypeId(roomTypeViewEntity.getRoomTypeId());
+                    roomTypeEntity.setRoomType(roomTypeViewEntity.getRoomType());
+                    roomTypeEntity.setRoomTypeName(roomTypeViewEntity.getRoomTypeName());
+                    roomTypeEntity.setRoomTypeDescription(roomTypeViewEntity.getRoomTypeDescription());
+                    roomTypeEntity.setRoomstateid(roomTypeViewEntity.getRoomstateid());
+                    roomTypeEntity.setRoomState(roomStateEntity);
+                    roomTypeEntity.setCategory(categoryRoomType);
+                    return roomTypeEntity;
+                });
+
     }
 
     @Override
