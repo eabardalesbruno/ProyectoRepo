@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import org.springframework.data.r2dbc.repository.Query;
@@ -19,8 +20,6 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
 
     UserDataDTO save(UserDataDTO userDataDTO);
 
-    Flux<UserClientEntity> findAll();
-
     Mono<Void> deleteById(Integer id);
 
     Mono<UserClientEntity> findByUserClientId(Integer userClientId);
@@ -38,5 +37,42 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
 
     @Query("SELECT COUNT(*) FROM userclient WHERE (TO_CHAR(createdat, 'MM/YYYY') = CASE :month WHEN 1 THEN TO_CHAR(CURRENT_DATE + interval '-1 month', 'MM/YYYY') ELSE CAST((:month-1) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE) END)")
     Mono<Long> countLastUsers(Integer month);
+
+    @Query("""
+        SELECT COUNT(*)
+        FROM (SELECT uc.*, g.genderdesc, c.countrydesc,
+            (SELECT l.levelname FROM userlevel l WHERE l.userlevelid = uc.userLevelId) levelname,
+            (SELECT DISTINCT bs.bookingstatename FROM booking b
+            INNER JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid AND b.userclientid = uc.userclientid) statusdesc,
+            (SELECT DISTINCT bs.bookingstateid FROM booking b
+            INNER JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid AND b.userclientid = uc.userclientid) statusid
+            FROM userclient uc
+            JOIN gender g ON uc.genderid = g.genderid
+            JOIN country c ON uc.countryid = c.countryid
+            ORDER BY uc.createdat) t
+        WHERE (:statusId IS NULL OR t.statusid = :statusId)
+        AND (:fecha IS NULL OR TO_CHAR(t.createdat, 'YYYY/MM/DD') = :fecha)
+        AND (:filter IS NULL OR (UPPER(t.firstName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.lastName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.documentnumber) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.email) LIKE UPPER(CONCAT('%', :filter, '%'))))
+    """)
+    Mono<Long> countUserAll(Integer statusId, String fecha, String filter);
+
+    @Query("""
+        SELECT *
+        FROM (SELECT uc.*, g.genderdesc, c.countrydesc,
+            (SELECT l.levelname FROM userlevel l WHERE l.userlevelid = uc.userLevelId) levelname,
+            (SELECT DISTINCT bs.bookingstatename FROM booking b
+            INNER JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid AND b.userclientid = uc.userclientid) statusdesc,
+            (SELECT DISTINCT bs.bookingstateid FROM booking b
+            INNER JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid AND b.userclientid = uc.userclientid) statusid
+            FROM userclient uc
+            JOIN gender g ON uc.genderid = g.genderid
+            JOIN country c ON uc.countryid = c.countryid
+            ORDER BY uc.createdat) t
+        WHERE (:statusId IS NULL OR t.statusid = :statusId)
+        AND (:fecha IS NULL OR TO_CHAR(t.createdat, 'YYYY/MM/DD') = :fecha)
+        AND (:filter IS NULL OR (UPPER(t.firstName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.lastName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.documentnumber) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.email) LIKE UPPER(CONCAT('%', :filter, '%'))))
+        OFFSET :indice*10 LIMIT 10
+    """)
+    Flux<UserClientDto> getAllClients(Integer indice, Integer statusId, String fecha, String filter);
 
 }
