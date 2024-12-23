@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.BookingStateEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingStateRepository;
+import com.proriberaapp.ribera.services.client.BookingStateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,7 +14,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BookingStateServiceImpl implements com.proriberaapp.ribera.services.client.BookingStateService {
+public class BookingStateServiceImpl implements BookingStateService {
     private final BookingStateRepository bookingStateRepository;
     @Override
     public Mono<BookingStateEntity> save(BookingStateEntity bookingStateEntity) {

@@ -1,5 +1,7 @@
 package com.proriberaapp.ribera.services.admin.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientPageDto;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.enums.StatesUser;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
@@ -8,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -71,5 +75,17 @@ public class ClientManagerServiceImpl implements ClientManagerService {
             user.setStatus(StatesUser.DELETED);
             return user;
         }).flatMap(userClientRepository::save);
+    }
+
+    @Override
+    public Mono<UserClientPageDto> getAllClients(Integer indice, Integer statusId, String fecha, String filter) {
+        UserClientPageDto resp = new UserClientPageDto();
+        return userClientRepository.countUserAll(statusId, fecha, filter).flatMap(totalClients -> {
+            resp.setTotalClients(totalClients);
+            return userClientRepository.getAllClients(indice, statusId, fecha, filter).collectList().map(userClientDtos -> {
+                resp.setUsersClients(userClientDtos);
+                return resp;
+            });
+        });
     }
 }
