@@ -79,6 +79,8 @@ public class SecurityConfig {
                                 "/api/reports/**",
                                 "/api/v1/wallet/**",
                                 "/api/v1/booking/find/**",
+                                "/api/v1/maintenance/**",
+                                "api/v1/booking-state/**",
                                 "/swagger-doc/**"
                         ).permitAll()
 

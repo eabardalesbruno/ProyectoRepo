@@ -9,6 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -66,35 +67,44 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
    * """)
    */
   @Query("""
-      SELECT v.*
-      FROM viewroomofferreturn v
+             SELECT v.*,case when :adultCapacity>=v.mincapacity or :adultCapacity=0 then true else false end as isbooking
+           FROM viewroomofferreturn v
+             WHERE
+              	:categoryName is  null or 	 v.categoryname=:categoryName
+      		 and (
+      ('DEPARTAMENTO'=v.categoryname	 and
 
-      WHERE (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId)
-      AND (
-      (:offerTimeInit IS NULL AND :offerTimeEnd IS NULL) OR
-      (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NULL AND
-      DATE(:offerTimeInit) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend)
-      ) OR
-      (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NOT NULL AND
-      (
-      DATE(v.offertimeend) BETWEEN DATE(:offerTimeInit) AND DATE(:offerTimeEnd) OR
-      DATE(:offerTimeInit) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend)
-      OR
-      DATE(:offerTimeEnd) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend)
-      )
-      )
-      )
-      and v.roomofferid in(SELECT v.roomofferid
-      FROM viewroomofferreturn v
-      GROUP BY v.roomofferid
-      HAVING
-      sum(v.kidcapacity+v.infantcapacity+v.adultcapacity+v.adultextra+v.adultmayorcapacity)>=(:adultCapacity+:adultMayorCapacity+:kidCapacity+:adultExtra+:infantCapacity)
-      and sum(v.kidcapacity+v.infantcapacity)>=:kidCapacity
-      )
-      ORDER BY v.roomofferid ASC
-      """)
-  Flux<ViewRoomOfferReturn> findFilteredV2(Integer roomTypeId, LocalDateTime offerTimeInit,
-      LocalDateTime offerTimeEnd,
+      v.adultcapacity+v.adultextra+v.adultmayorcapacity+v.infantcapacity+v.kidcapacity>=(:adultCapacity+:kidCapacity+:infantCapacity+:adultMayorCapacity+:adultExtra))
+
+      or
+
+      ( 'DOBLE'=v.categoryname
+      and v.adultcapacity+v.adultextra+v.adultmayorcapacity>=(:adultCapacity+:adultMayorCapacity+:adultExtra)
+      and v.infantcapacity+v.kidcapacity>=(:infantCapacity+:kidCapacity))
+      or
+      ( 'MATRIMONIAL'=v.categoryname
+      and v.adultextra+v.adultcapacity+v.adultmayorcapacity>=(:adultCapacity+:adultMayorCapacity+:adultExtra) and v.infantcapacity+v.kidcapacity>=(:infantCapacity+:kidCapacity)
+
+      ))
+               and (
+                     (:offerTimeInit IS NULL AND :offerTimeEnd IS NULL) OR
+                     (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NULL AND
+                      DATE(:offerTimeInit) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend)
+                     ) OR
+                     (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NOT NULL AND
+                      (
+                         DATE(v.offertimeend) BETWEEN DATE(:offerTimeInit) AND DATE(:offerTimeEnd) OR
+                         DATE(:offerTimeInit) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend) OR
+                         DATE(:offerTimeEnd) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend)
+                      )
+                     )
+                   )
+
+      and (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId)
+           """)
+  Flux<ViewRoomOfferReturn> findFilteredV2(Integer roomTypeId, String categoryName,
+      LocalDate offerTimeInit,
+      LocalDate offerTimeEnd,
       Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity, Integer adultExtra,
       Integer infantCapacity);
 
