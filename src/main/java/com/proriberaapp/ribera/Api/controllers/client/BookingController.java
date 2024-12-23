@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/booking")
@@ -233,14 +234,37 @@ public class BookingController {
     }
 
     @PostMapping("/{bookingId}/companions")
-    public Mono<Void> addCompanionsToBooking(@PathVariable Integer bookingId, @RequestBody List<CompanionsEntity> companionsEntities) {
-        Flux<CompanionsEntity> companionsEntityFlux = Flux.fromIterable(companionsEntities);
+    public Mono<Void> addCompanionsToBooking(@PathVariable Integer bookingId, @RequestBody List<Map<String, Object>> companionsData) {
+        Flux<CompanionsEntity> companionsEntityFlux = Flux.fromIterable(companionsData)
+                .map(data -> {
+                    CompanionsEntity companion = new CompanionsEntity();
+                    companion.setFirstname((String) data.get("nombres"));
+                    companion.setLastname((String) data.get("apellidos"));
+                    companion.setTypeDocumentId(data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null); // Tipo de documento
+                    companion.setDocumentNumber((String) data.get("document"));
+                    companion.setCellphone((String) data.get("celphone"));
+                    companion.setEmail((String) data.get("correo"));
+                    companion.setTitular(Boolean.TRUE.equals(data.get("isTitular")));
+                    companion.setCategory((String) data.get("category"));
+                    String birthdateStr = (String) data.get("fechaNacimiento");
+                    if (birthdateStr != null) {
+                        if (birthdateStr.length() == 10) {
+                            birthdateStr = birthdateStr + " 00:00:00";
+                        }
+                        companion.setBirthdate(Timestamp.valueOf(birthdateStr));
+                    }
+                    companion.setGenderId(data.get("genero") != null ? ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
+                    companion.setCountryId(data.get("areaZone") != null ? ((Number) data.get("areaZone")).intValue() : null);
+
+                    return companion;
+                });
 
         return companionsService.validateTotalCompanions(bookingId, companionsEntityFlux)
                 .thenMany(companionsEntityFlux.flatMap(companion -> {
                     companion.setBookingId(bookingId);
                     return companionsService.calculateAgeandSave(companion);
-                })).then();
+                }))
+                .then();
     }
 
     @GetMapping("/companions/dni/{dni}")

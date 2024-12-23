@@ -1,8 +1,6 @@
 package com.proriberaapp.ribera.Domain.entities;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -12,33 +10,51 @@ import java.sql.Timestamp;
 @Getter
 @Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table("companions")
 public class CompanionsEntity {
     @Id
     @Column("companionid")
-    private Integer companionId;
+    private Integer companionId;  //
+
+    @Column("category")
+    private String category;
 
     @Column("firstname")
-    private String firstName;
+    private String firstname;
 
     @Column("lastname")
-    private String lastName;
+    private String lastname;
 
     @Column("birthdate")
-    private Timestamp birthDate;
+    private Timestamp birthdate;
 
     @Column("years")
     private Integer years;
 
-    @Column("countryid")
-    private Integer countryId;
-
-    @Column("documenttypeid")
-    private Integer documentTypeId;
+    @Column("typedocumentid")
+    private Integer typeDocumentId;
 
     @Column("documentnumber")
     private String documentNumber;
 
+    @Column("genderid")
+    private Integer genderId;
+
+    @Column("countryid")
+    private Integer countryId;
+
+    @Column("cellphone")
+    private String cellphone;
+
+    @Column("email")
+    private String email;
+
     @Column("bookingid")
     private Integer bookingId;
+
+    @Column("istitular")
+    private boolean isTitular = false;
+
 }

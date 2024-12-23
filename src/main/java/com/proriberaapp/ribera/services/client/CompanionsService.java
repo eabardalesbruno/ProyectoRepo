@@ -6,6 +6,8 @@ import com.proriberaapp.ribera.Domain.entities.CompanionsEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface CompanionsService  {
 
     Flux<CompanionsEntity> getCompanionsByBookingId(Integer bookingId);
@@ -17,7 +19,5 @@ public interface CompanionsService  {
     Mono<CompanionsDto> fetchCompanionByDni(String dni);
 
     Mono<CompanionsEntity> calculateAgeandSave(CompanionsEntity companionsEntity);
-
-
 
 }

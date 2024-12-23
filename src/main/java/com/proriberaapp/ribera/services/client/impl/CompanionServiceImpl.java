@@ -22,6 +22,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -90,8 +91,8 @@ public class CompanionServiceImpl implements CompanionsService {
 
     @Override
     public Mono<CompanionsEntity> calculateAgeandSave(CompanionsEntity companions) {
-        if(companions.getBirthDate() != null){
-            Timestamp birthTime = companions.getBirthDate();
+        if(companions.getBirthdate() != null){
+            Timestamp birthTime = companions.getBirthdate();
             LocalDate birthDate = birthTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             int years = Period.between(birthDate, LocalDate.now()).getYears();
             companions.setYears(years);
