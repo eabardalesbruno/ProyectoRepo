@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -48,15 +49,17 @@ public class RoomOfferController {
     @GetMapping("/filter-v2")
     public Flux<ViewRoomOfferReturn> getFilteredRoomOffersV2(
             @RequestParam(required = false) Integer roomTypeId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offerTimeInit,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offerTimeEnd,
+            @RequestParam(required = false) String categoryName,
+            @RequestParam(required = false) LocalDate offerTimeInit,
+            @RequestParam(required = false) LocalDate offerTimeEnd,
             @RequestParam(required = false) Integer infantCapacity,
             @RequestParam(required = false) Integer kidCapacity,
             @RequestParam(required = false) Integer adultCapacity,
             @RequestParam(required = false) Integer adultMayorCapacity,
             @RequestParam(required = false) Integer adultExtra,
             @RequestParam(required = false) List<Integer> feedings) {
-        return roomOfferService.findFilteredV2(roomTypeId, offerTimeInit, offerTimeEnd, kidCapacity, adultCapacity,
+        return roomOfferService.findFilteredV2(roomTypeId,
+                categoryName, offerTimeInit, offerTimeEnd, kidCapacity, adultCapacity,
                 adultMayorCapacity, adultExtra, infantCapacity, feedings, true);
     }
 
@@ -70,8 +73,13 @@ public class RoomOfferController {
             @RequestParam(required = false) Integer adultCapacity,
             @RequestParam(required = false) Integer adultMayorCapacity,
             @RequestParam(required = false) Integer adultExtra) {
-        return roomOfferService.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity, kidCapacity,
-                adultCapacity, adultMayorCapacity, adultExtra);
+        /*
+         * return roomOfferService.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd,
+         * infantCapacity, kidCapacity,
+         * adultCapacity, adultMayorCapacity, adultExtra);
+         */
+
+        return Flux.empty();
     }
 
     @PostMapping

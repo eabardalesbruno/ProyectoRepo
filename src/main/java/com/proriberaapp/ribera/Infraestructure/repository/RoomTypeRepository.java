@@ -22,6 +22,7 @@ public interface RoomTypeRepository extends R2dbcRepository<RoomTypeEntity, Inte
             roomtype rt
             join roomstate rs on rs.roomstateid=rt.roomstateid
             join category_room_type crt on crt."id"=rt.categoryid
+            order by rt.roomtypeid asc
             """)
     Flux<RoomTypeViewEntity> findAllRoomTypeView();
 
