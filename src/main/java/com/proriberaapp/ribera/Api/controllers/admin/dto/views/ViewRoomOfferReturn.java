@@ -155,6 +155,8 @@ public class ViewRoomOfferReturn {
     Integer totalCapacity;
     Integer mintotalcapacity;
     Integer maxtotalcapacity;
+    Integer mincapacity;
+    Boolean isbooking;
 
     public static ViewRoomOfferReturn convertTo(Readable row) {
         return ViewRoomOfferReturn.builder()

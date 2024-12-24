@@ -19,6 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -71,32 +72,35 @@ public class RoomOfferServiceImpl implements RoomOfferService {
         }
 
         @Override
-        public Flux<ViewRoomOfferReturn> findFilteredV2(Integer roomTypeId, LocalDateTime offerTimeInit,
-                        LocalDateTime offerTimeEnd,
+        public Flux<ViewRoomOfferReturn> findFilteredV2(Integer roomTypeId,
+                        String categoryName, LocalDate offerTimeInit,
+                        LocalDate offerTimeEnd,
                         Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
                         Integer adultExtraCapacity, Integer infantCapacity, List<Integer> feedingsSelected,
                         boolean isFirstState) {
-                int totalAdultRequest = adultCapacity + adultMayorCapacity + adultExtraCapacity;
-                int totalKidRequest = kidCapacity + infantCapacity;
-                Integer adultCapacityDefault = totalAdultRequest == 0 ? 1 : adultCapacity;
-                Integer kidCapacityDefault = totalKidRequest == 0 ? (adultCapacityDefault > 1) ? 0 : 1 : kidCapacity;
-                Integer totalKidCapacity = kidCapacityDefault + infantCapacity;
-                Integer totalAdultCapacity = adultCapacityDefault + adultMayorCapacity + adultExtraCapacity;
-
-                Integer totalCapacity = totalKidCapacity + totalAdultCapacity;
-                Integer totalCapacityWithOutInfant = kidCapacityDefault + adultCapacityDefault + adultMayorCapacity
-                                + adultExtraCapacity;
+                int totalCapacityWithOutInfant = kidCapacity + adultCapacity + adultMayorCapacity + adultExtraCapacity;
                 Flux<FeedingEntity> feedings = this.feedingRepository.findAllById(feedingsSelected);
-                return roomOfferRepository.findFilteredV2(roomTypeId, offerTimeInit, offerTimeEnd,
-                                kidCapacityDefault, adultCapacityDefault, adultMayorCapacity, adultExtraCapacity,
+                return roomOfferRepository.findFilteredV2(
+                                roomTypeId,
+                                categoryName, offerTimeInit, offerTimeEnd,
+                                kidCapacity, adultCapacity, adultMayorCapacity, adultExtraCapacity,
                                 infantCapacity)
                                 .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
                                                 roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
                                                 .hasElements()
                                                 .map(hasConflicts -> !hasConflicts))
                                 .map(roomOffer -> {
-                                        roomOffer.setTotalPerson(
-                                                        roomOffer.getMintotalcapacity().toString().concat(" Adultos"));
+                                        roomOffer.setKidsReserve(kidCapacity);
+                                        roomOffer.setAdultsReserve(
+                                                        isFirstState ? roomOffer.getMincapacity() : adultCapacity);
+                                        roomOffer.setAdultsMayorReserve(adultMayorCapacity);
+                                        roomOffer.setAdultsExtraReserve(adultExtraCapacity);
+                                        roomOffer.setInfantsReserve(infantCapacity);
+                                        roomOffer.setTotalPerson(TransformDate.calculatePersons(
+                                                        roomOffer.getAdultsReserve(),
+                                                        roomOffer.getKidsReserve(), roomOffer.getInfantsReserve(),
+                                                        roomOffer.getAdultsExtraReserve(),
+                                                        roomOffer.getAdultsMayorReserve()));
                                         return roomOffer;
                                 })
                                 .flatMap(roomOffer -> servicesRepository
@@ -117,11 +121,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                 .flatMapMany(Flux::fromIterable)
                                 .flatMap(roomOffer -> feedings.collectList()
                                                 .map(feedingList -> {
-                                                        Integer totalCapacityBooking = roomOffer.getKidcapacity()
-                                                                        + roomOffer.getAdultcapacity()
-                                                                        + roomOffer.getAdultextra()
-                                                                        + roomOffer.getAdultmayorcapacity()
-                                                                        + roomOffer.getInfantcapacity();
+
                                                         BigDecimal totalCostFeeding = feedingList.stream().reduce(
                                                                         BigDecimal.ZERO,
                                                                         (subtotal, element) -> subtotal
@@ -129,13 +129,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                                         BigDecimal::add).multiply(
                                                                                         BigDecimal
                                                                                                         .valueOf(totalCapacityWithOutInfant));
-                                                        roomOffer.setKidsReserve(kidCapacityDefault);
-                                                        roomOffer.setAdultsReserve(adultCapacityDefault);
-                                                        roomOffer.setAdultsMayorReserve(adultMayorCapacity);
-                                                        roomOffer.setAdultsExtraReserve(adultExtraCapacity);
-                                                        roomOffer.setInfantsReserve(infantCapacity);
-                                                        roomOffer.setAmountFeeding(totalCostFeeding);
-                                                        roomOffer.setTotalCapacity(totalCapacityBooking);
+
                                                         roomOffer.setCosttotal(
                                                                         roomOffer.getCosttotal().add(totalCostFeeding));
                                                         roomOffer.setListFeeding(feedingList);
@@ -143,37 +137,135 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                 }));
 
         }
+        /*
+         * @Override
+         * public Flux<ViewRoomOfferReturn> findFilteredV2(Integer roomTypeId, LocalDate
+         * offerTimeInit,
+         * LocalDate offerTimeEnd,
+         * Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
+         * Integer adultExtraCapacity, Integer infantCapacity, List<Integer>
+         * feedingsSelected,
+         * boolean isFirstState) {
+         * int totalAdultRequest = adultCapacity + adultMayorCapacity +
+         * adultExtraCapacity;
+         * int totalKidRequest = kidCapacity + infantCapacity;
+         * Integer adultCapacityDefault = totalAdultRequest == 0 ? 1 : adultCapacity;
+         * Integer kidCapacityDefault = totalKidRequest == 0 ? (adultCapacityDefault >
+         * 1) ? 0 : 1 : kidCapacity;
+         * Integer totalKidCapacity = kidCapacityDefault + infantCapacity;
+         * Integer totalAdultCapacity = adultCapacityDefault + adultMayorCapacity +
+         * adultExtraCapacity;
+         * if (isFirstState) {
+         * totalKidCapacity = 1;
+         * totalAdultCapacity = 1;
+         * }
+         * 
+         * Integer totalCapacity = totalKidCapacity + totalAdultCapacity;
+         * Integer totalCapacityWithOutInfant = kidCapacityDefault +
+         * adultCapacityDefault + adultMayorCapacity
+         * + adultExtraCapacity;
+         * Flux<FeedingEntity> feedings =
+         * this.feedingRepository.findAllById(feedingsSelected);
+         * return roomOfferRepository.findFilteredV2(roomTypeId, offerTimeInit,
+         * offerTimeEnd,
+         * kidCapacityDefault, adultCapacityDefault, adultMayorCapacity,
+         * adultExtraCapacity,
+         * infantCapacity)
+         * .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
+         * roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
+         * .hasElements()
+         * .map(hasConflicts -> !hasConflicts))
+         * .map(roomOffer -> {
+         * if (isFirstState) {
+         * roomOffer.setKidsReserve(0);
+         * roomOffer.setAdultsReserve(roomOffer.getMincapacity());
+         * roomOffer.setAdultsMayorReserve(0);
+         * roomOffer.setAdultsExtraReserve(0);
+         * roomOffer.setInfantsReserve(0);
+         * } else {
+         * roomOffer.setKidsReserve(kidCapacityDefault);
+         * roomOffer.setAdultsReserve(adultCapacityDefault);
+         * roomOffer.setAdultsMayorReserve(adultMayorCapacity);
+         * roomOffer.setAdultsExtraReserve(adultExtraCapacity);
+         * roomOffer.setInfantsReserve(infantCapacity);
+         * }
+         * roomOffer.setTotalPerson(TransformDate.calculatePersons(
+         * roomOffer.getAdultsReserve(),
+         * roomOffer.getKidsReserve(), roomOffer.getInfantsReserve(),
+         * roomOffer.getAdultsExtraReserve(),
+         * roomOffer.getAdultsMayorReserve()));
+         * return roomOffer;
+         * })
+         * .flatMap(roomOffer -> servicesRepository
+         * .findAllViewComfortReturn(roomOffer.getRoomOfferId())
+         * .collectList()
+         * .flatMap(comfortList -> {
+         * roomOffer.setListAmenities(comfortList);
+         * return bedroomRepository
+         * .findAllViewBedroomReturn(roomOffer.getRoomId())
+         * .collectList()
+         * .map(bedroomList -> {
+         * roomOffer.setListBedroomReturn(
+         * bedroomList);
+         * return roomOffer;
+         * });
+         * }))
+         * .collectSortedList(Comparator.comparing(ViewRoomOfferReturn::getRoomOfferId))
+         * .flatMapMany(Flux::fromIterable)
+         * .flatMap(roomOffer -> feedings.collectList()
+         * .map(feedingList -> {
+         * 
+         * BigDecimal totalCostFeeding = feedingList.stream().reduce(
+         * BigDecimal.ZERO,
+         * (subtotal, element) -> subtotal
+         * .add(element.getCost()),
+         * BigDecimal::add).multiply(
+         * BigDecimal
+         * .valueOf(totalCapacityWithOutInfant));
+         * 
+         * roomOffer.setCosttotal(
+         * roomOffer.getCosttotal().add(totalCostFeeding));
+         * roomOffer.setListFeeding(feedingList);
+         * return roomOffer;
+         * }));
+         * 
+         * }
+         */
 
-        @Override
-        public Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit,
-                        LocalDateTime offerTimeEnd,
-                        Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
-                        Integer adultExtra) {
-                return roomOfferRepository
-                                .findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity, kidCapacity,
-                                                adultCapacity, adultMayorCapacity, adultExtra)
-                                .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
-                                                roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
-                                                .hasElements()
-                                                .map(hasConflicts -> !hasConflicts))
-                                .flatMap(roomOffer -> servicesRepository
-                                                .findAllViewComfortReturn(roomOffer.getRoomOfferId())
-                                                .collectList()
-                                                .flatMap(comfortList -> {
-                                                        roomOffer.setListAmenities(comfortList);
-                                                        return bedroomRepository
-                                                                        .findAllViewBedroomReturn(roomOffer.getRoomId())
-                                                                        .collectList()
-                                                                        .map(bedroomList -> {
-                                                                                roomOffer.setListBedroomReturn(
-                                                                                                bedroomList);
-                                                                                return roomOffer;
-                                                                        });
-                                                }))
-                                .collectSortedList(Comparator.comparing(ViewRoomOfferReturn::getRoomOfferId))
-                                .flatMapMany(Flux::fromIterable);
-        }
-
+        /*
+         * @Override
+         * public Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId,
+         * LocalDateTime offerTimeInit,
+         * LocalDateTime offerTimeEnd,
+         * Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer
+         * adultMayorCapacity,
+         * Integer adultExtra) {
+         * return roomOfferRepository
+         * .findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity,
+         * kidCapacity,
+         * adultCapacity, adultMayorCapacity, adultExtra)
+         * .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
+         * roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
+         * .hasElements()
+         * .map(hasConflicts -> !hasConflicts))
+         * .flatMap(roomOffer -> servicesRepository
+         * .findAllViewComfortReturn(roomOffer.getRoomOfferId())
+         * .collectList()
+         * .flatMap(comfortList -> {
+         * roomOffer.setListAmenities(comfortList);
+         * return bedroomRepository
+         * .findAllViewBedroomReturn(roomOffer.getRoomId())
+         * .collectList()
+         * .map(bedroomList -> {
+         * roomOffer.setListBedroomReturn(
+         * bedroomList);
+         * return roomOffer;
+         * });
+         * }))
+         * .collectSortedList(Comparator.comparing(ViewRoomOfferReturn::getRoomOfferId))
+         * .flatMapMany(Flux::fromIterable);
+         * }
+         */
         @Override
         public Flux<RoomOfferEntity> saveAll(List<RoomOfferEntity> entity) {
                 return roomOfferRepository.findAllByRoomIdInAndOfferTypeIdIn(entity, entity)
