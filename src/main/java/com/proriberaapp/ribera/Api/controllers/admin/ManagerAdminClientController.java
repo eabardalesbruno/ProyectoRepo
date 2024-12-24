@@ -23,36 +23,6 @@ public class ManagerAdminClientController {
         return clientManagerService.updatePassword(id, newPassword);
     }
 
-    @GetMapping("/find/{id}")
-    public Mono<UserClientEntity> findById(@PathVariable Integer id) {
-        return clientManagerService.findById(id);
-    }
-
-    @GetMapping("/find/all")
-    public Flux<UserClientEntity> findAll() {
-        return clientManagerService.findAll();
-    }
-
-    @PatchMapping("/disable")
-    public Mono<UserClientEntity> disable(@RequestParam Integer id) {
-        return clientManagerService.disable(id);
-    }
-
-    @PatchMapping("/enable")
-    public Mono<UserClientEntity> enable(@RequestParam Integer id) {
-        return clientManagerService.enable(id);
-    }
-
-    @DeleteMapping("/delete")
-    public Mono<UserClientEntity> delete(@RequestParam Integer id) {
-        return clientManagerService.delete(id);
-    }
-
-    @GetMapping("/find/by-email")
-    public Mono<UserClientEntity> findByEmail(@RequestParam String email) {
-        return clientManagerService.findByEmail(email);
-    }
-
     @GetMapping("/findAllClients")
     public Mono<UserClientPageDto> getAllClients(@RequestParam Integer indice, @RequestParam(required = false) Integer statusId, @RequestParam(required = false) String fecha, @RequestParam(required = false) String filter) {
         return clientManagerService.getAllClients(indice, statusId, fecha, filter);
@@ -60,7 +30,6 @@ public class ManagerAdminClientController {
 
     @PostMapping("/updateClient")
     public Mono<Void> updateClient(@RequestBody UserClientDto entity) {
-        System.out.println(entity);
         return clientManagerService.saveClient(entity);
     }
 

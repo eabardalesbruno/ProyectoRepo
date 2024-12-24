@@ -1,9 +1,6 @@
 package com.proriberaapp.ribera.services.promoters.impl;
 
-import com.proriberaapp.ribera.Api.controllers.admin.dto.LoginRequest;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.RegisterRequest;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.TokenDto;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.UserResponse;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PromotorDataDTO;
 import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
@@ -27,6 +24,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -255,4 +253,37 @@ public class UserPromoterServiceImpl implements UserPromoterService {
                 .map(jwtProvider::generateTokenPromoter)
                 .switchIfEmpty(Mono.error(new RuntimeException("Promotor no encontrado")));
     }
+
+    @Override
+    public Mono<UserPromoterPageDto> getAllPromoters(Integer indice, String status, String fecha, String filter) {
+        UserPromoterPageDto resp = new UserPromoterPageDto();
+        return userPromoterRepository.countPromoterAll(status, fecha, filter).flatMap(totalPromoters -> {
+            resp.setTotalPromoters(totalPromoters);
+            return userPromoterRepository.getAllPromoter(indice, status, fecha, filter).collectList().map(userPromoterDtos -> {
+                resp.setUserPromoter(userPromoterDtos);
+                return resp;
+            });
+        });
+    }
+
+    @Override
+    public Mono<Void> savePromoter(UserPromoterDto entity) {
+        return userPromoterRepository.findById(entity.getUserPromoterId()).flatMap(userPromoterEntity -> {
+            userPromoterEntity.setFirstName(entity.getFirstName());
+            userPromoterEntity.setLastName(entity.getLastName());
+            userPromoterEntity.setEmail(entity.getEmail());
+            userPromoterEntity.setDocumentNumber(entity.getDocumentNumber());
+            userPromoterEntity.setGenderId(entity.getGenderId());
+            userPromoterEntity.setAddress(entity.getAddress());
+            return userPromoterRepository.save(userPromoterEntity).flatMap(resp -> {
+                return Mono.empty();
+            });
+        });
+    }
+
+    @Override
+    public Mono<List<String>> getStatus() {
+        return userPromoterRepository.getStatus().collectList();
+    }
+
 }
