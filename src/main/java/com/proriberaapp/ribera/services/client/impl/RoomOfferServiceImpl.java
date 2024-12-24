@@ -81,6 +81,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                 int totalCapacityWithOutInfant = kidCapacity + adultCapacity + adultMayorCapacity + adultExtraCapacity;
                 Flux<FeedingEntity> feedings = this.feedingRepository.findAllById(feedingsSelected);
                 return roomOfferRepository.findFilteredV2(
+                                isFirstState,
                                 roomTypeId,
                                 categoryName, offerTimeInit, offerTimeEnd,
                                 kidCapacity, adultCapacity, adultMayorCapacity, adultExtraCapacity,

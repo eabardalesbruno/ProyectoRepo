@@ -67,7 +67,13 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
    * """)
    */
   @Query("""
-             SELECT v.*,case when v.mincapacity>=:adultCapacity or :adultCapacity=0 then true else false end as isbooking
+             SELECT v.*,case
+             when :isFirstState  then true
+             when  v.categoryname='DEPARTAMENTO' and  (:adultCapacity+:adultMayorCapacity+:adultExtra+:kidCapacity)>=v.mincapacity then true
+             when v.categoryname='MATRIMONIAL' and  (:adultCapacity+:adultMayorCapacity+:adultExtra+:kidCapacity)>=v.mincapacity and v.adultextra+v.adultcapacity+v.adultmayorcapacity>=(:adultCapacity+:adultMayorCapacity+:adultExtra) and v.infantcapacity+v.kidcapacity>=(:infantCapacity+:kidCapacity) then true
+             when v.categoryname='DOBLE' and  (:adultCapacity+:adultMayorCapacity+:adultExtra+:kidCapacity)>=v.mincapacity and v.adultextra+v.adultcapacity+v.adultmayorcapacity>=(:adultCapacity+:adultMayorCapacity+:adultExtra) and v.infantcapacity+v.kidcapacity>=(:infantCapacity+:kidCapacity) then true
+             else false
+             end as isbooking
            FROM viewroomofferreturn v
              WHERE
               	:categoryName is  null or 	 v.categoryname=:categoryName
@@ -102,7 +108,8 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
 
       and (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId)
            """)
-  Flux<ViewRoomOfferReturn> findFilteredV2(Integer roomTypeId, String categoryName,
+  Flux<ViewRoomOfferReturn> findFilteredV2(
+      Boolean isFirstState, Integer roomTypeId, String categoryName,
       LocalDate offerTimeInit,
       LocalDate offerTimeEnd,
       Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity, Integer adultExtra,
