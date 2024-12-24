@@ -58,4 +58,10 @@ public class ManagerAdminClientController {
         return clientManagerService.getAllClients(indice, statusId, fecha, filter);
     }
 
+    @PostMapping("/updateClient")
+    public Mono<Void> updateClient(@RequestBody UserClientDto entity) {
+        System.out.println(entity);
+        return clientManagerService.saveClient(entity);
+    }
+
 }

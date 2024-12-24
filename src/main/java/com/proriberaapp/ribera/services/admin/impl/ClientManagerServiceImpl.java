@@ -88,4 +88,22 @@ public class ClientManagerServiceImpl implements ClientManagerService {
             });
         });
     }
+
+    @Override
+    public Mono<Void> saveClient(UserClientDto entity) {
+        return userClientRepository.findByUserClientId(entity.getUserClientId()).flatMap(userClientEntity -> {
+            userClientEntity.setFirstName(entity.getFirstName());
+            userClientEntity.setLastName(entity.getLastName());
+            userClientEntity.setEmail(entity.getEmail());
+            userClientEntity.setCellNumber(entity.getCellNumber());
+            userClientEntity.setDocumentNumber(entity.getDocumentNumber());
+            userClientEntity.setGenderId(entity.getGenderId());
+            userClientEntity.setBirthDate(entity.getBirthDate());
+            userClientEntity.setCountryId(entity.getCountryId());
+            userClientEntity.setAddress(entity.getAddress());
+            return userClientRepository.save(userClientEntity).flatMap(resp -> {
+                return Mono.empty();
+            });
+        });
+    }
 }
