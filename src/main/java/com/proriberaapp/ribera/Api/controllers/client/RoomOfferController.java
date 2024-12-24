@@ -62,6 +62,7 @@ public class RoomOfferController {
         return roomOfferService.findFilteredV2(roomTypeId,
                 categoryName, offerTimeInit, offerTimeEnd, kidCapacity, adultCapacity,
                 adultMayorCapacity, adultExtra, infantCapacity, feedings, isFirstState);
+
     }
 
     @GetMapping("/filter")

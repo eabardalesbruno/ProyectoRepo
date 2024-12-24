@@ -1,9 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.promoters;
 
-import com.proriberaapp.ribera.Api.controllers.admin.dto.LoginRequest;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.RegisterRequest;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.TokenDto;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.UserResponse;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PromotorDataDTO;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
@@ -18,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 import static com.proriberaapp.ribera.utils.GeneralMethods.generatePassword;
 
@@ -100,5 +99,21 @@ public class UserPromotersController {
         Integer idUserClient = jwtProvider.getIdFromToken(token);
         return userPromoterService.findPromotorDTOById(idUserClient);
     }
+
+    @GetMapping("/findAllPromoters")
+    public Mono<UserPromoterPageDto> getAllClients(@RequestParam Integer indice, @RequestParam(required = false) String status, @RequestParam(required = false) String fecha, @RequestParam(required = false) String filter) {
+        return userPromoterService.getAllPromoters(indice, status, fecha, filter);
+    }
+
+    @PostMapping("/updatePromoter")
+    public Mono<Void> updateClient(@RequestBody UserPromoterDto entity) {
+        return userPromoterService.savePromoter(entity);
+    }
+
+    @GetMapping("/getStatus")
+    public Mono<List<String>> getStatus() {
+        return userPromoterService.getStatus();
+    }
+
 }
 

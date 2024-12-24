@@ -90,7 +90,6 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                 .hasElements()
                                                 .map(hasConflicts -> !hasConflicts))
                                 .map(roomOffer -> {
-
                                         roomOffer.setKidsReserve(kidCapacity);
                                         roomOffer.setAdultsReserve(
                                                         isFirstState ? roomOffer.getMincapacity() : adultCapacity);

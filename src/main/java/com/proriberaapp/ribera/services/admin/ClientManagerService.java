@@ -17,4 +17,5 @@ public interface ClientManagerService {
     Mono<UserClientEntity> enable(Integer id);
     Mono<UserClientEntity> delete(Integer id);
     Mono<UserClientPageDto> getAllClients(Integer indice, Integer statusId, String fecha, String filter);
+    Mono<Void> saveClient(UserClientDto entity);
 }
