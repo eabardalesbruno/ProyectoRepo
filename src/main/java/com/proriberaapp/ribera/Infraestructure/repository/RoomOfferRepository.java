@@ -67,7 +67,7 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
    * """)
    */
   @Query("""
-             SELECT v.*,case when :adultCapacity>=v.mincapacity or :adultCapacity=0 then true else false end as isbooking
+             SELECT v.*,case when v.mincapacity>=:adultCapacity or :adultCapacity=0 then true else false end as isbooking
            FROM viewroomofferreturn v
              WHERE
               	:categoryName is  null or 	 v.categoryname=:categoryName

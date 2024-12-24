@@ -90,6 +90,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                 .hasElements()
                                                 .map(hasConflicts -> !hasConflicts))
                                 .map(roomOffer -> {
+
                                         roomOffer.setKidsReserve(kidCapacity);
                                         roomOffer.setAdultsReserve(
                                                         isFirstState ? roomOffer.getMincapacity() : adultCapacity);
@@ -101,6 +102,21 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                         roomOffer.getKidsReserve(), roomOffer.getInfantsReserve(),
                                                         roomOffer.getAdultsExtraReserve(),
                                                         roomOffer.getAdultsMayorReserve()));
+                                        BigDecimal totalCostPerson = roomOffer.getAdultextracost().multiply(
+                                                        BigDecimal.valueOf(roomOffer.getAdultsExtraReserve()))
+                                                        .add(roomOffer.getAdultmayorcost()
+                                                                        .multiply(BigDecimal.valueOf(roomOffer
+                                                                                        .getAdultsMayorReserve())))
+                                                        .add(roomOffer.getAdultcost()
+                                                                        .multiply(BigDecimal.valueOf(
+                                                                                        roomOffer.getAdultsReserve())))
+                                                        .add(roomOffer.getKidcost().multiply(BigDecimal
+                                                                        .valueOf(roomOffer.getKidsReserve())));
+                                        roomOffer.setTotalCapacity(roomOffer.getAdultcapacity()
+                                                        + roomOffer.getKidcapacity()
+                                                        + roomOffer.getAdultextra()
+                                                        + roomOffer.getAdultmayorcapacity());
+                                        roomOffer.setCosttotal(totalCostPerson);
                                         return roomOffer;
                                 })
                                 .flatMap(roomOffer -> servicesRepository
