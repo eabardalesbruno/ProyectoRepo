@@ -81,6 +81,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                 int totalCapacityWithOutInfant = kidCapacity + adultCapacity + adultMayorCapacity + adultExtraCapacity;
                 Flux<FeedingEntity> feedings = this.feedingRepository.findAllById(feedingsSelected);
                 return roomOfferRepository.findFilteredV2(
+                                isFirstState,
                                 roomTypeId,
                                 categoryName, offerTimeInit, offerTimeEnd,
                                 kidCapacity, adultCapacity, adultMayorCapacity, adultExtraCapacity,
@@ -101,6 +102,21 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                         roomOffer.getKidsReserve(), roomOffer.getInfantsReserve(),
                                                         roomOffer.getAdultsExtraReserve(),
                                                         roomOffer.getAdultsMayorReserve()));
+                                        BigDecimal totalCostPerson = roomOffer.getAdultextracost().multiply(
+                                                        BigDecimal.valueOf(roomOffer.getAdultsExtraReserve()))
+                                                        .add(roomOffer.getAdultmayorcost()
+                                                                        .multiply(BigDecimal.valueOf(roomOffer
+                                                                                        .getAdultsMayorReserve())))
+                                                        .add(roomOffer.getAdultcost()
+                                                                        .multiply(BigDecimal.valueOf(
+                                                                                        roomOffer.getAdultsReserve())))
+                                                        .add(roomOffer.getKidcost().multiply(BigDecimal
+                                                                        .valueOf(roomOffer.getKidsReserve())));
+                                        roomOffer.setTotalCapacity(roomOffer.getAdultcapacity()
+                                                        + roomOffer.getKidcapacity()
+                                                        + roomOffer.getAdultextra()
+                                                        + roomOffer.getAdultmayorcapacity());
+                                        roomOffer.setCosttotal(totalCostPerson);
                                         return roomOffer;
                                 })
                                 .flatMap(roomOffer -> servicesRepository
