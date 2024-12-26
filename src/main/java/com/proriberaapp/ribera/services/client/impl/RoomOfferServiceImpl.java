@@ -81,6 +81,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                 int totalCapacityWithOutInfant = kidCapacity + adultCapacity + adultMayorCapacity + adultExtraCapacity;
                 Flux<FeedingEntity> feedings = this.feedingRepository.findAllById(feedingsSelected);
                 return roomOfferRepository.findFilteredV2(
+                                isFirstState,
                                 roomTypeId,
                                 categoryName, offerTimeInit, offerTimeEnd,
                                 kidCapacity, adultCapacity, adultMayorCapacity, adultExtraCapacity,
@@ -101,6 +102,21 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                         roomOffer.getKidsReserve(), roomOffer.getInfantsReserve(),
                                                         roomOffer.getAdultsExtraReserve(),
                                                         roomOffer.getAdultsMayorReserve()));
+                                        BigDecimal totalCostPerson = roomOffer.getAdultextracost().multiply(
+                                                        BigDecimal.valueOf(roomOffer.getAdultsExtraReserve()))
+                                                        .add(roomOffer.getAdultmayorcost()
+                                                                        .multiply(BigDecimal.valueOf(roomOffer
+                                                                                        .getAdultsMayorReserve())))
+                                                        .add(roomOffer.getAdultcost()
+                                                                        .multiply(BigDecimal.valueOf(
+                                                                                        roomOffer.getAdultsReserve())))
+                                                        .add(roomOffer.getKidcost().multiply(BigDecimal
+                                                                        .valueOf(roomOffer.getKidsReserve())));
+                                        roomOffer.setTotalCapacity(roomOffer.getAdultcapacity()
+                                                        + roomOffer.getKidcapacity()
+                                                        + roomOffer.getAdultextra()
+                                                        + roomOffer.getAdultmayorcapacity());
+                                        roomOffer.setCosttotal(totalCostPerson);
                                         return roomOffer;
                                 })
                                 .flatMap(roomOffer -> servicesRepository
@@ -232,40 +248,38 @@ public class RoomOfferServiceImpl implements RoomOfferService {
          * }
          */
 
-        /*
-         * @Override
-         * public Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId,
-         * LocalDateTime offerTimeInit,
-         * LocalDateTime offerTimeEnd,
-         * Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer
-         * adultMayorCapacity,
-         * Integer adultExtra) {
-         * return roomOfferRepository
-         * .findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity,
-         * kidCapacity,
-         * adultCapacity, adultMayorCapacity, adultExtra)
-         * .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
-         * roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
-         * .hasElements()
-         * .map(hasConflicts -> !hasConflicts))
-         * .flatMap(roomOffer -> servicesRepository
-         * .findAllViewComfortReturn(roomOffer.getRoomOfferId())
-         * .collectList()
-         * .flatMap(comfortList -> {
-         * roomOffer.setListAmenities(comfortList);
-         * return bedroomRepository
-         * .findAllViewBedroomReturn(roomOffer.getRoomId())
-         * .collectList()
-         * .map(bedroomList -> {
-         * roomOffer.setListBedroomReturn(
-         * bedroomList);
-         * return roomOffer;
-         * });
-         * }))
-         * .collectSortedList(Comparator.comparing(ViewRoomOfferReturn::getRoomOfferId))
-         * .flatMapMany(Flux::fromIterable);
-         * }
-         */
+        @Override
+        public Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId,
+                        LocalDate offerTimeInit,
+                        LocalDate offerTimeEnd,
+                        Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
+                        Integer adultExtra) {
+                return roomOfferRepository
+                                .findFiltered(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity,
+                                                kidCapacity,
+                                                adultCapacity, adultMayorCapacity, adultExtra)
+                                .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
+                                                roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
+                                                .hasElements()
+                                                .map(hasConflicts -> !hasConflicts))
+                                .flatMap(roomOffer -> servicesRepository
+                                                .findAllViewComfortReturn(roomOffer.getRoomOfferId())
+                                                .collectList()
+                                                .flatMap(comfortList -> {
+                                                        roomOffer.setListAmenities(comfortList);
+                                                        return bedroomRepository
+                                                                        .findAllViewBedroomReturn(roomOffer.getRoomId())
+                                                                        .collectList()
+                                                                        .map(bedroomList -> {
+                                                                                roomOffer.setListBedroomReturn(
+                                                                                                bedroomList);
+                                                                                return roomOffer;
+                                                                        });
+                                                }))
+                                .collectSortedList(Comparator.comparing(ViewRoomOfferReturn::getRoomOfferId))
+                                .flatMapMany(Flux::fromIterable);
+        }
+
         @Override
         public Flux<RoomOfferEntity> saveAll(List<RoomOfferEntity> entity) {
                 return roomOfferRepository.findAllByRoomIdInAndOfferTypeIdIn(entity, entity)
