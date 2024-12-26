@@ -140,8 +140,8 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
               )
               ORDER BY r.roomofferid ASC
                            """)
-  Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime offerTimeInit,
-      LocalDateTime offerTimeEnd,
+  Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDate offerTimeInit,
+      LocalDate offerTimeEnd,
       Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
       Integer adultExtra);
 
