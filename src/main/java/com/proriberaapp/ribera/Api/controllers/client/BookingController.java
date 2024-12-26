@@ -267,6 +267,78 @@ public class BookingController {
                 .then();
     }
 
+    @PutMapping("/{bookingId}/companionupdate")
+    public Mono<List<CompanionsEntity>> updateCompanions(
+            @PathVariable Integer bookingId,
+            @RequestBody List<Map<String, Object>> companionsData) {
+
+        Flux<CompanionsEntity> companionsEntityFlux = Flux.fromIterable(companionsData)
+                .map(data -> {
+                    CompanionsEntity companion = new CompanionsEntity();
+                    companion.setFirstname((String) data.get("nombres"));
+                    companion.setLastname((String) data.get("apellidos"));
+                    companion.setTypeDocumentId(data.get("typeDocument") != null ?
+                            ((Number) data.get("typeDocument")).intValue() : null);
+                    companion.setDocumentNumber((String) data.get("document"));
+                    companion.setCellphone((String) data.get("celphone"));
+                    companion.setEmail((String) data.get("correo"));
+                    companion.setCategory((String) data.get("category"));
+
+                    String birthdateStr = (String) data.get("fechaNacimiento");
+                    if (birthdateStr != null) {
+                        if (birthdateStr.length() == 10) {
+                            birthdateStr = birthdateStr + " 00:00:00";
+                        }
+                        companion.setBirthdate(Timestamp.valueOf(birthdateStr));
+                    }
+
+                    companion.setGenderId(data.get("genero") != null ?
+                            ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
+                    companion.setCountryId(data.get("areaZone") != null ?
+                            ((Number) data.get("areaZone")).intValue() : null);
+
+                    return companion;
+                });
+
+        return companionsService.validateTotalCompanions(bookingId, companionsEntityFlux)
+                .then(Mono.from(companionsEntityFlux
+                        .flatMap(companion -> companionsService.updateCompanion(bookingId, companion))
+                        .collectList()));
+    }
+
+    // Para actualizar un solo companion estoy viendo aun
+    @PutMapping("/{bookingId}/companionupdate/{documentNumber}")
+    public Mono<CompanionsEntity> updateSingleCompanion(
+            @PathVariable Integer bookingId,
+            @PathVariable String documentNumber,
+            @RequestBody Map<String, Object> companionData) {
+
+        CompanionsEntity companion = new CompanionsEntity();
+        companion.setFirstname((String) companionData.get("nombres"));
+        companion.setLastname((String) companionData.get("apellidos"));
+        companion.setTypeDocumentId(companionData.get("typeDocument") != null ?
+                ((Number) companionData.get("typeDocument")).intValue() : null);
+        companion.setDocumentNumber(documentNumber);
+        companion.setCellphone((String) companionData.get("celphone"));
+        companion.setEmail((String) companionData.get("correo"));
+        companion.setCategory((String) companionData.get("category"));
+
+        String birthdateStr = (String) companionData.get("fechaNacimiento");
+        if (birthdateStr != null) {
+            if (birthdateStr.length() == 10) {
+                birthdateStr = birthdateStr + " 00:00:00";
+            }
+            companion.setBirthdate(Timestamp.valueOf(birthdateStr));
+        }
+
+        companion.setGenderId(companionData.get("genero") != null ? ("Masculino".equals(companionData.get("genero")) ? 1 : 2) : null);
+        companion.setCountryId(companionData.get("areaZone") != null ?
+                ((Number) companionData.get("areaZone")).intValue() : null);
+
+        return companionsService.updateCompanion(bookingId, companion);
+    }
+
+
     @GetMapping("/companions/dni/{dni}")
     public ResponseEntity<CompanionsDto> getCompanionByDni(@PathVariable String dni) {
         try {
@@ -276,5 +348,6 @@ public class BookingController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+
 
 }

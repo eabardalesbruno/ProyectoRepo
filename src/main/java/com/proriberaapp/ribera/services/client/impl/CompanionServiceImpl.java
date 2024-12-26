@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
@@ -99,4 +100,52 @@ public class CompanionServiceImpl implements CompanionsService {
         }
         return addCompanionBooking(companions);
     }
-}
+
+    @Override
+    public Mono<CompanionsEntity> updateCompanion(Integer bookingId, CompanionsEntity updatedCompanion) {
+        return companionsRepository.findByBookingIdAndDocumentNumber(bookingId, updatedCompanion.getDocumentNumber())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException(
+                        "No se encontró el acompañante con el documento " + updatedCompanion.getDocumentNumber())))
+                .flatMap(existingCompanion -> {
+
+                    updatedCompanion.setCompanionId(existingCompanion.getCompanionId());
+                    updatedCompanion.setBookingId(existingCompanion.getBookingId());
+                    updatedCompanion.setTitular(existingCompanion.isTitular());
+
+                    existingCompanion.setCategory(updatedCompanion.getCategory());
+                    existingCompanion.setFirstname(updatedCompanion.getFirstname());
+                    existingCompanion.setLastname(updatedCompanion.getLastname());
+                    existingCompanion.setTypeDocumentId(updatedCompanion.getTypeDocumentId());
+                    existingCompanion.setDocumentNumber(updatedCompanion.getDocumentNumber());
+                    existingCompanion.setGenderId(updatedCompanion.getGenderId());
+                    existingCompanion.setCountryId(updatedCompanion.getCountryId());
+                    existingCompanion.setCellphone(updatedCompanion.getCellphone());
+                    existingCompanion.setEmail(updatedCompanion.getEmail());
+
+                    if(updatedCompanion.getBirthdate() != null) {
+                        existingCompanion.setBirthdate(updatedCompanion.getBirthdate());
+                        LocalDate birthDate = updatedCompanion.getBirthdate()
+                                .toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
+                        int years = Period.between(birthDate, LocalDate.now()).getYears();
+                        existingCompanion.setYears(years);
+                    }
+
+                    return companionsRepository.save(existingCompanion);
+                });
+    }
+
+    @Override
+    public Flux<CompanionsEntity> updateMultipleCompanions(Integer bookingId, List<CompanionsEntity> companions) {
+        return Flux.fromIterable(companions)
+                .flatMap(companion -> updateCompanion(bookingId, companion))
+                .collectList()
+                .flatMapMany(updatedCompanions -> {
+
+                    return validateTotalCompanions(bookingId, Flux.fromIterable(updatedCompanions))
+                            .thenMany(Flux.fromIterable(updatedCompanions));
+                });
+    }
+    }
+
