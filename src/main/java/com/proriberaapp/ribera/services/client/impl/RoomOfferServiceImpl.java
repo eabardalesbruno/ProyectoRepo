@@ -102,6 +102,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                         roomOffer.getKidsReserve(), roomOffer.getInfantsReserve(),
                                                         roomOffer.getAdultsExtraReserve(),
                                                         roomOffer.getAdultsMayorReserve()));
+
                                         BigDecimal totalCostPerson = roomOffer.getAdultextracost().multiply(
                                                         BigDecimal.valueOf(roomOffer.getAdultsExtraReserve()))
                                                         .add(roomOffer.getAdultmayorcost()
@@ -116,6 +117,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                         + roomOffer.getKidcapacity()
                                                         + roomOffer.getAdultextra()
                                                         + roomOffer.getAdultmayorcapacity());
+
                                         roomOffer.setCosttotal(totalCostPerson);
                                         return roomOffer;
                                 })
@@ -144,7 +146,8 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                                                         .add(element.getCost()),
                                                                         BigDecimal::add).multiply(
                                                                                         BigDecimal
-                                                                                                        .valueOf(totalCapacityWithOutInfant));
+                                                                                                        .valueOf(roomOffer
+                                                                                                                        .getTotalCapacity()));
 
                                                         roomOffer.setCosttotal(
                                                                         roomOffer.getCosttotal().add(totalCostFeeding));
