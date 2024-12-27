@@ -23,13 +23,9 @@ public interface RoomOfferService extends BaseService<RoomOfferEntity, RoomOffer
                         Integer adultExtraCapacity, Integer infantCapacity, List<Integer> feedingsSelected,
                         boolean isFirstState);
 
-        /*
-         * Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDateTime
-         * offerTimeInit,
-         * LocalDateTime offerTimeEnd,
-         * Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer
-         * adultMayorCapacity,
-         * Integer adultExtra);
-         */
+        Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDate offerTimeInit,
+                        LocalDate offerTimeEnd,
+                        Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
+                        Integer adultExtra);
 
 }

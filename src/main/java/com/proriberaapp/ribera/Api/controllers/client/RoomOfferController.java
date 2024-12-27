@@ -57,29 +57,29 @@ public class RoomOfferController {
             @RequestParam(required = false) Integer adultCapacity,
             @RequestParam(required = false) Integer adultMayorCapacity,
             @RequestParam(required = false) Integer adultExtra,
+            @RequestParam(required = false) Boolean isFirstState,
             @RequestParam(required = false) List<Integer> feedings) {
         return roomOfferService.findFilteredV2(roomTypeId,
                 categoryName, offerTimeInit, offerTimeEnd, kidCapacity, adultCapacity,
-                adultMayorCapacity, adultExtra, infantCapacity, feedings, true);
+                adultMayorCapacity, adultExtra, infantCapacity, feedings, isFirstState);
+
     }
 
     @GetMapping("/filter")
     public Flux<ViewRoomOfferReturn> getFilteredRoomOffers(
             @RequestParam(required = false) Integer roomTypeId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offerTimeInit,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offerTimeEnd,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate offerTimeInit,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate offerTimeEnd,
             @RequestParam(required = false) Integer infantCapacity,
             @RequestParam(required = false) Integer kidCapacity,
             @RequestParam(required = false) Integer adultCapacity,
             @RequestParam(required = false) Integer adultMayorCapacity,
             @RequestParam(required = false) Integer adultExtra) {
-        /*
-         * return roomOfferService.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd,
-         * infantCapacity, kidCapacity,
-         * adultCapacity, adultMayorCapacity, adultExtra);
-         */
 
-        return Flux.empty();
+        return roomOfferService.findFiltered(roomTypeId, offerTimeInit, offerTimeEnd,
+                infantCapacity, kidCapacity,
+                adultCapacity, adultMayorCapacity, adultExtra);
+
     }
 
     @PostMapping
