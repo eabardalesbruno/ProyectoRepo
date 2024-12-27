@@ -149,6 +149,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                         roomOffer.setCosttotal(
                                                                         roomOffer.getCosttotal().add(totalCostFeeding));
                                                         roomOffer.setListFeeding(feedingList);
+                                                        roomOffer.setAmountFeeding(totalCostFeeding);
                                                         return roomOffer;
                                                 }));
 
