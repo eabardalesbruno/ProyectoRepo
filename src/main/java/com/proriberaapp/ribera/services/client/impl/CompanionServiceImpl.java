@@ -112,6 +112,7 @@ public class CompanionServiceImpl implements CompanionsService {
                     updatedCompanion.setBookingId(existingCompanion.getBookingId());
                     updatedCompanion.setTitular(existingCompanion.isTitular());
 
+
                     existingCompanion.setCategory(updatedCompanion.getCategory());
                     existingCompanion.setFirstname(updatedCompanion.getFirstname());
                     existingCompanion.setLastname(updatedCompanion.getLastname());
@@ -121,6 +122,7 @@ public class CompanionServiceImpl implements CompanionsService {
                     existingCompanion.setCountryId(updatedCompanion.getCountryId());
                     existingCompanion.setCellphone(updatedCompanion.getCellphone());
                     existingCompanion.setEmail(updatedCompanion.getEmail());
+
 
                     if(updatedCompanion.getBirthdate() != null) {
                         existingCompanion.setBirthdate(updatedCompanion.getBirthdate());
@@ -136,13 +138,13 @@ public class CompanionServiceImpl implements CompanionsService {
                 });
     }
 
+
     @Override
     public Flux<CompanionsEntity> updateMultipleCompanions(Integer bookingId, List<CompanionsEntity> companions) {
         return Flux.fromIterable(companions)
                 .flatMap(companion -> updateCompanion(bookingId, companion))
                 .collectList()
                 .flatMapMany(updatedCompanions -> {
-
                     return validateTotalCompanions(bookingId, Flux.fromIterable(updatedCompanions))
                             .thenMany(Flux.fromIterable(updatedCompanions));
                 });

@@ -275,10 +275,10 @@ public class BookingController {
         Flux<CompanionsEntity> companionsEntityFlux = Flux.fromIterable(companionsData)
                 .map(data -> {
                     CompanionsEntity companion = new CompanionsEntity();
+
                     companion.setFirstname((String) data.get("nombres"));
                     companion.setLastname((String) data.get("apellidos"));
-                    companion.setTypeDocumentId(data.get("typeDocument") != null ?
-                            ((Number) data.get("typeDocument")).intValue() : null);
+                    companion.setTypeDocumentId(data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null);
                     companion.setDocumentNumber((String) data.get("document"));
                     companion.setCellphone((String) data.get("celphone"));
                     companion.setEmail((String) data.get("correo"));
@@ -306,8 +306,8 @@ public class BookingController {
                         .collectList()));
     }
 
-    // Para actualizar un solo companion estoy viendo aun
-    @PutMapping("/{bookingId}/companionupdate/{documentNumber}")
+    // falta esta parte aun lo estoy viendo
+    @PutMapping("/{bookingId}/companions/{documentNumber}")
     public Mono<CompanionsEntity> updateSingleCompanion(
             @PathVariable Integer bookingId,
             @PathVariable String documentNumber,
@@ -331,7 +331,8 @@ public class BookingController {
             companion.setBirthdate(Timestamp.valueOf(birthdateStr));
         }
 
-        companion.setGenderId(companionData.get("genero") != null ? ("Masculino".equals(companionData.get("genero")) ? 1 : 2) : null);
+        companion.setGenderId(companionData.get("genero") != null ?
+                ("Masculino".equals(companionData.get("genero")) ? 1 : 2) : null);
         companion.setCountryId(companionData.get("areaZone") != null ?
                 ((Number) companionData.get("areaZone")).intValue() : null);
 
