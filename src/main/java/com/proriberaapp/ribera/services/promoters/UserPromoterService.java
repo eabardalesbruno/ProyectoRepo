@@ -20,4 +20,5 @@ public interface UserPromoterService {
     Mono<UserPromoterPageDto> getAllPromoters(Integer indice, String status, String fecha, String filter);
     Mono<Void> savePromoter(UserPromoterDto entity);
     Mono<List<String>> getStatus();
+    Mono<UserPromoterEntity> updatePassword(Integer id, String newPassword);
 }
