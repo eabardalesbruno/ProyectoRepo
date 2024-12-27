@@ -139,15 +139,17 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                 .flatMapMany(Flux::fromIterable)
                                 .flatMap(roomOffer -> feedings.collectList()
                                                 .map(feedingList -> {
-
+                                                        Integer totalPerson = roomOffer.getAdultsReserve()
+                                                                        + roomOffer.getAdultsExtraReserve()
+                                                                        + roomOffer.getAdultsMayorReserve()
+                                                                        + roomOffer.getKidsReserve();
                                                         BigDecimal totalCostFeeding = feedingList.stream().reduce(
                                                                         BigDecimal.ZERO,
                                                                         (subtotal, element) -> subtotal
                                                                                         .add(element.getCost()),
                                                                         BigDecimal::add).multiply(
                                                                                         BigDecimal
-                                                                                                        .valueOf(roomOffer
-                                                                                                                        .getTotalCapacity()));
+                                                                                                        .valueOf(totalPerson));
 
                                                         roomOffer.setCosttotal(
                                                                         roomOffer.getCosttotal().add(totalCostFeeding));
