@@ -51,9 +51,8 @@ public class BookingController {
             @RequestParam("stateId") Integer stateId,
             @RequestParam("bookingId") Integer bookingId,
             @RequestParam("userClientId") Integer userClientId,
-            @RequestHeader("Authorization") String token
-            ) {
-        return bookingService.findByUserClientIdAndBookingIdAndBookingStateIdIn(userClientId,bookingId, stateId);
+            @RequestHeader("Authorization") String token) {
+        return bookingService.findByUserClientIdAndBookingIdAndBookingStateIdIn(userClientId, bookingId, stateId);
     }
 
     @GetMapping("/find/all/state/by-promoter")
@@ -63,6 +62,7 @@ public class BookingController {
         Integer userPromoterId = jtp.getIdFromToken(token);
         return bookingService.findAllByUserPromoterIdAndBookingStateIdIn(userPromoterId, stateId);
     }
+
     @GetMapping("/find/all/state/by-receptionist")
     public Flux<ViewBookingReturn> findAllByStateBookingsByReceptionist(
             @RequestParam("stateId") Integer stateId,
@@ -87,7 +87,8 @@ public class BookingController {
             @RequestParam("stateId") Integer stateId,
             @RequestHeader("Authorization") String token) {
         Integer userClientId = jtp.getIdFromToken(token);
-        return bookingService.findAllByDayBookingInitAndDayBookingEndAndUserClientIdAndBookingStateId(dayBookingInit, dayBookingEnd, userClientId, stateId);
+        return bookingService.findAllByDayBookingInitAndDayBookingEndAndUserClientIdAndBookingStateId(dayBookingInit,
+                dayBookingEnd, userClientId, stateId);
     }
 
     @GetMapping("/find/all/family")
@@ -98,7 +99,8 @@ public class BookingController {
             @RequestParam("stateId") Integer stateId,
             @RequestHeader("Authorization") String token) {
         Integer userClientId = jtp.getIdFromToken(token);
-        return bookingService.findAllByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(numberAdults, numberChildren, numberBabies, userClientId, stateId);
+        return bookingService.findAllByNumberAdultsAndNumberChildrenAndNumberBabiesAndUserClientIdAndBookingStateId(
+                numberAdults, numberChildren, numberBabies, userClientId, stateId);
     }
 
     @GetMapping("/find/all/states")
@@ -106,7 +108,7 @@ public class BookingController {
         return bookingService.findAllByBookingStateId(stateId);
     }
 
-    //RESERVAS JMANRIQUE
+    // RESERVAS JMANRIQUE
     @GetMapping("/all")
     public Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(
             @RequestParam Integer bookingStateId,
@@ -149,15 +151,17 @@ public class BookingController {
     }
 
     /*
-    @PostMapping("/save")
-    public Mono<BookingEntity> saveBooking(
-            @RequestBody BookingSaveRequest bookingSaveRequest,
-            @RequestHeader("Authorization") String token) {
-        Integer userClientId = jtp.getIdFromToken(token);
-        log.info("userClientId: {}", userClientId);
-        log.info("bookingSaveRequest: {}", bookingSaveRequest);
-        return bookingService.save(userClientId, bookingSaveRequest);
-    }
+     * @PostMapping("/save")
+     * public Mono<BookingEntity> saveBooking(
+     * 
+     * @RequestBody BookingSaveRequest bookingSaveRequest,
+     * 
+     * @RequestHeader("Authorization") String token) {
+     * Integer userClientId = jtp.getIdFromToken(token);
+     * log.info("userClientId: {}", userClientId);
+     * log.info("bookingSaveRequest: {}", bookingSaveRequest);
+     * return bookingService.save(userClientId, bookingSaveRequest);
+     * }
      */
     @PostMapping("/save")
     public Mono<BookingEntity> saveBooking(
@@ -165,13 +169,15 @@ public class BookingController {
             @RequestHeader("Authorization") String token) {
 
         return Mono.fromCallable(() -> {
-                    Integer userClientId = jtp.getIdFromToken(token);
-                    String document = jtp.getDocumentFromToken(token);
-                    Boolean isPromoter = (document != null && !document.isEmpty());
-                    String authority = jtp.getAuthorityFromToken(token);
-                    Boolean isReceptionist = Role.ROLE_RECEPTIONIST.name().equalsIgnoreCase(authority);
-                    return new Object[]{userClientId, isPromoter,isReceptionist};
-                })
+            Integer userClientId = jtp.getIdFromToken(token);
+            String document = jtp.getDocumentFromToken(token);
+            Boolean isPromoter = (document != null && !document.isEmpty());
+            String authority = jtp.getAuthorityFromToken(token);
+            Boolean isReceptionist = Role.ROLE_RECEPTIONIST.name().equalsIgnoreCase(authority)
+                    || Role.ROLE_SUPER_ADMIN.name().equalsIgnoreCase(authority);
+            System.out.println("isPromoter: " + isPromoter + " isReceptionist: " + isReceptionist);
+            return new Object[] { userClientId, isPromoter, isReceptionist };
+        })
                 .flatMap(userInfo -> {
                     Integer userClientId = (Integer) userInfo[0];
                     Boolean isPromoter = (Boolean) userInfo[1];
@@ -180,16 +186,15 @@ public class BookingController {
                 });
     }
 
-
     @PostMapping("/saveyes")
     public Mono<BookingEntity> saveBooking(@RequestBody BookingSaveRequest bookingSaveRequest) {
         return Mono.fromCallable(() -> {
-                    Integer roomOfferId = bookingSaveRequest.getRoomOfferId();
-                    log.info("roomOfferId: {}", roomOfferId);
-                    log.info("bookingSaveRequest: {}", bookingSaveRequest);
-                    return roomOfferId;
-                })
-                .flatMap(userClientId -> bookingService.save(0, bookingSaveRequest, false,false));
+            Integer roomOfferId = bookingSaveRequest.getRoomOfferId();
+            log.info("roomOfferId: {}", roomOfferId);
+            log.info("bookingSaveRequest: {}", bookingSaveRequest);
+            return roomOfferId;
+        })
+                .flatMap(userClientId -> bookingService.save(0, bookingSaveRequest, false, false));
     }
 
     @GetMapping("/{bookingId}/costfinal")
@@ -223,24 +228,29 @@ public class BookingController {
     }
 
     @GetMapping("/assign-client/{userId}/bookingId/{bookingId}")
-    public Mono<ResponseEntity<BookingEntity>> assignClientToBooking(@PathVariable Integer bookingId, @PathVariable Integer userId) {
+    public Mono<ResponseEntity<BookingEntity>> assignClientToBooking(@PathVariable Integer bookingId,
+            @PathVariable Integer userId) {
         return bookingService.assignClientToBooking(bookingId, userId)
                 .map(ResponseEntity::ok);
     }
 
     @GetMapping("/{bookingId}/companionsDetails")
-    public Flux<CompanionsEntity> getCompanionsByBookingId(@PathVariable Integer bookingId){
+    public Flux<CompanionsEntity> getCompanionsByBookingId(@PathVariable Integer bookingId) {
         return companionsService.getCompanionsByBookingId(bookingId);
     }
 
     @PostMapping("/{bookingId}/companions")
-    public Mono<Void> addCompanionsToBooking(@PathVariable Integer bookingId, @RequestBody List<Map<String, Object>> companionsData) {
+    public Mono<Void> addCompanionsToBooking(@PathVariable Integer bookingId,
+            @RequestBody List<Map<String, Object>> companionsData) {
         Flux<CompanionsEntity> companionsEntityFlux = Flux.fromIterable(companionsData)
                 .map(data -> {
                     CompanionsEntity companion = new CompanionsEntity();
                     companion.setFirstname((String) data.get("nombres"));
                     companion.setLastname((String) data.get("apellidos"));
-                    companion.setTypeDocumentId(data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null); // Tipo de documento
+                    companion.setTypeDocumentId(
+                            data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null); // Tipo
+                                                                                                                       // de
+                                                                                                                       // documento
                     companion.setDocumentNumber((String) data.get("document"));
                     companion.setCellphone((String) data.get("celphone"));
                     companion.setEmail((String) data.get("correo"));
@@ -253,8 +263,10 @@ public class BookingController {
                         }
                         companion.setBirthdate(Timestamp.valueOf(birthdateStr));
                     }
-                    companion.setGenderId(data.get("genero") != null ? ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
-                    companion.setCountryId(data.get("areaZone") != null ? ((Number) data.get("areaZone")).intValue() : null);
+                    companion.setGenderId(
+                            data.get("genero") != null ? ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
+                    companion.setCountryId(
+                            data.get("areaZone") != null ? ((Number) data.get("areaZone")).intValue() : null);
 
                     return companion;
                 });
@@ -278,7 +290,8 @@ public class BookingController {
 
                     companion.setFirstname((String) data.get("nombres"));
                     companion.setLastname((String) data.get("apellidos"));
-                    companion.setTypeDocumentId(data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null);
+                    companion.setTypeDocumentId(
+                            data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null);
                     companion.setDocumentNumber((String) data.get("document"));
                     companion.setCellphone((String) data.get("celphone"));
                     companion.setEmail((String) data.get("correo"));
@@ -292,10 +305,10 @@ public class BookingController {
                         companion.setBirthdate(Timestamp.valueOf(birthdateStr));
                     }
 
-                    companion.setGenderId(data.get("genero") != null ?
-                            ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
-                    companion.setCountryId(data.get("areaZone") != null ?
-                            ((Number) data.get("areaZone")).intValue() : null);
+                    companion.setGenderId(
+                            data.get("genero") != null ? ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
+                    companion.setCountryId(
+                            data.get("areaZone") != null ? ((Number) data.get("areaZone")).intValue() : null);
 
                     return companion;
                 });
@@ -316,8 +329,9 @@ public class BookingController {
         CompanionsEntity companion = new CompanionsEntity();
         companion.setFirstname((String) companionData.get("nombres"));
         companion.setLastname((String) companionData.get("apellidos"));
-        companion.setTypeDocumentId(companionData.get("typeDocument") != null ?
-                ((Number) companionData.get("typeDocument")).intValue() : null);
+        companion.setTypeDocumentId(
+                companionData.get("typeDocument") != null ? ((Number) companionData.get("typeDocument")).intValue()
+                        : null);
         companion.setDocumentNumber(documentNumber);
         companion.setCellphone((String) companionData.get("celphone"));
         companion.setEmail((String) companionData.get("correo"));
@@ -331,14 +345,13 @@ public class BookingController {
             companion.setBirthdate(Timestamp.valueOf(birthdateStr));
         }
 
-        companion.setGenderId(companionData.get("genero") != null ?
-                ("Masculino".equals(companionData.get("genero")) ? 1 : 2) : null);
-        companion.setCountryId(companionData.get("areaZone") != null ?
-                ((Number) companionData.get("areaZone")).intValue() : null);
+        companion.setGenderId(
+                companionData.get("genero") != null ? ("Masculino".equals(companionData.get("genero")) ? 1 : 2) : null);
+        companion.setCountryId(
+                companionData.get("areaZone") != null ? ((Number) companionData.get("areaZone")).intValue() : null);
 
         return companionsService.updateCompanion(bookingId, companion);
     }
-
 
     @GetMapping("/companions/dni/{dni}")
     public ResponseEntity<CompanionsDto> getCompanionByDni(@PathVariable String dni) {
@@ -349,6 +362,5 @@ public class BookingController {
             return ResponseEntity.badRequest().body(null);
         }
     }
-
 
 }
