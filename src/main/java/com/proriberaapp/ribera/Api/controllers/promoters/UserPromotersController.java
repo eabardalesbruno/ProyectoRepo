@@ -115,5 +115,9 @@ public class UserPromotersController {
         return userPromoterService.getStatus();
     }
 
-}
+    @PatchMapping("/update/password")
+    public Mono<UserPromoterEntity> updatePassword(@RequestParam Integer id, @RequestParam String newPassword) {
+        return userPromoterService.updatePassword(id, newPassword);
+    }
 
+}

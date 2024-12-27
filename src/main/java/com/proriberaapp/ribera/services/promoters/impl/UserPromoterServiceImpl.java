@@ -286,4 +286,12 @@ public class UserPromoterServiceImpl implements UserPromoterService {
         return userPromoterRepository.getStatus().collectList();
     }
 
+    @Override
+    public Mono<UserPromoterEntity> updatePassword(Integer id, String newPassword) {
+        return userPromoterRepository.findById(id).map(user -> {
+            user.setPassword(passwordEncoder.encode(newPassword));
+            return user;
+        }).flatMap(userPromoterRepository::save);
+    }
+
 }
