@@ -25,6 +25,8 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -256,12 +258,15 @@ public class BookingController {
                     companion.setEmail((String) data.get("correo"));
                     companion.setTitular(Boolean.TRUE.equals(data.get("isTitular")));
                     companion.setCategory((String) data.get("category"));
+
                     String birthdateStr = (String) data.get("fechaNacimiento");
                     if (birthdateStr != null) {
-                        if (birthdateStr.length() == 10) {
-                            birthdateStr = birthdateStr + " 00:00:00";
+                        try {
+                            LocalDateTime birthdate = ZonedDateTime.parse(birthdateStr).toLocalDateTime();
+                            companion.setBirthdate(Timestamp.valueOf(birthdate));
+                        } catch (DateTimeParseException e) {
+                            throw new RuntimeException("Formato de fecha inválido: " + birthdateStr, e);
                         }
-                        companion.setBirthdate(Timestamp.valueOf(birthdateStr));
                     }
                     companion.setGenderId(
                             data.get("genero") != null ? ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
@@ -299,10 +304,12 @@ public class BookingController {
 
                     String birthdateStr = (String) data.get("fechaNacimiento");
                     if (birthdateStr != null) {
-                        if (birthdateStr.length() == 10) {
-                            birthdateStr = birthdateStr + " 00:00:00";
+                        try {
+                            LocalDateTime birthdate = ZonedDateTime.parse(birthdateStr).toLocalDateTime();
+                            companion.setBirthdate(Timestamp.valueOf(birthdate));
+                        } catch (DateTimeParseException e) {
+                            throw new RuntimeException("Formato de fecha inválido: " + birthdateStr, e);
                         }
-                        companion.setBirthdate(Timestamp.valueOf(birthdateStr));
                     }
 
                     companion.setGenderId(
