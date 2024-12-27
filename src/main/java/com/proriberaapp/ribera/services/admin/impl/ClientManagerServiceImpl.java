@@ -7,6 +7,8 @@ import com.proriberaapp.ribera.Domain.enums.StatesUser;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.admin.ClientManagerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -16,11 +18,16 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ClientManagerServiceImpl implements ClientManagerService {
+
     private final UserClientRepository userClientRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public Mono<UserClientEntity> updatePassword(Integer id, String newPassword) {
         return userClientRepository.findById(id).map(user -> {
-            user.setPassword(newPassword);
+            user.setPassword(passwordEncoder.encode(newPassword));
             return user;
         }).flatMap(userClientRepository::save);
     }
