@@ -30,7 +30,6 @@ public class BaseEmailReserve {
 
         // Convertir estilos a estilos en línea
         templateBuilder = EmailTemplateProcessor.inlineStyles(templateBuilder);
-        System.out.println(templateBuilder);
         return templateBuilder;
     }
 
