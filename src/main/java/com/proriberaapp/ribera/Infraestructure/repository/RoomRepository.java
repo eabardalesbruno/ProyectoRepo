@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BedroomReturn;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import org.springframework.data.r2dbc.repository.Query;
@@ -21,4 +22,22 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
 
     @Query("SELECT * FROM ViewBedroomReturn WHERE roomid = :roomid")
     Flux<BedroomReturn> findAllViewBedroomReturn(@Param("roomid") Integer roomid);
+
+    @Query("""
+        SELECT *, COALESCE((SELECT
+        CASE WHEN b.daybookingend < NOW() THEN 'LIBRE'
+        ELSE bs.bookingstatename
+        END bookingstatename
+        FROM booking b
+        JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid
+        WHERE b.roomofferid = t.roomofferid
+        ORDER BY createdat DESC LIMIT 1),'LIBRE') bookingstatename
+        FROM
+        (SELECT r.roomid, r.roomnumber, ro.roomofferid
+        FROM room r
+        LEFT JOIN roomoffer ro ON r.roomid = ro.roomid) t
+        ORDER BY t.roomnumber;
+    """)
+    Flux<RoomDetailDto> finAllViewRoomsDetail();
+
 }
