@@ -7,9 +7,13 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import com.proriberaapp.ribera.Domain.entities.PaymentMethodEntity.StatePaymentMethod;
 
 public interface PaymentMethodRepository extends R2dbcRepository<PaymentMethodEntity, Integer> {
 
     Mono<Object> findByDescription(String description);
+
     Flux<Object> findAllByDescriptionIn(List<PaymentMethodRequest> paymentMethodEntity);
+
+    Flux<PaymentMethodEntity> findAllByState(StatePaymentMethod state);
 }

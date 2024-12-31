@@ -6,8 +6,14 @@ import reactor.core.publisher.Mono;
 
 public interface PaymentMethodBookService {
     Mono<PaymentMethodEntity> createPaymentMethod(PaymentMethodEntity paymentMethod);
+
     Mono<PaymentMethodEntity> updatePaymentMethod(Integer id, PaymentMethodEntity paymentMethod);
+
     Mono<PaymentMethodEntity> getPaymentMethodById(Integer id);
+
     Flux<PaymentMethodEntity> getAllPaymentMethods();
+
+    Flux<PaymentMethodEntity> getPaymentMethodsActive();
+
     Mono<Void> deletePaymentMethod(Integer id);
 }
