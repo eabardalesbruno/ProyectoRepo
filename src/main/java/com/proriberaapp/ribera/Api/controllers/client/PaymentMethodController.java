@@ -23,13 +23,19 @@ public class PaymentMethodController {
     }
 
     @PutMapping("/{id}")
-    public Mono<PaymentMethodEntity> updatePaymentMethod(@PathVariable Integer id, @RequestBody PaymentMethodEntity paymentMethod) {
+    public Mono<PaymentMethodEntity> updatePaymentMethod(@PathVariable Integer id,
+            @RequestBody PaymentMethodEntity paymentMethod) {
         return paymentMethodBookService.updatePaymentMethod(id, paymentMethod);
     }
 
     @GetMapping("/{id}")
     public Mono<PaymentMethodEntity> getPaymentMethodById(@PathVariable Integer id) {
         return paymentMethodBookService.getPaymentMethodById(id);
+    }
+
+    @GetMapping("/active")
+    public Flux<PaymentMethodEntity> getPaymentMethodsActive() {
+        return paymentMethodBookService.getPaymentMethodsActive();
     }
 
     @GetMapping

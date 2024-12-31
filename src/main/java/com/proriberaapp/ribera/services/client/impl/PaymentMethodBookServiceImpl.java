@@ -47,4 +47,9 @@ public class PaymentMethodBookServiceImpl implements PaymentMethodBookService {
     public Mono<Void> deletePaymentMethod(Integer id) {
         return paymentMethodRepository.deleteById(id);
     }
+
+    @Override
+    public Flux<PaymentMethodEntity> getPaymentMethodsActive() {
+        return paymentMethodRepository.findAllByState(PaymentMethodEntity.StatePaymentMethod.ACTIVE);
+    }
 }
