@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.services.client.RoomService;
@@ -21,4 +22,10 @@ public class ManagerRoomController extends BaseManagerController<RoomEntity, Roo
     public Flux<ViewRoomReturn> findAllViewRoomReturn() {
         return roomService.findAllView();
     }
+
+    @GetMapping("/find/all/detail")
+    public Flux<RoomDetailDto> findAllViewRoomsDetail() {
+        return roomService.finAllViewRoomsDetail();
+    }
+
 }
