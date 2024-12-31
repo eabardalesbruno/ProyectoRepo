@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BedroomRepository;
@@ -120,7 +121,6 @@ public class RoomServiceImpl implements RoomService {
         return roomRepository.findById(roomId);
     }
 
-
     @Override
     public Flux<ViewRoomReturn> findAllView() {
         return roomRepository.findAllViewRoomReturn()
@@ -133,4 +133,10 @@ public class RoomServiceImpl implements RoomService {
                                 })
                 );
     }
+
+    @Override
+    public Flux<RoomDetailDto> finAllViewRoomsDetail() {
+        return roomRepository.finAllViewRoomsDetail();
+    }
+
 }
