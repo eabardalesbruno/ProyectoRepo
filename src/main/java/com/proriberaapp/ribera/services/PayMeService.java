@@ -4,7 +4,10 @@ import com.proriberaapp.ribera.Api.controllers.payme.AuthorizationRepository;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.*;
 import com.proriberaapp.ribera.Api.controllers.payme.entity.PayMeAuthorization;
 import com.proriberaapp.ribera.Api.controllers.payme.entity.TokenizeEntity;
+import com.proriberaapp.ribera.Domain.dto.BookingAndRoomNameDto;
+import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
+import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
@@ -546,161 +549,280 @@ public class PayMeService {
                                                                         "Error al procesar el pago. Intente nuevamente."))
                                                         .then(Mono.just(new TransactionNecessaryResponse(false))));
                 } else {
+
                         return authorizationRepository.save(payMeAuthorization)
                                         .doOnSubscribe(subscription -> System.out.println("Subscription started"))
                                         .doOnError(e -> System.err.println("Error occurred: " + e.getMessage()))
                                         .switchIfEmpty(Mono.error(new HttpStatusCodeException(HttpStatus.BAD_REQUEST,
                                                         "Error al guardar el pago") {
                                         }))
-                                        .flatMap(savedAuthorization ->
+                                        .flatMap(savedAuthorization -> bookingRepository
+                                                        .findByBookingId(payMeAuthorization.getIdBooking())
+                                                        .switchIfEmpty(Mono.error(new HttpStatusCodeException(
+                                                                        HttpStatus.BAD_REQUEST,
+                                                                        "Error al guardar el pago") {
+                                                        }))
+                                                        .flatMap(booking -> {
+                                                                if (booking.getBookingStateId() == 3) {
+                                                                        booking.setBookingStateId(2);
+                                                                }
+                                                                return Mono.zip(bookingRepository.save(
+                                                                                booking),
+                                                                                this.bookingRepository
+                                                                                                .getRoomNameAndDescriptionfindByBookingId(
+                                                                                                                booking.getBookingId()),
+                                                                                userClientRepository.findById(booking
+                                                                                                .getUserClientId()));
 
-                                        userClientRepository.findById(idUser)
-                                                        .doOnNext(userClient -> System.out
-                                                                        .println("User found: " + userClient))
-                                                        .flatMap(userClient -> bookingRepository
-                                                                        .findByBookingId(savedAuthorization
-                                                                                        .getIdBooking())
-                                                                        .switchIfEmpty(Mono.error(
-                                                                                        new HttpStatusCodeException(
-                                                                                                        HttpStatus.BAD_REQUEST,
-                                                                                                        "Error al guardar el pago") {
-                                                                                        }))
+                                                        }).flatMap(tuple -> {
+                                                                BookingEntity updatedBooking = tuple.getT1();
+                                                                BookingAndRoomNameDto bookingAndRoomNameDto = tuple
+                                                                                .getT2();
+                                                                UserClientEntity userClient = tuple.getT3();
+                                                                BigDecimal monto = new BigDecimal(
+                                                                                authorizationResponse
+                                                                                                .getTransaction()
+                                                                                                .getAmount());
+                                                                BigDecimal totalCost = monto.divide(
+                                                                                BigDecimal.valueOf(
+                                                                                                100000));
+                                                                InvoiceType type = InvoiceType
+                                                                                .getInvoiceTypeByName(
+                                                                                                invoiceType.toUpperCase());
+                                                                InvoiceClientDomain invoiceClientDomain = new InvoiceClientDomain(
+                                                                                userClient.getFirstName(),
+                                                                                invoiceDocumentNumber,
+                                                                                userClient.getAddress(),
+                                                                                userClient.getCellNumber(),
+                                                                                userClient.getEmail(),
+                                                                                updatedBooking.getUserClientId());
+                                                                InvoiceDomain invoice = new InvoiceDomain(
+                                                                                invoiceClientDomain,
+                                                                                updatedBooking.getBookingId(),
+                                                                                18.0,
+                                                                                InvoiceCurrency.PEN,
+                                                                                type,
+                                                                                percentageDiscount);
+                                                                invoice.setOperationCode(
+                                                                                authorizationResponse
+                                                                                                .getId());
+                                                                InvoiceItemDomain item = new InvoiceItemDomain(
+                                                                                bookingAndRoomNameDto.getRoomName(),
+                                                                                bookingAndRoomNameDto
+                                                                                                .getRoomDescription(),
+                                                                                1,
+                                                                                totalCost);
+                                                                invoice.addItemWithIncludedIgv(
+                                                                                item);
+                                                                PaymentBookEntity paymentBook = PaymentBookEntity
+                                                                                .builder()
+                                                                                .bookingId(updatedBooking
+                                                                                                .getBookingId())
+                                                                                .userClientId(updatedBooking
+                                                                                                .getUserClientId())
+                                                                                .refuseReasonId(1)
+                                                                                .paymentMethodId(1)
+                                                                                .paymentStateId(2)
+                                                                                .paymentTypeId(3)
+                                                                                .paymentSubTypeId(6)
+                                                                                .currencyTypeId(1)
+                                                                                .amount(totalCost)
+                                                                                .description("Pago exitoso")
+                                                                                .paymentDate(Timestamp
+                                                                                                .valueOf(LocalDateTime
+                                                                                                                .now(ZoneId.of("America/Lima"))))
+                                                                                .operationCode(authorizationResponse
+                                                                                                .getId())
+                                                                                .note("Nota de pago")
+                                                                                .totalCost(totalCost)
+                                                                                .invoiceDocumentNumber(
+                                                                                                invoiceDocumentNumber)
+                                                                                .invoiceType(invoiceType)
+                                                                                .imageVoucher("Pago con Tarjeta")
+                                                                                .totalPoints(0)
+                                                                                .paymentComplete(true)
+                                                                                .pendingpay(1)
+                                                                                .totalDiscount(totalDiscount)
+                                                                                .percentageDiscount(
+                                                                                                percentageDiscount)
+                                                                                .totalCostWithOutDiscount(
+                                                                                                totalCostWithOutDiscount)
+                                                                                .build();
+                                                                return paymentBookRepository
+                                                                                .save(paymentBook)
+                                                                                .flatMap(paymentBookR -> {
+                                                                                        invoice.setPaymentBookId(
+                                                                                                        paymentBookR.getPaymentBookId());
+                                                                                        /*
+                                                                                         * return
+                                                                                         * Mono.zip(this.invoiceService
+                                                                                         * .save(invoice),
+                                                                                         * sendSuccessEmail(
+                                                                                         * userClient.getEmail(),
+                                                                                         * paymentBookR.getPaymentBookId
+                                                                                         * ()));
+                                                                                         */
+                                                                                        return this.invoiceService
+                                                                                                        .save(invoice)
+                                                                                                        .then(sendSuccessEmail(
+                                                                                                                        userClient.getEmail(),
+                                                                                                                        paymentBookR.getPaymentBookId()));
 
-                                                                        .flatMap(booking -> {
-                                                                                if (booking.getBookingStateId() == 3) {
-                                                                                        booking.setBookingStateId(2);
-                                                                                }
-                                                                                return bookingRepository.save(booking)
-                                                                                                .doOnNext(savedBooking -> System.out
-                                                                                                                .println("Booking saved: "
-                                                                                                                                + savedBooking))
-                                                                                                .flatMap(b -> this.bookingRepository
-                                                                                                                .getRoomNameAndDescriptionfindByBookingId(
-                                                                                                                                b.getBookingId()));
-                                                                        })
-                                                                        .flatMap(updatedBooking -> {
-                                                                                BigDecimal monto = new BigDecimal(
-                                                                                                authorizationResponse
-                                                                                                                .getTransaction()
-                                                                                                                .getAmount());
-                                                                                BigDecimal totalCost = monto.divide(
-                                                                                                BigDecimal.valueOf(
-                                                                                                                100000));
-                                                                                InvoiceType type = InvoiceType
-                                                                                                .getInvoiceTypeByName(
-                                                                                                                invoiceType.toUpperCase());
-                                                                                InvoiceClientDomain invoiceClientDomain = new InvoiceClientDomain(
-                                                                                                userClient.getFirstName(),
-                                                                                                invoiceDocumentNumber,
-                                                                                                userClient.getAddress(),
-                                                                                                userClient.getCellNumber(),
-                                                                                                userClient.getEmail(),
-                                                                                                updatedBooking.getUserClientId());
-                                                                                InvoiceDomain invoice = new InvoiceDomain(
-                                                                                                invoiceClientDomain,
-                                                                                                updatedBooking.getBookingId(),
-                                                                                                18.0,
-                                                                                                InvoiceCurrency.PEN,
-                                                                                                type,
-                                                                                                percentageDiscount);
-                                                                                invoice.setOperationCode(
-                                                                                                authorizationResponse
-                                                                                                                .getId());
-                                                                                InvoiceItemDomain item = new InvoiceItemDomain(
-                                                                                                updatedBooking.getRoomName(),
-                                                                                                updatedBooking.getRoomDescription(),
-                                                                                                1,
-                                                                                                totalCost);
-                                                                                invoice.addItemWithIncludedIgv(
-                                                                                                item);
-                                                                                PaymentBookEntity paymentBook = PaymentBookEntity
-                                                                                                .builder()
-                                                                                                .bookingId(updatedBooking
-                                                                                                                .getBookingId())
-                                                                                                .userClientId(updatedBooking
-                                                                                                                .getUserClientId())
-                                                                                                .refuseReasonId(1)
-                                                                                                .paymentMethodId(1)
-                                                                                                .paymentStateId(2)
-                                                                                                .paymentTypeId(3)
-                                                                                                .paymentSubTypeId(6)
-                                                                                                .currencyTypeId(1)
-                                                                                                .amount(totalCost)
-                                                                                                .description("Pago exitoso")
-                                                                                                .paymentDate(Timestamp
-                                                                                                                .valueOf(LocalDateTime
-                                                                                                                                .now(ZoneId.of("America/Lima"))))
-                                                                                                .operationCode(authorizationResponse
-                                                                                                                .getId())
-                                                                                                .note("Nota de pago")
-                                                                                                .totalCost(totalCost)
-                                                                                                .invoiceDocumentNumber(
-                                                                                                                invoiceDocumentNumber)
-                                                                                                .invoiceType(invoiceType)
-                                                                                                .imageVoucher("Pago con Tarjeta")
-                                                                                                .totalPoints(0)
-                                                                                                .paymentComplete(true)
-                                                                                                .pendingpay(1)
-                                                                                                .totalDiscount(totalDiscount)
-                                                                                                .percentageDiscount(
-                                                                                                                percentageDiscount)
-                                                                                                .totalCostWithOutDiscount(
-                                                                                                                totalCostWithOutDiscount)
-                                                                                                .build();
-                                                                                return paymentBookRepository
-                                                                                                .save(paymentBook)
-                                                                                                .flatMap(paymentBookR -> {
-                                                                                                        invoice.setPaymentBookId(
-                                                                                                                        paymentBookR.getPaymentBookId());
-                                                                                                        /*
-                                                                                                         * return this.
-                                                                                                         * invoiceService
-                                                                                                         * .save(
-                                                                                                         * invoice)
-                                                                                                         * .flatMap(
-                                                                                                         * invoiceR -> {
-                                                                                                         * return
-                                                                                                         * sendSuccessEmail(
-                                                                                                         * userClient.
-                                                                                                         * getEmail(),
-                                                                                                         * paymentBookR.
-                                                                                                         * getPaymentBookId
-                                                                                                         * ())
-                                                                                                         * .onErrorResume
-                                                                                                         * (e -> {
-                                                                                                         * System.out
-                                                                                                         * .println(
-                                                                                                         * "Error al enviar correo"
-                                                                                                         * );
-                                                                                                         * return
-                                                                                                         * Mono.error(
-                                                                                                         * e);
-                                                                                                         * });
-                                                                                                         * });
-                                                                                                         */
-                                                                                                        return Mono.zip(this.invoiceService
-                                                                                                                        .save(invoice),
-                                                                                                                        sendSuccessEmail(
-                                                                                                                                        userClient.getEmail(),
-                                                                                                                                        paymentBookR.getPaymentBookId()));
+                                                                                })
+                                                                                .thenReturn(new TransactionNecessaryResponse(
+                                                                                                true))
+                                                                                .onErrorResume(e -> authorizationRepository
+                                                                                                .findById(idUser)
+                                                                                                .flatMap(savedA -> bookingRepository
+                                                                                                                .findByBookingId(
+                                                                                                                                savedA
+                                                                                                                                                .getIdBooking())
+                                                                                                                .flatMap(booking -> {
+                                                                                                                        booking.setBookingStateId(
+                                                                                                                                        3);
+                                                                                                                        return bookingRepository
+                                                                                                                                        .save(booking);
+                                                                                                                }))
+                                                                                                .flatMap(booking -> userClientRepository
+                                                                                                                .findById(idUser)
+                                                                                                                .flatMap(userCliente -> sendErrorEmail(
+                                                                                                                                userCliente.getEmail(),
+                                                                                                                                e.getMessage()))
+                                                                                                                .then(Mono.error(
+                                                                                                                                e))));
+                                                        })
 
-                                                                                                })
-                                                                                                .thenReturn(new TransactionNecessaryResponse(
-                                                                                                                true));
-                                                                        })))
-                                        .onErrorResume(e -> authorizationRepository.findById(idUser)
-                                                        .flatMap(savedAuthorization -> bookingRepository
-                                                                        .findByBookingId(savedAuthorization
-                                                                                        .getIdBooking())
-                                                                        .flatMap(booking -> {
-                                                                                booking.setBookingStateId(3);
-                                                                                return bookingRepository.save(booking);
-                                                                        }))
-                                                        .flatMap(updatedBooking -> userClientRepository.findById(idUser)
-                                                                        .flatMap(userClient -> sendErrorEmail(
-                                                                                        userClient.getEmail(),
-                                                                                        e.getMessage()))
-                                                                        .then(Mono.error(e))));
+                                        );
+                        /*
+                         * return authorizationRepository.save(payMeAuthorization)
+                         * .doOnSubscribe(subscription -> System.out.println("Subscription started"))
+                         * .doOnError(e -> System.err.println("Error occurred: " + e.getMessage()))
+                         * .switchIfEmpty(Mono.error(new HttpStatusCodeException(HttpStatus.BAD_REQUEST,
+                         * "Error al guardar el pago") {
+                         * }))
+                         * .flatMap(savedAuthorization ->
+                         * 
+                         * userClientRepository.findById(idUser)
+                         * .switchIfEmpty(Mono.error(new HttpStatusCodeException(
+                         * HttpStatus.BAD_REQUEST,
+                         * "Error al guardar el pago") {
+                         * }))
+                         * .flatMap(userClient -> bookingRepository
+                         * .findByBookingId(savedAuthorization
+                         * .getIdBooking())
+                         * .switchIfEmpty(Mono.error(
+                         * new HttpStatusCodeException(
+                         * HttpStatus.BAD_REQUEST,
+                         * "Error al guardar el pago") {
+                         * }))
+                         * 
+                         * .flatMap(booking -> {
+                         * if (booking.getBookingStateId() == 3) {
+                         * booking.setBookingStateId(2);
+                         * }
+                         * return bookingRepository.save(booking)
+                         * .flatMap(b -> this.bookingRepository
+                         * .getRoomNameAndDescriptionfindByBookingId(
+                         * b.getBookingId()));
+                         * })
+                         * .flatMap(updatedBooking -> {
+                         * BigDecimal monto = new BigDecimal(
+                         * authorizationResponse
+                         * .getTransaction()
+                         * .getAmount());
+                         * BigDecimal totalCost = monto.divide(
+                         * BigDecimal.valueOf(
+                         * 100000));
+                         * InvoiceType type = InvoiceType
+                         * .getInvoiceTypeByName(
+                         * invoiceType.toUpperCase());
+                         * InvoiceClientDomain invoiceClientDomain = new InvoiceClientDomain(
+                         * userClient.getFirstName(),
+                         * invoiceDocumentNumber,
+                         * userClient.getAddress(),
+                         * userClient.getCellNumber(),
+                         * userClient.getEmail(),
+                         * updatedBooking.getUserClientId());
+                         * InvoiceDomain invoice = new InvoiceDomain(
+                         * invoiceClientDomain,
+                         * updatedBooking.getBookingId(),
+                         * 18.0,
+                         * InvoiceCurrency.PEN,
+                         * type,
+                         * percentageDiscount);
+                         * invoice.setOperationCode(
+                         * authorizationResponse
+                         * .getId());
+                         * InvoiceItemDomain item = new InvoiceItemDomain(
+                         * updatedBooking.getRoomName(),
+                         * updatedBooking.getRoomDescription(),
+                         * 1,
+                         * totalCost);
+                         * invoice.addItemWithIncludedIgv(
+                         * item);
+                         * PaymentBookEntity paymentBook = PaymentBookEntity
+                         * .builder()
+                         * .bookingId(updatedBooking
+                         * .getBookingId())
+                         * .userClientId(updatedBooking
+                         * .getUserClientId())
+                         * .refuseReasonId(1)
+                         * .paymentMethodId(1)
+                         * .paymentStateId(2)
+                         * .paymentTypeId(3)
+                         * .paymentSubTypeId(6)
+                         * .currencyTypeId(1)
+                         * .amount(totalCost)
+                         * .description("Pago exitoso")
+                         * .paymentDate(Timestamp
+                         * .valueOf(LocalDateTime
+                         * .now(ZoneId.of("America/Lima"))))
+                         * .operationCode(authorizationResponse
+                         * .getId())
+                         * .note("Nota de pago")
+                         * .totalCost(totalCost)
+                         * .invoiceDocumentNumber(
+                         * invoiceDocumentNumber)
+                         * .invoiceType(invoiceType)
+                         * .imageVoucher("Pago con Tarjeta")
+                         * .totalPoints(0)
+                         * .paymentComplete(true)
+                         * .pendingpay(1)
+                         * .totalDiscount(totalDiscount)
+                         * .percentageDiscount(
+                         * percentageDiscount)
+                         * .totalCostWithOutDiscount(
+                         * totalCostWithOutDiscount)
+                         * .build();
+                         * return paymentBookRepository
+                         * .save(paymentBook)
+                         * .flatMap(paymentBookR -> {
+                         * invoice.setPaymentBookId(
+                         * paymentBookR.getPaymentBookId());
+                         * return Mono.zip(this.invoiceService
+                         * .save(invoice),
+                         * sendSuccessEmail(
+                         * userClient.getEmail(),
+                         * paymentBookR.getPaymentBookId()));
+                         * 
+                         * })
+                         * .thenReturn(new TransactionNecessaryResponse(
+                         * true));
+                         * })))
+                         * .onErrorResume(e -> authorizationRepository.findById(idUser)
+                         * .flatMap(savedAuthorization -> bookingRepository
+                         * .findByBookingId(savedAuthorization
+                         * .getIdBooking())
+                         * .flatMap(booking -> {
+                         * booking.setBookingStateId(3);
+                         * return bookingRepository.save(booking);
+                         * }))
+                         * .flatMap(updatedBooking -> userClientRepository.findById(idUser)
+                         * .flatMap(userClient -> sendErrorEmail(
+                         * userClient.getEmail(),
+                         * e.getMessage()))
+                         * .then(Mono.error(e))));
+                         */
                 }
 
         }
