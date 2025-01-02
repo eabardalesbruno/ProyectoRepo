@@ -52,4 +52,6 @@ public class BookingSaveRequest {
 
     private Integer totalCapacity;
 
+    private boolean isPaying;
+
 }
