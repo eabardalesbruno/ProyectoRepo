@@ -359,7 +359,6 @@ public class BookingController {
 
         return companionsService.updateCompanion(bookingId, companion);
     }
-
       */
 
     @GetMapping("/companions/dni/{dni}")
