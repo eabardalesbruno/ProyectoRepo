@@ -17,6 +17,7 @@ import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.UserPromoterRepository;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.RefusePaymentService;
 import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
@@ -536,6 +537,12 @@ public class PayMeService {
                         double totalDiscount, double percentageDiscount, double totalCostWithOutDiscount) {
                 PayMeAuthorization payMeAuthorization = AuthorizationResponse.create(idUser, Role.ROLE_USER,
                                 authorizationResponse);
+                // EL ERROR PUEDE SER QUE SEA UN PROMOTOR ADMINISTRADOR O RECEPCIONISTA Y NO
+                // NECESAARIAMENTE UN USUARIO
+                /*
+                 * if (Objects.equals(payMeAuthorization.getStatusCode(), "01") || Objects
+                 * .equals(payMeAuthorization.getStatusCode(), "N7")) {
+                 */
                 if (Objects.equals(payMeAuthorization.getStatusCode(), "01")) {
                         return authorizationRepository.findById(idUser)
                                         .flatMap(savedAuthorization -> bookingRepository

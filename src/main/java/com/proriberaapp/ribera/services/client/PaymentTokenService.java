@@ -11,7 +11,7 @@ public interface PaymentTokenService {
 
     Mono<String> generateAndSaveToken(Integer bookingId, Integer paymentBookId);
 
-    Mono<String> generateAndSaveToken(Integer bookingId, Integer paymentBookId, String emailUser);
+    Mono<String> generateAndSaveToken(Integer bookingId, String emailUser);
 
     Mono<BookingEntity> findBookingByPaymentToken(String paymentToken);
 

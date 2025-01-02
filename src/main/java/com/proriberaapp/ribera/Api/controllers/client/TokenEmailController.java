@@ -99,7 +99,7 @@ public class TokenEmailController {
          * });
          */
         return paymentTokenService
-                .generateAndSaveToken(request.getBookingId().intValue(), request.getUserClientId().intValue(),
+                .generateAndSaveToken(request.getBookingId().intValue(),
                         request.getEmail())
                 .map(token -> {
                     String linkPayment = "https://cieneguillariberadelrio.online/payment-validation?token=" + token;
