@@ -73,21 +73,31 @@ public class PaymentTokenServiceImpl implements PaymentTokenService {
     }
 
     @Override
-    public Mono<String> generateAndSaveToken(Integer bookingId, Integer paymentBookId, String emailUser) {
-        LocalDateTime now = LocalDateTime.now().withSecond(0).withNano(0);
+    public Mono<String> generateAndSaveToken(Integer bookingId, String emailUser) {
         String token = UUID.randomUUID().toString();
         Mono<String> a = Mono.defer(() -> {
-            return userClientRepository.findByUserClientId(paymentBookId).flatMap(userClientEntity -> {
+          return   bookingRepository.findById(bookingId).flatMap(bookingEntity -> {
+                return userClientRepository.findById(bookingEntity.getUserClientId());
+            }).flatMap(userCLientEntity -> {
+                 BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+                baseEmailReserve.addEmailHandler(new UploadReceiptLaterTemplateEmail(userCLientEntity.getFirstName(), token,
+                        bookingId.toString(), urlBaseFrontend));
+                String body = baseEmailReserve.execute();
+                return emailService.sendEmail(emailUser, "Pago de reserva", body);
+            })
+            .thenReturn(token);
+           /*  return userClientRepository.findByUserClientId(paymentBookId).flatMap(userClientEntity -> {
                 BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
                 baseEmailReserve.addEmailHandler(
                         new UploadReceiptLaterTemplateEmail(userClientEntity.getFirstName(), token,
                                 bookingId.toString(), urlBaseFrontend));
                 String body = baseEmailReserve.execute();
-                return emailService.sendEmail(emailUser, "Pago de reserva", body);
-            }).thenReturn(token);
+                return emailService.sendEmail(emailUser, "Pago de reserva", body); */
+        
         });
-        return paymentTokenRepository.generateAndSaveToken(token, bookingId,
-                paymentBookId).then(a);
+     /*    return paymentTokenRepository.generateAndSaveToken(token, bookingId,
+                paymentBookId).then(a); */
+        return a;
         /*
          * return Mono.zip(paymentTokenRepository.generateAndSaveToken(token, bookingId,
          * paymentBookId), Mono.just(token))

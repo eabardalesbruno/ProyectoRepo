@@ -75,6 +75,8 @@ public class BookingEntity {
         return BookingEntity.builder()
                 .roomOfferId(bookingSaveRequest.getRoomOfferId())
                 .bookingStateId(3)
+                .bookingId(
+                        bookingSaveRequest.getBookingId())
                 .userClientId((isPromotor || isReceptionist) ? bookingSaveRequest.getUserClientId() : userClientId)
                 .userPromotorId(isPromotor ? userClientId : null)
                 .receptionistId(isReceptionist ? userClientId : null)
