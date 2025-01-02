@@ -51,7 +51,8 @@ public class ViewBookingReturn {
     Integer userClientId;
     @Column("userpromotorId")
     Integer userPromotorId;
-
+    @Column("roomofferid")
+    Integer roomOfferId;
     @Getter
     @Setter
     @Builder
