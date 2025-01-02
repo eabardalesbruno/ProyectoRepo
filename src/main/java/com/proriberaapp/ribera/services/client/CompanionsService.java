@@ -21,6 +21,6 @@ public interface CompanionsService  {
     Mono<CompanionsEntity> calculateAgeandSave(CompanionsEntity companionsEntity);
 
     Flux<CompanionsEntity> updateMultipleCompanions(Integer bookingId, List<CompanionsEntity> companions);
-    Mono<CompanionsEntity> updateCompanion(Integer bookingId, CompanionsEntity updatedCompanion);
+    Flux<CompanionsEntity> updateCompanion(Integer bookingId, CompanionsEntity updatedCompanion);
 
 }
