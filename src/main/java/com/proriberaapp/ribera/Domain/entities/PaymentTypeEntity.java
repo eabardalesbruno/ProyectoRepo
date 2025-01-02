@@ -21,6 +21,6 @@ public class PaymentTypeEntity {
     private Integer countryId;
     @Column("paymentmethodid")
     private Integer paymentMethodId;
-    @Column("owner")
-    private String owner;
+  /*   @Column("owner")
+    private String owner; */
 }
