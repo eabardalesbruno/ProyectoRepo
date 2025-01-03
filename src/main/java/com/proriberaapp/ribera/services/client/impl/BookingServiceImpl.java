@@ -703,7 +703,7 @@ public class BookingServiceImpl implements BookingService {
                                                                                 bookingEntity.getDayBookingEnd())
                                                                         .hasElements()
                                                                         .flatMap(exists -> {
-                                                                                if (exists) {
+                                                                                if (exists && bookingSaveRequest.getBookingId() == null) {
                                                                                         // Si
                                                                                         // la
                                                                                         // reserva
