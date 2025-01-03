@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client.dto;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Null;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,8 @@ import java.util.List;
 @Setter
 @Builder
 public class BookingSaveRequest {
+    @Nullable
+    private Integer bookingId;
 
     private Integer roomOfferId;
 
@@ -51,5 +54,7 @@ public class BookingSaveRequest {
     private List<Long> feedingIDs;
 
     private Integer totalCapacity;
+
+    private boolean isPaying;
 
 }
