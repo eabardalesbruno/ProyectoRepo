@@ -22,6 +22,6 @@ public interface CompanionsService  {
 
     Flux<CompanionsEntity> updateMultipleCompanions(Integer bookingId, List<CompanionsEntity> companions);
 
-    Flux<CompanionsEntity> updateCompanion(Integer bookingId, CompanionsEntity updatedCompanion);
+    Flux<CompanionsEntity> updateCompanion(Integer bookingId, List<CompanionsEntity> companionsEntities);
 
 }
