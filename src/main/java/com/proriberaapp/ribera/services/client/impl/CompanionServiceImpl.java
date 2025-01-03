@@ -22,6 +22,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -99,40 +100,55 @@ public class CompanionServiceImpl implements CompanionsService {
     }
 
     @Override
-    public Flux<CompanionsEntity> updateCompanion(Integer bookingId, CompanionsEntity updatedCompanion) {
-        return companionsRepository.findByBookingId(bookingId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("No se encontraron acompañantes para el bookingId " + bookingId)))
-                .flatMap(existingCompanion -> {
+    public Flux<CompanionsEntity> updateCompanion(Integer bookingId, List<CompanionsEntity> companionsEntities) {
+        return Flux.fromIterable(companionsEntities)
+                .flatMap(companion -> {
+                    companion.setBookingId(bookingId);
+                    if (companion.getCompanionId() != null) {
+                        return companionsRepository.findByCompanionIdAndBookingId(companion.getCompanionId(), bookingId)
+                                .switchIfEmpty(Mono.error(new IllegalArgumentException(
+                                        "No se encontró un acompañante con bookingId " + bookingId +
+                                                " y companionId " + companion.getCompanionId())))
+                                .flatMap(existingCompanion -> {
+                                    existingCompanion.setFirstname(companion.getFirstname());
+                                    existingCompanion.setLastname(companion.getLastname());
+                                    existingCompanion.setTypeDocumentId(companion.getTypeDocumentId());
+                                    existingCompanion.setDocumentNumber(companion.getDocumentNumber());
+                                    existingCompanion.setCellphone(companion.getCellphone());
+                                    existingCompanion.setEmail(companion.getEmail());
+                                    existingCompanion.setCategory(companion.getCategory());
+                                    existingCompanion.setBirthdate(companion.getBirthdate());
+                                    existingCompanion.setGenderId(companion.getGenderId());
+                                    existingCompanion.setCountryId(companion.getCountryId());
 
-                    existingCompanion.setCategory(updatedCompanion.getCategory());
-                    existingCompanion.setFirstname(updatedCompanion.getFirstname());
-                    existingCompanion.setLastname(updatedCompanion.getLastname());
-                    existingCompanion.setTypeDocumentId(updatedCompanion.getTypeDocumentId());
-                    existingCompanion.setDocumentNumber(updatedCompanion.getDocumentNumber());
-                    existingCompanion.setGenderId(updatedCompanion.getGenderId());
-                    existingCompanion.setCountryId(updatedCompanion.getCountryId());
-                    existingCompanion.setCellphone(updatedCompanion.getCellphone());
-                    existingCompanion.setEmail(updatedCompanion.getEmail());
+                                    if (existingCompanion.getBirthdate() != null) {
+                                        Timestamp birthTime = existingCompanion.getBirthdate();
+                                        LocalDate birthDate = birthTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                                        int years = Period.between(birthDate, LocalDate.now()).getYears();
+                                        existingCompanion.setYears(years);
+                                    }
 
-                    if (updatedCompanion.getBirthdate() != null) {
-                        existingCompanion.setBirthdate(updatedCompanion.getBirthdate());
-                        LocalDate birthDate = updatedCompanion.getBirthdate()
-                                .toInstant()
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate();
-                        int years = Period.between(birthDate, LocalDate.now()).getYears();
-                        existingCompanion.setYears(years);
+                                    return companionsRepository.save(existingCompanion);
+                                });
+                    } else {
+                        return companionsRepository.save(companion)
+                                .flatMap(newCompanion -> {
+                                    if (newCompanion.getBirthdate() != null) {
+                                        Timestamp birthTime = newCompanion.getBirthdate();
+                                        LocalDate birthDate = birthTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                                        int years = Period.between(birthDate, LocalDate.now()).getYears();
+                                        newCompanion.setYears(years);
+                                    }
+                                    return companionsRepository.save(newCompanion);
+                                });
                     }
-
-                    return companionsRepository.save(existingCompanion);
                 });
     }
-
 
     @Override
     public Flux<CompanionsEntity> updateMultipleCompanions(Integer bookingId, List<CompanionsEntity> companions) {
         return Flux.fromIterable(companions)
-                .flatMap(companion -> updateCompanion(bookingId, companion))
+                .flatMap(companion -> updateCompanion(bookingId,companions))
                 .collectList()
                 .flatMapMany(updatedCompanions -> {
                     return validateTotalCompanions(bookingId, Flux.fromIterable(updatedCompanions))
