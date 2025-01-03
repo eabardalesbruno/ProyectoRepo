@@ -128,6 +128,7 @@ public class ViewRoomOfferReturn {
     String squaremeters;
     Boolean oceanviewbalcony;
     Boolean balconyoverlookingpool;
+    Boolean poolview;
 
     List<BedroomReturn> listBedroomReturn;
     List<ListAmenities> listAmenities;
