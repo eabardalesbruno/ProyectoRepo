@@ -13,4 +13,6 @@ public interface CompanionsRepository extends R2dbcRepository<CompanionsEntity, 
 
     Mono<CompanionsEntity> findByBookingIdAndDocumentNumber(Integer bookingId, String documentNumber);
 
+    Mono<CompanionsEntity> findByCompanionIdAndBookingId(Integer companionId, Integer bookingId);
+
 }
