@@ -491,6 +491,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         @Param("userPromoterId") Integer userPromoterId,
                         @Param("bookingStateId") Integer bookingStateId);
 
+
         Flux<BookingEntity> findByUserPromotorIdAndBookingStateId(Integer userPromotorId, Integer bookingStateId);
 
 }
