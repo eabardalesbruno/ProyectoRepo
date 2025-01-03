@@ -1,6 +1,5 @@
 package com.proriberaapp.ribera.services.client.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.proriberaapp.ribera.Domain.dto.CompanionsDto;
 import com.proriberaapp.ribera.Domain.entities.CompanionsEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
@@ -14,13 +13,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
@@ -102,16 +99,10 @@ public class CompanionServiceImpl implements CompanionsService {
     }
 
     @Override
-    public Mono<CompanionsEntity> updateCompanion(Integer bookingId, CompanionsEntity updatedCompanion) {
-        return companionsRepository.findByBookingIdAndDocumentNumber(bookingId, updatedCompanion.getDocumentNumber())
-                .switchIfEmpty(Mono.error(new IllegalArgumentException(
-                        "No se encontró el acompañante con el documento " + updatedCompanion.getDocumentNumber())))
+    public Flux<CompanionsEntity> updateCompanion(Integer bookingId, CompanionsEntity updatedCompanion) {
+        return companionsRepository.findByBookingId(bookingId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("No se encontraron acompañantes para el bookingId " + bookingId)))
                 .flatMap(existingCompanion -> {
-
-                    updatedCompanion.setCompanionId(existingCompanion.getCompanionId());
-                    updatedCompanion.setBookingId(existingCompanion.getBookingId());
-                    updatedCompanion.setTitular(existingCompanion.isTitular());
-
 
                     existingCompanion.setCategory(updatedCompanion.getCategory());
                     existingCompanion.setFirstname(updatedCompanion.getFirstname());
@@ -123,8 +114,7 @@ public class CompanionServiceImpl implements CompanionsService {
                     existingCompanion.setCellphone(updatedCompanion.getCellphone());
                     existingCompanion.setEmail(updatedCompanion.getEmail());
 
-
-                    if(updatedCompanion.getBirthdate() != null) {
+                    if (updatedCompanion.getBirthdate() != null) {
                         existingCompanion.setBirthdate(updatedCompanion.getBirthdate());
                         LocalDate birthDate = updatedCompanion.getBirthdate()
                                 .toInstant()

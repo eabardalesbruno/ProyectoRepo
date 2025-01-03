@@ -327,7 +327,7 @@ public class BookingController {
     }
 
     // falta esta parte aun lo estoy viendo
-    @PutMapping("/{bookingId}/companions/{documentNumber}")
+     /*@PutMapping("/{bookingId}/companions/{documentNumber}")
     public Mono<CompanionsEntity> updateSingleCompanion(
             @PathVariable Integer bookingId,
             @PathVariable String documentNumber,
@@ -359,6 +359,7 @@ public class BookingController {
 
         return companionsService.updateCompanion(bookingId, companion);
     }
+      */
 
     @GetMapping("/companions/dni/{dni}")
     public ResponseEntity<CompanionsDto> getCompanionByDni(@PathVariable String dni) {
