@@ -118,4 +118,7 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                         """)
         Mono<PaymentBookUserDTO> loadUserDataAndBookingData(int paymentBookId);
 
+        @Query("SELECT COUNT(*) FROM paymentbook WHERE bookingid = :bookingid")
+        Mono<Long> countPaymentBookByBookingId(int bookingid);
+
 }

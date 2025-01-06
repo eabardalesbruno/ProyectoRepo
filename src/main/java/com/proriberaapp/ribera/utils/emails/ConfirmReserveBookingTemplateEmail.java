@@ -11,6 +11,7 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
     private String clientName;
     private String bookingId;
     private String totalPeoples;
+    private long payment;
 
     public ConfirmReserveBookingTemplateEmail(
             String monthInit,
@@ -20,7 +21,9 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
             long dayInterval,
             String roomName,
             String clientName,
-            String bookingId, String totalPeoples) {
+            String bookingId,
+            String totalPeoples,
+            long payment) {
         this.monthInit = monthInit;
         this.monthEnd = monthEnd;
         this.dayInit = dayInit;
@@ -30,7 +33,7 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
         this.clientName = clientName;
         this.bookingId = bookingId;
         this.totalPeoples = totalPeoples;
-
+        this.payment = payment;
     }
 
     @Override
@@ -85,8 +88,10 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
                     <br>
                     para %totalPeoples
                 </strong></p>
-                <a href="https://www.cieneguillariberadelrio.com/payment-method/%bookingId" class="button">Pagar ahora</a>
-                    </div>
+                <div th:if="${%payment == '0'}">
+                     <a href="https://www.cieneguillariberadelrio.com/payment-method/%bookingId" class="button">Pagar ahora</a>
+                </div>
+                </div>
                     <p class="font-size">
                     Recuerde que el pago lo puede realizar mediante deposito en nuestra cuenta a través de agente BCP, agencias o cualquier método de pago dentro de la plataforma usando este enlace:
                     <a href="https://www.cieneguillariberadelrio.com/payment-method/%bookingId">www.riberadelrio/reservas.com</a>
@@ -97,7 +102,8 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
                 .replace("%dayInit", dayInit).replace("%dayEnd", dayEnd)
                 .replace("%dayInterval", String.valueOf(dayInterval))
                 .replaceAll("%bookingId", String.valueOf(bookingId))
-                .replace("%totalPeoples", String.valueOf(totalPeoples));
+                .replace("%totalPeoples", String.valueOf(totalPeoples))
+                .replace("%payment", String.valueOf(payment));
     }
 
     @Override

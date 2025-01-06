@@ -693,82 +693,120 @@ public class BookingServiceImpl implements BookingService {
                                                                                         bookingEntity.setCostFinal(
                                                                                                         costFinal.add(extraCost));
 
+                                                                // Verificar si ya existe una
+                                                                // reserva para las fechas
+                                                                // seleccionadas
+                                                                return bookingRepository
+                                                                        .findExistingBookings(
+                                                                                bookingEntity.getRoomOfferId(),
+                                                                                bookingEntity.getDayBookingInit(),
+                                                                                bookingEntity.getDayBookingEnd())
+                                                                        .hasElements()
+                                                                        .flatMap(exists -> {
+                                                                                if (exists && bookingSaveRequest.getBookingId() == null) {
+                                                                                        // Si
+                                                                                        // la
+                                                                                        // reserva
+                                                                                        // ya
+                                                                                        // existe,
+                                                                                        // lanzar
+                                                                                        // una
+                                                                                        // excepción
+                                                                                        return Mono.error(
+                                                                                                new CustomException(
+                                                                                                        HttpStatus.BAD_REQUEST,
+                                                                                                        "La reserva ya existe para las fechas seleccionadas"));
+                                                                                } else {
+                                                                                        // Si
+                                                                                        // la
+                                                                                        // reserva
+                                                                                        // no
+                                                                                        // existe,
+                                                                                        // guardarla
+                                                                                        // en
+                                                                                        // la
+                                                                                        // base
+                                                                                        // de
+                                                                                        // datos
                                                                                         return bookingRepository
-                                                                                                        .findExistingBookings(
-                                                                                                                        bookingEntity.getRoomOfferId(),
-                                                                                                                        bookingEntity.getDayBookingInit(),
-                                                                                                                        bookingEntity.getDayBookingEnd())
-                                                                                                        .hasElements()
-                                                                                                        .flatMap(exists -> {
-                                                                                                                if (exists && bookingSaveRequest
-                                                                                                                                .getBookingId() == null) {
-                                                                                                                        return Mono.error(
-                                                                                                                                        new CustomException(
-                                                                                                                                                        HttpStatus.BAD_REQUEST,
-                                                                                                                                                        "Ya existe una reserva en las fechas seleccionadas"));
-                                                                                                                }
-                                                                                                                return bookingRepository
-                                                                                                                                .save(bookingEntity)
-                                                                                                                                .flatMap(savedBooking -> {
-                                                                                                                                        return saveBookingFeeding(
-                                                                                                                                                        Long.parseLong(savedBooking
-                                                                                                                                                                        .getBookingId()
-                                                                                                                                                                        .toString()),
-                                                                                                                                                        bookingSaveRequest
-                                                                                                                                                                        .getFeedingIDs(),
-                                                                                                                                                        bookingSaveRequest
-                                                                                                                                                                        .getTotalCapacity())
-                                                                                                                                                        .then(sendBookingConfirmationEmail(
-                                                                                                                                                                        savedBooking,
-                                                                                                                                                                        roomName,
-                                                                                                                                                                        totalPeoples)
-                                                                                                                                                                        .then(Mono.just(savedBooking)));
-                                                                                                                                })
-                                                                                                                                .map(bookingEntity1 -> {
-                                                                                                                                        if (bookingSaveRequest
-                                                                                                                                                        .getFinalCostumer() != null) {
-                                                                                                                                                bookingSaveRequest
-                                                                                                                                                                .getFinalCostumer()
-                                                                                                                                                                .stream()
-                                                                                                                                                                .map(finalCostumer -> finalCostumerRepository
-                                                                                                                                                                                .save(FinalCostumer
-                                                                                                                                                                                                .toFinalCostumerEntity(
-                                                                                                                                                                                                                bookingEntity1.getBookingId(),
-                                                                                                                                                                                                                finalCostumer)));
-                                                                                                                                        } else {
-                                                                                                                                                userClientRepository
-                                                                                                                                                                .findById(userClientId)
-                                                                                                                                                                .map(userClient -> {
-                                                                                                                                                                        FinalCostumer finalCostumer = FinalCostumer
-                                                                                                                                                                                        .builder()
-                                                                                                                                                                                        .firstName(userClient
-                                                                                                                                                                                                        .getFirstName())
-                                                                                                                                                                                        .lastName(userClient
-                                                                                                                                                                                                        .getLastName())
-                                                                                                                                                                                        .documentType(userClient
-                                                                                                                                                                                                        .getDocumenttypeId() == 1
-                                                                                                                                                                                                                        ? "DNI"
-                                                                                                                                                                                                                        : "PAS")
-                                                                                                                                                                                        .documentNumber(
-                                                                                                                                                                                                        userClient.getDocumentNumber())
-                                                                                                                                                                                        .yearOld(calculateAge(
-                                                                                                                                                                                                        userClient.getBirthDate()))
-                                                                                                                                                                                        .build();
-                                                                                                                                                                        finalCostumerRepository
-                                                                                                                                                                                        .save(
-                                                                                                                                                                                                        FinalCostumer.toFinalCostumerEntity(
-                                                                                                                                                                                                                        bookingEntity1.getBookingId(),
-                                                                                                                                                                                                                        finalCostumer));
-                                                                                                                                                                        return finalCostumer;
-                                                                                                                                                                });
-                                                                                                                                        }
-                                                                                                                                        return bookingEntity1;
-                                                                                                                                });
-                                                                                                        });
-
-                                                                                });
+                                                                                                .save(bookingEntity)
+                                                                                                .flatMap(savedBooking -> {
+                                                                                                        // Guardar
+                                                                                                        // los
+                                                                                                        // datos
+                                                                                                        // de
+                                                                                                        // booking_feeding
+                                                                                                        // después
+                                                                                                        // de
+                                                                                                        // guardar
+                                                                                                        // booking
+                                                                                                        return saveBookingFeeding(
+                                                                                                                Long.parseLong(savedBooking
+                                                                                                                        .getBookingId()
+                                                                                                                        .toString()),
+                                                                                                                bookingSaveRequest
+                                                                                                                        .getFeedingIDs(),
+                                                                                                                bookingSaveRequest
+                                                                                                                        .getTotalCapacity())
+                                                                                                                .then(sendBookingConfirmationEmail(
+                                                                                                                        savedBooking,
+                                                                                                                        roomName,
+                                                                                                                        totalPeoples,
+                                                                                                                        bookingSaveRequest.isPaying())
+                                                                                                                        .then(Mono.just(savedBooking)));
+                                                                                                });
+                                                                                }
+                                                                        })
+                                                                        .map(bookingEntity1 -> {
+                                                                                if (bookingSaveRequest
+                                                                                        .getFinalCostumer() != null) {
+                                                                                        // Guardar
+                                                                                        // los
+                                                                                        // datos
+                                                                                        // de
+                                                                                        // los
+                                                                                        // huéspedes
+                                                                                        // finales
+                                                                                        bookingSaveRequest
+                                                                                                .getFinalCostumer()
+                                                                                                .stream()
+                                                                                                .map(finalCostumer -> finalCostumerRepository
+                                                                                                        .save(FinalCostumer
+                                                                                                                .toFinalCostumerEntity(
+                                                                                                                        bookingEntity1.getBookingId(),
+                                                                                                                        finalCostumer)));
+                                                                                } else {
+                                                                                        userClientRepository
+                                                                                                .findById(userClientId)
+                                                                                                .map(userClient -> {
+                                                                                                        FinalCostumer finalCostumer = FinalCostumer
+                                                                                                                .builder()
+                                                                                                                .firstName(userClient
+                                                                                                                        .getFirstName())
+                                                                                                                .lastName(userClient
+                                                                                                                        .getLastName())
+                                                                                                                .documentType(userClient
+                                                                                                                        .getDocumenttypeId() == 1
+                                                                                                                        ? "DNI"
+                                                                                                                        : "PAS")
+                                                                                                                .documentNumber(
+                                                                                                                        userClient.getDocumentNumber())
+                                                                                                                .yearOld(calculateAge(
+                                                                                                                        userClient.getBirthDate()))
+                                                                                                                .build();
+                                                                                                        finalCostumerRepository
+                                                                                                                .save(
+                                                                                                                        FinalCostumer.toFinalCostumerEntity(
+                                                                                                                                bookingEntity1.getBookingId(),
+                                                                                                                                finalCostumer));
+                                                                                                        return finalCostumer;
+                                                                                                });
+                                                                                }
+                                                                                return bookingEntity1;
+                                                                        });
                                                         });
-                                });
+                                        });
+                        });
         }
 
         public Integer calculateAge(Timestamp birthDate) {
@@ -780,39 +818,47 @@ public class BookingServiceImpl implements BookingService {
         // Método para enviar el correo de confirmación de reserva con el nombre de la
         // habitación
         private Mono<BookingEntity> sendBookingConfirmationEmail(BookingEntity bookingEntity, String roomName,
-                        String totalPeoples) {
-                return userClientRepository.findByUserClientId(bookingEntity.getUserClientId())
+                        String totalPeoples, boolean isPaying) {
+                if (isPaying) {
+                        return Mono.empty();
+                } else {
+                        return userClientRepository.findByUserClientId(bookingEntity.getUserClientId())
                                 .flatMap(userClient -> {
-                                        BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
-                                        String monthInit = TransformDate
-                                                        .getAbbreviatedMonth(bookingEntity.getDayBookingInit());
-                                        String monthEnd = TransformDate
-                                                        .getAbbreviatedMonth(bookingEntity.getDayBookingEnd());
-                                        int dayInit = TransformDate.getDayNumber(bookingEntity.getDayBookingInit());
-                                        int dayEnd = TransformDate.getDayNumber(bookingEntity.getDayBookingEnd());
-                                        long dayInterval = TransformDate
-                                                        .calculateDaysDifference(bookingEntity.getDayBookingInit(),
+                                        return paymentBookRepository.countPaymentBookByBookingId(bookingEntity.getBookingId())
+                                                .flatMap(payment -> {
+                                                        BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+                                                        String monthInit = TransformDate
+                                                                .getAbbreviatedMonth(bookingEntity.getDayBookingInit());
+                                                        String monthEnd = TransformDate
+                                                                .getAbbreviatedMonth(bookingEntity.getDayBookingEnd());
+                                                        int dayInit = TransformDate.getDayNumber(bookingEntity.getDayBookingInit());
+                                                        int dayEnd = TransformDate.getDayNumber(bookingEntity.getDayBookingEnd());
+                                                        long dayInterval = TransformDate
+                                                                .calculateDaysDifference(bookingEntity.getDayBookingInit(),
                                                                         bookingEntity.getDayBookingEnd());
-                                        baseEmailReserve.addEmailHandler(new ConfirmReserveBookingTemplateEmail(
-                                                        monthInit,
-                                                        monthEnd,
-                                                        String.valueOf(dayInit),
-                                                        String.valueOf(
+                                                        baseEmailReserve.addEmailHandler(new ConfirmReserveBookingTemplateEmail(
+                                                                monthInit,
+                                                                monthEnd,
+                                                                String.valueOf(dayInit),
+                                                                String.valueOf(
                                                                         dayEnd),
-                                                        dayInterval,
-                                                        roomName,
-                                                        userClient.getFirstName(),
-                                                        String.valueOf(bookingEntity.getBookingId()),
-                                                        totalPeoples));
-                                        String emailBody = baseEmailReserve.execute();
-                                        // Generar el cuerpo del correo electrónico con el nombre de la habitación
-                                        /* String emailBody = generateEmailBody(bookingEntity, roomName); */
-                                        // Enviar el correo electrónico utilizando el servicio de correo
-                                        return emailService
-                                                        .sendEmail(userClient.getEmail(), "Confirmación de Reserva",
+                                                                dayInterval,
+                                                                roomName,
+                                                                userClient.getFirstName(),
+                                                                String.valueOf(bookingEntity.getBookingId()),
+                                                                totalPeoples,
+                                                                payment));
+                                                        String emailBody = baseEmailReserve.execute();
+                                                        // Generar el cuerpo del correo electrónico con el nombre de la habitación
+                                                        /* String emailBody = generateEmailBody(bookingEntity, roomName); */
+                                                        // Enviar el correo electrónico utilizando el servicio de correo
+                                                        return emailService
+                                                                .sendEmail(userClient.getEmail(), "Confirmación de Reserva",
                                                                         emailBody)
-                                                        .thenReturn(bookingEntity);
+                                                                .thenReturn(bookingEntity);
+                                                });
                                 });
+                }
         }
 
         // Método para calcular el número de días entre dos fechas
