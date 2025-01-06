@@ -29,6 +29,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/booking")
@@ -289,14 +290,13 @@ public class BookingController {
             @PathVariable Integer bookingId,
             @RequestBody List<Map<String, Object>> companionsData) {
 
-        Flux<CompanionsEntity> companionsEntityFlux = Flux.fromIterable(companionsData)
+        List<CompanionsEntity> companionsEntities = companionsData.stream()
                 .map(data -> {
                     CompanionsEntity companion = new CompanionsEntity();
-
+                    companion.setCompanionId(data.get("companionId") != null ? ((Number) data.get("companionId")).intValue() : null);
                     companion.setFirstname((String) data.get("nombres"));
                     companion.setLastname((String) data.get("apellidos"));
-                    companion.setTypeDocumentId(
-                            data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null);
+                    companion.setTypeDocumentId(data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null);
                     companion.setDocumentNumber((String) data.get("document"));
                     companion.setCellphone((String) data.get("celphone"));
                     companion.setEmail((String) data.get("correo"));
@@ -312,18 +312,15 @@ public class BookingController {
                         }
                     }
 
-                    companion.setGenderId(
-                            data.get("genero") != null ? ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
-                    companion.setCountryId(
-                            data.get("areaZone") != null ? ((Number) data.get("areaZone")).intValue() : null);
+                    companion.setGenderId(data.get("genero") != null ? ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
+                    companion.setCountryId(data.get("areaZone") != null ? ((Number) data.get("areaZone")).intValue() : null);
 
                     return companion;
-                });
+                })
+                .collect(Collectors.toList());
 
-        return companionsService.validateTotalCompanions(bookingId, companionsEntityFlux)
-                .then(Mono.from(companionsEntityFlux
-                        .flatMap(companion -> companionsService.updateCompanion(bookingId, companion))
-                        .collectList()));
+        return companionsService.updateCompanion(bookingId, companionsEntities)
+                .collectList();
     }
 
     // falta esta parte aun lo estoy viendo
