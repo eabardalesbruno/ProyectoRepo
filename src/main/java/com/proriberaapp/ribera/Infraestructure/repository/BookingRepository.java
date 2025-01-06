@@ -91,34 +91,34 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
 
         @Query("""
             
-                SELECT distinct us.firstname, us.lastname,us.documenttypeid,us.documentnumber,us.cellnumber, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image,
-                       r.offertimeinit, r.offertimeend, us.email, bo.costfinal,
-                       TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\\"T\\"HH24:MI:SS') AS daybookinginit,
-                       TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\\"T\\"HH24:MI:SS') AS daybookingend,
-                       bs.bookingstateid, bs.bookingstatename,
-            		   (SELECT b.bedtypename FROM bedroom be\s
-            		   INNER JOIN bedstype b ON b.bedtypeid = be.bedtypeid
-            		   WHERE be.roomid = rid.roomid LIMIT 1) bedtypename,
-            		   (SELECT b.bedtypedescription FROM bedroom be\s
-            		   INNER JOIN bedstype b ON b.bedtypeid = be.bedtypeid
-            		   WHERE be.roomid = rid.roomid LIMIT 1) bedtypename,
-                       SUM(bo.numberchildren+bo.numberbabies+bo.numberadultsextra+bo.numberadults+bo.numberadultsmayor) as capacity,
-                       r.riberapoints, r.inresortpoints, r.points
-                       FROM userclient us
-            		   JOIN booking bo ON us.userclientid = bo.userclientid
-                       JOIN roomoffer r ON r.roomofferid = bo.roomofferid
-                       JOIN room rid ON rid.roomid = r.roomid
-                       JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid
-                       JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid
-                       WHERE bo.bookingstateid = :bookingStateId
-                       AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId)
-                       AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR
-                       bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd)
-                       GROUP BY us.firstname, us.lastname, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image,
-                       r.offertimeinit, r.offertimeend, us.email, bo.costfinal, bo.daybookinginit, bo.daybookingend,
-                       bs.bookingstateid, bs.bookingstatename, rid.roomid,
-                       r.riberapoints, r.inresortpoints, r.points,us.documenttypeid,us.documentNumber,us.cellnumber
-                       ORDER BY bo.bookingid DESC
+                SELECT distinct us.firstname, us.lastname,us.documenttypeid,us.documentnumber,us.cellnumber, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, 
+                       r.offertimeinit, r.offertimeend, us.email, bo.costfinal, 
+                       TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, 
+                       TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend, 
+                       bs.bookingstateid, bs.bookingstatename, 
+            		   (SELECT b.bedtypename FROM bedroom be 
+            		   INNER JOIN bedstype b ON b.bedtypeid = be.bedtypeid 
+            		   WHERE be.roomid = rid.roomid LIMIT 1) bedtypename, 
+            		   (SELECT b.bedtypedescription FROM bedroom be 
+            		   INNER JOIN bedstype b ON b.bedtypeid = be.bedtypeid 
+            		   WHERE be.roomid = rid.roomid LIMIT 1) bedtypename, 
+                       SUM(bo.numberchildren+bo.numberbabies+bo.numberadultsextra+bo.numberadults+bo.numberadultsmayor) as capacity, 
+                       r.riberapoints, r.inresortpoints, r.points 
+                       FROM userclient us 
+            		   JOIN booking bo ON us.userclientid = bo.userclientid 
+                       JOIN roomoffer r ON r.roomofferid = bo.roomofferid 
+                       JOIN room rid ON rid.roomid = r.roomid 
+                       JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid 
+                       JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid 
+                       WHERE bo.bookingstateid = :bookingStateId 
+                       AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId) 
+                       AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR 
+                       bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd) 
+                       GROUP BY us.firstname, us.lastname, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, 
+                       r.offertimeinit, r.offertimeend, us.email, bo.costfinal, bo.daybookinginit, bo.daybookingend, 
+                       bs.bookingstateid, bs.bookingstatename, rid.roomid, 
+                       r.riberapoints, r.inresortpoints, r.points,us.documenttypeid,us.documentNumber,us.cellnumber 
+                       ORDER BY bo.bookingid DESC 
                        LIMIT :limit OFFSET :offset
             """)
         Flux<BookingStates> findBookingsByStateIdPaginated(
