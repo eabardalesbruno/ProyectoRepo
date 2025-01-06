@@ -110,7 +110,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                        JOIN room rid ON rid.roomid = r.roomid
                        JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid
                        JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid
-                       WHERE bo.bookingstateid = 3
+                       WHERE bo.bookingstateid = :bookingStateId
                        AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId)
                        AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR
                        bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd)
