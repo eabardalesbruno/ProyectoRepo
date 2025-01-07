@@ -95,13 +95,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                        r.offertimeinit, r.offertimeend, us.email, bo.costfinal, 
                        TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, 
                        TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend, 
-                       bs.bookingstateid, bs.bookingstatename, 
-            		   (SELECT b.bedtypename FROM bedroom be 
-            		   INNER JOIN bedstype b ON b.bedtypeid = be.bedtypeid 
-            		   WHERE be.roomid = rid.roomid LIMIT 1) bedtypename, 
-            		   (SELECT b.bedtypedescription FROM bedroom be 
-            		   INNER JOIN bedstype b ON b.bedtypeid = be.bedtypeid 
-            		   WHERE be.roomid = rid.roomid LIMIT 1) bedtypename, 
+                       bs.bookingstateid, bs.bookingstatename,
                        SUM(bo.numberchildren+bo.numberbabies+bo.numberadultsextra+bo.numberadults+bo.numberadultsmayor) as capacity, 
                        r.riberapoints, r.inresortpoints, r.points 
                        FROM userclient us 
