@@ -34,7 +34,7 @@ public class EmailServiceImpl implements EmailService {
             try {
                 MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-                helper.setFrom("notificacionesinclub@inclub.site");
+                helper.setFrom("notificacionesinclub@inclub.world");
                 helper.setTo(to);
                 helper.setSubject(subject);
                 helper.setText(body, true); // true indica que el cuerpo es HTML
