@@ -38,6 +38,10 @@ public class RoomImageController {
         return roomImageService.findAll();
     }
 
+    @PostMapping("/delete-images")
+    public Mono<Void> deleteRoomImage(@RequestBody List<Integer> ids) {
+        return roomImageService.deleteAllById(ids);
+    }
     @PostMapping(path = "/upload-images/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<Map<String, List<String>>>> uploadMultipleFiles(
             @RequestPart("files") Flux<FilePart> files,
