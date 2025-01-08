@@ -4,6 +4,9 @@ import com.proriberaapp.ribera.Domain.entities.RoomImagesEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomImageRepository;
 import com.proriberaapp.ribera.services.client.RoomImageService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -36,5 +39,11 @@ public class RoomImageServiceImpl implements RoomImageService {
     public Flux<RoomImagesEntity> findAllByRoomId(Integer roomId) {
         return roomImageRepository.findAllByRoomId(roomId);
     }
+
+    @Override
+    public Mono<Void> deleteAllById(List<Integer> roomImagenIds) {
+        return this.roomImageRepository.deleteAllById(roomImagenIds);
+    }
+    
 
 }

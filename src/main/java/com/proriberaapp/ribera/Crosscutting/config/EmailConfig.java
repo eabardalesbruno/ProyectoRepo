@@ -16,7 +16,7 @@ public class EmailConfig {
         mailSender.setHost("smtp.office365.com");
         mailSender.setPort(587);
 
-        mailSender.setUsername("notificacionesinclub@inclub.site");
+        mailSender.setUsername("notificacionesinclub@inclub.world");
         mailSender.setPassword("Inclub12345+");
 
         Properties props = mailSender.getJavaMailProperties();
