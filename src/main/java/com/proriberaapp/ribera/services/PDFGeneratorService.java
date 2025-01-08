@@ -149,7 +149,7 @@ public class PDFGeneratorService {
                 "        </div>" +
                 "    </div>" +
                 "    <div class=\"title\">" +
-                "        <div><strong>Titular:</strong></div>" +
+                "        <div><strong>Titular de Reserva:</strong></div>" +
                 "    </div>" +
                 "    <div class=\"info\">" +
                 "        <div><strong>Señor(es):</strong> "+ entity.getFullname() +" </div>" +
@@ -157,10 +157,12 @@ public class PDFGeneratorService {
                 "        <div><strong>Núm. de Documento:</strong> "+ entity.getDocumentNumber() +" </div>" +
                 "    </div>";
         if (entity.getLstCompanions() != null && entity.getLstCompanions().size() > 0 ) {
-            htmlContent += "<div class=\"title\">" +
-                    "        <div><strong>Acompañante(s):</strong></div>" +
-                    "    </div>";
+            int numCompanions = 0;
             for(ReservationReportDto element: entity.getLstCompanions()) {
+                numCompanions = numCompanions +1;
+                htmlContent += "<div class=\"title\">" +
+                        "        <div><strong>Acompañante "+(numCompanions)+":</strong></div>" +
+                        "    </div>";
                 htmlContent += "    <div class=\"info\">" +
                     "        <div><strong>Señor(es):</strong> "+element.getFullname()+" </div>" +
                     "        <div><strong>Tipo de Documento:</strong> "+element.getDocumentType()+" </div>" +
