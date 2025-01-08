@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import com.proriberaapp.ribera.services.client.GenerateReportService;
 import com.proriberaapp.ribera.services.client.UserClientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -94,7 +95,7 @@ public class ReportManagerController {
     }
 
     @GetMapping("/report-booking")
-    public Mono<byte[]> generateReportReservation(@RequestParam Integer reservationId) {
+    public Mono<ResponseEntity<ResponseFileDto>> generateReportReservation(@RequestParam Integer reservationId) {
         return generateReportService.generateReportReservation(reservationId);
     }
 
