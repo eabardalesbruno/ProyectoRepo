@@ -313,12 +313,19 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
   Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime dateini,
       LocalDateTime datefin);
 
-  @Query("""
+/*   @Query("""
           SELECT *
           FROM booking
           WHERE roomofferid = :roomOfferId
             AND (daybookinginit < :offerTimeEnd AND daybookingend > :offerTimeInit)
             AND (bookingstateid != 4)
+      """) */
+  @Query("""
+          SELECT *
+          FROM booking
+          WHERE roomofferid = :roomOfferId
+            AND (daybookinginit < :offerTimeEnd AND daybookingend > :offerTimeInit)
+            AND (bookingstateid in (2,7,6))
       """)
   Flux<BookingEntity> findConflictingBookings(@Param("roomOfferId") Integer roomOfferId,
       @Param("offerTimeInit") LocalDate offerTimeInit,

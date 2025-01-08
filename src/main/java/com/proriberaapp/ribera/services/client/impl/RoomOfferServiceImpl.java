@@ -86,10 +86,11 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                 categoryName, offerTimeInit, offerTimeEnd,
                                 kidCapacity, adultCapacity, adultMayorCapacity, adultExtraCapacity,
                                 infantCapacity)
-                                .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
+                                 .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
                                                 roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
                                                 .hasElements()
-                                                .map(hasConflicts -> !hasConflicts))
+                                                .map(hasConflicts -> !hasConflicts)) 
+                           
                                 .map(roomOffer -> {
                                         roomOffer.setKidsReserve(kidCapacity);
                                         roomOffer.setAdultsReserve(
