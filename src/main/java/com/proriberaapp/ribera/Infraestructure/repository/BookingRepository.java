@@ -506,4 +506,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
           """)
   Mono<Void> updateState(Integer stateId, Integer bookingId);
 
+        @Query("SELECT * FROM booking WHERE userclientid = :userClientId")
+        Mono<BookingEntity> findByUserClientId(@Param("userClientId") Integer userClientId);
+
 }
