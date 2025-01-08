@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStateDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
@@ -189,6 +190,11 @@ public class BookingController {
                 });
     }
 
+    @PutMapping("/newState/{bookingId}")
+    public Mono<Void> updateStateBooking(@PathVariable Integer bookingId,@RequestBody BookingStateDto bookingStateDto) {
+        return this.bookingService.updateState(bookingStateDto.getBookingStateId(), bookingId);
+    }
+
     @PostMapping("/saveyes")
     public Mono<BookingEntity> saveBooking(@RequestBody BookingSaveRequest bookingSaveRequest) {
         return Mono.fromCallable(() -> {
@@ -311,10 +317,12 @@ public class BookingController {
         List<CompanionsEntity> companionsEntities = companionsData.stream()
                 .map(data -> {
                     CompanionsEntity companion = new CompanionsEntity();
-                    companion.setCompanionId(data.get("companionId") != null ? ((Number) data.get("companionId")).intValue() : null);
+                    companion.setCompanionId(
+                            data.get("companionId") != null ? ((Number) data.get("companionId")).intValue() : null);
                     companion.setFirstname((String) data.get("nombres"));
                     companion.setLastname((String) data.get("apellidos"));
-                    companion.setTypeDocumentId(data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null);
+                    companion.setTypeDocumentId(
+                            data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null);
                     companion.setDocumentNumber((String) data.get("document"));
                     companion.setCellphone((String) data.get("celphone"));
                     companion.setEmail((String) data.get("correo"));
@@ -330,8 +338,10 @@ public class BookingController {
                         }
                     }
 
-                    companion.setGenderId(data.get("genero") != null ? ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
-                    companion.setCountryId(data.get("areaZone") != null ? ((Number) data.get("areaZone")).intValue() : null);
+                    companion.setGenderId(
+                            data.get("genero") != null ? ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
+                    companion.setCountryId(
+                            data.get("areaZone") != null ? ((Number) data.get("areaZone")).intValue() : null);
 
                     return companion;
                 })

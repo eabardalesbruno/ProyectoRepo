@@ -9,8 +9,10 @@ import com.proriberaapp.ribera.services.client.BookingService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.proriberaapp.ribera.services.client.GenerateReportService;
 import com.proriberaapp.ribera.services.client.UserClientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,6 +29,8 @@ public class ReportManagerController {
     private ReportManagerService reportManagerService;
     @Autowired
     private UserClientService userClientService;
+    @Autowired
+    private GenerateReportService generateReportService;
 
     @GetMapping("/bookings/by-state")
     public Flux<BookingEntity> getBookingsByState(@RequestParam Integer stateId) {
@@ -88,6 +92,11 @@ public class ReportManagerController {
     public Mono<TotalCalculationMonthsDTO> totalActiveClientsMonths(
             @RequestParam(required = false) Integer stateId, @RequestParam Integer month) {
         return reportManagerService.getTotalActiveClientsMonths(stateId, month);
+    }
+
+    @GetMapping("/report-booking")
+    public Mono<ResponseEntity<ResponseFileDto>> generateReportReservation(@RequestParam Integer reservationId) {
+        return generateReportService.generateReportReservation(reservationId);
     }
 
 }

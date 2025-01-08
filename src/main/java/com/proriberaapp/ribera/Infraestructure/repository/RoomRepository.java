@@ -40,4 +40,12 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
     """)
     Flux<RoomDetailDto> finAllViewRoomsDetail();
 
+    @Query("""
+        select r.* from booking b
+        join roomoffer ro on b.roomofferid = ro.roomofferid
+        join room r on ro.roomid = r.roomid
+        where b.bookingid = :bookingId
+    """)
+    Mono<RoomEntity> getRoomNameByBookingId(@Param("bookingId") Integer bookingId);
+
 }
