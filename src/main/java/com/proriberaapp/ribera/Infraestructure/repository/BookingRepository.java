@@ -20,7 +20,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingRepository extends R2dbcRepository<BookingEntity, Integer> {
-
   Mono<BookingEntity> findByBookingStateId(BookingEntity bookingEntity);
 
   Flux<BookingEntity> findAllByBookingStateId(Integer bookingStateId);
@@ -506,4 +505,5 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
             update booking set bookingstateid = :stateId where bookingid = :bookingId
           """)
   Mono<Void> updateState(Integer stateId, Integer bookingId);
+
 }
