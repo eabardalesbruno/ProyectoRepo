@@ -495,4 +495,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
 
         Flux<BookingEntity> findByUserPromotorIdAndBookingStateId(Integer userPromotorId, Integer bookingStateId);
 
+        @Query("SELECT * FROM booking WHERE userclientid = :userClientId")
+        Mono<BookingEntity> findByUserClientId(@Param("userClientId") Integer userClientId);
+
 }
