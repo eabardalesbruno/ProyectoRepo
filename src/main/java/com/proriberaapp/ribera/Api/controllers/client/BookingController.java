@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStateDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
@@ -189,6 +190,11 @@ public class BookingController {
                 });
     }
 
+    @PutMapping("/newState/{bookingId}")
+    public Mono<Void> updateStateBooking(@PathVariable Integer bookingId,@RequestBody BookingStateDto bookingStateDto) {
+        return this.bookingService.updateState(bookingStateDto.getBookingStateId(), bookingId);
+    }
+
     @PostMapping("/saveyes")
     public Mono<BookingEntity> saveBooking(@RequestBody BookingSaveRequest bookingSaveRequest) {
         return Mono.fromCallable(() -> {
@@ -293,10 +299,12 @@ public class BookingController {
         List<CompanionsEntity> companionsEntities = companionsData.stream()
                 .map(data -> {
                     CompanionsEntity companion = new CompanionsEntity();
-                    companion.setCompanionId(data.get("companionId") != null ? ((Number) data.get("companionId")).intValue() : null);
+                    companion.setCompanionId(
+                            data.get("companionId") != null ? ((Number) data.get("companionId")).intValue() : null);
                     companion.setFirstname((String) data.get("nombres"));
                     companion.setLastname((String) data.get("apellidos"));
-                    companion.setTypeDocumentId(data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null);
+                    companion.setTypeDocumentId(
+                            data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null);
                     companion.setDocumentNumber((String) data.get("document"));
                     companion.setCellphone((String) data.get("celphone"));
                     companion.setEmail((String) data.get("correo"));
@@ -312,8 +320,10 @@ public class BookingController {
                         }
                     }
 
-                    companion.setGenderId(data.get("genero") != null ? ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
-                    companion.setCountryId(data.get("areaZone") != null ? ((Number) data.get("areaZone")).intValue() : null);
+                    companion.setGenderId(
+                            data.get("genero") != null ? ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
+                    companion.setCountryId(
+                            data.get("areaZone") != null ? ((Number) data.get("areaZone")).intValue() : null);
 
                     return companion;
                 })
@@ -324,39 +334,46 @@ public class BookingController {
     }
 
     // falta esta parte aun lo estoy viendo
-     /*@PutMapping("/{bookingId}/companions/{documentNumber}")
-    public Mono<CompanionsEntity> updateSingleCompanion(
-            @PathVariable Integer bookingId,
-            @PathVariable String documentNumber,
-            @RequestBody Map<String, Object> companionData) {
-
-        CompanionsEntity companion = new CompanionsEntity();
-        companion.setFirstname((String) companionData.get("nombres"));
-        companion.setLastname((String) companionData.get("apellidos"));
-        companion.setTypeDocumentId(
-                companionData.get("typeDocument") != null ? ((Number) companionData.get("typeDocument")).intValue()
-                        : null);
-        companion.setDocumentNumber(documentNumber);
-        companion.setCellphone((String) companionData.get("celphone"));
-        companion.setEmail((String) companionData.get("correo"));
-        companion.setCategory((String) companionData.get("category"));
-
-        String birthdateStr = (String) companionData.get("fechaNacimiento");
-        if (birthdateStr != null) {
-            if (birthdateStr.length() == 10) {
-                birthdateStr = birthdateStr + " 00:00:00";
-            }
-            companion.setBirthdate(Timestamp.valueOf(birthdateStr));
-        }
-
-        companion.setGenderId(
-                companionData.get("genero") != null ? ("Masculino".equals(companionData.get("genero")) ? 1 : 2) : null);
-        companion.setCountryId(
-                companionData.get("areaZone") != null ? ((Number) companionData.get("areaZone")).intValue() : null);
-
-        return companionsService.updateCompanion(bookingId, companion);
-    }
-      */
+    /*
+     * @PutMapping("/{bookingId}/companions/{documentNumber}")
+     * public Mono<CompanionsEntity> updateSingleCompanion(
+     * 
+     * @PathVariable Integer bookingId,
+     * 
+     * @PathVariable String documentNumber,
+     * 
+     * @RequestBody Map<String, Object> companionData) {
+     * 
+     * CompanionsEntity companion = new CompanionsEntity();
+     * companion.setFirstname((String) companionData.get("nombres"));
+     * companion.setLastname((String) companionData.get("apellidos"));
+     * companion.setTypeDocumentId(
+     * companionData.get("typeDocument") != null ? ((Number)
+     * companionData.get("typeDocument")).intValue()
+     * : null);
+     * companion.setDocumentNumber(documentNumber);
+     * companion.setCellphone((String) companionData.get("celphone"));
+     * companion.setEmail((String) companionData.get("correo"));
+     * companion.setCategory((String) companionData.get("category"));
+     * 
+     * String birthdateStr = (String) companionData.get("fechaNacimiento");
+     * if (birthdateStr != null) {
+     * if (birthdateStr.length() == 10) {
+     * birthdateStr = birthdateStr + " 00:00:00";
+     * }
+     * companion.setBirthdate(Timestamp.valueOf(birthdateStr));
+     * }
+     * 
+     * companion.setGenderId(
+     * companionData.get("genero") != null ?
+     * ("Masculino".equals(companionData.get("genero")) ? 1 : 2) : null);
+     * companion.setCountryId(
+     * companionData.get("areaZone") != null ? ((Number)
+     * companionData.get("areaZone")).intValue() : null);
+     * 
+     * return companionsService.updateCompanion(bookingId, companion);
+     * }
+     */
 
     @GetMapping("/companions/dni/{dni}")
     public ResponseEntity<CompanionsDto> getCompanionByDni(@PathVariable String dni) {
