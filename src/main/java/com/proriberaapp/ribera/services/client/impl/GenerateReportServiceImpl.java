@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ResponseFileDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.CompanionsDto;
 import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
@@ -11,6 +12,8 @@ import com.proriberaapp.ribera.services.client.GenerateReportService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.jose4j.base64url.internal.apache.commons.codec.binary.Base64;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -36,7 +39,7 @@ public class GenerateReportServiceImpl implements GenerateReportService {
     private final PDFGeneratorService pdfGeneratorService;
 
     @Override
-    public Mono<byte[]> generateReportReservation(int idReservation) {
+    public Mono<ResponseEntity<ResponseFileDto>> generateReportReservation(int idReservation) {
         return bookingRepository.findByBookingId(idReservation).publishOn(Schedulers.boundedElastic()).flatMap(bookingEntity -> {
             ReservationReportDto reservationDto = new ReservationReportDto();
             reservationDto.setPdfFileName("reserva.pdf");
@@ -65,14 +68,17 @@ public class GenerateReportServiceImpl implements GenerateReportService {
                     }
                 }
                 byte[] encoded = null;
+                ResponseFileDto result = new ResponseFileDto();
                 try {
                     File pdfFile = pdfGeneratorService.generateReservationPdfFromHtml(reservationDto);
                     encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(pdfFile));
-
+                    result.setFile(new String(encoded, StandardCharsets.US_ASCII));
+                    result.setFilename(pdfFile.getName());
                 } catch (IOException e) {
-                    return Mono.error(new RuntimeException("Error al generar el PDF", e));
+                    result.setErrormessage(String.valueOf(new RuntimeException("Error al generar el PDF", e)));
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result));
                 }
-                return Mono.just(encoded);
+                return Mono.just(ResponseEntity.ok(result));
             });
         });
     }
