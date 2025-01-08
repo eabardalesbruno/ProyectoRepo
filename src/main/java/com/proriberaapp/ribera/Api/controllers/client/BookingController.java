@@ -277,12 +277,30 @@ public class BookingController {
                     return companion;
                 });
 
-        return companionsService.validateTotalCompanions(bookingId, companionsEntityFlux)
-                .thenMany(companionsEntityFlux.flatMap(companion -> {
-                    companion.setBookingId(bookingId);
-                    return companionsService.calculateAgeandSave(companion);
-                }))
-                .then();
+        return companionsEntityFlux.collectList()
+                .flatMap(companions -> {
+                    boolean hasTitular = companions.stream().anyMatch(CompanionsEntity::isTitular);
+                    if (!hasTitular) {
+                        return Mono.error(new IllegalArgumentException("Debe haber al menos un titular en la reserva"));
+                    }
+
+                    if (companions.size() > 1) {
+                        return companionsService.validateTotalCompanions(bookingId, Flux.fromIterable(companions))
+                                .thenMany(Flux.fromIterable(companions)
+                                        .flatMap(companion -> {
+                                            companion.setBookingId(bookingId);
+                                            return companionsService.calculateAgeandSave(companion);
+                                        }))
+                                .then();
+                    }
+
+                    CompanionsEntity titular = companions.stream()
+                            .filter(CompanionsEntity::isTitular)
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalArgumentException("Titular no encontrado"));
+                    titular.setBookingId(bookingId);
+                    return companionsService.calculateAgeandSave(titular).then();
+                });
     }
 
     @PutMapping("/{bookingId}/companionupdate")
@@ -323,40 +341,6 @@ public class BookingController {
                 .collectList();
     }
 
-    // falta esta parte aun lo estoy viendo
-     /*@PutMapping("/{bookingId}/companions/{documentNumber}")
-    public Mono<CompanionsEntity> updateSingleCompanion(
-            @PathVariable Integer bookingId,
-            @PathVariable String documentNumber,
-            @RequestBody Map<String, Object> companionData) {
-
-        CompanionsEntity companion = new CompanionsEntity();
-        companion.setFirstname((String) companionData.get("nombres"));
-        companion.setLastname((String) companionData.get("apellidos"));
-        companion.setTypeDocumentId(
-                companionData.get("typeDocument") != null ? ((Number) companionData.get("typeDocument")).intValue()
-                        : null);
-        companion.setDocumentNumber(documentNumber);
-        companion.setCellphone((String) companionData.get("celphone"));
-        companion.setEmail((String) companionData.get("correo"));
-        companion.setCategory((String) companionData.get("category"));
-
-        String birthdateStr = (String) companionData.get("fechaNacimiento");
-        if (birthdateStr != null) {
-            if (birthdateStr.length() == 10) {
-                birthdateStr = birthdateStr + " 00:00:00";
-            }
-            companion.setBirthdate(Timestamp.valueOf(birthdateStr));
-        }
-
-        companion.setGenderId(
-                companionData.get("genero") != null ? ("Masculino".equals(companionData.get("genero")) ? 1 : 2) : null);
-        companion.setCountryId(
-                companionData.get("areaZone") != null ? ((Number) companionData.get("areaZone")).intValue() : null);
-
-        return companionsService.updateCompanion(bookingId, companion);
-    }
-      */
 
     @GetMapping("/companions/dni/{dni}")
     public ResponseEntity<CompanionsDto> getCompanionByDni(@PathVariable String dni) {
