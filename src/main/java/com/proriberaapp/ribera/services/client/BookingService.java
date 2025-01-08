@@ -101,4 +101,6 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Mono<TotalCalculationMonthsDTO> getTotalActiveClientsMonths(Integer stateId, Integer month);
 
+
+    Mono<Void> updateState(Integer stateId,Integer bookingId);
 }

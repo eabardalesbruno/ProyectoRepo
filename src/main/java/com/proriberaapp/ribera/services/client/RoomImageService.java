@@ -1,5 +1,7 @@
 package com.proriberaapp.ribera.services.client;
 
+import java.util.List;
+
 import com.proriberaapp.ribera.Domain.entities.RoomImagesEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -12,4 +14,6 @@ public interface RoomImageService {
     Flux<RoomImagesEntity> findAll();
 
     Flux<RoomImagesEntity> findAllByRoomId(Integer roomId);
+
+    Mono<Void> deleteAllById(List<Integer> roomImagenId);
 }
