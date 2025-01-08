@@ -85,6 +85,11 @@ public class PaymentBookDetailsDTO {
     @Column("totalcostwithoutdiscount")
     private double totalCostWithOutDiscount;
 
+    @Column("bookingstatename")
+    private String bookingStateName;
+    @Column("bookingstateid")
+    private Integer bookingStateId;
+
     @Override
     public String toString() {
         return "PaymentBookDetailsDTO{" +

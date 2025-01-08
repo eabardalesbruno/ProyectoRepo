@@ -1,8 +1,10 @@
 package com.proriberaapp.ribera.services;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
 import com.proriberaapp.ribera.Domain.entities.*;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -69,20 +71,20 @@ public class PDFGeneratorService {
                 + "        <table class=\"table\">"
                 + "            <thead>"
                 + "                <tr>"
-                + "                    <th>CÓDIGO</th>"
-                + "                    <th>DESCRIPCIÓN</th>"
-                + "                    <th>CANT.</th>"
-                + "                    <th>VALOR UNITARIO</th>"
-                + "                    <th>PRECIO VENTA TOTAL</th>"
+                + "<th>CÓDIGO</th>"
+                + "<th>DESCRIPCIÓN</th>"
+                + "<th>CANT.</th>"
+                + "<th>VALOR UNITARIO</th>"
+                + "<th>PRECIO VENTA TOTAL</th>"
                 + "                </tr>"
                 + "            </thead>"
                 + "            <tbody>"
                 + "                <tr>"
-                + "                    <td>" + bookingid + "</td>"
-                + "                    <td>" + bookingiroomname + "</td>"
-                + "                    <td>1</td>"
-                + "                    <td>" + precioVentaTotal + "</td>"
-                + "                    <td>" + precioVentaTotal + "</td>"
+                + "<td>" + bookingid + "</td>"
+                + "<td>" + bookingiroomname + "</td>"
+                + "<td>1</td>"
+                + "<td>" + precioVentaTotal + "</td>"
+                + "<td>" + precioVentaTotal + "</td>"
                 + "                </tr>"
                 + "            </tbody>"
                 + "        </table>"
@@ -110,5 +112,82 @@ public class PDFGeneratorService {
         return pdfFile;
     }
 
+    public static File generateReservationPdfFromHtml(ReservationReportDto entity) throws IOException {
+        String htmlContent = "<!DOCTYPE html>" +
+                "<html lang=\"en\">" +
+                "<head>" +
+                "<meta charset=\"UTF-8\" />" +
+                "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />" +
+                "<title>Constancia de Reserva</title>" +
+                "<style>" +
+                "    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #fff; }" +
+                "    .container { max-width: 800px; margin: auto; background: #ffffff; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }" +
+                "    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }" +
+                "    .logo img { height: 60px; }" +
+                "    .header-align { text-align: center; }" +
+                "    .header-text { text-align: right; margin-top: 140px; }" +
+                "    .header-text h1 { margin: 0; font-size: 18px; color: #006600; margin-bottom: 60px; }" +
+                "    .header-text h2 { margin: 5px 0; font-size: 16px; }" +
+                "    .info { margin-left: 20px; margin-bottom: 20px; }" +
+                "    .summary { margin-top: 40px; text-align: right; }" +
+                "    .summary .total { font-weight: bold; font-size: 16px; }" +
+                "    .title { margin-left: 10px; margin-bottom: 20px; }" +
+                "</style>" +
+                "                </head>" +
+                "                <body>" +
+                "<div class=\"container\">" +
+                "    <div class=\"header\">" +
+                "        <div class=\"logo\">" +
+                "            <img src=\"https://i.postimg.cc/xT6NS6R9/Color-4x.png\" alt=\"Logo\" />" +
+                "        </div>" +
+                "        <div class=\"header-align\">" +
+                "            <h1>RESERVA</h1>" +
+                "        </div>" +
+                "        <div class=\"header-text\">" +
+                "            <h2>Habitación: "+ entity.getRoomName() +" </h2>" +
+                "            <h2>Fecha de reserva: "+ entity.getDateReservation() +"</h2>" +
+                "        </div>" +
+                "    </div>" +
+                "    <div class=\"title\">" +
+                "        <div><strong>Titular:</strong></div>" +
+                "    </div>" +
+                "    <div class=\"info\">" +
+                "        <div><strong>Señor(es):</strong> "+ entity.getFullname() +" </div>" +
+                "        <div><strong>Tipo de Documento:</strong> "+ entity.getDocumentType() +" </div>" +
+                "        <div><strong>Núm. de Documento:</strong> "+ entity.getDocumentNumber() +" </div>" +
+                "    </div>";
+        if (entity.getLstCompanions() != null && entity.getLstCompanions().size() > 0 ) {
+            htmlContent += "<div class=\"title\">" +
+                    "        <div><strong>Acompañante(s):</strong></div>" +
+                    "    </div>";
+            for(ReservationReportDto element: entity.getLstCompanions()) {
+                htmlContent += "    <div class=\"info\">" +
+                    "        <div><strong>Señor(es):</strong> "+element.getFullname()+" </div>" +
+                    "        <div><strong>Tipo de Documento:</strong> "+element.getDocumentType()+" </div>" +
+                    "        <div><strong>Núm. de Documento:</strong> "+element.getDocumentNumber()+" </div>" +
+                    "        <div><strong>Género:</strong> "+element.getGender()+" </div>" +
+                    "        <div><strong>Edad:</strong> "+ element.getYears() +" </div>" +
+                    "    </div>" +
+                    "</div>";
+            }
+        }
+        htmlContent +="</body>" +
+                "</html>";
+
+
+        File pdfFile = new File(entity.getPdfFileName());
+
+        try (OutputStream os = new FileOutputStream(pdfFile)) {
+            PdfRendererBuilder builder = new PdfRendererBuilder();
+            builder.withHtmlContent(htmlContent, "");
+            builder.toStream(os);
+            builder.run();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new IOException("Error generating PDF.", e);
+        }
+
+        return pdfFile;
+    }
 
 }

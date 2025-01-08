@@ -59,12 +59,15 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                                 inv.linkpdf as "invoiceLinkPdf",
                                 pb.totaldiscount as "totalDiscount",
                                 pb.totalcostwithoutdiscount as "totalCostWithOutDiscount",
-                                pb.percentagediscount as "percentageDiscount"
+                                pb.percentagediscount as "percentageDiscount",
+                                bs.bookingstatename,
+                                bs.bookingstateid
                                 from     paymentbook pb
                                 join userclient uc on uc.userclientid=pb.userclientid
                                 join documenttype dt on dt.documenttypeid=uc.documenttypeid
                                 join paymentstate ps on ps.paymentstateid=pb.paymentstateid
                                 join booking b on b.bookingid=pb.bookingid
+                                join bookingstate bs on bs.bookingstateid=b.bookingstateid
                                 join paymentmethod pm on pm.paymentmethodid=pb.paymentmethodid
                                 join paymenttype pt on pt.paymenttypeid=pb.paymenttypeid
                                 join currencytype ct on ct.currencytypeid=pb.currencytypeid
