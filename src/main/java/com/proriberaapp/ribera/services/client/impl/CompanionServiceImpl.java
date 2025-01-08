@@ -58,8 +58,8 @@ public class CompanionServiceImpl implements CompanionsService {
                             booking.getNumberAdultsMayor();
 
                     return companionsEntity.count()
-                            .flatMap(count ->{
-                                if(count != totalPersons){
+                            .flatMap(count -> {
+                                if (count > 1 && count != totalPersons) {
                                     return Mono.error(new IllegalArgumentException(
                                             "El total de acompañantes no coincide con el total de personas en la reserva"));
                                 }
@@ -104,6 +104,7 @@ public class CompanionServiceImpl implements CompanionsService {
         return Flux.fromIterable(companionsEntities)
                 .flatMap(companion -> {
                     companion.setBookingId(bookingId);
+
                     if (companion.getCompanionId() != null) {
                         return companionsRepository.findByCompanionIdAndBookingId(companion.getCompanionId(), bookingId)
                                 .switchIfEmpty(Mono.error(new IllegalArgumentException(
