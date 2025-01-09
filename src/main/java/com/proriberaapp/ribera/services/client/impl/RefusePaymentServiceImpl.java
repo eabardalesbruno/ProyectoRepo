@@ -479,7 +479,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
          */
         @Override
         public Mono<Map<String, Object>> getPaymentDetails(Integer paymentBookId) {
-                return paymentBookRepository.findById(paymentBookId)
+                return paymentBookRepository.findByPaymentBookId(paymentBookId)
                                 .flatMap(paymentBook -> {
                                         // Obtener bookingId desde paymentBook
                                         Integer bookingId = paymentBook.getBookingId();
@@ -521,11 +521,11 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
 
                                                                 // Obtener imagen del cuarto
                                                                 Mono<String> imagenCuarto = roomOfferRepository
-                                                                                .findById(roomOfferId)
-                                                                                .flatMap(roomOffer -> roomRepository
-                                                                                                .findById(roomOffer
-                                                                                                                .getRoomId()))
-                                                                                .map(RoomEntity::getImage);
+                                                                                                .findById(roomOfferId)
+                                                                                                .flatMap(roomOffer -> roomRepository
+                                                                                                                                .findById(roomOffer
+                                                                                                                                                                .getRoomId()))
+                                                                                                .map(room -> room.getImage() != null ? room.getImage() : "");
 
                                                                 // Obtener descripcion del cuarto
                                                                 Mono<String> descCuarto = roomOfferRepository
