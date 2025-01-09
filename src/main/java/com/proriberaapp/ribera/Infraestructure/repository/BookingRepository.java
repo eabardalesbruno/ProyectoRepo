@@ -101,23 +101,26 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
       		   (SELECT b.bedtypedescription FROM bedroom be
       		   INNER JOIN bedstype b ON b.bedtypeid = be.bedtypeid
       		   WHERE be.roomid = rid.roomid LIMIT 1) bedtypename,
-                 SUM(bo.numberchildren+bo.numberbabies+bo.numberadultsextra+bo.numberadults+bo.numberadultsmayor) as capacity,
-                 r.riberapoints, r.inresortpoints, r.points
+                 bo.numberchildren+bo.numberbabies+bo.numberadultsextra+bo.numberadults+bo.numberadultsmayor as capacity,
+                     r.riberapoints, r.inresortpoints, r.points,
+            (CASE
+            WHEN up.userpromoterid is not null  THEN 'Promotor'
+            WHEN ua.useradminid is not null THEN 'Recepcionista'
+          ELSE
+            'Web' END) as channel
                  FROM userclient us
       		   JOIN booking bo ON us.userclientid = bo.userclientid
                  JOIN roomoffer r ON r.roomofferid = bo.roomofferid
                  JOIN room rid ON rid.roomid = r.roomid
                  JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid
-                 JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid
+                     JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid
+                  left join userpromoter up on up.userpromoterid=bo.userpromotorid
+          		 left join useradmin ua on ua.useradminid=bo.receptionistid
                  WHERE bo.bookingstateid = :bookingStateId
                  AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId)
                  AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR
                  bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd)
-                 GROUP BY us.firstname, us.lastname, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image,
-                 r.offertimeinit, r.offertimeend, us.email, bo.costfinal, bo.daybookinginit, bo.daybookingend,
-                 bs.bookingstateid, bs.bookingstatename, rid.roomid,
-                 r.riberapoints, r.inresortpoints, r.points,us.documenttypeid,us.documentNumber,us.cellnumber
-                 ORDER BY bo.bookingid DESC
+                ORDER BY bo.bookingid DESC
                  LIMIT :limit OFFSET :offset
       """)
   Flux<BookingStates> findBookingsByStateIdPaginated(

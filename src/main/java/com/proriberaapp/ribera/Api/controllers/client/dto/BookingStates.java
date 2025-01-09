@@ -39,4 +39,5 @@ public class BookingStates {
     private Integer numberadultsmayor;
     private LocalDateTime offertimeinit;
     private LocalDateTime offertimeend;
+    private String channel;
 }
