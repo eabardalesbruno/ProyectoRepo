@@ -95,4 +95,14 @@ public class PaymentBookController {
         // Implementa la lógica para generar un token único (por ejemplo, utilizando JWT)
         return UUID.randomUUID().toString();
     }
+
+
+    @PostMapping("/create-payment-and-commission")
+    public Mono<ResponseEntity<PaymentBookEntity>> createPaymentAndCalculateCommission(
+            @RequestBody PaymentBookEntity paymentBook,
+            @RequestParam Integer caseType) {
+        return paymentBookService.createPaymentBookAndCalculateCommission(paymentBook, caseType)
+                .map(savedPaymentBook -> new ResponseEntity<>(savedPaymentBook, HttpStatus.CREATED));
+    }
+
 }

@@ -4,10 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
-import com.proriberaapp.ribera.services.client.BookingService;
-import com.proriberaapp.ribera.services.client.EmailService;
-import com.proriberaapp.ribera.services.client.PaymentBookService;
-import com.proriberaapp.ribera.services.client.S3Uploader;
+import com.proriberaapp.ribera.services.client.*;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.PaymentByBankTransferTemplateEmail;
 
@@ -274,16 +271,17 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     private final PaymentSubtypeRepository paymentSubtypeRepository;
 
     private final CurrencyTypeRepository currencyTypeRepository;
+    private final CommissionService commissionService;
 
     @Autowired
     public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository,
-            UserClientRepository userClientRepository,
-            BookingService bookingService,
-            RoomOfferRepository roomOfferRepository, RoomRepository roomRepository, S3Uploader s3Uploader,
-            EmailService emailService,
-            PaymentMethodRepository paymentMethodRepository,
-            PaymentStateRepository paymentStateRepository, PaymentTypeRepository paymentTypeRepository,
-            PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository) {
+                                  UserClientRepository userClientRepository,
+                                  BookingService bookingService,
+                                  RoomOfferRepository roomOfferRepository, RoomRepository roomRepository, S3Uploader s3Uploader,
+                                  EmailService emailService,
+                                  PaymentMethodRepository paymentMethodRepository,
+                                  PaymentStateRepository paymentStateRepository, PaymentTypeRepository paymentTypeRepository,
+                                  PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository, CommissionService commissionService) {
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
         this.bookingService = bookingService;
@@ -297,6 +295,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         this.paymentSubtypeRepository = paymentSubtypeRepository;
         this.currencyTypeRepository = currencyTypeRepository;
 
+        this.commissionService = commissionService;
     }
 
     @Override
@@ -824,4 +823,25 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                 "</html>";
         return body;
     }
+
+    @Override
+    public Mono<PaymentBookEntity> createPaymentBookAndCalculateCommission(PaymentBookEntity paymentBook, Integer caseType) {
+        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
+        Timestamp timestamp = Timestamp.valueOf(localDateTime);
+        paymentBook.setPaymentDate(timestamp);
+
+        return paymentBookRepository.save(paymentBook)
+                .flatMap(savedPaymentBook ->
+                        updateBookingStateIfRequired(savedPaymentBook.getBookingId())
+                                .then(userClientRepository.findById(savedPaymentBook.getUserClientId())
+                                        .flatMap(userClient ->
+                                                sendPaymentConfirmationEmail(savedPaymentBook,
+                                                        userClient.getEmail(), userClient.getFirstName())))
+                                .then(
+                                        commissionService.calculateAndSaveCommission(savedPaymentBook, caseType)
+                                )
+                                .thenReturn(savedPaymentBook)
+                );
+    }
+
 }

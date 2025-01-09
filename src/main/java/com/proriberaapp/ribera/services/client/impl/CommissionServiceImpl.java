@@ -28,12 +28,14 @@ public class CommissionServiceImpl implements CommissionService {
     public Mono<CommissionEntity> calculateAndSaveCommission(PaymentBookEntity paymentBook, Integer caseType) {
         return bookingRepository.findById(paymentBook.getBookingId())
                 .flatMap(booking -> {
+
+                    BigDecimal totalAmount = booking.getCostFinal();
+
                     CommissionEntity commission = new CommissionEntity();
                     commission.setPaymentBookId(paymentBook.getPaymentBookId());
                     commission.setPromoterId(booking.getUserPromotorId());
                     commission.setCaseType(caseType);
 
-                    BigDecimal totalAmount = paymentBook.getAmount();
                     Timestamp now = new Timestamp(System.currentTimeMillis());
                     commission.setCreatedAt(now);
 
