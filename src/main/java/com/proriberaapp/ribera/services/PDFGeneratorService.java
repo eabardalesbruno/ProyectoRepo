@@ -132,21 +132,21 @@ public class PDFGeneratorService {
                 "    .summary { margin-top: 40px; text-align: right; }" +
                 "    .summary .total { font-weight: bold; font-size: 16px; }" +
                 "    .title { margin-left: 10px; margin-bottom: 20px; }" +
-                "</style>" +
-                "                </head>" +
-                "                <body>" +
-                "<div class=\"container\">" +
-                "    <div class=\"header\">" +
-                "        <div class=\"logo\">" +
-                "            <img src=\"https://i.postimg.cc/xT6NS6R9/Color-4x.png\" alt=\"Logo\" />" +
-                "        </div>" +
-                "        <div class=\"header-align\">" +
-                "            <h1>RESERVA</h1>" +
-                "        </div>" +
-                "        <div class=\"header-text\">" +
-                "            <h2>Habitación: "+ entity.getRoomName() +" </h2>" +
-                "            <h2>Fecha de reserva: "+ entity.getDateReservation() +"</h2>" +
-                "        </div>" +
+                "    </style>" +
+                "</head>" +
+                "<body>" +
+                "    <div class=\"container\">" +
+                "        <div class=\"header\">" +
+                "            <div class=\"logo\">" +
+                "                <img src=\"https://i.postimg.cc/xT6NS6R9/Color-4x.png\" alt=\"Logo\" />" +
+                "            </div>" +
+                "           <div class=\"header-align\">" +
+                "               <h1>RESERVA</h1>" +
+                "           </div>" +
+                "           <div class=\"header-text\">" +
+                "               <h2>Habitación: "+ entity.getRoomName() +" </h2>" +
+                "               <h2>Fecha de reserva: "+ entity.getDateReservation() +"</h2>" +
+                "           </div>" +
                 "    </div>" +
                 "    <div class=\"title\">" +
                 "        <div><strong>Titular de Reserva:</strong></div>" +
@@ -163,17 +163,17 @@ public class PDFGeneratorService {
                 htmlContent += "<div class=\"title\">" +
                         "        <div><strong>Acompañante "+(numCompanions)+":</strong></div>" +
                         "    </div>";
-                htmlContent += "    <div class=\"info\">" +
+                htmlContent += "<div class=\"info\">" +
                     "        <div><strong>Señor(es):</strong> "+element.getFullname()+" </div>" +
                     "        <div><strong>Tipo de Documento:</strong> "+element.getDocumentType()+" </div>" +
                     "        <div><strong>Núm. de Documento:</strong> "+element.getDocumentNumber()+" </div>" +
                     "        <div><strong>Género:</strong> "+element.getGender()+" </div>" +
                     "        <div><strong>Edad:</strong> "+ element.getYears() +" </div>" +
-                    "    </div>" +
-                    "</div>";
+                    "    </div>";
             }
         }
-        htmlContent +="</body>" +
+        htmlContent += "</div>"+
+                "</body>" +
                 "</html>";
 
 
