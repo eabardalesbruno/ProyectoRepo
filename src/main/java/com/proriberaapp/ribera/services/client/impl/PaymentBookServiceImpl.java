@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
+import com.proriberaapp.ribera.Domain.dto.PaymentBookWithChannelDto;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.*;
@@ -547,7 +548,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                         currencyTypeRepository.findById(paymentBook.getCurrencyTypeId()))
                         .filter(tuple -> tuple.getT3() != null)
                         .map(tuple -> {
-                            PaymentBookEntity paymentBookEntity = tuple.getT1();
+                            PaymentBookWithChannelDto paymentBookEntity = tuple.getT1();
                             UserClientEntity userClient = tuple.getT2();
                             BookingEntity booking = tuple.getT3();
                             PaymentMethodEntity paymentMethod = tuple.getT4();
@@ -578,8 +579,9 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                     .pendingPay(paymentBookEntity.getPendingpay())
                                     .totalDiscount(paymentBookEntity.getTotalDiscount())
                                     .percentageDiscount(paymentBookEntity.getPercentageDiscount())
+                                    .channel(paymentBookEntity.getChannel())
                                     .totalCostWithOutDiscount(paymentBookEntity.getTotalCostWithOutDiscount());
-
+                                
                             if (userClient != null) {
                                 builder.userClientName(userClient.getFirstName());
                                 builder.userClientLastName(userClient.getLastName());
