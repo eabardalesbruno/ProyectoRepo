@@ -89,6 +89,8 @@ public class PaymentBookDetailsDTO {
     private String bookingStateName;
     @Column("bookingstateid")
     private Integer bookingStateId;
+    @Column("channel")
+    private String channel;
 
     @Override
     public String toString() {

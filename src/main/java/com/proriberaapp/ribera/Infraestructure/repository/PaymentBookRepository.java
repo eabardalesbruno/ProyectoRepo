@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
 import com.proriberaapp.ribera.Domain.dto.PaymentBookUserDTO;
+import com.proriberaapp.ribera.Domain.dto.PaymentBookWithChannelDto;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
@@ -19,8 +20,21 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
         @Query("SELECT userclientid FROM paymentbook WHERE paymentbookid = :id")
         Mono<Integer> findUserClientIdByPaymentBookId(Integer id);
 
-        @Query("SELECT * FROM paymentbook WHERE refusereasonid = :refuseReasonId AND pendingpay = :pendingPay ORDER BY paymentbookid DESC LIMIT :size OFFSET :offset")
-        Flux<PaymentBookEntity> findAllByRefuseReasonIdAndPendingPay(int refuseReasonId, int pendingPay, int size,
+        @Query("""
+        SELECT pb.*,
+  (CASE
+                WHEN up.userpromoterid is not null  THEN concat('PROMOTOR ',' - ',up.firstname,' ',up.lastname)
+                WHEN ua.useradminid is not null THEN concat('RECEPCION',' - ',ua.firstname,' ',ua.lastname)
+              ELSE
+                'Web' END) as channel
+
+ FROM paymentbook pb 
+join booking bo on bo.bookingid=pb.bookingid
+LEFT JOIN useradmin ua on ua.useradminid=bo.receptionistid
+LEFT JOIN userpromoter up on up.userpromoterid=bo.userpromotorid
+        WHERE refusereasonid = :refuseReasonId AND pendingpay = :pendingPay ORDER BY paymentbookid DESC LIMIT :size OFFSET :offset
+        """ )
+        Flux<PaymentBookWithChannelDto> findAllByRefuseReasonIdAndPendingPay(int refuseReasonId, int pendingPay, int size,
                         int offset);
 
         @Query("""
@@ -62,7 +76,12 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                                 pb.totalcostwithoutdiscount as "totalCostWithOutDiscount",
                                 pb.percentagediscount as "percentageDiscount",
                                 bs.bookingstatename,
-                                bs.bookingstateid
+                                bs.bookingstateid,
+                                                  (CASE
+                          WHEN up.userpromoterid is not null  THEN concat('PROMOTOR ',' - ',up.firstname,' ',up.lastname)
+                          WHEN ua.useradminid is not null THEN concat('RECEPCION',' - ',ua.firstname,' ',ua.lastname)
+                        ELSE
+                          'Web' END) as channel
                                 from     paymentbook pb
                                 join userclient uc on uc.userclientid=pb.userclientid
                                 join documenttype dt on dt.documenttypeid=uc.documenttypeid
@@ -73,6 +92,8 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                                 join paymenttype pt on pt.paymenttypeid=pb.paymenttypeid
                                 join currencytype ct on ct.currencytypeid=pb.currencytypeid
                                 join paymentsubtype psub on psub.paymentsubtypeid=pb.paymentsubtypeid
+                                LEFT JOIN useradmin ua on ua.useradminid=b.receptionistid
+                                LEFT JOIN userpromoter up on up.userpromoterid=b.userpromotorid
                                 left join invoice inv on inv.idpaymentbook=pb.paymentbookid
 
                                  WHERE pb.pendingpay= 1 and pb.refusereasonid = :refuseReasonId  ORDER BY pb.paymentbookid DESC LIMIT :size OFFSET :offset
