@@ -98,9 +98,7 @@ public class PaymentBookController {
 
 
     @PostMapping("/create-payment-and-commission")
-    public Mono<ResponseEntity<PaymentBookEntity>> createPaymentAndCalculateCommission(
-            @RequestBody PaymentBookEntity paymentBook,
-            @RequestParam Integer caseType) {
+    public Mono<ResponseEntity<PaymentBookEntity>> createPaymentAndCalculateCommission(@RequestBody PaymentBookEntity paymentBook, @RequestParam Integer caseType) {
         return paymentBookService.createPaymentBookAndCalculateCommission(paymentBook, caseType)
                 .map(savedPaymentBook -> new ResponseEntity<>(savedPaymentBook, HttpStatus.CREATED));
     }

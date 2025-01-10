@@ -81,4 +81,9 @@ public class CommissionServiceImpl implements CommissionService {
                     return commissionRepository.save(commission);
                 });
     }
+
+    @Override
+    public Mono<BigDecimal> getTotalCommissionByPromoterId(Integer promoterId){
+        return commissionRepository.findTotalCommissionByPromoterId(promoterId);
+    }
 }
