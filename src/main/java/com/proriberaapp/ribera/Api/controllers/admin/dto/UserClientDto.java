@@ -62,5 +62,6 @@ public class UserClientDto {
     private String countrydesc;
     private String levelname;
     private String statusdesc;
+    private Integer nationalityId;
 
 }

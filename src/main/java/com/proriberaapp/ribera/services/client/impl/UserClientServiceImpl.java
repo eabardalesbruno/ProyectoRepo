@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalUsersDTO;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.EventContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
@@ -415,7 +416,8 @@ public class UserClientServiceImpl implements UserClientService {
         return userClientRepository.findByEmail(email)
                 .flatMap(user -> {
                     if (passwordEncoder.matches(password, user.getPassword())) {
-                        //Se verifica si al momento de loguearse el usuario tiene una wallet creada y si no tiene se le crea una
+                        // Se verifica si al momento de loguearse el usuario tiene una wallet creada y
+                        // si no tiene se le crea una
                         if (user.getWalletId() == null) {
                             return walletServiceImpl.createWalletUsuario(user.getUserClientId(), 1)
                                     .flatMap(wallet -> {
@@ -745,6 +747,25 @@ public class UserClientServiceImpl implements UserClientService {
                 return Mono.just(resp);
             });
         });
+    }
+
+    @Override
+    public Mono<Void> updateUser(UserClientDto userClientEntity) {
+        Mono<Void> updateUserM = Mono.defer(() -> {
+            return userClientRepository.updateBasicData(userClientEntity);
+        });
+
+        return userClientRepository.findByEmailOrDocumentNumberAndIgnoreId(userClientEntity.getEmail(),
+                userClientEntity.getDocumentNumber(), userClientEntity.getUserClientId())
+                .hasElement().flatMap(existUser -> {
+                    if (existUser) {
+                        return Mono.error(new RuntimeException(
+                                "El correo electrónico o el número de documento ya está registrado"));
+                    }
+                    return updateUserM;
+                }).flatMap(d -> updateUserM)
+                .then();
+
     }
 
 }
