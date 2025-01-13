@@ -253,7 +253,9 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
         i.totalpayment,
         i.iduser,
         i.nameclient,
-        u.username
+        u.username,
+        p.totaldiscount,
+        p.percentagediscount
       FROM
         booking b
       JOIN paymentbook p ON b.bookingid = p.bookingid AND p.pendingpay = 1
