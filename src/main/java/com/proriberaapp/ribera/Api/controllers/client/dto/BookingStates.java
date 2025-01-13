@@ -40,4 +40,6 @@ public class BookingStates {
     private LocalDateTime offertimeinit;
     private LocalDateTime offertimeend;
     private String channel;
+    private Integer nights;
+
 }
