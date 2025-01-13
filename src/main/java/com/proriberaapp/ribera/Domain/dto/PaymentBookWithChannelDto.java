@@ -90,6 +90,13 @@ public class PaymentBookWithChannelDto  {
     @Column("invoicetype")
     private String invoiceType;
 
+    @Column("nights")
+    private Integer nights;
+
     @Column("channel")
     private String channel;
+    @Column("daybookingend")
+    private String dayBookingEnd;
+    @Column("daybookinginit")
+    private String dayBookingInit;
 }
