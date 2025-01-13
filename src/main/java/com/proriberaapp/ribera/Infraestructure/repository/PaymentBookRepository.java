@@ -26,7 +26,9 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                 WHEN up.userpromoterid is not null  THEN concat('PROMOTOR ',' - ',up.firstname,' ',up.lastname)
                 WHEN ua.useradminid is not null THEN concat('RECEPCION',' - ',ua.firstname,' ',ua.lastname)
               ELSE
-                'Web' END) as channel
+                            'Web' END) as channel,
+                                pb.invoicedocumentnumber ,
+                                pb.invoicetype
 
  FROM paymentbook pb 
 join booking bo on bo.bookingid=pb.bookingid
@@ -81,7 +83,9 @@ LEFT JOIN userpromoter up on up.userpromoterid=bo.userpromotorid
                           WHEN up.userpromoterid is not null  THEN concat('PROMOTOR ',' - ',up.firstname,' ',up.lastname)
                           WHEN ua.useradminid is not null THEN concat('RECEPCION',' - ',ua.firstname,' ',ua.lastname)
                         ELSE
-                          'Web' END) as channel
+              'Web' END) as channel,
+                            pb.invoicedocumentnumber ,
+                            pb.invoicetype 
                                 from     paymentbook pb
                                 join userclient uc on uc.userclientid=pb.userclientid
                                 join documenttype dt on dt.documenttypeid=uc.documenttypeid
@@ -95,7 +99,6 @@ LEFT JOIN userpromoter up on up.userpromoterid=bo.userpromotorid
                                 LEFT JOIN useradmin ua on ua.useradminid=b.receptionistid
                                 LEFT JOIN userpromoter up on up.userpromoterid=b.userpromotorid
                                 left join invoice inv on inv.idpaymentbook=pb.paymentbookid
-
                                  WHERE pb.pendingpay= 1 and pb.refusereasonid = :refuseReasonId  ORDER BY pb.paymentbookid DESC LIMIT :size OFFSET :offset
                                  """)
         Flux<PaymentBookDetailsDTO> findAllPaged(int refuseReasonId, int size,

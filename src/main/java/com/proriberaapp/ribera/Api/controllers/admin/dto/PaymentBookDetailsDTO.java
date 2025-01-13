@@ -91,6 +91,10 @@ public class PaymentBookDetailsDTO {
     private Integer bookingStateId;
     @Column("channel")
     private String channel;
+    @Column("invoicedocumentnumber")
+    private String invoiceDocumentNumber;
+    @Column("invoicetype")
+    private String invoiceType;
 
     @Override
     public String toString() {
