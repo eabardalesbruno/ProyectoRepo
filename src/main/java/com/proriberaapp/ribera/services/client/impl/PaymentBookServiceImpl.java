@@ -581,6 +581,9 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                     .totalDiscount(paymentBookEntity.getTotalDiscount())
                                     .percentageDiscount(paymentBookEntity.getPercentageDiscount())
                                     .channel(paymentBookEntity.getChannel())
+                                    .nights(paymentBookEntity.getNights())
+                                    .dayBookingEnd(paymentBookEntity.getDayBookingEnd())
+                                    .dayBookingInit(paymentBookEntity.getDayBookingInit())
                                     .totalCostWithOutDiscount(paymentBookEntity.getTotalCostWithOutDiscount());
                                 
                             if (userClient != null) {
