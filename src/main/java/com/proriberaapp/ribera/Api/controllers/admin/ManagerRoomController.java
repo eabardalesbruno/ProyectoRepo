@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDashboardDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("${url.manager}/room")
@@ -24,8 +27,8 @@ public class ManagerRoomController extends BaseManagerController<RoomEntity, Roo
     }
 
     @GetMapping("/find/all/detail")
-    public Flux<RoomDetailDto> findAllViewRoomsDetail() {
-        return roomService.finAllViewRoomsDetail();
+    public Flux<RoomDashboardDto> findAllViewRoomsDetail(@RequestParam String daybookinginit, @RequestParam String daybookingend) {
+        return roomService.findAllViewRoomsDetail(daybookinginit, daybookingend);
     }
 
 }

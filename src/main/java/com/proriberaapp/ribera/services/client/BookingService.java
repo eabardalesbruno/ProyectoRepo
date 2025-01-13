@@ -83,17 +83,17 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Mono<Void> saveBookingWithFeedings(BookingFeedingDto requestDTO);
 
-    Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateId(Integer stateId, Integer month);
+    Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateId(Integer stateId, Integer month, Integer year);
 
-    Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month);
+    Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month, Integer year);
 
-    Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month);
+    Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month, Integer year);
 
     Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime dateini, LocalDateTime datefin);
 
-    Mono<TotalCalculationMonthsDTO> totalPaymentMonthSum(Integer month);
+    Mono<TotalCalculationMonthsDTO> totalPaymentMonthSum(Integer month, Integer year);
 
-    Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month);
+    Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month, Integer year);
 
     Mono<BigDecimal> getTotalBeforeYear();
 
@@ -103,4 +103,7 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
 
     Mono<Void> updateState(Integer stateId,Integer bookingId);
+
+    Flux<Long> getAllYearsInvoice();
+
 }
