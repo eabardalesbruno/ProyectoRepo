@@ -6,6 +6,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Getter
 @Setter
@@ -45,4 +46,12 @@ public class CommissionEntity {
     @Column("casetype")
     private Integer caseType;
 
+    @Column("createdat")
+    private Timestamp createdAt;
+
+    @Column("disbursementdate")
+    private Timestamp disbursementDate;
+
+    @Column("invoicedocument")
+    private String invoiceDocument;
 }

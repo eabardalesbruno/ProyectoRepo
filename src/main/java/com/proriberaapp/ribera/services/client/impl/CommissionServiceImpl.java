@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 
 @Service
 public class CommissionServiceImpl implements CommissionService {
@@ -24,16 +26,30 @@ public class CommissionServiceImpl implements CommissionService {
 
     @Override
     public Mono<CommissionEntity> calculateAndSaveCommission(PaymentBookEntity paymentBook, Integer caseType) {
-        return bookingRepository.findByBookingId(paymentBook.getBookingId())
+        return bookingRepository.findById(paymentBook.getBookingId())
                 .flatMap(booking -> {
+
+                    BigDecimal totalAmount = booking.getCostFinal();
+
                     CommissionEntity commission = new CommissionEntity();
                     commission.setPaymentBookId(paymentBook.getPaymentBookId());
                     commission.setPromoterId(booking.getUserPromotorId());
                     commission.setCaseType(caseType);
 
-                    BigDecimal totalAmount = paymentBook.getAmount();
+                    Timestamp now = new Timestamp(System.currentTimeMillis());
+                    commission.setCreatedAt(now);
 
-                    switch (caseType){
+                    LocalDate currentDate = now.toLocalDateTime().toLocalDate();
+                    int dayOfMonth = currentDate.getDayOfMonth();
+                    LocalDate disbursementDate;
+                    if (dayOfMonth <= 15) {
+                        disbursementDate = currentDate.withDayOfMonth(20);
+                    } else {
+                        disbursementDate = currentDate.plusMonths(1).withDayOfMonth(5);
+                    }
+                    commission.setDisbursementDate(Timestamp.valueOf(disbursementDate.atStartOfDay()));
+
+                    switch (caseType) {
                         case 1:
                             commission.setRiberaAmount(totalAmount);
                             commission.setCommissionAmount(totalAmount.multiply(new BigDecimal("0.15")));
@@ -59,10 +75,15 @@ public class CommissionServiceImpl implements CommissionService {
                             break;
 
                         default:
-                            return Mono.error(new RuntimeException("Tipo de caso no válido"));
+                            return Mono.error(new IllegalArgumentException("Tipo de caso no válido"));
                     }
+
                     return commissionRepository.save(commission);
                 });
+    }
 
+    @Override
+    public Mono<BigDecimal> getTotalCommissionByPromoterId(Integer promoterId){
+        return commissionRepository.findTotalCommissionByPromoterId(promoterId);
     }
 }

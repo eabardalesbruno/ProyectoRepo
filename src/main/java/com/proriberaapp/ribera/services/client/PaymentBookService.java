@@ -31,4 +31,5 @@ public interface PaymentBookService {
     Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetailsPagado(int page, int size);
     Mono<PaymentBookEntity> savePaymentBook(PaymentBookEntity paymentBook);
 
+    Mono<PaymentBookEntity> createPaymentBookAndCalculateCommission(PaymentBookEntity paymentBook, Integer caseType);
 }

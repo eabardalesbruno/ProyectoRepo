@@ -89,6 +89,18 @@ public class PaymentBookDetailsDTO {
     private String bookingStateName;
     @Column("bookingstateid")
     private Integer bookingStateId;
+    @Column("channel")
+    private String channel;
+    @Column("invoicedocumentnumber")
+    private String invoiceDocumentNumber;
+    @Column("invoicetype")
+    private String invoiceType;
+    @Column("nights")
+    private Integer nights;
+    @Column("daybookingend")
+    private String dayBookingEnd;
+    @Column("daybookinginit")
+    private String dayBookingInit;
 
     @Override
     public String toString() {

@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static com.proriberaapp.ribera.utils.GeneralMethods.generatePassword;
@@ -131,6 +132,13 @@ public class UserPromotersController {
     public Mono<ResponseEntity<CommissionEntity>> calculateCommission(@RequestBody PaymentBookEntity paymentBook, @RequestParam Integer caseType) {
         return commissionService.calculateAndSaveCommission(paymentBook,caseType)
                 .map(commissionEntity -> new ResponseEntity<>(commissionEntity, HttpStatus.OK));
+    }
+
+    @GetMapping("/total-commission")
+    public Mono<ResponseEntity<BigDecimal>> getTotalCommissionByPromterId(@RequestParam Integer promoterId) {
+        return commissionService.getTotalCommissionByPromoterId(promoterId)
+                .map(totalCommission -> ResponseEntity.ok(totalCommission))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 }
 

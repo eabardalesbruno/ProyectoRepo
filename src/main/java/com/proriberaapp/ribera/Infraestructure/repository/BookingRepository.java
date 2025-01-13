@@ -103,11 +103,11 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
       		   WHERE be.roomid = rid.roomid LIMIT 1) bedtypename,
                  bo.numberchildren+bo.numberbabies+bo.numberadultsextra+bo.numberadults+bo.numberadultsmayor as capacity,
                      r.riberapoints, r.inresortpoints, r.points,
-            (CASE
-            WHEN up.userpromoterid is not null  THEN 'Promotor'
-            WHEN ua.useradminid is not null THEN 'Recepcionista'
-          ELSE
-            'Web' END) as channel
+             (CASE
+                WHEN up.userpromoterid is not null  THEN concat('PROMOTOR ',' - ',up.firstname,' ',up.lastname)
+                WHEN ua.useradminid is not null THEN concat('RECEPCION',' - ',ua.firstname,' ',ua.lastname)
+              ELSE
+                'Web' END) as channel
                  FROM userclient us
       		   JOIN booking bo ON us.userclientid = bo.userclientid
                  JOIN roomoffer r ON r.roomofferid = bo.roomofferid

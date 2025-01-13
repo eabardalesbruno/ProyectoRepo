@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Mono;
 import static com.proriberaapp.ribera.utils.GeneralMethods.generatePassword;
 
 import org.springframework.web.reactive.function.client.WebClient;
+
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -330,6 +332,13 @@ public class UserController {
     public Mono<ResponseEntity<Void>> sendEventContactInfo(@RequestBody EventContactInfo eventContactInfo) {
         return userClientService.sendEventContactInfo(eventContactInfo)
                 .map(ResponseEntity::ok);
+    }
+    @PutMapping("/update")
+    public Mono<Void> putMethodName(@RequestHeader("Authorization") String token, @RequestBody UserClientDto entity) {
+        Integer idUserClient = jwtProvider.getIdFromToken(token);
+        entity.setUserClientId(idUserClient);
+        
+        return this.userClientService.updateUser(entity);
     }
 
 }
