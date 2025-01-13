@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.stereotype.Service;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
@@ -17,6 +18,7 @@ import reactor.core.publisher.Mono;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -93,6 +95,8 @@ public class ExcelServiceImpl {
 
                     columnMapping.put("Modalidad", modalidad);
                     columnMapping.put("Detraccion", detraccion);
+                    columnMapping.put("Descuento", entity.getTotaldiscount());
+                    columnMapping.put("Porcentaje_descuento", entity.getPercentagediscount()+"%");
 
                     Row headerRow = sheet.getRow(0);
                     if (headerRow == null) {
