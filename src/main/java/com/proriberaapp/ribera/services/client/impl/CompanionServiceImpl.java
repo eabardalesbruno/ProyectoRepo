@@ -168,7 +168,50 @@ public class CompanionServiceImpl implements CompanionsService {
                                             });
                                 });
                     } else {
-                        return Mono.empty();
+
+                        CompanionsEntity newCompanion = new CompanionsEntity();
+                        newCompanion.setFirstname(companion.getFirstname());
+                        newCompanion.setLastname(companion.getLastname());
+                        newCompanion.setTypeDocumentId(companion.getTypeDocumentId());
+                        newCompanion.setDocumentNumber(companion.getDocumentNumber());
+                        newCompanion.setCellphone(companion.getCellphone());
+                        newCompanion.setEmail(companion.getEmail());
+                        newCompanion.setCategory(companion.getCategory());
+                        newCompanion.setBirthdate(companion.getBirthdate());
+                        newCompanion.setGenderId(companion.getGenderId());
+                        newCompanion.setCountryId(companion.getCountryId());
+                        newCompanion.setBookingId(bookingId);
+                        newCompanion.setCompanionId(null);
+
+                        if (newCompanion.getBirthdate() != null) {
+                            Timestamp birthTime = newCompanion.getBirthdate();
+                            LocalDate birthDate = birthTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                            int years = Period.between(birthDate, LocalDate.now()).getYears();
+                            newCompanion.setYears(years);
+                        }
+
+                        return companionsRepository.save(newCompanion)
+                                .flatMap(savedCompanion -> {
+                                    if (Boolean.TRUE.equals(savedCompanion.isTitular())) {
+                                        return getCompanionsListForBooking(savedCompanion.getBookingId())
+                                                .flatMap(companionsList -> {
+                                                    String emailBody = generatebody(
+                                                            savedCompanion.getFirstname(),
+                                                            savedCompanion.getLastname(),
+                                                            String.valueOf(savedCompanion.getTypeDocumentId()),
+                                                            savedCompanion.getYears(),
+                                                            savedCompanion.getDocumentNumber(),
+                                                            savedCompanion.getCellphone(),
+                                                            savedCompanion.getEmail(),
+                                                            companionsList
+                                                    );
+
+                                                    return sendSuccessEmail(savedCompanion.getEmail(), emailBody)
+                                                            .thenReturn(savedCompanion);
+                                                });
+                                    }
+                                    return Mono.just(savedCompanion);
+                                });
                     }
                 });
     }
