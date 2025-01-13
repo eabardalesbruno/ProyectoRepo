@@ -19,6 +19,8 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -64,18 +66,18 @@ public class ReportManagerServiceImpl implements ReportManagerService {
     }
 
     @Override
-    public Flux<BookingWithPaymentDTO> generateBookingReport(Integer stateId, Integer month) {
-        return bookingService.findBookingsWithPaymentByStateId(stateId, month);
+    public Flux<BookingWithPaymentDTO> generateBookingReport(Integer stateId, Integer month, Integer year) {
+        return bookingService.findBookingsWithPaymentByStateId(stateId, month, year);
     }
 
     @Override
-    public Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month) {
-        return bookingService.totalPaymentSum(stateId, month);
+    public Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month, Integer year) {
+        return bookingService.totalPaymentSum(stateId, month, year);
     }
 
     @Override
-    public Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month) {
-        return bookingService.totalPaymentMonthSum(stateId, month);
+    public Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month, Integer year) {
+        return bookingService.totalPaymentMonthSum(stateId, month, year);
     }
 
     @Override
@@ -84,13 +86,13 @@ public class ReportManagerServiceImpl implements ReportManagerService {
     }
 
     @Override
-    public Mono<TotalCalculationMonthsDTO> TotalCancellSales(Integer month) {
-        return bookingService.totalPaymentMonthSum(month);
+    public Mono<TotalCalculationMonthsDTO> TotalCancellSales(Integer month, Integer year) {
+        return bookingService.totalPaymentMonthSum(month, year);
     }
 
     @Override
-    public Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month) {
-        return bookingService.findBookingsWithResumeByStateId(stateId, month);
+    public Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month, Integer year) {
+        return bookingService.findBookingsWithResumeByStateId(stateId, month, year);
     }
 
     @Override
@@ -106,6 +108,11 @@ public class ReportManagerServiceImpl implements ReportManagerService {
     @Override
     public Mono<TotalCalculationMonthsDTO> getTotalActiveClientsMonths(Integer stateId, Integer month) {
         return bookingService.getTotalActiveClientsMonths(stateId, month);
+    }
+
+    @Override
+    public Mono<List<Long>> getAllYearsInvoice() {
+        return bookingService.getAllYearsInvoice().collect(Collectors.toList());
     }
 
 }

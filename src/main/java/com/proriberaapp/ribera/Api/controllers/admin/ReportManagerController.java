@@ -8,6 +8,7 @@ import com.proriberaapp.ribera.services.client.BookingService;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.proriberaapp.ribera.services.client.GenerateReportService;
 import com.proriberaapp.ribera.services.client.UserClientService;
@@ -43,13 +44,13 @@ public class ReportManagerController {
     }
 
     @GetMapping("/bookings/by-stateId")
-    public Flux<BookingWithPaymentDTO> getBookingsByStateId(@RequestParam Integer stateId, Integer month) {
-        return reportManagerService.generateBookingReport(stateId, month);
+    public Flux<BookingWithPaymentDTO> getBookingsByStateId(@RequestParam Integer stateId, @RequestParam Integer month, @RequestParam Integer year) {
+        return reportManagerService.generateBookingReport(stateId, month, year);
     }
 
     @GetMapping("/bookings/resumeByStateId")
-    public Flux<BookingResumenPaymentDTO> getResumePaymentByStateId(@RequestParam Integer stateId, Integer month) {
-        return reportManagerService.findBookingsWithResumeByStateId(stateId, month);
+    public Flux<BookingResumenPaymentDTO> getResumePaymentByStateId(@RequestParam Integer stateId, @RequestParam Integer month, @RequestParam Integer year) {
+        return reportManagerService.findBookingsWithResumeByStateId(stateId, month, year);
     }
 
     @GetMapping("/bookings/stateIdAndDate")
@@ -63,18 +64,18 @@ public class ReportManagerController {
     }
 
     @GetMapping("/total-payments")
-    public Mono<BigDecimal> totalPaymentSum(@RequestParam Integer stateId, Integer month) {
-        return reportManagerService.totalPaymentSum(stateId, month);
+    public Mono<BigDecimal> totalPaymentSum(@RequestParam Integer stateId, Integer month, Integer year) {
+        return reportManagerService.totalPaymentSum(stateId, month, year);
     }
 
     @GetMapping("/total-payments-months")
-    public Mono<TotalSalesDTO> totalPaymentMonthSum(@RequestParam Integer stateId, Integer month) {
-        return reportManagerService.totalPaymentMonthSum(stateId, month);
+    public Mono<TotalSalesDTO> totalPaymentMonthSum(@RequestParam Integer stateId, @RequestParam Integer month, @RequestParam Integer year) {
+        return reportManagerService.totalPaymentMonthSum(stateId, month, year);
     }
 
     @GetMapping("/total-sales-cancell")
-    public Mono<TotalCalculationMonthsDTO> TotalCancellSales(@RequestParam Integer month) {
-        return reportManagerService.TotalCancellSales(month);
+    public Mono<TotalCalculationMonthsDTO> TotalCancellSales(@RequestParam Integer month, @RequestParam Integer year) {
+        return reportManagerService.TotalCancellSales(month, year);
     }
 
     @GetMapping("/total-before-year")
@@ -97,6 +98,11 @@ public class ReportManagerController {
     @GetMapping("/report-booking")
     public Mono<ResponseEntity<ResponseFileDto>> generateReportReservation(@RequestParam Integer reservationId) {
         return generateReportService.generateReportReservation(reservationId);
+    }
+
+    @GetMapping("/bookings/invoiceYears")
+    public Mono<List<Long>> getAllYearsInvoice() {
+        return reportManagerService.getAllYearsInvoice();
     }
 
 }
