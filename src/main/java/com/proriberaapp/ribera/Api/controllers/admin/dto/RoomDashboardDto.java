@@ -4,20 +4,20 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import reactor.core.publisher.Flux;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoomDetailDto {
+public class RoomDashboardDto {
 
-    String roomnumber;
-    Long roomid;
-    Long roomofferid;
-    LocalDateTime daybookingend;
-    Long paymentstateid;
-    String paymentstatename;
+    String roomNumber;
+
+    String roomStatus;
+
+    List<RoomDetailDto> details;
 
 }

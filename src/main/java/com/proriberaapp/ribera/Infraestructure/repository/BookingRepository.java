@@ -265,9 +265,10 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
       JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
       join userclient u on i.iduser = u.userclientid
       WHERE b.bookingstateid = :stateId
-      AND (:month = 0 OR TO_CHAR(i.createdat, 'MM/YYYY') = CAST((:month) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE))
-                                                                        """)
-  Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateId(Integer stateId, Integer month);
+      AND (0 = :month AND TO_CHAR(i.createdat, 'YYYY') = CAST((:year) AS VARCHAR))
+      OR (0 < :month AND TO_CHAR(i.createdat, 'MM/YYYY') = LPAD(CAST((:month) AS VARCHAR), 2, '0') ||'/'|| CAST((:year) AS VARCHAR))
+      """)
+  Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateId(Integer stateId, Integer month, Integer year);
 
   @Query("""
       SELECT
@@ -347,9 +348,9 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
         JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
         join userclient u on i.iduser = u.userclientid
         WHERE b.bookingstateid = :stateId
-        AND (TO_CHAR(i.createdat, 'MM/YYYY') = CAST((:month) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE))
+        AND (TO_CHAR(i.createdat, 'MM/YYYY') = LPAD(CAST((:month) AS VARCHAR), 2, '0') ||'/'|| CAST((:year) AS VARCHAR))
       """)
-  Mono<BigDecimal> getTotalSalesByMonth(Integer stateId, Integer month);
+  Mono<BigDecimal> getTotalSalesByMonth(Integer stateId, Integer month, Integer year);
 
   @Query("""
         SELECT COALESCE(trunc(sum(p.totalcost)::numeric, 2),0)
@@ -364,12 +365,13 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
         join userclient u on i.iduser = u.userclientid
         WHERE b.bookingstateid = :stateId
         AND (TO_CHAR(i.createdat, 'MM/YYYY') = CASE :month WHEN 1 THEN TO_CHAR(CURRENT_DATE + interval '-1 month', 'MM/YYYY')
-        								  	ELSE CAST((:month-1) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE) END)
+        								  	ELSE LPAD(CAST((:month-1) AS VARCHAR), 2, '0')  ||'/'|| CAST((:year) AS VARCHAR) END)
       """)
-  Mono<BigDecimal> getTotalSalesBeforeMonth(Integer stateId, Integer month);
+  Mono<BigDecimal> getTotalSalesBeforeMonth(Integer stateId, Integer month, Integer year);
 
   @Query("""
         SELECT COUNT(*)
+       FROM (SELECT bo.bookingstateid
               FROM booking bo
               JOIN roomoffer r ON r.roomofferid = bo.roomofferid
               JOIN room rid ON rid.roomid = r.roomid
@@ -378,10 +380,11 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
               JOIN userclient us ON us.userclientid = bo.userclientid
               JOIN bedroom be ON be.roomid = rid.roomid
               JOIN bedstype bt ON bt.bedtypeid = be.bedtypeid
-              WHERE bo.bookingstateid = 4
-              AND (:month = 0 OR TO_CHAR(bo.createdat, 'MM/YYYY') = CAST((:month) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE))
+              WHERE (0 = :month AND TO_CHAR(bo.createdat, 'YYYY') = CAST((:year) AS VARCHAR))
+           	  OR (0 < :month AND TO_CHAR(bo.createdat, 'MM/YYYY') = LPAD(CAST((:month) AS VARCHAR), 2, '0') ||'/'|| CAST((:year) AS VARCHAR))
+       ) t WHERE t.bookingstateid = 4
       """)
-  Mono<Long> getTotalCancellSales(Integer month);
+  Mono<Long> getTotalCancellSales(Integer month, Integer year);
 
   @Query("""
         SELECT COUNT(*)
@@ -395,9 +398,9 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
               JOIN bedstype bt ON bt.bedtypeid = be.bedtypeid
               WHERE bo.bookingstateid = 4
               AND (TO_CHAR(bo.createdat, 'MM/YYYY') = CASE :month WHEN 1 THEN TO_CHAR(CURRENT_DATE + interval '-1 month', 'MM/YYYY')
-              								  	ELSE CAST((:month-1) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE) END)
+              								  	ELSE LPAD(CAST((:month-1) AS VARCHAR), 2, '0') ||'/'|| CAST((:year) AS VARCHAR) END)
       """)
-  Mono<Long> getTotalCancellLastSales(Integer month);
+  Mono<Long> getTotalCancellLastSales(Integer month, Integer year);
 
   @Query("""
       SELECT
@@ -444,12 +447,13 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                  JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid
                  JOIN userclient u on i.iduser = u.userclientid
                  WHERE b.bookingstateid = :stateId
-                 AND (:month = 0 OR TO_CHAR(i.createdat, 'MM/YYYY') = CAST((:month) AS VARCHAR) ||'/'|| EXTRACT(YEAR FROM CURRENT_DATE))
+                 AND (0 = :month AND TO_CHAR(i.createdat, 'YYYY') = CAST((:year) AS VARCHAR))
+           		 OR (0 < :month AND TO_CHAR(i.createdat, 'MM/YYYY') = LPAD(CAST((:month) AS VARCHAR), 2, '0') ||'/'|| CAST((:year) AS VARCHAR))
       		) t
       	GROUP BY t.invoice_createdat, t.roomtypename
       	ORDER BY t.invoice_createdat
       """)
-  Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month);
+  Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month, Integer year);
 
   @Query("""
         SELECT
@@ -517,7 +521,10 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
           """)
   Mono<Void> updateState(Integer stateId, Integer bookingId);
 
-        @Query("SELECT * FROM booking WHERE userclientid = :userClientId")
-        Mono<BookingEntity> findByUserClientId(@Param("userClientId") Integer userClientId);
+  @Query("SELECT * FROM booking WHERE userclientid = :userClientId")
+  Mono<BookingEntity> findByUserClientId(@Param("userClientId") Integer userClientId);
+
+  @Query("SELECT DISTINCT EXTRACT('Year' FROM createdat) years FROM invoice ORDER BY years")
+  Flux<Long> getAllYearsInvoice();
 
 }

@@ -24,21 +24,10 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
     Flux<BedroomReturn> findAllViewBedroomReturn(@Param("roomid") Integer roomid);
 
     @Query("""
-        SELECT *, COALESCE((SELECT
-        CASE WHEN b.daybookingend < NOW() THEN 'LIBRE'
-        ELSE bs.bookingstatename
-        END bookingstatename
-        FROM booking b
-        JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid
-        WHERE b.roomofferid = t.roomofferid
-        ORDER BY createdat DESC LIMIT 1),'LIBRE') bookingstatename
-        FROM
-        (SELECT r.roomid, r.roomnumber, ro.roomofferid
-        FROM room r
-        LEFT JOIN roomoffer ro ON r.roomid = ro.roomid) t
-        ORDER BY t.roomnumber;
+        SELECT roomnumber
+        FROM room GROUP BY roomnumber ORDER BY roomnumber
     """)
-    Flux<RoomDetailDto> finAllViewRoomsDetail();
+    Flux<String> findAllViewRooms();
 
     @Query("""
         select r.* from booking b
@@ -47,5 +36,20 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
         where b.bookingid = :bookingId
     """)
     Mono<RoomEntity> getRoomNameByBookingId(@Param("bookingId") Integer bookingId);
+
+    @Query("""
+        SELECT r.roomid, r.roomnumber, ro.roomofferid, b.daybookinginit, b.daybookingend, pb.paymentstateid, ps.paymentstatename
+        FROM room r
+        JOIN roomoffer ro ON r.roomid = ro.roomid
+        JOIN booking b ON ro.roomofferid = b.roomofferid
+        JOIN paymentbook pb ON b.bookingid = pb.bookingid
+        JOIN paymentstate ps ON pb.paymentstateid = ps.paymentstateid
+        WHERE b.daybookingend >= :daybookingend::TIMESTAMP AND b.daybookinginit <= :daybookinginit::TIMESTAMP
+        AND r.roomnumber = :roomnumber
+    """)
+    Flux<RoomDetailDto> findAllViewRoomsDetail(
+            @Param("daybookinginit") String daybookinginit,
+            @Param("daybookingend") String daybookingend,
+            @Param("roomnumber") String roomnumber);
 
 }
