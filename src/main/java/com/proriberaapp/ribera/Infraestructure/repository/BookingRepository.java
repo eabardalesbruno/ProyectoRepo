@@ -145,7 +145,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
       +
       ",bo.numberchildren,bo.numberbabies,bo.numberadultsextra,bo.numberadultsmayor, "
       +
-      "r.riberapoints, r.inresortpoints, r.points " +
+          "r.riberapoints, r.inresortpoints, r.points, " +
+      "calculate_nights(bo.daybookinginit,bo.daybookingend ) as nights "+
       "FROM booking bo " +
       "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
       "JOIN room rid ON rid.roomid = r.roomid " +
@@ -328,7 +329,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
           FROM booking
           WHERE roomofferid = :roomOfferId
             AND (daybookinginit < :offerTimeEnd AND daybookingend > :offerTimeInit)
-            AND (bookingstateid in (2,7,6))
+            AND (bookingstateid in (2,7,6,3))
       """)
   Flux<BookingEntity> findConflictingBookings(@Param("roomOfferId") Integer roomOfferId,
       @Param("offerTimeInit") LocalDate offerTimeInit,
