@@ -39,40 +39,52 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
     Mono<Long> countLastUsers(Integer month);
 
     @Query("""
-        SELECT COUNT(*)
-        FROM (SELECT uc.*, g.genderdesc, c.countrydesc,
-            (SELECT l.levelname FROM userlevel l WHERE l.userlevelid = uc.userLevelId) levelname,
-            (SELECT DISTINCT bs.bookingstatename FROM booking b
-            INNER JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid AND b.userclientid = uc.userclientid) statusdesc,
-            (SELECT DISTINCT bs.bookingstateid FROM booking b
-            INNER JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid AND b.userclientid = uc.userclientid) statusid
-            FROM userclient uc
-            JOIN gender g ON uc.genderid = g.genderid
-            JOIN country c ON uc.countryid = c.countryid
-            ORDER BY uc.createdat) t
-        WHERE (:statusId IS NULL OR t.statusid = :statusId)
-        AND (:fecha IS NULL OR TO_CHAR(t.createdat, 'YYYY/MM/DD') = :fecha)
-        AND (:filter IS NULL OR (UPPER(t.firstName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.lastName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.documentnumber) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.email) LIKE UPPER(CONCAT('%', :filter, '%'))))
-    """)
+                SELECT COUNT(*)
+                FROM (SELECT uc.*, g.genderdesc, c.countrydesc,
+                    (SELECT l.levelname FROM userlevel l WHERE l.userlevelid = uc.userLevelId) levelname,
+                    (SELECT DISTINCT bs.bookingstatename FROM booking b
+                    INNER JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid AND b.userclientid = uc.userclientid) statusdesc,
+                    (SELECT DISTINCT bs.bookingstateid FROM booking b
+                    INNER JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid AND b.userclientid = uc.userclientid) statusid
+                    FROM userclient uc
+                    JOIN gender g ON uc.genderid = g.genderid
+                    JOIN country c ON uc.countryid = c.countryid
+                    ORDER BY uc.createdat) t
+                WHERE (:statusId IS NULL OR t.statusid = :statusId)
+                AND (:fecha IS NULL OR TO_CHAR(t.createdat, 'YYYY/MM/DD') = :fecha)
+                AND (:filter IS NULL OR (UPPER(t.firstName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.lastName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.documentnumber) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.email) LIKE UPPER(CONCAT('%', :filter, '%'))))
+            """)
     Mono<Long> countUserAll(Integer statusId, String fecha, String filter);
 
     @Query("""
-        SELECT *
-        FROM (SELECT uc.*, g.genderdesc, c.countrydesc,
-            (SELECT l.levelname FROM userlevel l WHERE l.userlevelid = uc.userLevelId) levelname,
-            (SELECT DISTINCT bs.bookingstatename FROM booking b
-            INNER JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid AND b.userclientid = uc.userclientid) statusdesc,
-            (SELECT DISTINCT bs.bookingstateid FROM booking b
-            INNER JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid AND b.userclientid = uc.userclientid) statusid
-            FROM userclient uc
-            JOIN gender g ON uc.genderid = g.genderid
-            JOIN country c ON uc.countryid = c.countryid
-            ORDER BY uc.createdat) t
-        WHERE (:statusId IS NULL OR t.statusid = :statusId)
-        AND (:fecha IS NULL OR TO_CHAR(t.createdat, 'YYYY/MM/DD') = :fecha)
-        AND (:filter IS NULL OR (UPPER(t.firstName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.lastName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.documentnumber) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.email) LIKE UPPER(CONCAT('%', :filter, '%'))))
-        OFFSET :indice*10 LIMIT 10
-    """)
+                SELECT *
+                FROM (SELECT uc.*, g.genderdesc, c.countrydesc,
+                    (SELECT l.levelname FROM userlevel l WHERE l.userlevelid = uc.userLevelId) levelname,
+                    (SELECT DISTINCT bs.bookingstatename FROM booking b
+                    INNER JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid AND b.userclientid = uc.userclientid) statusdesc,
+                    (SELECT DISTINCT bs.bookingstateid FROM booking b
+                    INNER JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid AND b.userclientid = uc.userclientid) statusid
+                    FROM userclient uc
+                    JOIN gender g ON uc.genderid = g.genderid
+                    JOIN country c ON uc.countryid = c.countryid
+                    ORDER BY uc.createdat) t
+                WHERE (:statusId IS NULL OR t.statusid = :statusId)
+                AND (:fecha IS NULL OR TO_CHAR(t.createdat, 'YYYY/MM/DD') = :fecha)
+                AND (:filter IS NULL OR (UPPER(t.firstName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.lastName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.documentnumber) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.email) LIKE UPPER(CONCAT('%', :filter, '%'))))
+                OFFSET :indice*10 LIMIT 10
+            """)
     Flux<UserClientDto> getAllClients(Integer indice, Integer statusId, String fecha, String filter);
 
+    @Query("SELECT * FROM userclient WHERE userclientid <>:userClientId and (email = :email OR documentnumber = :documentNumber)  limit 1")
+    Mono<UserClientEntity> findByEmailOrDocumentNumberAndIgnoreId(String email, String documentNumber,
+            Integer userClientId);
+
+    @Query("""
+            update userclient set  genderid = :#{#userClientDto.genderId},
+            documentnumber = :#{#userClientDto.documentNumber},
+                    address = :#{#userClientDto.address}, cellnumber = :#{#userClientDto.cellNumber}, email = :#{#userClientDto.email},
+                    countryId = :#{#userClientDto.countryId}
+where userclientid = :#{#userClientDto.userClientId}
+            """)
+    Mono<Void> updateBasicData(UserClientDto userClientDto);
 }

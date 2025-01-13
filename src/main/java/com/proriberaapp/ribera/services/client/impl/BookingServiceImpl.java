@@ -1162,22 +1162,22 @@ public class BookingServiceImpl implements BookingService {
         }
 
         @Override
-        public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateId(Integer stateId, Integer month) {
-                return bookingRepository.findBookingsWithPaymentByStateId(stateId, month);
+        public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateId(Integer stateId, Integer month, Integer year) {
+                return bookingRepository.findBookingsWithPaymentByStateId(stateId, month, year);
         }
 
         @Override
-        public Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month) {
-                return bookingRepository.findBookingsWithPaymentByStateId(stateId, month)
+        public Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month, Integer year) {
+                return bookingRepository.findBookingsWithPaymentByStateId(stateId, month, year)
                                 .map(BookingWithPaymentDTO::getTotalCost)
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         }
 
         @Override
-        public Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month) {
+        public Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month, Integer year) {
                 TotalSalesDTO resp = new TotalSalesDTO();
-                return bookingRepository.getTotalSalesByMonth(stateId, month).flatMap(totalMonth -> {
-                        return bookingRepository.getTotalSalesBeforeMonth(stateId, month).flatMap(totalLastMonth -> {
+                return bookingRepository.getTotalSalesByMonth(stateId, month, year).flatMap(totalMonth -> {
+                        return bookingRepository.getTotalSalesBeforeMonth(stateId, month, year).flatMap(totalLastMonth -> {
                                 resp.setTotalMonth(totalMonth);
                                 resp.setTotalLastMonth(totalLastMonth);
                                 return Mono.just(resp);
@@ -1192,10 +1192,10 @@ public class BookingServiceImpl implements BookingService {
         }
 
         @Override
-        public Mono<TotalCalculationMonthsDTO> totalPaymentMonthSum(Integer month) {
+        public Mono<TotalCalculationMonthsDTO> totalPaymentMonthSum(Integer month, Integer year) {
                 TotalCalculationMonthsDTO resp = new TotalCalculationMonthsDTO();
-                return bookingRepository.getTotalCancellSales(month).flatMap(totalMonth -> {
-                        return bookingRepository.getTotalCancellLastSales(month).flatMap(totalLastMonth -> {
+                return bookingRepository.getTotalCancellSales(month, year).flatMap(totalMonth -> {
+                        return bookingRepository.getTotalCancellLastSales(month, year).flatMap(totalLastMonth -> {
                                 resp.setTotalMonth(totalMonth);
                                 resp.setTotalLastMonth(totalLastMonth);
                                 return Mono.just(resp);
@@ -1204,8 +1204,8 @@ public class BookingServiceImpl implements BookingService {
         }
 
         @Override
-        public Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month) {
-                return bookingRepository.findBookingsWithResumeByStateId(stateId, month);
+        public Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month, Integer year) {
+                return bookingRepository.findBookingsWithResumeByStateId(stateId, month, year);
         }
 
         @Override
@@ -1233,6 +1233,11 @@ public class BookingServiceImpl implements BookingService {
         public Mono<Void> updateState(Integer stateId,Integer bookingId) {
                 return bookingRepository.updateState(stateId,bookingId);
 
+        }
+
+        @Override
+        public Flux<Long> getAllYearsInvoice() {
+                return bookingRepository.getAllYearsInvoice();
         }
 
 }

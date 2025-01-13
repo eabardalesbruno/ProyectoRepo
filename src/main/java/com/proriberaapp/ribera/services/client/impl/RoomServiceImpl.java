@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDashboardDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
@@ -10,10 +11,13 @@ import com.proriberaapp.ribera.Infraestructure.repository.RoomRepository;
 import com.proriberaapp.ribera.services.client.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -135,8 +139,15 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public Flux<RoomDetailDto> finAllViewRoomsDetail() {
-        return roomRepository.finAllViewRoomsDetail();
+    public Flux<RoomDashboardDto> findAllViewRoomsDetail(String daybookinginit, String daybookingend) {
+        return roomRepository.findAllViewRooms().publishOn(Schedulers.boundedElastic()).flatMap(room -> {
+            RoomDashboardDto roomDashboard = new RoomDashboardDto();
+            roomDashboard.setRoomNumber(room);
+            List<RoomDetailDto> listRoomDetail = roomRepository.findAllViewRoomsDetail(daybookinginit, daybookingend, room).collectList().block();
+            roomDashboard.setRoomStatus(listRoomDetail.size() > 0 ? "Evaluar" : "Libre");
+            roomDashboard.setDetails(listRoomDetail);
+            return Flux.just(roomDashboard);
+        });
     }
 
 }

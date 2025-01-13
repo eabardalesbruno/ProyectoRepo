@@ -74,4 +74,8 @@ public class BookingWithPaymentDTO {
     private String username;
     @Column("documenttypeid")
     private Integer documentTypeId;
+    @Column("totaldiscount")
+    private BigDecimal totaldiscount;
+    @Column("percentagediscount")
+    private BigDecimal percentagediscount;
 }

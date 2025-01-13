@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 public interface ReportManagerService {
     Flux<ExcelEntity> findAll();
@@ -27,22 +28,24 @@ public interface ReportManagerService {
 
     Mono<Long> countByRefuseReasonIdAndPendingPay(int refuseReasonId, int pendingPay);
 
-    Flux<BookingWithPaymentDTO> generateBookingReport(Integer stateId, Integer month);
+    Flux<BookingWithPaymentDTO> generateBookingReport(Integer stateId, Integer month, Integer year);
 
-    Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month);
+    Mono<BigDecimal> totalPaymentSum(Integer stateId, Integer month, Integer year);
 
-    Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month);
+    Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month, Integer year);
 
     Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateIdAndDate(Integer stateId, LocalDateTime dateini, LocalDateTime datefin);
 
-    Mono<TotalCalculationMonthsDTO> TotalCancellSales(Integer month);
+    Mono<TotalCalculationMonthsDTO> TotalCancellSales(Integer month, Integer year);
 
-    Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month);
+    Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month, Integer year);
 
     Mono<BigDecimal> getTotalBeforeYear();
 
     Mono<Long> getTotalActiveClients(Integer stateId, Integer month);
 
     Mono<TotalCalculationMonthsDTO> getTotalActiveClientsMonths(Integer stateId, Integer month);
+
+    Mono<List<Long>> getAllYearsInvoice();
 
 }

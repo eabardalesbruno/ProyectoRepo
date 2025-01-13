@@ -21,9 +21,10 @@ public class ExcelController {
     @GetMapping("/download")
     public Mono<ResponseEntity<ByteArrayResource>> downloadExcel(
         @RequestParam Integer stateId, 
-        @RequestParam Integer month
+        @RequestParam Integer month,
+        @RequestParam Integer year
     ) { 
-        return reportManagerService.generateBookingReport(stateId, month)
+        return reportManagerService.generateBookingReport(stateId, month, year)
 
                 .collectList()
                 .flatMap(excelServiceImpl::generateExcelFromEntitiesByMonth)
