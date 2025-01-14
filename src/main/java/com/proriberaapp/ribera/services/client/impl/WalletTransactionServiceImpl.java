@@ -7,6 +7,7 @@ import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.WalletTransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Flux;
@@ -50,6 +51,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     @Value("${url.api.tipo-cambio.token}")
     private String tokenApiTipoCambio;
     private RefusePaymentServiceImpl refusePaymentService;
+    private CommissionRepository commissionRepository;
 
     @Override
     public Mono<WalletTransactionEntity> makeTransfer(Integer walletIdOrigin, Integer walletIdDestiny, String emailDestiny, String cardNumber, BigDecimal amount, String motiveDescription) {
@@ -887,6 +889,33 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
         return Mono.just(body);
     }
 
+    //Metodo de recarga de comisones para promotor
+    @Scheduled(cron = "0 0 0 * * ?")
+    public Mono<Void> processPendingCommissions() {
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+
+        return commissionRepository.findByDisbursementDate (currentTimestamp)
+                .flatMap(commission -> {
+                    Integer promoterId = commission.getPromoterId();
+
+                    return walletRepository.findByUserPromoterId(promoterId)
+                            .flatMap(wallet -> {
+                                if (!wallet.getUserPromoterId().equals(promoterId)) {
+                                    return Mono.error(new IllegalStateException("Wallet no coincide con el promotor"));
+                                }
+
+                                wallet.setBalance(wallet.getBalance().add(commission.getCommissionAmount()));
+
+                                commission.setProcessed(true);
+                                commission.setProcessedAt(currentTimestamp);
+                                return walletRepository.save(wallet)
+                                        .then(commissionRepository.save(commission));
+                            });
+                })
+                .then();
+    }
+
+
     @Override
     public Map<String, Object> getExchangeRate(String date) {
         String url = urlApiTipoCambio + "?date=" + date;
@@ -913,4 +942,6 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                         .switchIfEmpty(Mono.just(code))
         );
     }
+
+
 }
