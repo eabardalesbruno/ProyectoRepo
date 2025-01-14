@@ -94,7 +94,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                  r.offertimeinit, r.offertimeend, us.email, bo.costfinal,
                  TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit,
                  TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend,
-                 bs.bookingstateid, bs.bookingstatename,
+                     bs.bookingstateid, bs.bookingstatename,
+                         rid.roomnumber,
       		   (SELECT b.bedtypename FROM bedroom be
       		   INNER JOIN bedstype b ON b.bedtypeid = be.bedtypeid
       		   WHERE be.roomid = rid.roomid LIMIT 1) bedtypename,
@@ -106,8 +107,9 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
              (CASE
                 WHEN up.userpromoterid is not null  THEN concat('PROMOTOR ',' - ',up.firstname,' ',up.lastname)
                 WHEN ua.useradminid is not null THEN concat('RECEPCION',' - ',ua.firstname,' ',ua.lastname)
-              ELSE
-                'Web' END) as channel
+                when us.userclientid is not null and us.isuserinclub THEN 'WEB - Socio'
+                when us.userclientid is not null and not us.isuserinclub THEN 'WEB'
+                ELSE 'Sin clasificar' END) as channel
                  FROM userclient us
       		   JOIN booking bo ON us.userclientid = bo.userclientid
                  JOIN roomoffer r ON r.roomofferid = bo.roomofferid
