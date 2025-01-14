@@ -101,8 +101,9 @@ public class CompanionServiceImpl implements CompanionsService {
                 .flatMap(savedCompanion -> {
                     if (Boolean.TRUE.equals(savedCompanion.isTitular())) {
                         return getCompanionsListForBooking(savedCompanion.getBookingId())
+                                .filter(companionsList -> companionsList.size() > 1)
                                 .flatMap(companionsList -> {
-                                    int yearsValue = savedCompanion.getYears() != null ? Integer.parseInt(String.valueOf(savedCompanion.getYears())) : 0;
+                                    int yearsValue = savedCompanion.getYears() != null ? savedCompanion.getYears() : 0;
 
                                     String emailBody = generatebody(
                                             savedCompanion.getFirstname(),
@@ -117,11 +118,13 @@ public class CompanionServiceImpl implements CompanionsService {
 
                                     return sendSuccessEmail(savedCompanion.getEmail(), emailBody)
                                             .thenReturn(savedCompanion);
-                                });
+                                })
+                                .switchIfEmpty(Mono.just(savedCompanion));
                     }
                     return Mono.just(savedCompanion);
                 });
     }
+
 
     @Override
     public Flux<CompanionsEntity> updateCompanion(Integer bookingId, List<CompanionsEntity> companionsEntities) {
@@ -159,6 +162,7 @@ public class CompanionServiceImpl implements CompanionsService {
                                             .flatMap(savedCompanion -> {
                                                 if (Boolean.TRUE.equals(savedCompanion.isTitular())) {
                                                     return getCompanionsListForBooking(savedCompanion.getBookingId())
+                                                            .filter(companionsList -> companionsList.size() > 1)
                                                             .flatMap(companionsList -> {
                                                                 String emailBody = generatebody(
                                                                         savedCompanion.getFirstname(),
@@ -173,13 +177,13 @@ public class CompanionServiceImpl implements CompanionsService {
 
                                                                 return sendSuccessEmail(savedCompanion.getEmail(), emailBody)
                                                                         .thenReturn(savedCompanion);
-                                                            });
+                                                            })
+                                                            .switchIfEmpty(Mono.just(savedCompanion));
                                                 }
                                                 return Mono.just(savedCompanion);
                                             });
                                 });
                     } else {
-
                         CompanionsEntity newCompanion = new CompanionsEntity();
                         newCompanion.setFirstname(companion.getFirstname());
                         newCompanion.setLastname(companion.getLastname());
@@ -199,7 +203,7 @@ public class CompanionServiceImpl implements CompanionsService {
                             LocalDate birthDate = birthTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                             int years = Period.between(birthDate, LocalDate.now()).getYears();
                             newCompanion.setYears(years);
-                        }else{
+                        } else {
                             newCompanion.setYears(0);
                         }
 
@@ -207,6 +211,7 @@ public class CompanionServiceImpl implements CompanionsService {
                                 .flatMap(savedCompanion -> {
                                     if (Boolean.TRUE.equals(savedCompanion.isTitular())) {
                                         return getCompanionsListForBooking(savedCompanion.getBookingId())
+                                                .filter(companionsList -> companionsList.size() > 1)
                                                 .flatMap(companionsList -> {
                                                     String emailBody = generatebody(
                                                             savedCompanion.getFirstname(),
@@ -218,10 +223,10 @@ public class CompanionServiceImpl implements CompanionsService {
                                                             savedCompanion.getEmail(),
                                                             companionsList
                                                     );
-
                                                     return sendSuccessEmail(savedCompanion.getEmail(), emailBody)
                                                             .thenReturn(savedCompanion);
-                                                });
+                                                })
+                                                .switchIfEmpty(Mono.just(savedCompanion));
                                     }
                                     return Mono.just(savedCompanion);
                                 });
