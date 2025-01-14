@@ -151,6 +151,8 @@ public class CompanionServiceImpl implements CompanionsService {
                                         LocalDate birthDate = birthTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                                         int years = Period.between(birthDate, LocalDate.now()).getYears();
                                         existingCompanion.setYears(years);
+                                    } else{
+                                        existingCompanion.setYears(0);
                                     }
 
                                     return companionsRepository.save(existingCompanion)
@@ -162,7 +164,7 @@ public class CompanionServiceImpl implements CompanionsService {
                                                                         savedCompanion.getFirstname(),
                                                                         savedCompanion.getLastname(),
                                                                         String.valueOf(savedCompanion.getTypeDocumentId()),
-                                                                        savedCompanion.getYears(),
+                                                                        savedCompanion.getYears() != null ? savedCompanion.getYears() : 0,
                                                                         savedCompanion.getDocumentNumber(),
                                                                         savedCompanion.getCellphone(),
                                                                         savedCompanion.getEmail(),
@@ -197,6 +199,8 @@ public class CompanionServiceImpl implements CompanionsService {
                             LocalDate birthDate = birthTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                             int years = Period.between(birthDate, LocalDate.now()).getYears();
                             newCompanion.setYears(years);
+                        }else{
+                            newCompanion.setYears(0);
                         }
 
                         return companionsRepository.save(newCompanion)
@@ -208,7 +212,7 @@ public class CompanionServiceImpl implements CompanionsService {
                                                             savedCompanion.getFirstname(),
                                                             savedCompanion.getLastname(),
                                                             String.valueOf(savedCompanion.getTypeDocumentId()),
-                                                            savedCompanion.getYears(),
+                                                            savedCompanion.getYears() != null ? savedCompanion.getYears() : 0,
                                                             savedCompanion.getDocumentNumber(),
                                                             savedCompanion.getCellphone(),
                                                             savedCompanion.getEmail(),
