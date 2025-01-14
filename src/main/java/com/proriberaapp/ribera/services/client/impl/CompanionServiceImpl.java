@@ -102,10 +102,19 @@ public class CompanionServiceImpl implements CompanionsService {
                     if (Boolean.TRUE.equals(savedCompanion.isTitular())) {
                         return getCompanionsListForBooking(savedCompanion.getBookingId())
                                 .flatMap(companionsList -> {
-                                    String emailBody = generatebody(savedCompanion.getFirstname(), savedCompanion.getLastname(),
-                                            String.valueOf(savedCompanion.getTypeDocumentId()), savedCompanion.getYears(),
-                                            savedCompanion.getDocumentNumber(), savedCompanion.getCellphone(),
-                                            savedCompanion.getEmail(), companionsList);
+                                    int yearsValue = savedCompanion.getYears() != null ? Integer.parseInt(String.valueOf(savedCompanion.getYears())) : 0;
+
+                                    String emailBody = generatebody(
+                                            savedCompanion.getFirstname(),
+                                            savedCompanion.getLastname(),
+                                            String.valueOf(savedCompanion.getTypeDocumentId()),
+                                            yearsValue,
+                                            savedCompanion.getDocumentNumber(),
+                                            savedCompanion.getCellphone(),
+                                            savedCompanion.getEmail(),
+                                            companionsList
+                                    );
+
                                     return sendSuccessEmail(savedCompanion.getEmail(), emailBody)
                                             .thenReturn(savedCompanion);
                                 });
