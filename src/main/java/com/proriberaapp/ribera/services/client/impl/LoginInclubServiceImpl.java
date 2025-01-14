@@ -83,6 +83,7 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                                                         .firstName(responseInclubLoginDto.getData().getName())
                                                         .lastName(responseInclubLoginDto.getData().getLastName())
                                                         .password(passwordEncoder.encode(password))
+                                                        .isUserInclub(true)
                                                         .build();
 
                                                 return this.userClientRepository.save(userClientEntity);

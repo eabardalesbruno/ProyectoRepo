@@ -65,6 +65,8 @@ public class UserApiEntity implements UserDetails {
     @Column("googleemail")
     private String googleEmail;
     private String username;
+    @Column("isuserinclub")
+    private boolean isUserInclub;
     public UserApiEntity() {}
 
     public UserApiEntity(Integer userClientId, Integer registerTypeId, Integer userLevelId, Integer codeUser,
@@ -72,7 +74,7 @@ public class UserApiEntity implements UserDetails {
                          Integer areazoneId, Integer documenttypeId, String documentNumber,
                          Timestamp birthDate, Integer role, String civilStatus, String city,
                          String address, String cellNumber, String email, String password,
-                         String googleAuth, String googleId, String googleEmail, String username) {
+                         String googleAuth, String googleId, String googleEmail, String username,boolean isUserInclub) {
         this.userClientId = userClientId;
         this.registerTypeId = registerTypeId;
         this.userLevelId = userLevelId;
@@ -96,6 +98,7 @@ public class UserApiEntity implements UserDetails {
         this.googleId = googleId;
         this.googleEmail = googleEmail;
         this.username = username;
+        this.isUserInclub = isUserInclub;
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
