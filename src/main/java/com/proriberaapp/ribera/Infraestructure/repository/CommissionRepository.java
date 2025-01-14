@@ -9,6 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Repository
 public interface CommissionRepository extends R2dbcRepository <CommissionEntity, Integer> {
@@ -17,4 +18,7 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
 
     @Query("SELECT SUM(commissionamount) FROM commission WHERE promoterid = :promoterId")
     Mono<BigDecimal> findTotalCommissionByPromoterId(@Param("promoterId") Integer promoterId);
+
+    Flux<CommissionEntity> findByDisbursementDate(Timestamp date);
+
 }

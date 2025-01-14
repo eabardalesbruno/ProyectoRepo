@@ -54,4 +54,10 @@ public class CommissionEntity {
 
     @Column("invoicedocument")
     private String invoiceDocument;
+
+    @Column("processed")
+    private boolean processed;
+
+    @Column("processedat")
+    private Timestamp processedAt;
 }
