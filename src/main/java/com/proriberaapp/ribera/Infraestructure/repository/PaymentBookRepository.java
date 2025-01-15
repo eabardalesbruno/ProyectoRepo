@@ -162,4 +162,7 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
         @Query("SELECT COUNT(*) FROM paymentbook WHERE bookingid = :bookingid")
         Mono<Long> countPaymentBookByBookingId(int bookingid);
 
+        @Query("update paymentbook set cancelreasonid = :cancelreasonid where bookingid = :bookingId")
+        Mono<Void> setCancelForBookingId( Integer cancelreasonid,Integer bookingId);
+
 }
