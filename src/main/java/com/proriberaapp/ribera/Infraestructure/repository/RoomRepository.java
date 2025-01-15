@@ -44,7 +44,7 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
         JOIN booking b ON ro.roomofferid = b.roomofferid
         JOIN paymentbook pb ON b.bookingid = pb.bookingid
         JOIN paymentstate ps ON pb.paymentstateid = ps.paymentstateid
-        WHERE b.daybookingend >= :daybookingend::TIMESTAMP AND b.daybookinginit <= :daybookinginit::TIMESTAMP
+        WHERE b.daybookingend <= :daybookingend::TIMESTAMP AND b.daybookinginit >= :daybookinginit::TIMESTAMP
         AND r.roomnumber = :roomnumber
     """)
     Flux<RoomDetailDto> findAllViewRoomsDetail(

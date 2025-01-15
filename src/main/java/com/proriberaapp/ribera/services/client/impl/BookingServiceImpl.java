@@ -830,6 +830,7 @@ public class BookingServiceImpl implements BookingService {
                                                                 .countPaymentBookByBookingId(
                                                                                 bookingEntity.getBookingId())
                                                                 .flatMap(payment -> {
+                                                                        int hidePayment = 1; //Por el momento es para ocultar el botón pagar
                                                                         BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
                                                                         String monthInit = TransformDate
                                                                                         .getAbbreviatedMonth(
@@ -858,7 +859,7 @@ public class BookingServiceImpl implements BookingService {
                                                                                                         String.valueOf(bookingEntity
                                                                                                                         .getBookingId()),
                                                                                                         totalPeoples,
-                                                                                                        payment));
+                                                                                                        hidePayment));
                                                                         String emailBody = baseEmailReserve.execute();
                                                                         // Generar el cuerpo del correo electrónico con
                                                                         // el nombre de la habitación

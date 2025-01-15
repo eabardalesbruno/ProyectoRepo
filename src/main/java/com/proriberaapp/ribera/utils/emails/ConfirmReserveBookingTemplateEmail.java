@@ -87,16 +87,17 @@ public class ConfirmReserveBookingTemplateEmail implements EmailHandler {
                 <p>Seleccion de reserva: <br> <strong>%roomName
                     <br>
                     para %totalPeoples
-                </strong></p>
-                <div th:if="${%payment == '0'}">
-                     <a href="https://www.cieneguillariberadelrio.com/payment-method/%bookingId" class="button">Pagar ahora</a>
-                </div>
-                </div>
-                    <p class="font-size">
-                    Recuerde que el pago lo puede realizar mediante deposito en nuestra cuenta a través de agente BCP, agencias o cualquier método de pago dentro de la plataforma usando este enlace:
-                    <a href="https://www.cieneguillariberadelrio.com/payment-method/%bookingId">www.riberadelrio/reservas.com</a>
-                    </p>
-                """;
+                </strong></p>""";
+        if (payment == 0) {
+            body += "<div>" +
+                    "<a href=\"https://www.cieneguillariberadelrio.com/payment-method/%bookingId\" class=\"button\">Pagar ahora</a>" +
+                    "</div>";
+        }
+            body += "</div>" +
+                    "<p class=\"font-size\"> " +
+                    "Recuerde que el pago lo puede realizar mediante deposito en nuestra cuenta a través de agente BCP, agencias o cualquier método de pago dentro de la plataforma usando este enlace: " +
+                    "<a href=\"https://www.cieneguillariberadelrio.com/payment-method/%bookingId\">www.riberadelrio/reservas.com</a>" +
+                    "</p>";
         return body.replaceAll("%roomName", roomName).replaceAll("%clientName", clientName)
                 .replace("%monthInit", monthInit).replace("%monthEnd", monthEnd)
                 .replace("%dayInit", dayInit).replace("%dayEnd", dayEnd)
