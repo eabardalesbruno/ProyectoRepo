@@ -26,8 +26,10 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                           (CASE
                                         WHEN up.userpromoterid is not null  THEN concat('PROMOTOR ',' - ',up.firstname,' ',up.lastname)
                                         WHEN ua.useradminid is not null THEN concat('RECEPCION',' - ',ua.firstname,' ',ua.lastname)
+                                        when uc.userclientid is not null and uc.isuserinclub THEN 'WEB - Socio'
+                                        when uc.userclientid is not null and not uc.isuserinclub THEN 'WEB'
                                       ELSE
-                                                    'Web' END) as channel,
+                                                    'Sin clasificar' END) as channel,
                                          pb.invoicedocumentnumber ,
                                          pb.invoicetype ,
                                          calculate_nights(bo.daybookinginit,bo.daybookingend ) as nights,
@@ -38,6 +40,7 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                         join booking bo on bo.bookingid=pb.bookingid
                         LEFT JOIN useradmin ua on ua.useradminid=bo.receptionistid
                         LEFT JOIN userpromoter up on up.userpromoterid=bo.userpromotorid
+                        left join userclient uc on uc.userclientid=pb.userclientid
                                 WHERE refusereasonid = :refuseReasonId AND pendingpay = :pendingPay ORDER BY paymentbookid DESC LIMIT :size OFFSET :offset
                                 """)
         Flux<PaymentBookWithChannelDto> findAllByRefuseReasonIdAndPendingPay(int refuseReasonId, int pendingPay,
@@ -87,11 +90,13 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                                           calculate_nights(b.daybookinginit,b.daybookingend ) as nights,
                                                 to_char(b.daybookinginit, 'DD/MM/YYYY') as daybookinginit,
                                                 to_char(b.daybookingend, 'DD/MM/YYYY') as daybookingend,
-                                                            (CASE
-                                    WHEN up.userpromoterid is not null  THEN concat('PROMOTOR ',' - ',up.firstname,' ',up.lastname)
-                                    WHEN ua.useradminid is not null THEN concat('RECEPCION',' - ',ua.firstname,' ',ua.lastname)
-                                  ELSE
-                        'Web' END) as channel,
+                                                               (CASE
+                              WHEN up.userpromoterid is not null  THEN concat('PROMOTOR ',' - ',up.firstname,' ',up.lastname)
+                              WHEN ua.useradminid is not null THEN concat('RECEPCION',' - ',ua.firstname,' ',ua.lastname)
+                              when uc.userclientid is not null and uc.isuserinclub THEN 'WEB - Socio'
+                              when uc.userclientid is not null and not uc.isuserinclub THEN 'WEB'
+                            ELSE
+                                          'Sin clasificar' END) as channel,
                                       pb.invoicedocumentnumber ,
                                       pb.invoicetype
                                           from     paymentbook pb
@@ -156,5 +161,8 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
 
         @Query("SELECT COUNT(*) FROM paymentbook WHERE bookingid = :bookingid")
         Mono<Long> countPaymentBookByBookingId(int bookingid);
+
+        @Query("update paymentbook set cancelreasonid = :cancelreasonid where bookingid = :bookingId")
+        Mono<Void> setCancelForBookingId( Integer cancelreasonid,Integer bookingId);
 
 }

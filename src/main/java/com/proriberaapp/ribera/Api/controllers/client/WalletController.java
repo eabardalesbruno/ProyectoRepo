@@ -1,13 +1,12 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.WalletTransactionDTO;
-import com.proriberaapp.ribera.Api.controllers.payme.dto.AuthorizationResponse;
-import com.proriberaapp.ribera.Api.controllers.payme.dto.TransactionNecessaryResponse;
 import com.proriberaapp.ribera.Domain.entities.WalletTransactionEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletTransactionRepository;
 import com.proriberaapp.ribera.services.client.WalletService;
 import com.proriberaapp.ribera.services.client.WalletTransactionService;
+import com.proriberaapp.ribera.services.client.impl.WalletTransactionServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +29,7 @@ public class WalletController {
     private final WalletTransactionService walletTransactionService;
     private final WalletRepository walletRepository;
     private final WalletTransactionRepository walletTransactionRepository;
+    private final WalletTransactionServiceImpl walle;
 
     @PostMapping("/create-wallet")
     public Mono<Integer> createWallet(@RequestParam Integer userClientId, @RequestParam Integer currencyId) {
@@ -140,6 +140,13 @@ public class WalletController {
             errorResponse.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }
+    }
+
+    @PostMapping("/recharge-pending-commissions")
+    public Mono<ResponseEntity<Object>> rechargePendingCommissions() {
+        return walle.processPendingCommissions()
+                .map(response -> ResponseEntity.ok().build())
+                .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().build()));
     }
 
 }

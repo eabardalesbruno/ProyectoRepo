@@ -11,7 +11,7 @@ public interface CancelPaymentService {
     Flux<CancelPaymentEntity> getAllCancelPayments();
     Flux<CancelEntity> getAllCancelReason();
     Mono<CancelPaymentEntity> getCancelPaymentById(Integer id);
-    Mono<CancelPaymentEntity> saveCancelPayment(CancelPaymentEntity cancelPayment);
+    Mono<Void> saveCancelPayment(CancelPaymentEntity cancelPayment);
     Mono<Void> deleteCancelPayment(Integer id);
     Mono<Void> updatePendingPayAndSendConfirmation(Integer paymentBookId);
 

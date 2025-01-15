@@ -67,7 +67,8 @@ public class UserClientEntity implements UserDetails {
 
     @Column("walletid")
     private Integer walletId;
-
+    @Column("isuserinclub")
+    private boolean isUserInclub;
     private StatesUser status;
     private Timestamp createdat;
 
