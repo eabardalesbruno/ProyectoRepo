@@ -17,4 +17,9 @@ public interface BookingFeedingRepository extends R2dbcRepository<BookingFeeding
             where bookingId in (:bookings)
             """)
     Flux<BookingFeedingDto> listBookingFeedingByBookingId(List<Integer> bookings);
+    @Query("""
+            select * from viewbookingfeeding
+            where bookingId=:bookingId
+            """)
+    Flux<BookingFeedingDto> listBookingFeedingByBookingId(Integer bookingId);
 }
