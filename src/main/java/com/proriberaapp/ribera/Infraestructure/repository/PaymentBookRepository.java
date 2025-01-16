@@ -41,7 +41,7 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                         LEFT JOIN useradmin ua on ua.useradminid=bo.receptionistid
                         LEFT JOIN userpromoter up on up.userpromoterid=bo.userpromotorid
                         left join userclient uc on uc.userclientid=pb.userclientid
-                                WHERE refusereasonid = :refuseReasonId AND pendingpay = :pendingPay ORDER BY paymentbookid DESC LIMIT :size OFFSET :offset
+                                WHERE refusereasonid = :refuseReasonId AND pendingpay = :pendingPay ORDER BY pb.paymentdate DESC LIMIT :size OFFSET :offset
                                 """)
         Flux<PaymentBookWithChannelDto> findAllByRefuseReasonIdAndPendingPay(int refuseReasonId, int pendingPay,
                         int size,
@@ -112,7 +112,7 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                                           LEFT JOIN useradmin ua on ua.useradminid=b.receptionistid
                                           LEFT JOIN userpromoter up on up.userpromoterid=b.userpromotorid
                                           left join invoice inv on inv.idpaymentbook=pb.paymentbookid
-                                           WHERE pb.pendingpay= 1 and pb.refusereasonid = :refuseReasonId  ORDER BY pb.paymentbookid DESC LIMIT :size OFFSET :offset
+                                           WHERE pb.pendingpay= 1 and pb.refusereasonid = :refuseReasonId  ORDER BY pb.paymentdate DESC LIMIT :size OFFSET :offset
                                            """)
         Flux<PaymentBookDetailsDTO> findAllPaged(int refuseReasonId, int size,
                         int offset);
@@ -161,5 +161,8 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
 
         @Query("SELECT COUNT(*) FROM paymentbook WHERE bookingid = :bookingid")
         Mono<Long> countPaymentBookByBookingId(int bookingid);
+
+        @Query("update paymentbook set cancelreasonid = :cancelreasonid where bookingid = :bookingId")
+        Mono<Void> setCancelForBookingId( Integer cancelreasonid,Integer bookingId);
 
 }

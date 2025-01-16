@@ -41,7 +41,7 @@ public class CancelPaymentController {
     }
 
     @PostMapping
-    public Mono<CancelPaymentEntity> createCancelPayment(@RequestBody CancelPaymentEntity cancelPayment) {
+    public Mono<Void> createCancelPayment(@RequestBody CancelPaymentEntity cancelPayment) {
         return cancelPaymentService.saveCancelPayment(cancelPayment);
     }
 

@@ -44,12 +44,20 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
         JOIN booking b ON ro.roomofferid = b.roomofferid
         JOIN paymentbook pb ON b.bookingid = pb.bookingid
         JOIN paymentstate ps ON pb.paymentstateid = ps.paymentstateid
-        WHERE b.daybookingend >= :daybookingend::TIMESTAMP AND b.daybookinginit <= :daybookinginit::TIMESTAMP
+        WHERE b.daybookingend <= :daybookingend::TIMESTAMP AND b.daybookinginit >= :daybookinginit::TIMESTAMP
         AND r.roomnumber = :roomnumber
+        AND (:roomtypeid IS NULL OR r.roomtypeid = :roomtypeid)
+        AND (:numberadults IS NULL OR b.numberadults = :numberadults)
+    	AND (:numberchildren IS NULL OR b.numberchildren = :numberchildren)
+    	AND (:numberbabies IS NULL OR b.numberbabies = :numberbabies)
     """)
     Flux<RoomDetailDto> findAllViewRoomsDetail(
             @Param("daybookinginit") String daybookinginit,
             @Param("daybookingend") String daybookingend,
-            @Param("roomnumber") String roomnumber);
+            @Param("roomnumber") String roomnumber,
+            @Param("roomtypeid") Integer roomtypeid,
+            @Param("numberadults") Integer numberadults,
+            @Param("numberchildren") Integer numberchildren,
+            @Param("numberbabies") Integer numberbabies);
 
 }
