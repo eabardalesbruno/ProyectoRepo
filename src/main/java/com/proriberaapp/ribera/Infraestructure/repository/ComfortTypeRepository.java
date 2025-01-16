@@ -15,6 +15,8 @@ public interface ComfortTypeRepository extends R2dbcRepository<ComfortTypeEntity
     Flux<ComfortTypeEntity> findAllByOrderByComfortTypeIdAsc();
     Flux<ComfortTypeEntity> findAllByComfortTypeNameIn(List<ComfortTypeEntity> entity);
 
-    @Query("SELECT * FROM viewcomfortdata WHERE bookingId = :bookingId")
-    Flux<ViewBookingReturn.ComfortData> findAllByViewComfortType(@Param("bookingId") Integer bookingId);
+     @Query("SELECT * FROM viewcomfortdata WHERE bookingId = :bookingId")
+    Flux<ViewBookingReturn.ComfortData> findAllByViewComfortType(@Param("bookingId") Integer bookingId); 
+    @Query("SELECT * FROM viewcomfortdata WHERE bookingId IN (:bookingsId)")
+    Flux<ViewBookingReturn.ComfortData> findAllByViewComfortTypeByBookings(List<Integer> bookingsId);
 }
