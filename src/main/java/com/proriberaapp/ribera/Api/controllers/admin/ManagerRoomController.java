@@ -27,8 +27,8 @@ public class ManagerRoomController extends BaseManagerController<RoomEntity, Roo
     }
 
     @GetMapping("/find/all/detail")
-    public Flux<RoomDashboardDto> findAllViewRoomsDetail(@RequestParam String daybookinginit, @RequestParam String daybookingend) {
-        return roomService.findAllViewRoomsDetail(daybookinginit, daybookingend);
+    public Flux<RoomDashboardDto> findAllViewRoomsDetail(@RequestParam String daybookinginit, @RequestParam String daybookingend, @RequestParam(required = false) Integer roomtypeid, @RequestParam(required = false) Integer numberadults, @RequestParam(required = false) Integer numberchildren, @RequestParam(required = false) Integer numberbabies) {
+        return roomService.findAllViewRoomsDetail(daybookinginit, daybookingend, roomtypeid, numberadults, numberchildren, numberbabies);
     }
 
 }
