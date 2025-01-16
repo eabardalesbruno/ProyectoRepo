@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class BookingStates {
+    private Integer paymentbookid;
     private String firstname;
     private String lastname;
     private String documenttypeid;
@@ -41,6 +42,7 @@ public class BookingStates {
     private LocalDateTime offertimeend;
     private String channel;
     private Integer nights;
-    private String  roomnumber;
+    private String roomnumber;
+    private boolean isalimentation;
 
 }
