@@ -4,6 +4,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.relational.core.mapping.Column;
+
+import com.proriberaapp.ribera.Domain.dto.FeedingDto;
+import com.proriberaapp.ribera.Domain.entities.FeedingEntity;
+
 import reactor.core.publisher.Flux;
 
 import java.math.BigDecimal;
@@ -33,11 +37,12 @@ public class ViewBookingReturn {
     Integer numberbabies;
     Integer numberadultsextra;
     Integer numberadultsmayor;
-    //Boolean cancelledAnticipated,
-    //@Column("daybookinginit")
+    // Boolean cancelledAnticipated,
+    // @Column("daybookinginit")
     List<ComfortData> ListComfortType;
-    //@Column("daybookingend")
+    // @Column("daybookingend")
     List<BedsType> ListBedsType;
+    List<BookingFeedingDto> listFeeding;
     @Column("daybookinginit")
     Timestamp dayBookingInit;
     @Column("daybookingend")
@@ -53,6 +58,7 @@ public class ViewBookingReturn {
     Integer userPromotorId;
     @Column("roomofferid")
     Integer roomOfferId;
+
     @Getter
     @Setter
     @Builder
@@ -61,6 +67,8 @@ public class ViewBookingReturn {
         String comfortTypeName;
         @Column("comforttypedescription")
         String comfortTypeDescription;
+        @Column("bookingid")
+        Integer bookingId;
     }
 
     @Getter
@@ -72,5 +80,7 @@ public class ViewBookingReturn {
         @Column("bedtypedescription")
         String bedTypeDescription;
         Integer quantity;
+        @Column("bookingid")
+        Integer bookingId;
     }
 }
