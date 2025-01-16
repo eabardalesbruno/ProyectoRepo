@@ -38,6 +38,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -830,7 +831,8 @@ public class BookingServiceImpl implements BookingService {
                                                                 .countPaymentBookByBookingId(
                                                                                 bookingEntity.getBookingId())
                                                                 .flatMap(payment -> {
-                                                                        int hidePayment = 1; //Por el momento es para ocultar el botón pagar
+                                                                        int hidePayment = 1; // Por el momento es para
+                                                                                             // ocultar el botón pagar
                                                                         BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
                                                                         String monthInit = TransformDate
                                                                                         .getAbbreviatedMonth(
@@ -927,21 +929,77 @@ public class BookingServiceImpl implements BookingService {
         @Override
         public Flux<ViewBookingReturn> findAllByUserClientIdAndBookingStateIdIn(Integer userClientId,
                         Integer bookingStateId) {
+                /*
+                 * return bookingRepository
+                 * .findAllViewBookingReturnByUserClientIdAndBookingStateId(userClientId,
+                 * bookingStateId)
+                 * .flatMap(viewBookingReturn -> comfortTypeRepository
+                 * .findAllByViewComfortType(viewBookingReturn.getBookingId())
+                 * .collectList().map(comfortTypeEntity -> {
+                 * viewBookingReturn.setListComfortType(comfortTypeEntity);
+                 * return viewBookingReturn;
+                 * }))
+                 * .flatMap(viewBookingReturn -> bedsTypeRepository
+                 * .findAllByViewBedsType(viewBookingReturn.getBookingId())
+                 * .collectList().map(bedsTypeEntity -> {
+                 * viewBookingReturn.setListBedsType(bedsTypeEntity);
+                 * return viewBookingReturn;
+                 * }));
+                 */
+
                 return bookingRepository
                                 .findAllViewBookingReturnByUserClientIdAndBookingStateId(userClientId, bookingStateId)
-                                .flatMap(viewBookingReturn -> comfortTypeRepository
-                                                .findAllByViewComfortType(viewBookingReturn.getBookingId())
-                                                .collectList().map(comfortTypeEntity -> {
-                                                        viewBookingReturn.setListComfortType(comfortTypeEntity);
-                                                        return viewBookingReturn;
-                                                }))
-                                .flatMap(viewBookingReturn -> bedsTypeRepository
-                                                .findAllByViewBedsType(viewBookingReturn.getBookingId())
-                                                .collectList().map(bedsTypeEntity -> {
-                                                        viewBookingReturn.setListBedsType(bedsTypeEntity);
-                                                        return viewBookingReturn;
-                                                }));
+                                .collectList()
+                                .flatMapMany(listViews -> {
+                                        List<Integer> ids = listViews.stream().map(ViewBookingReturn::getBookingId)
+                                                        .collect(Collectors.toList());
+                                        return Mono.zip(Mono.just(listViews), this.getBedsType(ids),
+                                                        this.getComfortType(ids),this.getBookingFeeding(ids));
+                                }).flatMap(data -> {
+                                        List<ViewBookingReturn> listViews = data.getT1();
+                                        List<ViewBookingReturn.BedsType> bedsType = data.getT2();
+                                        List<ViewBookingReturn.ComfortData> comfortData = data.getT3();
+                                        List<com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto> bookingFeeding = data.getT4();
+                                        listViews.forEach(view -> {
+                                                view.setListBedsType(bedsType.stream()
+                                                                .filter(bed -> bed.getBookingId()
+                                                                                .equals(view.getBookingId()))
+                                                                .collect(Collectors.toList()));
+                                                view.setListComfortType(comfortData.stream()
+                                                                .filter(comfort -> comfort.getBookingId()
+                                                                                .equals(view.getBookingId()))
+                                                                .collect(Collectors.toList()));
+                                                view.setListFeeding(bookingFeeding.stream()                                                          
+                                                                .filter(feeding -> feeding.getBookingId()
+                                                                                .equals(view.getBookingId()))
+                                                                .collect(Collectors.toList()));
+                                        });
+
+                                        return Flux.fromIterable(listViews);
+                                });
+
         }
+
+        private Mono<List<ViewBookingReturn.BedsType>> getBedsType(List<Integer> bookingsId) {
+                return Mono.defer(() -> {
+                        return bedsTypeRepository.findAllByViewBedsTypeByBookings(bookingsId).collectList();
+                });
+        }
+
+
+        private Mono<List<ViewBookingReturn.ComfortData>> getComfortType(List<Integer> bookingsId) {
+                return Mono.defer(() -> {
+                        return comfortTypeRepository.findAllByViewComfortTypeByBookings(bookingsId).collectList();
+                });
+        }
+        private Mono<List<com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto>> getBookingFeeding(
+                        List<Integer> bookingsId) {
+                return Mono.defer(() -> {
+                        return bookingFeedingRepository.listBookingFeedingByBookingId(bookingsId).collectList();
+                });
+        }
+
+
 
         @Override
         public Mono<ViewBookingReturn> findByUserClientIdAndBookingIdAndBookingStateIdIn(Integer userClientId,
@@ -1163,7 +1221,8 @@ public class BookingServiceImpl implements BookingService {
         }
 
         @Override
-        public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateId(Integer stateId, Integer month, Integer year) {
+        public Flux<BookingWithPaymentDTO> findBookingsWithPaymentByStateId(Integer stateId, Integer month,
+                        Integer year) {
                 return bookingRepository.findBookingsWithPaymentByStateId(stateId, month, year);
         }
 
@@ -1178,11 +1237,12 @@ public class BookingServiceImpl implements BookingService {
         public Mono<TotalSalesDTO> totalPaymentMonthSum(Integer stateId, Integer month, Integer year) {
                 TotalSalesDTO resp = new TotalSalesDTO();
                 return bookingRepository.getTotalSalesByMonth(stateId, month, year).flatMap(totalMonth -> {
-                        return bookingRepository.getTotalSalesBeforeMonth(stateId, month, year).flatMap(totalLastMonth -> {
-                                resp.setTotalMonth(totalMonth);
-                                resp.setTotalLastMonth(totalLastMonth);
-                                return Mono.just(resp);
-                        });
+                        return bookingRepository.getTotalSalesBeforeMonth(stateId, month, year)
+                                        .flatMap(totalLastMonth -> {
+                                                resp.setTotalMonth(totalMonth);
+                                                resp.setTotalLastMonth(totalLastMonth);
+                                                return Mono.just(resp);
+                                        });
                 });
         }
 
@@ -1205,7 +1265,8 @@ public class BookingServiceImpl implements BookingService {
         }
 
         @Override
-        public Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month, Integer year) {
+        public Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month,
+                        Integer year) {
                 return bookingRepository.findBookingsWithResumeByStateId(stateId, month, year);
         }
 
@@ -1231,8 +1292,8 @@ public class BookingServiceImpl implements BookingService {
         }
 
         @Override
-        public Mono<Void> updateState(Integer stateId,Integer bookingId) {
-                return bookingRepository.updateState(stateId,bookingId);
+        public Mono<Void> updateState(Integer stateId, Integer bookingId) {
+                return bookingRepository.updateState(stateId, bookingId);
 
         }
 
