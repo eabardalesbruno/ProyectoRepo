@@ -97,21 +97,14 @@ public class CompanionServiceImpl implements CompanionsService {
             int years = Period.between(birthDate, LocalDate.now()).getYears();
             companions.setYears(years);
         }
-
         return addCompanionBooking(companions)
                 .flatMap(savedCompanion -> {
                     if (Boolean.TRUE.equals(savedCompanion.isTitular())) {
                         return getCompanionsListForBooking(savedCompanion.getBookingId())
+                                .filter(companionsList -> companionsList.size() > 1)
                                 .flatMap(companionsList -> {
-                                    List<CompanionsEntity> filteredCompanionsList = companionsList.stream()
-                                            .filter(c -> !Boolean.TRUE.equals(c.isTitular()))
-                                            .peek(c -> {
-                                                c.setEmail(null);
-                                                c.setCellphone(null);
-                                            })
-                                            .toList();
-
                                     int yearsValue = savedCompanion.getYears() != null ? savedCompanion.getYears() : 0;
+
                                     String emailBody = generatebody(
                                             savedCompanion.getFirstname(),
                                             savedCompanion.getLastname(),
@@ -120,8 +113,9 @@ public class CompanionServiceImpl implements CompanionsService {
                                             savedCompanion.getDocumentNumber(),
                                             savedCompanion.getCellphone(),
                                             savedCompanion.getEmail(),
-                                            filteredCompanionsList
+                                            companionsList
                                     );
+
                                     return sendSuccessEmail(savedCompanion.getEmail(), emailBody)
                                             .thenReturn(savedCompanion);
                                 })
@@ -480,4 +474,3 @@ public class CompanionServiceImpl implements CompanionsService {
     }
 
 }
-
