@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.WalletTransactionDTO;
+import com.proriberaapp.ribera.Domain.dto.PaymentDetailsPromoterDTO;
 import com.proriberaapp.ribera.Domain.entities.WalletTransactionEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletTransactionRepository;
@@ -147,6 +148,12 @@ public class WalletController {
         return walle.processPendingCommissions()
                 .map(response -> ResponseEntity.ok().build())
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().build()));
+    }
+
+
+    @GetMapping("/payment-details")
+    public Flux<PaymentDetailsPromoterDTO> getPaymentDetails(@RequestParam Integer walletId) {
+       return walletTransactionRepository.findPaymentDetailsByWalletId(walletId);
     }
 
 }
