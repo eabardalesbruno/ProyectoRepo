@@ -954,12 +954,13 @@ public class BookingServiceImpl implements BookingService {
                                         List<Integer> ids = listViews.stream().map(ViewBookingReturn::getBookingId)
                                                         .collect(Collectors.toList());
                                         return Mono.zip(Mono.just(listViews), this.getBedsType(ids),
-                                                        this.getComfortType(ids),this.getBookingFeeding(ids));
+                                                        this.getComfortType(ids), this.getBookingFeeding(ids));
                                 }).flatMap(data -> {
                                         List<ViewBookingReturn> listViews = data.getT1();
                                         List<ViewBookingReturn.BedsType> bedsType = data.getT2();
                                         List<ViewBookingReturn.ComfortData> comfortData = data.getT3();
-                                        List<com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto> bookingFeeding = data.getT4();
+                                        List<com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto> bookingFeeding = data
+                                                        .getT4();
                                         listViews.forEach(view -> {
                                                 view.setListBedsType(bedsType.stream()
                                                                 .filter(bed -> bed.getBookingId()
@@ -969,7 +970,7 @@ public class BookingServiceImpl implements BookingService {
                                                                 .filter(comfort -> comfort.getBookingId()
                                                                                 .equals(view.getBookingId()))
                                                                 .collect(Collectors.toList()));
-                                                view.setListFeeding(bookingFeeding.stream()                                                          
+                                                view.setListFeeding(bookingFeeding.stream()
                                                                 .filter(feeding -> feeding.getBookingId()
                                                                                 .equals(view.getBookingId()))
                                                                 .collect(Collectors.toList()));
@@ -986,20 +987,18 @@ public class BookingServiceImpl implements BookingService {
                 });
         }
 
-
         private Mono<List<ViewBookingReturn.ComfortData>> getComfortType(List<Integer> bookingsId) {
                 return Mono.defer(() -> {
                         return comfortTypeRepository.findAllByViewComfortTypeByBookings(bookingsId).collectList();
                 });
         }
+
         private Mono<List<com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto>> getBookingFeeding(
                         List<Integer> bookingsId) {
                 return Mono.defer(() -> {
                         return bookingFeedingRepository.listBookingFeedingByBookingId(bookingsId).collectList();
                 });
         }
-
-
 
         @Override
         public Mono<ViewBookingReturn> findByUserClientIdAndBookingIdAndBookingStateIdIn(Integer userClientId,
@@ -1300,6 +1299,49 @@ public class BookingServiceImpl implements BookingService {
         @Override
         public Flux<Long> getAllYearsInvoice() {
                 return bookingRepository.getAllYearsInvoice();
+        }
+
+        @Override
+        public Mono<ReportOfKitchenDto> getReportOfKitchen() {
+                bookingRepository.getReportOfKitchenBdDto()
+                                .collectList().flatMap(
+                                                data -> {
+                                                        Integer addBreakfast = data.stream()
+                                                                        .map(d -> d.getTotalperson())
+                                                                        .reduce(0, Integer::sum);
+                                                        Integer numberTotalAdults = data.stream()
+                                                                        .map(d -> d.getNumberadults()
+                                                                                        + d.getNumberadultextra())
+                                                                        .reduce(0, Integer::sum);
+                                                        Integer numberTotalChildren = data.stream()
+                                                                        .map(d -> d.getNumberchildren())
+                                                                        .reduce(0, Integer::sum);
+                                                        Integer numberTotalAdultMayor = data.stream()
+                                                                        .map(d -> d.getNumberadultmayor())
+                                                                        .reduce(0, Integer::sum);
+                                                        Stream<ReportOfKitchenBdDto> listDataAlimentation = data
+                                                                        .stream()
+                                                                        .filter(d -> d.isIsalimentation());
+
+                                                        Integer totalLunch = listDataAlimentation
+                                                                        .map(d -> d.getTotalperson())
+                                                                        .reduce(0, Integer::sum);
+
+                                                        Integer totalDinner = listDataAlimentation
+                                                                        .map(d -> d.getTotalperson())
+                                                                        .reduce(0, Integer::sum);
+                                                        ReportOfKitchenDto reportOfKitchenDto = new ReportOfKitchenDto();
+                                                        reportOfKitchenDto.setNumberBreakfast(addBreakfast);
+                                                        reportOfKitchenDto.setNumberAdults(numberTotalAdults);
+                                                        reportOfKitchenDto.setNumberChildren(numberTotalChildren);
+                                                        reportOfKitchenDto.setNumberAdultMayor(numberTotalAdultMayor);
+                                                        reportOfKitchenDto.setNumberLunch(totalLunch);
+                                                        reportOfKitchenDto.setNumberDinner(totalDinner);
+                                                        return Mono.just(reportOfKitchenDto);
+
+                                                });
+
+                return Mono.empty();
         }
 
 }

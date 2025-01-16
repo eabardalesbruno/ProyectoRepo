@@ -121,8 +121,10 @@ public class PDFGeneratorService {
                 "<title>Constancia de Reserva</title>" +
                 "<style>" +
                 "    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #fff; }" +
-                "    .container { max-width: 800px; margin: auto; background: #ffffff; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }" +
-                "    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }" +
+                "    .container { max-width: 800px; margin: auto; background: #ffffff; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }"
+                +
+                "    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }"
+                +
                 "    .logo img { height: 60px; }" +
                 "    .header-align { text-align: center; }" +
                 "    .header-text { text-align: right; margin-top: 140px; }" +
@@ -144,38 +146,37 @@ public class PDFGeneratorService {
                 "               <h1>RESERVA</h1>" +
                 "           </div>" +
                 "           <div class=\"header-text\">" +
-                "               <h2>Habitación: "+ entity.getRoomName() +" </h2>" +
-                "               <h2>Fecha de reserva: "+ entity.getDateReservation() +"</h2>" +
+                "               <h2>Habitación: " + entity.getRoomName() + " </h2>" +
+                "               <h2>Fecha de reserva: " + entity.getDateReservation() + "</h2>" +
                 "           </div>" +
                 "    </div>" +
                 "    <div class=\"title\">" +
                 "        <div><strong>Titular de Reserva:</strong></div>" +
                 "    </div>" +
                 "    <div class=\"info\">" +
-                "        <div><strong>Señor(es):</strong> "+ entity.getFullname() +" </div>" +
-                "        <div><strong>Tipo de Documento:</strong> "+ entity.getDocumentType() +" </div>" +
-                "        <div><strong>Núm. de Documento:</strong> "+ entity.getDocumentNumber() +" </div>" +
+                "        <div><strong>Señor(es):</strong> " + entity.getFullname() + " </div>" +
+                "        <div><strong>Tipo de Documento:</strong> " + entity.getDocumentType() + " </div>" +
+                "        <div><strong>Núm. de Documento:</strong> " + entity.getDocumentNumber() + " </div>" +
                 "    </div>";
-        if (entity.getLstCompanions() != null && entity.getLstCompanions().size() > 0 ) {
+        if (entity.getLstCompanions() != null && entity.getLstCompanions().size() > 0) {
             int numCompanions = 0;
-            for(ReservationReportDto element: entity.getLstCompanions()) {
-                numCompanions = numCompanions +1;
+            for (ReservationReportDto element : entity.getLstCompanions()) {
+                numCompanions = numCompanions + 1;
                 htmlContent += "<div class=\"title\">" +
-                        "        <div><strong>Acompañante "+(numCompanions)+":</strong></div>" +
+                        "        <div><strong>Acompañante " + (numCompanions) + ":</strong></div>" +
                         "    </div>";
                 htmlContent += "<div class=\"info\">" +
-                    "        <div><strong>Señor(es):</strong> "+element.getFullname()+" </div>" +
-                    "        <div><strong>Tipo de Documento:</strong> "+element.getDocumentType()+" </div>" +
-                    "        <div><strong>Núm. de Documento:</strong> "+element.getDocumentNumber()+" </div>" +
-                    "        <div><strong>Género:</strong> "+element.getGender()+" </div>" +
-                    "        <div><strong>Edad:</strong> "+ element.getYears() +" </div>" +
-                    "    </div>";
+                        "        <div><strong>Señor(es):</strong> " + element.getFullname() + " </div>" +
+                        "        <div><strong>Tipo de Documento:</strong> " + element.getDocumentType() + " </div>" +
+                        "        <div><strong>Núm. de Documento:</strong> " + element.getDocumentNumber() + " </div>" +
+                        "        <div><strong>Género:</strong> " + element.getGender() + " </div>" +
+                        "        <div><strong>Edad:</strong> " + element.getYears() + " </div>" +
+                        "    </div>";
             }
         }
-        htmlContent += "</div>"+
+        htmlContent += "</div>" +
                 "</body>" +
                 "</html>";
-
 
         File pdfFile = new File(entity.getPdfFileName());
 
@@ -191,5 +192,21 @@ public class PDFGeneratorService {
 
         return pdfFile;
     }
+    
+    public static File generatePdfFromContent(String content, String pdfFileName) throws IOException {
+        File pdfFile = new File(pdfFileName);
+        try (OutputStream os = new FileOutputStream(pdfFile)) {
+            PdfRendererBuilder builder = new PdfRendererBuilder();
+            builder.withHtmlContent(content, "");
+            builder.toStream(os);
+            builder.run();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new IOException("Error generating PDF.", e);
+        }
+
+        return pdfFile;
+    }
+
 
 }
