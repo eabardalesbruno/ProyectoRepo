@@ -4,10 +4,19 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
     private EmailHandler nextHandler;
     private String clientName;
     private BookingEmailDto bookingEmailDto;
+    private boolean isAlimentation;
 
     public ConfirmPaymentByBankTransferAndCardTemplateEmail(String clientName, BookingEmailDto bookingEmailDto) {
         this.clientName = clientName;
         this.bookingEmailDto = bookingEmailDto;
+        this.isAlimentation = false;
+    }
+
+    public ConfirmPaymentByBankTransferAndCardTemplateEmail(String clientName, BookingEmailDto bookingEmailDto,
+            boolean isAlimentation) {
+        this.clientName = clientName;
+        this.bookingEmailDto = bookingEmailDto;
+        this.isAlimentation = isAlimentation;
     }
 
     @Override
@@ -109,7 +118,9 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                                 <td>
                                 <p class="no-margin">Cantidad de personas: <strong>%cantidadPersonas<strong></p>
                                 </td>
+                                    
                                 </tr>
+                                %alimentation
                                 <tr>
                                 <td>
                                 <hr class="hr"/>
@@ -151,7 +162,11 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                 .replace("%hourCheckIn", bookingEmailDto.getHourCheckIn())
                 .replace("%days", String.valueOf(bookingEmailDto.getDays()))
                 .replace("%location", bookingEmailDto.getLocation())
-                .replace("%cantidadPersonas", bookingEmailDto.getCantidadPersonas());
+                .replace("%cantidadPersonas", bookingEmailDto.getCantidadPersonas())
+                .replace("%alimentation",
+                        isAlimentation
+                                ? "<tr><td><p class=\"no-margin    \"><strong>Con alimentación</strong></p></td></tr>"
+                                : "");
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
@@ -28,9 +29,11 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -91,6 +94,8 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
         private final BookingRepository bookingRepository;
         private final EmailService emailService;
         private final InvoiceServiceI invoiceService;
+        @Autowired
+        private BookingFeedingRepository bookingFeedingRepository;
 
         public RefusePaymentServiceImpl(RefusePaymentRepository refusePaymentRepository,
                         PaymentBookRepository paymentBookRepository,
@@ -338,14 +343,17 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                         String cantidadPersonas = (String) paymentDetails.get("Cantidad de Personas");
                                         String imagen = (String) paymentDetails.get("Imagen");
                                         String roomName = (String) paymentDetails.get("RoomName");
+                                        List<BookingFeedingDto> bookingFeeding = (List<BookingFeedingDto>) paymentDetails
+                                                        .get("BookingFeeding");
                                         BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+
                                         BookingEmailDto bookingEmailDto = new BookingEmailDto(
                                                         roomName, nombres, codigoReserva.toString(), checkIn, checkOut,
                                                         checkIn, imagen, (int) duracionEstancia,
                                                         "Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico Etapa III, Cercado de Lima 15593",
                                                         cantidadPersonas);
                                         ConfirmPaymentByBankTransferAndCardTemplateEmail confirmReserveBookingTemplateEmail = new ConfirmPaymentByBankTransferAndCardTemplateEmail(
-                                                        nombres, bookingEmailDto);
+                                                        nombres, bookingEmailDto, bookingFeeding.size() > 0);
                                         baseEmailReserve.addEmailHandler(confirmReserveBookingTemplateEmail);
                                         return baseEmailReserve.execute();
 
@@ -521,11 +529,13 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
 
                                                                 // Obtener imagen del cuarto
                                                                 Mono<String> imagenCuarto = roomOfferRepository
-                                                                                                .findById(roomOfferId)
-                                                                                                .flatMap(roomOffer -> roomRepository
-                                                                                                                                .findById(roomOffer
-                                                                                                                                                                .getRoomId()))
-                                                                                                .map(room -> room.getImage() != null ? room.getImage() : "");
+                                                                                .findById(roomOfferId)
+                                                                                .flatMap(roomOffer -> roomRepository
+                                                                                                .findById(roomOffer
+                                                                                                                .getRoomId()))
+                                                                                .map(room -> room.getImage() != null
+                                                                                                ? room.getImage()
+                                                                                                : "");
 
                                                                 // Obtener descripcion del cuarto
                                                                 Mono<String> descCuarto = roomOfferRepository
@@ -535,12 +545,20 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                                                                                                 .getRoomId()))
                                                                                 .map(RoomEntity::getRoomName);
 
+                                                                Mono<List<BookingFeedingDto>> bookingFeedingMono = this.bookingFeedingRepository
+                                                                                .listBookingFeedingByBookingId(
+                                                                                                bookingId)
+                                                                                .collectList();
+
                                                                 // Unir los datos en un mapa
-                                                                return Mono.zip(nombreCliente, imagenCuarto, descCuarto)
+                                                                return Mono.zip(nombreCliente, imagenCuarto, descCuarto,
+                                                                                bookingFeedingMono)
                                                                                 .map(tuple -> {
                                                                                         String nombre = tuple.getT1();
                                                                                         String imagen = tuple.getT2();
                                                                                         String roomName = tuple.getT3();
+                                                                                        List<BookingFeedingDto> bookingFeeding = tuple
+                                                                                                        .getT4();
 
                                                                                         Map<String, Object> response = new HashMap<>();
                                                                                         response.put("Nombres", nombre);
@@ -561,6 +579,8 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                                                                         response.put("Imagen", imagen);
                                                                                         response.put("RoomName",
                                                                                                         roomName);
+                                                                                        response.put("BookingFeeding",
+                                                                                                        bookingFeeding);
                                                                                         return response;
                                                                                 });
                                                         });
