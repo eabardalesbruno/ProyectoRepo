@@ -23,6 +23,6 @@ public interface RoomService extends BaseService<RoomEntity, RoomEntity> {
 
     Mono<RoomEntity> getRoomById(Integer roomId);
 
-    Flux<RoomDashboardDto> findAllViewRoomsDetail(String daybookinginit, String daybookingend);
+    Flux<RoomDashboardDto> findAllViewRoomsDetail(String daybookinginit, String daybookingend, Integer roomtypeid, Integer numberadults, Integer numberchildren, Integer numberbabies);
 
 }
