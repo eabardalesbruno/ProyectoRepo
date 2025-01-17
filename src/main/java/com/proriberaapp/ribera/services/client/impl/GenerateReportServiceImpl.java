@@ -2,6 +2,8 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ResponseFileDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.CompanionsDto;
+import com.proriberaapp.ribera.Api.controllers.client.dto.ReportOfKitchenBdDto;
+import com.proriberaapp.ribera.Api.controllers.client.dto.ReportOfKitchenDto;
 import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.CompanionsRepository;
@@ -9,6 +11,8 @@ import com.proriberaapp.ribera.Infraestructure.repository.DocumentTypeRepository
 import com.proriberaapp.ribera.Infraestructure.repository.RoomRepository;
 import com.proriberaapp.ribera.services.PDFGeneratorService;
 import com.proriberaapp.ribera.services.client.GenerateReportService;
+import com.proriberaapp.ribera.utils.pdfTemplate.ReportKitchenPdf;
+
 import static com.proriberaapp.ribera.services.PDFGeneratorService.generateReservationPdfFromHtml;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
@@ -25,7 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -39,57 +43,99 @@ public class GenerateReportServiceImpl implements GenerateReportService {
 
     @Override
     public Mono<ResponseEntity<ResponseFileDto>> generateReportReservation(int idReservation) {
-        return bookingRepository.findByBookingId(idReservation).flatMap(bookingEntity -> {
-            ReservationReportDto reservationDto = new ReservationReportDto();
-            reservationDto.setPdfFileName("reserva.pdf");
-            reservationDto.setDateReservation(bookingEntity.getCreatedAt().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
-            reservationDto.setDayBookingInit(bookingEntity.getDayBookingInit().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
-            reservationDto.setDayBookingEnd(bookingEntity.getDayBookingEnd().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
-            reservationDto.setNumberAdults((bookingEntity.getNumberAdults()+bookingEntity.getNumberAdultsMayor()+bookingEntity.getNumberAdultsExtra())+" Adultos");
-            reservationDto.setNumberChildren(bookingEntity.getNumberChildren()+" Niños");
-            reservationDto.setNumberBabies(bookingEntity.getNumberBabies()+" Bebés");
-            List<ReservationReportDto> listCompanions = new ArrayList<>();
-            return bookingRepository.fingMethodPäymentByBookingId(idReservation).publishOn(Schedulers.boundedElastic()).flatMap(methodPayment -> {
-            reservationDto.setMethodPayment(methodPayment);
+        return bookingRepository.findByBookingId(idReservation).publishOn(Schedulers.boundedElastic())
+                .flatMap(bookingEntity -> {
+                    ReservationReportDto reservationDto = new ReservationReportDto();
+                    reservationDto.setPdfFileName("reserva.pdf");
+                    reservationDto.setDateReservation(bookingEntity.getCreatedAt().toLocalDateTime()
+                            .format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
+                    List<ReservationReportDto> listCompanions = new ArrayList<>();
 
-            List<CompanionsDto> items = companionsRepository.getCompanionsByBookingId(bookingEntity.getBookingId()).collectList().block();
+                    List<CompanionsDto> items = companionsRepository
+                            .getCompanionsByBookingId(bookingEntity.getBookingId()).collectList().block();
 
-            return roomRepository.getRoomNameByBookingId(idReservation).flatMap(roomEntity -> {
-                reservationDto.setRoomName(roomEntity.getRoomName());
-                reservationDto.setRoomNumber(roomEntity.getRoomNumber());
+                    return roomRepository.getRoomNameByBookingId(idReservation).flatMap(roomEntity -> {
+                        reservationDto.setRoomName(roomEntity.getRoomName());
+                        reservationDto.setRoomNumber(roomEntity.getRoomNumber());
                 for (CompanionsDto item : items) {
-                    if (item.isTitular()) {
-                        reservationDto.setDocumentType(item.getDocumenttypedesc());
-                        reservationDto.setDocumentNumber(item.getDocumentNumber());
-                        reservationDto.setFullname(item.getFirstname() + " " + item.getLastname());
-                        reservationDto.setYears(item.getYears() != null ? String.valueOf(item.getYears()) : "");
-                        reservationDto.setEmail(item.getEmail() != null ? item.getEmail() : "");
+                            if (item.isTitular()) {
+                                reservationDto.setDocumentType(item.getDocumenttypedesc());
+                                reservationDto.setDocumentNumber(item.getDocumentNumber());
+                                reservationDto.setFullname(item.getFirstname() + " " + item.getLastname());
+                                reservationDto.setYears(item.getYears() != null ? String.valueOf(item.getYears()) : "");
+                                reservationDto.setEmail(item.getEmail() != null ? item.getEmail() : "");
                         reservationDto.setCountrydesc(item.getCountrydesc() != null ? item.getCountrydesc() : "");
                     } else {
-                        ReservationReportDto reportDto = new ReservationReportDto();
-                        reportDto.setDocumentType(item.getDocumenttypedesc() != null ? item.getDocumenttypedesc() : "" );
-                        reportDto.setDocumentNumber(item.getDocumentNumber() != null ? item.getDocumentNumber() : "" );
-                        reportDto.setFullname(item.getFirstname() + " " + item.getLastname());
-                        reportDto.setYears(item.getYears() != null ? ""+item.getYears() : "" );
-                        reportDto.setGender(item.getGenderdesc() != null ? item.getGenderdesc() : "" );
-                        listCompanions.add(reportDto);
-                        reservationDto.setLstCompanions(listCompanions);
-                    }
-                }
-                byte[] encoded = null;
-                ResponseFileDto result = new ResponseFileDto();
-                try {
-                    File pdfFile = generateReservationPdfFromHtml(reservationDto);
-                    encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(pdfFile));
-                    result.setFile(new String(encoded, StandardCharsets.US_ASCII));
-                    result.setFilename(pdfFile.getName());
-                } catch (IOException e) {
-                    result.setErrormessage(String.valueOf(new RuntimeException("Error al generar el PDF", e)));
-                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result));
-                }
-                return Mono.just(ResponseEntity.ok(result));
-            });
-            });
-        });
+                                ReservationReportDto reportDto = new ReservationReportDto();
+                                reportDto.setDocumentType(
+                                        item.getDocumenttypedesc() != null ? item.getDocumenttypedesc() : "");
+                                reportDto.setDocumentNumber(
+                                        item.getDocumentNumber() != null ? item.getDocumentNumber() : "");
+                                reportDto.setFullname(item.getFirstname() + " " + item.getLastname());
+                                reportDto.setYears(item.getYears() != null ? "" + item.getYears() : "");
+                                reportDto.setGender(item.getGenderdesc() != null ? item.getGenderdesc() : "");
+                                listCompanions.add(reportDto);
+                                reservationDto.setLstCompanions(listCompanions);
+                            }
+                        }
+                        byte[] encoded = null;
+                        ResponseFileDto result = new ResponseFileDto();
+                        try {
+                            File pdfFile = generateReservationPdfFromHtml(reservationDto);
+                            encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(pdfFile));
+                            result.setFile(new String(encoded, StandardCharsets.US_ASCII));
+                            result.setFilename(pdfFile.getName());
+                        } catch (IOException e) {
+                            result.setErrormessage(String.valueOf(new RuntimeException("Error al generar el PDF", e)));
+                            return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result));
+                        }
+                        return Mono.just(ResponseEntity.ok(result));
+                    });
+                    });
+    }
+
+    @Override
+    public Mono<ResponseEntity<ResponseFileDto>> getReportOfKitchen() {
+       return bookingRepository.getReportOfKitchenBdDto()
+                .collectList().flatMap(
+                        data -> {
+                           /*  Integer addBreakfast = data.stream()
+                                    .map(d -> d.getTotalperson())
+                                    .reduce(0, Integer::sum);
+                            Integer numberTotalAdults = data.stream()
+                                    .map(d -> d.getNumberadults()
+                                            + d.getNumberadultsextra())
+                                    .reduce(0, Integer::sum);
+                            Integer numberTotalChildren = data.stream()
+                                    .map(d -> d.getNumberchildren())
+                                    .reduce(0, Integer::sum);
+                            Integer numberTotalAdultMayor = data.stream()
+                                    .map(d -> d.getNumberadultsmayor())
+                                    .reduce(0, Integer::sum);
+                           List<ReportOfKitchenBdDto> listDataAlimentation = data
+                                    .stream()
+                                    .filter(d -> d.isIsalimentation()).toList();
+
+                            Integer totalLunch = listDataAlimentation.stream()
+                                    .map(d -> d.getTotalperson())
+                                    .reduce(0, Integer::sum);
+
+                            Integer totalDinner = listDataAlimentation.stream()
+                                    .map(d -> d.getTotalperson())
+                                    .reduce(0, Integer::sum);
+                            ReportOfKitchenDto reportOfKitchenDto = new ReportOfKitchenDto();
+                            reportOfKitchenDto.setNumberBreakfast(addBreakfast);
+                            reportOfKitchenDto.setNumberAdults(numberTotalAdults);
+                            reportOfKitchenDto.setNumberChildren(numberTotalChildren);
+                            reportOfKitchenDto.setNumberAdultMayor(numberTotalAdultMayor);
+                            reportOfKitchenDto.setNumberLunch(totalLunch);
+                            reportOfKitchenDto.setNumberDinner(totalDinner); */
+                            ReportKitchenPdf reportKitchenPdf = new ReportKitchenPdf(data);
+                            String htmlContent = reportKitchenPdf.toTemplate();
+                            ResponseFileDto response = PDFGeneratorService.generatePdfFromContent(htmlContent,
+                                    "reporte cocina.pdf");
+                            return Mono.just(ResponseEntity.ok(response));
+                        });
+
     }
 }

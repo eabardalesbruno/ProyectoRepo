@@ -16,6 +16,7 @@ import com.proriberaapp.ribera.utils.GeneralMethods;
 import com.proriberaapp.ribera.utils.TransformDate;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.ConfirmReserveBookingTemplateEmail;
+import com.proriberaapp.ribera.utils.pdfTemplate.ReportKitchenPdf;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -954,12 +955,13 @@ public class BookingServiceImpl implements BookingService {
                                         List<Integer> ids = listViews.stream().map(ViewBookingReturn::getBookingId)
                                                         .collect(Collectors.toList());
                                         return Mono.zip(Mono.just(listViews), this.getBedsType(ids),
-                                                        this.getComfortType(ids),this.getBookingFeeding(ids));
+                                                        this.getComfortType(ids), this.getBookingFeeding(ids));
                                 }).flatMap(data -> {
                                         List<ViewBookingReturn> listViews = data.getT1();
                                         List<ViewBookingReturn.BedsType> bedsType = data.getT2();
                                         List<ViewBookingReturn.ComfortData> comfortData = data.getT3();
-                                        List<com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto> bookingFeeding = data.getT4();
+                                        List<com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto> bookingFeeding = data
+                                                        .getT4();
                                         listViews.forEach(view -> {
                                                 view.setListBedsType(bedsType.stream()
                                                                 .filter(bed -> bed.getBookingId()
@@ -969,7 +971,7 @@ public class BookingServiceImpl implements BookingService {
                                                                 .filter(comfort -> comfort.getBookingId()
                                                                                 .equals(view.getBookingId()))
                                                                 .collect(Collectors.toList()));
-                                                view.setListFeeding(bookingFeeding.stream()                                                          
+                                                view.setListFeeding(bookingFeeding.stream()
                                                                 .filter(feeding -> feeding.getBookingId()
                                                                                 .equals(view.getBookingId()))
                                                                 .collect(Collectors.toList()));
@@ -986,20 +988,18 @@ public class BookingServiceImpl implements BookingService {
                 });
         }
 
-
         private Mono<List<ViewBookingReturn.ComfortData>> getComfortType(List<Integer> bookingsId) {
                 return Mono.defer(() -> {
                         return comfortTypeRepository.findAllByViewComfortTypeByBookings(bookingsId).collectList();
                 });
         }
+
         private Mono<List<com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto>> getBookingFeeding(
                         List<Integer> bookingsId) {
                 return Mono.defer(() -> {
                         return bookingFeedingRepository.listBookingFeedingByBookingId(bookingsId).collectList();
                 });
         }
-
-
 
         @Override
         public Mono<ViewBookingReturn> findByUserClientIdAndBookingIdAndBookingStateIdIn(Integer userClientId,
@@ -1301,5 +1301,6 @@ public class BookingServiceImpl implements BookingService {
         public Flux<Long> getAllYearsInvoice() {
                 return bookingRepository.getAllYearsInvoice();
         }
+
 
 }
