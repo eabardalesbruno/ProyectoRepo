@@ -1,8 +1,12 @@
 package com.proriberaapp.ribera.services;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ResponseFileDto;
 import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
 import com.proriberaapp.ribera.Domain.entities.*;
+
+import org.apache.commons.io.FileUtils;
+import org.jose4j.base64url.internal.apache.commons.codec.binary.Base64;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -11,6 +15,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Service
@@ -28,7 +33,9 @@ public class PDFGeneratorService {
         return outputFile;
     }
 
-    public static File generatePdfFromHtml(String codigotransaccion, String username, String documentNumber, String currencyName, String fecha, String bookingid, String bookingiroomname, String precioVentaTotal, String pdfFileName) throws IOException {
+    public static File generatePdfFromHtml(String codigotransaccion, String username, String documentNumber,
+            String currencyName, String fecha, String bookingid, String bookingiroomname, String precioVentaTotal,
+            String pdfFileName) throws IOException {
         String htmlContent = "<!DOCTYPE html>"
                 + "<html lang=\"en\">"
                 + "<head>"
@@ -95,7 +102,6 @@ public class PDFGeneratorService {
                 + "    </div>"
                 + "</body>"
                 + "</html>";
-
 
         File pdfFile = new File(pdfFileName);
 
@@ -192,21 +198,25 @@ public class PDFGeneratorService {
 
         return pdfFile;
     }
-    
-    public static File generatePdfFromContent(String content, String pdfFileName) throws IOException {
+
+    public static ResponseFileDto generatePdfFromContent(String content, String pdfFileName){
+        ResponseFileDto result = new ResponseFileDto();
+
         File pdfFile = new File(pdfFileName);
+        byte[] encoded = null;
         try (OutputStream os = new FileOutputStream(pdfFile)) {
             PdfRendererBuilder builder = new PdfRendererBuilder();
             builder.withHtmlContent(content, "");
             builder.toStream(os);
             builder.run();
+            encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(pdfFile));
+            result.setFile(new String(encoded, StandardCharsets.US_ASCII));
+            result.setFilename(pdfFile.getName());
         } catch (IOException e) {
             e.printStackTrace();
-            throw new IOException("Error generating PDF.", e);
+            result.setErrormessage(String.valueOf(new RuntimeException("Error generating PDF", e)));
         }
-
-        return pdfFile;
+        return result;
     }
-
 
 }

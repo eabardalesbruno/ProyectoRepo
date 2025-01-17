@@ -16,6 +16,7 @@ import com.proriberaapp.ribera.utils.GeneralMethods;
 import com.proriberaapp.ribera.utils.TransformDate;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.ConfirmReserveBookingTemplateEmail;
+import com.proriberaapp.ribera.utils.pdfTemplate.ReportKitchenPdf;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -1301,47 +1302,5 @@ public class BookingServiceImpl implements BookingService {
                 return bookingRepository.getAllYearsInvoice();
         }
 
-        @Override
-        public Mono<ReportOfKitchenDto> getReportOfKitchen() {
-                bookingRepository.getReportOfKitchenBdDto()
-                                .collectList().flatMap(
-                                                data -> {
-                                                        Integer addBreakfast = data.stream()
-                                                                        .map(d -> d.getTotalperson())
-                                                                        .reduce(0, Integer::sum);
-                                                        Integer numberTotalAdults = data.stream()
-                                                                        .map(d -> d.getNumberadults()
-                                                                                        + d.getNumberadultextra())
-                                                                        .reduce(0, Integer::sum);
-                                                        Integer numberTotalChildren = data.stream()
-                                                                        .map(d -> d.getNumberchildren())
-                                                                        .reduce(0, Integer::sum);
-                                                        Integer numberTotalAdultMayor = data.stream()
-                                                                        .map(d -> d.getNumberadultmayor())
-                                                                        .reduce(0, Integer::sum);
-                                                        Stream<ReportOfKitchenBdDto> listDataAlimentation = data
-                                                                        .stream()
-                                                                        .filter(d -> d.isIsalimentation());
-
-                                                        Integer totalLunch = listDataAlimentation
-                                                                        .map(d -> d.getTotalperson())
-                                                                        .reduce(0, Integer::sum);
-
-                                                        Integer totalDinner = listDataAlimentation
-                                                                        .map(d -> d.getTotalperson())
-                                                                        .reduce(0, Integer::sum);
-                                                        ReportOfKitchenDto reportOfKitchenDto = new ReportOfKitchenDto();
-                                                        reportOfKitchenDto.setNumberBreakfast(addBreakfast);
-                                                        reportOfKitchenDto.setNumberAdults(numberTotalAdults);
-                                                        reportOfKitchenDto.setNumberChildren(numberTotalChildren);
-                                                        reportOfKitchenDto.setNumberAdultMayor(numberTotalAdultMayor);
-                                                        reportOfKitchenDto.setNumberLunch(totalLunch);
-                                                        reportOfKitchenDto.setNumberDinner(totalDinner);
-                                                        return Mono.just(reportOfKitchenDto);
-
-                                                });
-
-                return Mono.empty();
-        }
 
 }

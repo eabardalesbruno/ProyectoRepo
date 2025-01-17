@@ -107,6 +107,4 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Flux<Long> getAllYearsInvoice();
 
-    Mono<ReportOfKitchenDto> getReportOfKitchen();
-
 }

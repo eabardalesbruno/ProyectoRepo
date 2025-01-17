@@ -553,13 +553,24 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
         Mono<bookingRejectUserEmailDto> findBookingEmailDtoByBookingId(Integer bookingId);
 
         @Query("""
-                        select b.daybookinginit,b.daybookingend, b.numberadults,b.numberchildren,b.numberadultsextra,b.numberadultsmayor, b.numberadults+b.numberchildren+b.numberadultsextra+b.numberadultsmayor as totalperson,
-                               COALESCE((select case  when bf.bookingfeedingid is not null then true else null end from booking_feeding bf where bf.bookingid=b.bookingid limit 1),false) as isalimentation
-                               from paymentbook pb
-                               join booking b on b.bookingid=pb.bookingid
-                               join bookingstate bs on bs.bookingstateid=b.bookingstateid
-                               where bs.bookingstatename='OCUPADO'
-                               and CURRENT_TIMESTAMP BETWEEN b.daybookinginit and b.daybookingend;
+             
+            
+             select b.roomnumber,b.bookingid,b.roomname,to_char(b.daybookinginit,'DD/MM/YYYY HH:mm') as checkin,to_char(b.daybookingend,'DD/MM/YYYY HH:mm') as checkout,b.isalimentation,b.numberadultsmayor,b.numberadultsextra,b.numberadults,b.numberchildren,b.totalperson,(case when b.isalimentation then 	calculate_total_dinner( b.daybookingend,b.totalperson) else 0 end) as totaldinner,
+            Case when b.isalimentation then b.totalperson  else 0 end as totallunch,b.totalperson as totalbreakfast	 from (
+             select  b.bookingid,r.roomname,r.roomdescription,b.daybookinginit,b.daybookingend, COALESCE(b.numberadults,0) as numberadults ,COALESCE(b.numberchildren,0) as numberchildren,COALESCE(b.numberadultsextra,0) as numberadultsextra,
+            	COALESCE(b.numberadultsmayor,0) as numberadultsmayor, b.numberadults+b.numberchildren+b.numberadultsextra+b.numberadultsmayor as totalperson,
+                            COALESCE((select case  when bf.bookingfeedingid is not null then true else null end from booking_feeding bf where bf.bookingid=b.bookingid limit 1),false) as isalimentation,
+                 (b.daybookingend::date - b.daybookinginit::date)+1 as total_days,
+            	calculate_nights(b.daybookinginit, b.daybookingend) as total_nights,
+            r.roomnumber
+            	from paymentbook pb
+                            join booking b on b.bookingid=pb.bookingid
+                            join bookingstate bs on bs.bookingstateid=b.bookingstateid
+             join roomoffer ro on ro.roomofferid=b.roomofferid
+             join room r on r.roomid=ro.roomid
+                            where bs.bookingstatename='OCUPADO'
+                            and CURRENT_DATE BETWEEN b.daybookinginit::date and b.daybookingend::date
+             ) b
                                """)
         Flux<ReportOfKitchenBdDto> getReportOfKitchenBdDto();
 
