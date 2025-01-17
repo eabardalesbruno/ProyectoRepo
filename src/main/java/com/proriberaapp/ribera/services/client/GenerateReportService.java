@@ -11,4 +11,6 @@ public interface GenerateReportService {
 
   Mono<ResponseEntity<ResponseFileDto>> generateReportReservation(int idReservation);
 
+  Mono<ResponseEntity<ResponseFileDto>> getReportOfKitchen();
+
 }
