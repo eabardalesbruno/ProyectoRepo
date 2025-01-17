@@ -551,4 +551,10 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
             """)
     Mono<bookingRejectUserEmailDto> findBookingEmailDtoByBookingId(Integer bookingId);
 
+    @Query("""
+         select pm.description from paymentbook pb join paymentmethod pm on pb.paymentmethodid = pm.paymentmethodid
+         where pb.bookingid = :bookingid
+    """)
+    Mono<String> fingMethodPäymentByBookingId(@Param("bookingid") Integer bookingid);
+
 }
