@@ -19,7 +19,8 @@ public interface CompanionsRepository extends R2dbcRepository<CompanionsEntity, 
     Mono<CompanionsEntity> findByCompanionIdAndBookingId(Integer companionId, Integer bookingId);
 
     @Query("""
-     select c.*, dt.documenttypedesc, g.genderdesc
+     select c.*, dt.documenttypedesc, g.genderdesc,
+       (select countrydesc from country where countryid = c.countryid) countrydesc
      from companions c
      left join documenttype dt on c.typedocumentid = dt.documenttypeid
      left join gender g on c.genderid = g.genderid

@@ -13,6 +13,7 @@ import com.proriberaapp.ribera.services.PDFGeneratorService;
 import com.proriberaapp.ribera.services.client.GenerateReportService;
 import com.proriberaapp.ribera.utils.pdfTemplate.ReportKitchenPdf;
 
+import static com.proriberaapp.ribera.services.PDFGeneratorService.generateReservationPdfFromHtml;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
 import org.jose4j.base64url.internal.apache.commons.codec.binary.Base64;
@@ -40,8 +41,6 @@ public class GenerateReportServiceImpl implements GenerateReportService {
 
     private final RoomRepository roomRepository;
 
-    private final PDFGeneratorService pdfGeneratorService;
-
     @Override
     public Mono<ResponseEntity<ResponseFileDto>> generateReportReservation(int idReservation) {
         return bookingRepository.findByBookingId(idReservation).publishOn(Schedulers.boundedElastic())
@@ -57,13 +56,16 @@ public class GenerateReportServiceImpl implements GenerateReportService {
 
                     return roomRepository.getRoomNameByBookingId(idReservation).flatMap(roomEntity -> {
                         reservationDto.setRoomName(roomEntity.getRoomName());
-                        for (CompanionsDto item : items) {
+                        reservationDto.setRoomNumber(roomEntity.getRoomNumber());
+                for (CompanionsDto item : items) {
                             if (item.isTitular()) {
                                 reservationDto.setDocumentType(item.getDocumenttypedesc());
                                 reservationDto.setDocumentNumber(item.getDocumentNumber());
                                 reservationDto.setFullname(item.getFirstname() + " " + item.getLastname());
                                 reservationDto.setYears(item.getYears() != null ? String.valueOf(item.getYears()) : "");
-                            } else {
+                                reservationDto.setEmail(item.getEmail() != null ? item.getEmail() : "");
+                        reservationDto.setCountrydesc(item.getCountrydesc() != null ? item.getCountrydesc() : "");
+                    } else {
                                 ReservationReportDto reportDto = new ReservationReportDto();
                                 reportDto.setDocumentType(
                                         item.getDocumenttypedesc() != null ? item.getDocumenttypedesc() : "");
@@ -79,7 +81,7 @@ public class GenerateReportServiceImpl implements GenerateReportService {
                         byte[] encoded = null;
                         ResponseFileDto result = new ResponseFileDto();
                         try {
-                            File pdfFile = pdfGeneratorService.generateReservationPdfFromHtml(reservationDto);
+                            File pdfFile = generateReservationPdfFromHtml(reservationDto);
                             encoded = Base64.encodeBase64(FileUtils.readFileToByteArray(pdfFile));
                             result.setFile(new String(encoded, StandardCharsets.US_ASCII));
                             result.setFilename(pdfFile.getName());
@@ -89,7 +91,7 @@ public class GenerateReportServiceImpl implements GenerateReportService {
                         }
                         return Mono.just(ResponseEntity.ok(result));
                     });
-                });
+                    });
     }
 
     @Override

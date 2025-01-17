@@ -19,5 +19,6 @@ public class RoomDetailDto {
     LocalDateTime daybookingend;
     Long paymentstateid;
     String paymentstatename;
+    String roomStatus;
 
 }
