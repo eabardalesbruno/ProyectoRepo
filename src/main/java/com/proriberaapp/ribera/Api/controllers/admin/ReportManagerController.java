@@ -44,17 +44,21 @@ public class ReportManagerController {
     }
 
     @GetMapping("/bookings/by-stateId")
-    public Flux<BookingWithPaymentDTO> getBookingsByStateId(@RequestParam Integer stateId, @RequestParam Integer month, @RequestParam Integer year) {
+    public Flux<BookingWithPaymentDTO> getBookingsByStateId(@RequestParam Integer stateId, @RequestParam Integer month,
+            @RequestParam Integer year) {
         return reportManagerService.generateBookingReport(stateId, month, year);
     }
 
     @GetMapping("/bookings/resumeByStateId")
-    public Flux<BookingResumenPaymentDTO> getResumePaymentByStateId(@RequestParam Integer stateId, @RequestParam Integer month, @RequestParam Integer year) {
+    public Flux<BookingResumenPaymentDTO> getResumePaymentByStateId(@RequestParam Integer stateId,
+            @RequestParam Integer month, @RequestParam Integer year) {
         return reportManagerService.findBookingsWithResumeByStateId(stateId, month, year);
     }
 
     @GetMapping("/bookings/stateIdAndDate")
-    public Flux<BookingWithPaymentDTO> getBookingsByStateIdAndDate(@RequestParam Integer stateId, @RequestParam(required = false) LocalDateTime dateini, @RequestParam(required = false) LocalDateTime datefin) {
+    public Flux<BookingWithPaymentDTO> getBookingsByStateIdAndDate(@RequestParam Integer stateId,
+            @RequestParam(required = false) LocalDateTime dateini,
+            @RequestParam(required = false) LocalDateTime datefin) {
         return reportManagerService.findBookingsWithPaymentByStateIdAndDate(stateId, dateini, datefin);
     }
 
@@ -69,7 +73,8 @@ public class ReportManagerController {
     }
 
     @GetMapping("/total-payments-months")
-    public Mono<TotalSalesDTO> totalPaymentMonthSum(@RequestParam Integer stateId, @RequestParam Integer month, @RequestParam Integer year) {
+    public Mono<TotalSalesDTO> totalPaymentMonthSum(@RequestParam Integer stateId, @RequestParam Integer month,
+            @RequestParam Integer year) {
         return reportManagerService.totalPaymentMonthSum(stateId, month, year);
     }
 
@@ -93,6 +98,11 @@ public class ReportManagerController {
     public Mono<TotalCalculationMonthsDTO> totalActiveClientsMonths(
             @RequestParam(required = false) Integer stateId, @RequestParam Integer month) {
         return reportManagerService.getTotalActiveClientsMonths(stateId, month);
+    }
+
+    @GetMapping("/report-kitchen")
+    public Mono<ResponseEntity<ResponseFileDto>> generateReportKitchen() {
+        return generateReportService.getReportOfKitchen();
     }
 
     @GetMapping("/report-booking")

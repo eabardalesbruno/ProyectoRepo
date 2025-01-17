@@ -2,6 +2,8 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ResponseFileDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.CompanionsDto;
+import com.proriberaapp.ribera.Api.controllers.client.dto.ReportOfKitchenBdDto;
+import com.proriberaapp.ribera.Api.controllers.client.dto.ReportOfKitchenDto;
 import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.CompanionsRepository;
@@ -9,6 +11,8 @@ import com.proriberaapp.ribera.Infraestructure.repository.DocumentTypeRepository
 import com.proriberaapp.ribera.Infraestructure.repository.RoomRepository;
 import com.proriberaapp.ribera.services.PDFGeneratorService;
 import com.proriberaapp.ribera.services.client.GenerateReportService;
+import com.proriberaapp.ribera.utils.pdfTemplate.ReportKitchenPdf;
+
 import static com.proriberaapp.ribera.services.PDFGeneratorService.generateReservationPdfFromHtml;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FileUtils;
@@ -25,7 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -91,5 +95,50 @@ public class GenerateReportServiceImpl implements GenerateReportService {
             });
             });
         });
+    }
+
+    @Override
+    public Mono<ResponseEntity<ResponseFileDto>> getReportOfKitchen() {
+        return bookingRepository.getReportOfKitchenBdDto()
+                .collectList().flatMap(
+                        data -> {
+                           /*  Integer addBreakfast = data.stream()
+                                    .map(d -> d.getTotalperson())
+                                    .reduce(0, Integer::sum);
+                            Integer numberTotalAdults = data.stream()
+                                    .map(d -> d.getNumberadults()
+                                            + d.getNumberadultsextra())
+                                    .reduce(0, Integer::sum);
+                            Integer numberTotalChildren = data.stream()
+                                    .map(d -> d.getNumberchildren())
+                                    .reduce(0, Integer::sum);
+                            Integer numberTotalAdultMayor = data.stream()
+                                    .map(d -> d.getNumberadultsmayor())
+                                    .reduce(0, Integer::sum);
+                           List<ReportOfKitchenBdDto> listDataAlimentation = data
+                                    .stream()
+                                    .filter(d -> d.isIsalimentation()).toList();
+
+                            Integer totalLunch = listDataAlimentation.stream()
+                                    .map(d -> d.getTotalperson())
+                                    .reduce(0, Integer::sum);
+
+                            Integer totalDinner = listDataAlimentation.stream()
+                                    .map(d -> d.getTotalperson())
+                                    .reduce(0, Integer::sum);
+                            ReportOfKitchenDto reportOfKitchenDto = new ReportOfKitchenDto();
+                            reportOfKitchenDto.setNumberBreakfast(addBreakfast);
+                            reportOfKitchenDto.setNumberAdults(numberTotalAdults);
+                            reportOfKitchenDto.setNumberChildren(numberTotalChildren);
+                            reportOfKitchenDto.setNumberAdultMayor(numberTotalAdultMayor);
+                            reportOfKitchenDto.setNumberLunch(totalLunch);
+                            reportOfKitchenDto.setNumberDinner(totalDinner); */
+                            ReportKitchenPdf reportKitchenPdf = new ReportKitchenPdf(data);
+                            String htmlContent = reportKitchenPdf.toTemplate();
+                            ResponseFileDto response = PDFGeneratorService.generatePdfFromContent(htmlContent,
+                                    "reporte cocina.pdf");
+                            return Mono.just(ResponseEntity.ok(response));
+                        });
+
     }
 }
