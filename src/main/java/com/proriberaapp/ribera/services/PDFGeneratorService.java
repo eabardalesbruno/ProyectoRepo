@@ -298,8 +298,8 @@ public class PDFGeneratorService {
                 "<th>PAÍS / Country</th>" +
                 "</tr>" +
                 "<tr>" +
-                "<td>" +" " + "</td>" +
-                "<td>" + " " + "</td>" +
+                "<td>" + entity.getAddress()+ "</td>" +
+                "<td>" + entity.getCellphone() + "</td>" +
                 "<td>" + " " + "</td>" +
                 "<td>" + entity.getCountrydesc() + "</td>" +
                 "</tr>" +
