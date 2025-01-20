@@ -19,6 +19,7 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
     @Query("SELECT SUM(commissionamount) FROM commission WHERE promoterid = :promoterId")
     Mono<BigDecimal> findTotalCommissionByPromoterId(@Param("promoterId") Integer promoterId);
 
-    Flux<CommissionEntity> findByDisbursementDate(Timestamp date);
+    @Query("SELECT * FROM commission c WHERE c.disbursementdate BETWEEN :startOfDay AND :endOfDay AND c.processed = false")
+    Flux<CommissionEntity> findByDisbursementDateRange(@Param("startOfDay") Timestamp startOfDay, @Param("endOfDay") Timestamp endOfDay);
 
 }

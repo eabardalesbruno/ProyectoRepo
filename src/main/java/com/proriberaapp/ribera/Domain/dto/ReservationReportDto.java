@@ -27,6 +27,7 @@ public class ReservationReportDto {
     private String methodPayment;
     private String cellphone;
     private String image;
+    private String address;
 
     private List<ReservationReportDto> lstCompanions;
 }

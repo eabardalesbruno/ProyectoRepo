@@ -144,10 +144,14 @@ public class WalletController {
     }
 
     @PostMapping("/recharge-pending-commissions")
-    public Mono<ResponseEntity<Object>> rechargePendingCommissions() {
+    public Mono<ResponseEntity<List<WalletTransactionEntity>>> rechargePendingCommissions() {
         return walle.processPendingCommissions()
-                .map(response -> ResponseEntity.ok().build())
-                .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().build()));
+                .collectList()
+                .map(transactions -> ResponseEntity.ok(transactions))
+                .onErrorResume(e -> {
+                    e.printStackTrace();
+                    return Mono.just(ResponseEntity.badRequest().build());
+                });
     }
 
 

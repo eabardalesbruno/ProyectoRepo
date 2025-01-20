@@ -105,7 +105,7 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                                 </tr>
                                 <tr>
                                 <td>
-                                <p class="no-margin">Hora de llegada aproximada: %hourCheckIn </p>
+                                <p class="no-margin">Hora de llegada aproximada: 15:00 P.M </p>
                                 <p class="check-in">(*) Recuerda que el check-in es las 3:00 P.M.</p>
                                 </td>
                                 </tr>
