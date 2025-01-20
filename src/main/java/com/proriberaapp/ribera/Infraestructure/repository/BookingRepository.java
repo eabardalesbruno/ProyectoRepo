@@ -555,7 +555,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
         @Query("""
              
             
-             select b.roomnumber,b.bookingid,b.roomname,to_char(b.daybookinginit,'DD/MM/YYYY HH:mm') as checkin,to_char(b.daybookingend,'DD/MM/YYYY HH:mm') as checkout,b.isalimentation,b.numberadultsmayor,b.numberadultsextra,b.numberadults,b.numberchildren,b.totalperson,(case when b.isalimentation then 	calculate_total_dinner( b.daybookingend,b.totalperson) else 0 end) as totaldinner,
+             select b.roomnumber,b.bookingid,b.roomname,to_char(b.daybookinginit,'DD/MM/YYYY HH24:MI') as checkin,to_char(b.daybookingend,'DD/MM/YYYY HH24:MI') as checkout,b.isalimentation,b.numberadultsmayor,b.numberadultsextra,b.numberadults,b.numberchildren,b.totalperson,(case when b.isalimentation then 	calculate_total_dinner( b.daybookingend,b.totalperson) else 0 end) as totaldinner,
             Case when b.isalimentation then b.totalperson  else 0 end as totallunch,b.totalperson as totalbreakfast	 from (
              select  b.bookingid,r.roomname,r.roomdescription,b.daybookinginit,b.daybookingend, COALESCE(b.numberadults,0) as numberadults ,COALESCE(b.numberchildren,0) as numberchildren,COALESCE(b.numberadultsextra,0) as numberadultsextra,
             	COALESCE(b.numberadultsmayor,0) as numberadultsmayor, b.numberadults+b.numberchildren+b.numberadultsextra+b.numberadultsmayor as totalperson,
@@ -569,7 +569,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
              join roomoffer ro on ro.roomofferid=b.roomofferid
              join room r on r.roomid=ro.roomid
                             where bs.bookingstatename='OCUPADO'
-                            and CURRENT_DATE BETWEEN b.daybookinginit::date and b.daybookingend::date
+                            and CURRENT_TIMESTAMP BETWEEN b.daybookinginit and b.daybookingend
              ) b
                                """)
         Flux<ReportOfKitchenBdDto> getReportOfKitchenBdDto();
