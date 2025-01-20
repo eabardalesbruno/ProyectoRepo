@@ -311,10 +311,11 @@ public class UserController {
         return userClientService.findUserDTOById(idUserClient);
     }
 
-    @GetMapping("/find/discount")
-    public Mono<UserNameAndDiscountDto> getDiscount(@RequestHeader("Authorization") String token) {
+    @GetMapping("/find/discount/{bookingId}")
+    public Mono<UserNameAndDiscountDto> getDiscount(@RequestHeader("Authorization") String token,
+            @PathVariable Integer bookingId) {
         Integer idUserClient = jwtProvider.getIdFromToken(token);
-        return this.userClientService.getPercentageDiscount(idUserClient);
+        return this.userClientService.getPercentageDiscount(idUserClient, bookingId);
     }
 
     @GetMapping("/promotor/{userPromotorId}")

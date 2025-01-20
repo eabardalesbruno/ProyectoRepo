@@ -580,4 +580,9 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
     """)
     Mono<String> fingMethodPäymentByBookingId(@Param("bookingid") Integer bookingid);
 
+    @Query("""
+          select  case when bf.bookingfeedingid is not null then true else false end from booking_feeding bf where bf.bookingid=:bookingId limit 1
+        """)
+    Mono<Boolean> getSelectBookingIsAlimentation(Integer bookingId);
+
 }

@@ -1302,5 +1302,10 @@ public class BookingServiceImpl implements BookingService {
                 return bookingRepository.getAllYearsInvoice();
         }
 
+        @Override
+        public Mono<Boolean> bookingIsAlimentation(Integer bookingId) {
+               return bookingRepository.getSelectBookingIsAlimentation(bookingId);
+        }
+
 
 }

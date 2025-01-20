@@ -107,4 +107,6 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Flux<Long> getAllYearsInvoice();
 
+    Mono<Boolean> bookingIsAlimentation(Integer bookingId);
+
 }
