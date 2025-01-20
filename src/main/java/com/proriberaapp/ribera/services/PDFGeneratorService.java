@@ -126,131 +126,137 @@ public class PDFGeneratorService {
                 "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />" +
                 "<title>Reserva</title>" +
                 "<style>" +
-                "body {\n" +
-                "            font-family: Arial, sans-serif;\n" +
-                "            margin: 0;\n" +
-                "            padding: 20px;\n" +
-                "            background-color: #fff;\n" +
-                "        }\n" +
-                "        .container {\n" +
-                "            max-width: 900px;\n" +
-                "            margin: auto;\n" +
-                "            border: 2px solid #006600;\n" +
-                "            border-radius: 12px;\n" +
-                "            padding: 20px;\n" +
-                "        }\n" +
-                "        .header {\n" +
-                "            text-align: center;\n" +
-                "            margin-bottom: 20px;\n" +
-                "        }\n" +
-                "        .header img {\n" +
-                "            height: 80px;\n" +
-                "            margin-bottom: 10px;\n" +
-                "        }\n" +
-                "        .header h1 {\n" +
-                "            margin: 0;\n" +
-                "            font-size: 22px;\n" +
-                "            text-transform: uppercase;\n" +
-                "            color: #006600;\n" +
-                "        }\n" +
-                "        .header p {\n" +
-                "            margin: 0;\n" +
-                "            font-size: 14px;\n" +
-                "            color: #333;\n" +
-                "        }\n" +
-                "        .form-table {\n" +
-                "            width: 100%;\n" +
-                "            border-collapse: separate;\n" +
-                "            border-spacing: 0;\n" +
-                "            margin-bottom: 20px;\n" +
-                "            border: 1px solid #006600;\n" +
-                "            border-radius: 12px;\n" +
-                "            overflow: hidden;\n" +
-                "        }\n" +
-                "        .form-table th, .form-table td {\n" +
-                "            border: 1px solid #006600;\n" +
-                "            padding: 8px;\n" +
-                "            text-align: left;\n" +
-                "            font-size: 14px;\n" +
-                "            height: 60px;\n" +
-                "        }\n" +
-                "        .form-table th {\n" +
-                "            background-color: #e7f5e7;\n" +
-                "            font-weight: bold;\n" +
-                "        }\n" +
-                "        .info-title {\n" +
-                "            font-weight: bold;\n" +
-                "            margin-bottom: 10px;\n" +
-                "            color: #006600;\n" +
-                "            margin-top: 70px;"+
-                "        }\n" +
-                "        .grid-container {\n" +
-                "            display: grid;\n" +
-                "            grid-template-columns: 1fr 1fr;\n" +
-                "            gap: 10px;\n" +
-                "        }\n" +
-                "        .info-box {\n" +
-                "            border: 1px solid #006600;\n" +
-                "            padding: 10px;\n" +
-                "            border-radius: 12px;\n" +
-                "            margin-top: 10px;\n" +
-                "        }\n" +
-                "        .info-box strong {\n" +
-                "            display: inline;\n" +
-                "            margin-bottom: 5px;\n" +
-                "        }\n" +
-                "        .signature-container {\n" +
-                "            display: flex;\n" +
-                "            justify-content: space-between;\n" +
-                "            margin-top: 20px;\n" +
-                "        }\n" +
-                "        .signature {\n" +
-                "            text-align: center;\n" +
-                " margin-top: 40px; "+
-                "            width: 40%;\n" +
-                "        }\n" +
-                "        .signature span {\n" +
-                "            display: block;\n" +
-                "            border-top: 1px solid #006600;\n" +
-                "            margin-top: 20px;\n" +
-                "            font-size: 14px;\n" +
-                "        }\n" +
-                "        .terms {\n" +
-                "            font-size: 12px;\n" +
-                "            margin-top: 20px;\n" +
-                "        }\n" +
-                "        .terms p {\n" +
-                "            margin: 5px 0;\n" +
-                "        }\n" +
-                "        .checkbox {\n" +
-                "            display: flex;\n" +
-                "            align-items: center;\n" +
-                "            gap: 5px;\n" +
-                "        }\n" +
-                "        .checkbox label {\n" +
-                "            font-size: 12px;\n" +
-                "        }\n" +
-                "      .info-title { margin-top: 40px;)"+
-                "        /* Footer Styles */\n" +
-                "        .footer-container {\n" +
-                "            max-width: 900px;\n" +
-                "            margin: auto;\n" +
-                "            padding: 20px;\n" +
-                "            background-color: #f1f1f1;\n" +
-                "            border-top: 2px solid #006600;\n" +
-                "            border-radius: 12px;\n" +
-                "            margin-top: 20px;\n" +
-                "        }\n" +
-                "        .footer .info-title {\n" +
-                "            margin-bottom: 10px;\n" +
-                "        }\n" +
-                "        .footer .policies ol {\n" +
-                "            margin: 0;\n" +
-                "            padding-left: 20px;\n" +
-                "        }\n" +
-                "        .policies li{\n" +
-                "            margin: 10px;;\n" +
-                "        }"+
+                "     @page { size: A4; margin: 10mm; }\n" +
+                "    body {\n" +
+                "        font-family: Arial, sans-serif;\n" +
+                "        margin: 0;\n" +
+                "        padding: 0;\n" +
+                "        background-color: #fff;\n" +
+                "    }\n" +
+                "    .container {\n" +
+                "        max-width: 100%;\n" +
+                "        border: 2px solid #006600;\n" +
+                "        border-radius: 12px;\n" +
+                "        padding: 20px;\n" +
+                "    }\n" +
+                "    .header {\n" +
+                "        text-align: center;\n" +
+                "        margin-bottom: 20px;\n" +
+                "    }\n" +
+                "    .header img {\n" +
+                "        height: 80px;\n" +
+                "        margin-bottom: 10px;\n" +
+                "    }\n" +
+                "    .header h1 {\n" +
+                "        margin: 0;\n" +
+                "        font-size: 22px;\n" +
+                "        text-transform: uppercase;\n" +
+                "        color: #006600;\n" +
+                "    }\n" +
+                "    .header p {\n" +
+                "        margin: 0;\n" +
+                "        font-size: 14px;\n" +
+                "        color: #333;\n" +
+                "    }\n" +
+                "    .form-table {\n" +
+                "        width: 100%;\n" +
+                "        border-collapse: separate;\n" +
+                "        border-spacing: 0;\n" +
+                "        margin-bottom: 20px;\n" +
+                "        border: 1px solid #006600;\n" +
+                "        border-radius: 12px;\n" +
+                "        overflow: hidden;\n" +
+                "    }\n" +
+                "    .form-table th, .form-table td {\n" +
+                "        border: 1px solid #006600;\n" +
+                "        padding: 8px;\n" +
+                "        text-align: left;\n" +
+                "        font-size: 14px;\n" +
+                "    }\n" +
+                "    .form-table th {\n" +
+                "        background-color: #e7f5e7;\n" +
+                "        font-weight: bold;\n" +
+                "    }\n" +
+                "    .info-title {\n" +
+                "        font-weight: bold;\n" +
+                "        color: #006600;\n" +
+                "        margin-top: 10px;\n" +
+                "    }\n" +
+                "  .grid-container {\n" +
+                "    display: flex; \n" +
+                "    flex-wrap: wrap; flex-direction:row; \n" +
+                "    gap: 10px; \n" +
+                "    width: 100%;\n" +
+                "    margin-top: 0;\n" +
+                "}" +
+                ".info-box {\n" +
+                "    display:inline-block  ;width: 300px;\n" +
+                "    padding: 8px 10px;\n" +
+                "    margin-right: 5px; \n" +
+                "    margin-bottom: 10px; \n" +
+                "    font-size: 14px;\n" +
+                "    border: 1px solid #006600;\n" +
+                "    border-radius: 12px;\n" +
+                "    box-sizing: border-box;\n" +
+                "}" +
+                "\n" +
+                ".info-box strong {\n" +
+                "    display: inline;\n" +
+                "    margin-bottom: 2px;\n" +
+                "}" +
+                "   .signature-container {\n" +
+                "    display: inline-block;;\n" +
+                "    justify-content: space-between; margin-bottom:15px;\n" +
+                "    margin-top: 20px;\n" +
+                "}\n" +
+                "\n" +
+                ".signature {\ndisplay: inline-block;" +
+                "    text-align: center;\n" +
+                "    margin-top: 40px;\n" +
+                "    width: 300px;\n" +
+                "}\n" +
+                "\n" +
+                ".signature span {\n" +
+                "    display: inline-block;\n" +
+                "    border-top: 1px solid #006600;\n" +
+                "    margin-top: 20px;\n" +
+                "    font-size: 14px;\n" +
+                "}" +
+                "    .terms {\n" +
+                "        font-size: 12px;\n" +
+                "        margin-top: 20px;\n" +
+                "    }\n" +
+                "    .terms p {\n" +
+                "        margin: 5px 0;\n" +
+                "    }\n" +
+                "    .checkbox {\n" +
+                "        display: flex;\n" +
+                "        align-items: center;\n" +
+                "        gap: 5px;\n" +
+                "    }\n" +
+                "    .checkbox label {\n" +
+                "        font-size: 12px;\n" +
+                "    }\n" +
+                "    .footer-container {\n" +
+                "        max-width: 900px;\n" +
+                "        margin: auto;\n" +
+                "        padding: 20px;\n" +
+                "        background-color: #f1f1f1;\n" +
+                "        border-top: 2px solid #006600;\n" +
+                "        border-radius: 12px;\n" +
+                "        margin-top: 20px;\n" +
+                "    }\n" +
+                "    .footer .info-title {\n" +
+                "        margin-bottom: 10px;\n" +
+                "    }\n" +
+                "    .footer .policies ol {\n" +
+                "        margin: 0;\n" +
+                "        padding-left: 20px;\n" +
+                "    }\n" +
+                "    .policies li {\n" +
+                "        margin: 3px; font-size: 11px; " +
+                "    }"+
+                " .policies p {font-size: 12px}"+
                 "</style>" +
                 "</head>" +
                 "<body>" +
@@ -299,15 +305,13 @@ public class PDFGeneratorService {
                 "</tr>" +
                 "<tr>" +
                 "<th>CORREO ELECTRÓNICO / Email</th>" +
-                "<th>FORMA DE PAGO / Payment Method</th>" +
+                "<th colspan=\"2\">FORMA DE PAGO / Payment Method</th>" +
                 "<th>HAB N / Room Nr</th>" +
-                "<th>FIRMA DE HUESPED / Guest Signature</th>" +
                 "</tr>" +
                 "<tr>" +
                 "<td>" + entity.getEmail() + "</td>" +
-                "<td>" + entity.getMethodPayment() + "</td>" +
+                "<td colspan=\"2\">" + entity.getMethodPayment() + "</td>" +
                 "<td>" + entity.getRoomNumber() + "</td>" +
-                "<td></td>" +
                 "</tr>" +
                 "</table>" +
                 "</div>"+
@@ -327,13 +331,13 @@ public class PDFGeneratorService {
                 "        </div>"+
                 "<!-- Signature Section -->\n" +
                 "        <div class=\"signature-container\">\n" +
-                "            <div class=\"signature\">\n" +
-                "                <span>CHECK IN<br></br>Firma</span>\n" +
-                "            </div>\n" +
-                "            <div class=\"signature\">\n" +
-                "                <span>CHECK OUT : HORA<br></br>Firma</span>\n" +
-                "            </div>\n" +
-                "        </div>";
+                "    <div class=\"signature\">\n" +
+                "        <span>CHECK IN<br />Firma</span>\n" +
+                "    </div>\n" +
+                "    <div class=\"signature\">\n" +
+                "        <span>CHECK OUT : HORA<br />Firma</span>\n" +
+                "    </div>\n" +
+                "</div>";
 
         // Companions Section
         if (entity.getLstCompanions() != null && !entity.getLstCompanions().isEmpty()) {
@@ -350,63 +354,66 @@ public class PDFGeneratorService {
                         "<strong>Género:</strong> " + companion.getGender() + "<br></br>" +
                         "<strong>Edad:</strong> " + companion.getYears() + "<br></br>" +
                         "</div>";
+                if (numCompanions % 2 == 0) {
+                    htmlContent += "</div><div class=\"grid-container\">";
+                }
             }
-            htmlContent += "</div>";
+            htmlContent += "</div>"+
+                    " <!-- Footer Section with its own container -->\n" +
+                    "    <div class=\"footer-container\">\n" +
+                    "        <div class=\"footer\">\n" +
+                    "            <div class=\"info-section\">\n" +
+                    "                <div class=\"info-title\">Políticas y Penalidades:</div>\n" +
+                    "                <div class=\"policies\">\n" +
+                    "                    <p><strong>I. Uso de las piscinas</strong></p>\n" +
+                    "                    <ol>\n" +
+                    "                        <li>El uso de las piscinas está permitido desde las 10:00 hrs hasta las 18:00 hrs.</li>\n" +
+                    "                        <li>Es obligatorio el uso de ropa de baño y ducharse antes de entrar a las piscinas.</li>\n" +
+                    "                        <li>No está permitido el consumo de alimentos o bebidas dentro de las piscinas.</li>\n" +
+                    "                        <li>No está permitido consumir bebidas en envases de vidrio alrededor de las piscinas.</li>\n" +
+                    "                        <li>*Las piscinas pueden estar cerradas de manera imprevista en caso el ente regulador de piscinas lo indique.</li>\n" +
+                    "                    </ol>\n" +
+                    "                    <p><strong>II. Check IN (Ingreso) y Check OUT (Salida)</strong></p>\n" +
+                    "                    <ol>\n" +
+                    "                        <li>La hora de ingreso al Apart Hotel (Check IN) es desde las 3:00pm.</li>\n" +
+                    "                        <li>La hora de salida del Apart Hotel (Check OUT) es desde las 12:00pm.</li>\n" +
+                    "                        <li>Por su seguridad el Check IN se realizará hasta las 22:00 hrs.</li>\n" +
+                    "                        <li>Al momento de realizar el Check IN debe presentar sus documentos de identificación válidos (DNI, pasaporte, o carnet de extranjero) tanto la persona que realizó la reserva como sus acompañantes.</li>\n" +
+                    "                        <li>Al firmar dicha ficha de registro de huésped implica la aceptación del reglamento.</li>\n" +
+                    "                        <li>Al momento del Check IN, el huésped deberá cancelar la totalidad de la tarifa. No se realizarán devoluciones ni reembolsos.</li>\n" +
+                    "                        <li>Antes de su salida (Check OUT) deberá acercarse a Recepción para asignarle una persona que realizará la verificación de la habitación. Las llaves del apartamento deben ser devueltas a Recepción.</li>\n" +
+                    "                    </ol>\n" +
+                    "                    <p><strong>III. Durante su estadía</strong></p>\n" +
+                    "                    <ol>\n" +
+                    "                        <li>Todo huésped debe registrarse presentando un documento de identidad – DNI o pasaporte el cual permanecerá en custodia de recepción hasta el check out de la reserva.</li>\n" +
+                    "                        <li>El documento de identidad será devuelto después de verificar la buena conservación del apartamento por parte del titular y sus huéspedes. Caso contrario asumirán los costos de los daños.</li>\n" +
+                    "                        <li>Al titular de la reserva se le hará entrega de llaves, tarjetas, controles de tv que serán devueltos durante el check out.</li>\n" +
+                    "                        <li>No está permitido trasladar artículos (vasos, toallas, ropas de cama, muebles, menaje, etc.) fuera del apartamento, en caso de que algún artículo sufra deterioro o pérdida el titular de la reserva deberá asumir el precio.</li>\n" +
+                    "                        <li>Alimentos y bebidas que no pertenezcan a la empresa solo podrán ser consumidas dentro de su apartamento.</li>\n" +
+                    "                        <li>El mantenimiento del apartamento se realizará cada 24 hrs.</li>\n" +
+                    "                        <li>Como somos un apart hotel que protege la ecología está prohibido fumar dentro de los apartamentos, al incumplir está norma, el huésped tendrá que pagar una penalidad de acuerdo al grado de gravedad del siniestro.</li>\n" +
+                    "                        <li>No está permitido realizar reuniones en los apartamentos o habitaciones o áreas públicas que perturben el orden público por la tranquilidad de los demás huéspedes desde las 20:00 hrs. Además, el volumen del televisor debe mantenerse en un nivel apropiado.</li>\n" +
+                    "                        <li>El establecimiento no se hace responsable de la pérdida de objetos no declarados.</li>\n" +
+                    "                        <li>No se permite el ingreso de mascotas. En caso sea perros guía o lazarillos notificarlo con antelación en Recepción.</li>\n" +
+                    "                        <li>Las rutas de evacuación en caso de desastres naturales están debidamente señaladas. Recomendamos mantener la calma y seguir las indicaciones de nuestro personal.</li>\n" +
+                    "                        <li>Si desea artículos para juegos de mesa, canchas deportivas, entre otros, puede solicitarlo en recepción y se brindarán con una identificación.</li>\n" +
+                    "                        <li>Las visitas sólo podrán ser realizadas en el área de lobby en Recepción. Después de las 22:00h por seguridad se cerrarán las puertas del establecimiento, si desea salir será bajo su responsabilidad y deberá identificarse a seguridad con su respectivo brazalete.</li>\n" +
+                    "                    </ol>\n" +
+                    "                    <p><strong>IV. Tránsito de instalaciones</strong></p>\n" +
+                    "                    <ol>\n" +
+                    "                        <li>La velocidad máxima permitida al interior de las instalaciones es de 15km/h.</li>\n" +
+                    "                        <li>El tránsito de camionetas, autos, cuatrimotos y motos sólo está permitido por las pistas y parqueos.</li>\n" +
+                    "                        <li>El no cumplimiento de los puntos 1 y 2 llevará a una sanción y penalidad.</li>\n" +
+                    "                        <li>No nos hacemos responsables por la pérdida de objetos personales ni por daños.</li>\n" +
+                    "                    </ol>\n" +
+                    "                </div>\n" +
+                    "            </div>\n" +
+                    "        </div>\n" +
+                    "    </div>";
         }
 
         // Close HTML
         htmlContent += "</div>" +
-                " <!-- Footer Section with its own container -->\n" +
-                "    <div class=\"footer-container\">\n" +
-                "        <div class=\"footer\">\n" +
-                "            <div class=\"info-section\">\n" +
-                "                <div class=\"info-title\">Políticas y Penalidades:</div>\n" +
-                "                <div class=\"policies\">\n" +
-                "                    <p><strong>I. Uso de las piscinas</strong></p>\n" +
-                "                    <ol>\n" +
-                "                        <li>El uso de las piscinas está permitido desde las 10:00 hrs hasta las 18:00 hrs.</li>\n" +
-                "                        <li>Es obligatorio el uso de ropa de baño y ducharse antes de entrar a las piscinas.</li>\n" +
-                "                        <li>No está permitido el consumo de alimentos o bebidas dentro de las piscinas.</li>\n" +
-                "                        <li>No está permitido consumir bebidas en envases de vidrio alrededor de las piscinas.</li>\n" +
-                "                        <li>*Las piscinas pueden estar cerradas de manera imprevista en caso el ente regulador de piscinas lo indique.</li>\n" +
-                "                    </ol>\n" +
-                "                    <p><strong>II. Check IN (Ingreso) y Check OUT (Salida)</strong></p>\n" +
-                "                    <ol>\n" +
-                "                        <li>La hora de ingreso al Apart Hotel (Check IN) es desde las 3:00pm.</li>\n" +
-                "                        <li>La hora de salida del Apart Hotel (Check OUT) es desde las 12:00pm.</li>\n" +
-                "                        <li>Por su seguridad el Check IN se realizará hasta las 22:00 hrs.</li>\n" +
-                "                        <li>Al momento de realizar el Check IN debe presentar sus documentos de identificación válidos (DNI, pasaporte, o carnet de extranjero) tanto la persona que realizó la reserva como sus acompañantes.</li>\n" +
-                "                        <li>Al firmar dicha ficha de registro de huésped implica la aceptación del reglamento.</li>\n" +
-                "                        <li>Al momento del Check IN, el huésped deberá cancelar la totalidad de la tarifa. No se realizarán devoluciones ni reembolsos.</li>\n" +
-                "                        <li>Antes de su salida (Check OUT) deberá acercarse a Recepción para asignarle una persona que realizará la verificación de la habitación. Las llaves del apartamento deben ser devueltas a Recepción.</li>\n" +
-                "                    </ol>\n" +
-                "                    <p><strong>III. Durante su estadía</strong></p>\n" +
-                "                    <ol>\n" +
-                "                        <li>Todo huésped debe registrarse presentando un documento de identidad – DNI o pasaporte el cual permanecerá en custodia de recepción hasta el check out de la reserva.</li>\n" +
-                "                        <li>El documento de identidad será devuelto después de verificar la buena conservación del apartamento por parte del titular y sus huéspedes. Caso contrario asumirán los costos de los daños.</li>\n" +
-                "                        <li>Al titular de la reserva se le hará entrega de llaves, tarjetas, controles de tv que serán devueltos durante el check out.</li>\n" +
-                "                        <li>No está permitido trasladar artículos (vasos, toallas, ropas de cama, muebles, menaje, etc.) fuera del apartamento, en caso de que algún artículo sufra deterioro o pérdida el titular de la reserva deberá asumir el precio.</li>\n" +
-                "                        <li>Alimentos y bebidas que no pertenezcan a la empresa solo podrán ser consumidas dentro de su apartamento.</li>\n" +
-                "                        <li>El mantenimiento del apartamento se realizará cada 24 hrs.</li>\n" +
-                "                        <li>Como somos un apart hotel que protege la ecología está prohibido fumar dentro de los apartamentos, al incumplir está norma, el huésped tendrá que pagar una penalidad de acuerdo al grado de gravedad del siniestro.</li>\n" +
-                "                        <li>No está permitido realizar reuniones en los apartamentos o habitaciones o áreas públicas que perturben el orden público por la tranquilidad de los demás huéspedes desde las 20:00 hrs. Además, el volumen del televisor debe mantenerse en un nivel apropiado.</li>\n" +
-                "                        <li>El establecimiento no se hace responsable de la pérdida de objetos no declarados.</li>\n" +
-                "                        <li>No se permite el ingreso de mascotas. En caso sea perros guía o lazarillos notificarlo con antelación en Recepción.</li>\n" +
-                "                        <li>Las rutas de evacuación en caso de desastres naturales están debidamente señaladas. Recomendamos mantener la calma y seguir las indicaciones de nuestro personal.</li>\n" +
-                "                        <li>Si desea artículos para juegos de mesa, canchas deportivas, entre otros, puede solicitarlo en recepción y se brindarán con una identificación.</li>\n" +
-                "                        <li>Las visitas sólo podrán ser realizadas en el área de lobby en Recepción. Después de las 22:00h por seguridad se cerrarán las puertas del establecimiento, si desea salir será bajo su responsabilidad y deberá identificarse a seguridad con su respectivo brazalete.</li>\n" +
-                "                    </ol>\n" +
-                "                    <p><strong>IV. Tránsito de instalaciones</strong></p>\n" +
-                "                    <ol>\n" +
-                "                        <li>La velocidad máxima permitida al interior de las instalaciones es de 15km/h.</li>\n" +
-                "                        <li>El tránsito de camionetas, autos, cuatrimotos y motos sólo está permitido por las pistas y parqueos.</li>\n" +
-                "                        <li>El no cumplimiento de los puntos 1 y 2 llevará a una sanción y penalidad.</li>\n" +
-                "                        <li>No nos hacemos responsables por la pérdida de objetos personales ni por daños.</li>\n" +
-                "                    </ol>\n" +
-                "                </div>\n" +
-                "            </div>\n" +
-                "        </div>\n" +
-                "    </div>"+
                 "</body>" +
                 "</html>";
 
