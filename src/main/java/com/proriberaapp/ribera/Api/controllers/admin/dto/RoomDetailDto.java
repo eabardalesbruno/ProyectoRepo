@@ -21,5 +21,6 @@ public class RoomDetailDto {
     String paymentstatename;
     String roomStatus;
     Long bookingid;
+    Integer numdays;
 
 }

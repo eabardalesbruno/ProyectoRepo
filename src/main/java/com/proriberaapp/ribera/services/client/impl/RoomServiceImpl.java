@@ -169,6 +169,7 @@ public class RoomServiceImpl implements RoomService {
             return roomRepository.getRoomNameByBookingId(bookingid).flatMap(roomEntity -> {
                 reservationDto.setRoomName(roomEntity.getRoomName());
                 reservationDto.setRoomNumber(roomEntity.getRoomNumber());
+                reservationDto.setImage(roomEntity.getImage());
                 for (CompanionsDto item : items) {
                     if (item.isTitular()) {
                         reservationDto.setDocumentType(item.getDocumenttypedesc());
