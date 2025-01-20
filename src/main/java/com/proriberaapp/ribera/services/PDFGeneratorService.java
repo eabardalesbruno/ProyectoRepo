@@ -251,7 +251,6 @@ public class PDFGeneratorService {
                 "        .policies li{\n" +
                 "            margin: 10px;;\n" +
                 "        }"+
-                // Your existing CSS here (keeping your updated style)
                 "</style>" +
                 "</head>" +
                 "<body>" +
@@ -262,7 +261,6 @@ public class PDFGeneratorService {
                 "<p>RIBERA DEL RIO CLUB RESORT S.A.<br/>RUC: 20608720911</p>" +
                 "</div>" +
 
-                // Titular Section - Using the table structure from your new design
                 "<div class=\"form-section\">" +
                 "<table class=\"form-table\">" +
                 "<tr>" +
