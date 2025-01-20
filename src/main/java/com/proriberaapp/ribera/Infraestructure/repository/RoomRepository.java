@@ -38,7 +38,7 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
     Mono<RoomEntity> getRoomNameByBookingId(@Param("bookingId") Integer bookingId);
 
     @Query("""
-        SELECT r.roomid, r.roomnumber, ro.roomofferid, b.daybookinginit, b.daybookingend, pb.paymentstateid, ps.paymentstatename
+        SELECT r.roomid, r.roomnumber, ro.roomofferid, b.daybookinginit, b.daybookingend, pb.paymentstateid, ps.paymentstatename, b.bookingid
         FROM room r
         JOIN roomoffer ro ON r.roomid = ro.roomid
         JOIN booking b ON ro.roomofferid = b.roomofferid

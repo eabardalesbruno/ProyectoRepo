@@ -3,11 +3,10 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDashboardDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
+import com.proriberaapp.ribera.Api.controllers.client.dto.CompanionsDto;
+import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
-import com.proriberaapp.ribera.Infraestructure.repository.BedroomRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.RoomImageRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.RoomRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +29,8 @@ public class RoomServiceImpl implements RoomService {
     private final RoomImageRepository roomImageRepository;
     private final BedroomRepository bedroomRepository;
     private final RoomOfferRepository roomOfferRepository;
+    private final BookingRepository bookingRepository;
+    private final CompanionsRepository companionsRepository;
 
     @Override
     public Mono<RoomEntity> save(RoomEntity roomEntity) {
@@ -150,6 +152,45 @@ public class RoomServiceImpl implements RoomService {
             }
             roomDashboard.setDetails(listRoomDetail);
             return Flux.just(roomDashboard);
+        });
+    }
+
+    @Override
+    public Mono<ReservationReportDto> findDetailById(Integer bookingid) {
+        return bookingRepository.findByBookingId(bookingid).publishOn(Schedulers.boundedElastic()).flatMap(bookingEntity -> {
+            ReservationReportDto reservationDto = new ReservationReportDto();
+            reservationDto.setDayBookingInit(bookingEntity.getCheckIn() != null ? bookingEntity.getCheckIn().toLocalDateTime().format(DateTimeFormatter.ofPattern("EE, dd MMM")) : "");
+            reservationDto.setDayBookingEnd(bookingEntity.getCheckout() != null ? bookingEntity.getCheckout().toLocalDateTime().format(DateTimeFormatter.ofPattern("EE, dd MMM")) : "");
+            reservationDto.setNumberAdults((bookingEntity.getNumberAdults()+bookingEntity.getNumberAdultsMayor()+bookingEntity.getNumberAdultsExtra())+" Adultos");
+            reservationDto.setNumberChildren(bookingEntity.getNumberChildren()+" Niños");
+            reservationDto.setNumberBabies(bookingEntity.getNumberBabies()+" Bebés");
+            List<ReservationReportDto> listCompanions = new ArrayList<>();
+            List<CompanionsDto> items = companionsRepository.getCompanionsByBookingId(bookingEntity.getBookingId()).collectList().block();
+            return roomRepository.getRoomNameByBookingId(bookingid).flatMap(roomEntity -> {
+                reservationDto.setRoomName(roomEntity.getRoomName());
+                reservationDto.setRoomNumber(roomEntity.getRoomNumber());
+                for (CompanionsDto item : items) {
+                    if (item.isTitular()) {
+                        reservationDto.setDocumentType(item.getDocumenttypedesc());
+                        reservationDto.setDocumentNumber(item.getDocumentNumber());
+                        reservationDto.setFullname(item.getFirstname() + " " + item.getLastname());
+                        reservationDto.setYears(item.getYears() != null ? String.valueOf(item.getYears()) : "");
+                        reservationDto.setEmail(item.getEmail() != null ? item.getEmail() : "");
+                        reservationDto.setCountrydesc(item.getCountrydesc() != null ? item.getCountrydesc() : "");
+                        reservationDto.setCellphone(item.getCellphone() != null ? item.getCellphone() : "");
+                    } else {
+                        ReservationReportDto reportDto = new ReservationReportDto();
+                        reportDto.setDocumentType(item.getDocumenttypedesc() != null ? item.getDocumenttypedesc() : "" );
+                        reportDto.setDocumentNumber(item.getDocumentNumber() != null ? item.getDocumentNumber() : "" );
+                        reportDto.setFullname(item.getFirstname() + " " + item.getLastname());
+                        reportDto.setYears(item.getYears() != null ? ""+item.getYears() : "" );
+                        reportDto.setGender(item.getGenderdesc() != null ? item.getGenderdesc() : "" );
+                        listCompanions.add(reportDto);
+                        reservationDto.setLstCompanions(listCompanions);
+                    }
+                }
+                return Mono.just(reservationDto);
+            });
         });
     }
 

@@ -20,5 +20,6 @@ public class RoomDetailDto {
     Long paymentstateid;
     String paymentstatename;
     String roomStatus;
+    Long bookingid;
 
 }
