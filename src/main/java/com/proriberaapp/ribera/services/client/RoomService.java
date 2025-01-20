@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.services.client;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDashboardDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
+import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.services.BaseService;
 import reactor.core.publisher.Flux;
@@ -24,5 +25,7 @@ public interface RoomService extends BaseService<RoomEntity, RoomEntity> {
     Mono<RoomEntity> getRoomById(Integer roomId);
 
     Flux<RoomDashboardDto> findAllViewRoomsDetail(String daybookinginit, String daybookingend, Integer roomtypeid, Integer numberadults, Integer numberchildren, Integer numberbabies);
+
+    Mono<ReservationReportDto> findDetailById(Integer bookingid);
 
 }
