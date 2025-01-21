@@ -1303,9 +1303,10 @@ public class BookingServiceImpl implements BookingService {
         }
 
         @Override
-        public Mono<Boolean> bookingIsAlimentation(Integer bookingId) {
-               return bookingRepository.getSelectBookingIsAlimentation(bookingId);
+        public Mono<Float> getTotalFeedingAmount(Integer bookingId) {
+                return bookingRepository.getSelectBookingFeedingOfBookingId(bookingId).collectList().map(list -> {
+                        return list.stream().map(BookingFeedingEntity::getBookingfeedingamout).reduce(0f, Float::sum);
+                });
         }
-
 
 }
