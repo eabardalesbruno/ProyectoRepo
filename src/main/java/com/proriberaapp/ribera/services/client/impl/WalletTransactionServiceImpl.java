@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -50,8 +52,8 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     private String urlApiTipoCambio;
     @Value("${url.api.tipo-cambio.token}")
     private String tokenApiTipoCambio;
-    private RefusePaymentServiceImpl refusePaymentService;
-    private CommissionRepository commissionRepository;
+    private final  RefusePaymentServiceImpl refusePaymentService;
+    private final  CommissionRepository commissionRepository;
 
     @Override
     public Mono<WalletTransactionEntity> makeTransfer(Integer walletIdOrigin, Integer walletIdDestiny, String emailDestiny, String cardNumber, BigDecimal amount, String motiveDescription) {
@@ -891,28 +893,52 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
     //Metodo de recarga de comisones para promotor
     @Scheduled(cron = "0 0 0 * * ?")
-    public Mono<Void> processPendingCommissions() {
-        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+    public Flux<WalletTransactionEntity> processPendingCommissions() {
+        LocalDate today = LocalDate.now();
+        Timestamp startOfDay = Timestamp.valueOf(today.atStartOfDay());
+        Timestamp endOfDay = Timestamp.valueOf(today.atTime(LocalTime.MAX));
 
-        return commissionRepository.findByDisbursementDate (currentTimestamp)
-                .flatMap(commission -> {
-                    Integer promoterId = commission.getPromoterId();
+        System.out.println("Start of day: " + startOfDay);
+        System.out.println("End of day: " + endOfDay);
 
-                    return walletRepository.findByUserPromoterId(promoterId)
-                            .flatMap(wallet -> {
-                                if (!wallet.getUserPromoterId().equals(promoterId)) {
-                                    return Mono.error(new IllegalStateException("Wallet no coincide con el promotor"));
-                                }
+        return commissionRepository.findByDisbursementDateRange(startOfDay, endOfDay)
+                .groupBy(CommissionEntity::getPromoterId)
+                .flatMap(groupedCommissions -> groupedCommissions
+                        .collectList()
+                        .flatMap(commissions -> {
+                            Integer promoterId = commissions.get(0).getPromoterId();
+                            BigDecimal totalAmount = commissions.stream()
+                                    .map(CommissionEntity::getCommissionAmount)
+                                    .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                                wallet.setBalance(wallet.getBalance().add(commission.getCommissionAmount()));
+                            return walletRepository.findByUserPromoterId(promoterId)
+                                    .flatMap(wallet -> {
+                                        System.out.println("Found wallet: " + wallet.getWalletId() + " for promoter: " + promoterId);
+                                        wallet.setBalance(wallet.getBalance().add(totalAmount));
 
-                                commission.setProcessed(true);
-                                commission.setProcessedAt(currentTimestamp);
-                                return walletRepository.save(wallet)
-                                        .then(commissionRepository.save(commission));
-                            });
-                })
-                .then();
+                                        return generateUniqueOperationCode()
+                                                .flatMap(operationCode -> {
+                                                    WalletTransactionEntity transaction = WalletTransactionEntity.builder()
+                                                            .walletId(wallet.getWalletId())
+                                                            .currencyTypeId(wallet.getCurrencyTypeId())
+                                                            .transactionCategoryId(4)
+                                                            .amount(totalAmount)
+                                                            .description("Recarga acumulada de comisiones")
+                                                            .operationCode(operationCode)
+                                                            .inicialDate(Timestamp.valueOf(LocalDateTime.now()))
+                                                            .avalibleDate(Timestamp.valueOf(LocalDateTime.now()))
+                                                            .build();
+                                                    commissions.forEach(commission -> {
+                                                        commission.setProcessed(true);
+                                                        commission.setProcessedAt(Timestamp.from(Instant.now()));
+                                                    });
+
+                                                    return walletRepository.save(wallet)
+                                                            .thenMany(commissionRepository.saveAll(commissions))
+                                                            .then(walletTransactionRepository.save(transaction));
+                                                });
+                                    });
+                        }));
     }
 
 
