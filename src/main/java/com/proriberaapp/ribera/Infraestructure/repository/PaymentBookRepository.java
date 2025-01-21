@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.Infraestructure.repository;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
 import com.proriberaapp.ribera.Domain.dto.PaymentBookUserDTO;
 import com.proriberaapp.ribera.Domain.dto.PaymentBookWithChannelDto;
+import com.proriberaapp.ribera.Domain.dto.PaymentDetailDTO;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
@@ -164,5 +165,15 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
 
         @Query("update paymentbook set cancelreasonid = :cancelreasonid where bookingid = :bookingId")
         Mono<Void> setCancelForBookingId( Integer cancelreasonid,Integer bookingId);
+
+        @Query("""
+            select pb.paymentbookid, pb.paymentdate, pb.operationcode, pb.imagevoucher, pm.description methodpayment, pt.paymenttypedesc, (i.totaligv+i.subtotal) total
+            from paymentbook pb
+            join paymentmethod pm on pb.paymentmethodid = pm.paymentmethodid
+            join paymenttype pt on pt.paymenttypeid = pb.paymenttypeid
+            join invoice i on i.idpaymentbook = pb.paymentbookid
+            where pb.bookingid = :bookingId
+        """)
+        Mono<PaymentDetailDTO> getPaymentDetail(Integer bookingId);
 
 }
