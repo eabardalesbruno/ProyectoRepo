@@ -10,6 +10,7 @@ import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.DiscountDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
+import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.BookingService;
@@ -29,6 +30,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -724,17 +726,35 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Override
     public Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId, Integer bookingId) {
- 
-        return Mono.zip(this.verifiedDiscountService.verifiedPercentajeDiscount(userId),
-                this.bookingService.bookingIsAlimentation(bookingId).switchIfEmpty(Mono.just(false))).flatMap(data -> {
-                    List<DiscountDto> discountDtosReservation = data.getT1().getDiscounts().stream()
-                            .filter(discount -> discount.isApplyToReservation()).toList();
-                    Boolean isAlimentation = data.getT2();
-                    if (!isAlimentation) {  
-                        data.getT1().setDiscounts(discountDtosReservation);
-                    }
-                    data.getT1().calculatedPercentage();
-                    return Mono.just(data.getT1());
+
+        return Mono
+                .zip(this.bookingService.findById(bookingId),
+                        this.verifiedDiscountService.verifiedPercentajeDiscount(userId),
+                        this.bookingService.getTotalFeedingAmount(bookingId).switchIfEmpty(Mono.just(0F)))
+                .flatMap(data -> {
+                    BookingEntity booking = data.getT1();
+                    UserNameAndDiscountDto discount = data.getT2();
+                    float totalPercentageDiscountAccommodation = discount.getDiscounts().stream()
+                            .filter(d -> d.isApplyToReservation()).map(DiscountDto::getPercentage)
+                            .reduce(0F, Float::sum);
+                    float totalPercentageDiscountFood = discount.getDiscounts().stream()
+                            .filter(d -> d.isApplyToFood()).map(DiscountDto::getPercentage)
+                            .reduce(0F, Float::sum);
+                    Float totalAmountFeeding = data.getT3();
+                    float totalAccommodation = booking.getCostFinal().subtract(new BigDecimal(totalAmountFeeding))
+                            .floatValue();
+                    float totalAccommodationWithDiscount = totalAccommodation * totalPercentageDiscountAccommodation
+                            / 100;
+                    float totalFoodWithDiscount = totalAmountFeeding * totalPercentageDiscountFood / 100;
+                    discount.setTotalDiscountAccommodation(totalAccommodationWithDiscount);
+                    discount.setTotalPercentageDiscountAccommodation(totalPercentageDiscountAccommodation);
+                    discount.setTotalDiscountFood(totalFoodWithDiscount);
+                    discount.setTotalPercentageDiscountFood(totalPercentageDiscountFood);
+                    discount.setTotalAmount(
+                            booking.getCostFinal().subtract(
+                                    new BigDecimal(totalAccommodationWithDiscount + totalFoodWithDiscount)).floatValue());
+
+                    return Mono.just(discount);
                 });
     }
 

@@ -14,10 +14,15 @@ import lombok.Setter;
 public class UserNameAndDiscountDto {
     private String username;
     private float percentage;
+    private float totalDiscountAccommodation;
+    private float totalDiscountFood;
+    private float totalPercentageDiscountAccommodation;
+    private float totalPercentageDiscountFood;
+    private float totalAmount;
     private List<DiscountDto> discounts;
 
     public static UserNameAndDiscountDto empty() {
-        return new UserNameAndDiscountDto("", 0.0f, List.of());
+        return new UserNameAndDiscountDto("", 0.0f, 0.0f,0.0f, 0.0f, 0.0f, 0.0f,List.of());
     }
 
     public void calculatedPercentage() {
