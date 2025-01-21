@@ -8,6 +8,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.ReportOfKitchenBdDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Domain.dto.BookingAndRoomNameDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
+import com.proriberaapp.ribera.Domain.entities.BookingFeedingEntity;
 import com.proriberaapp.ribera.utils.emails.BookingEmailDto;
 import com.proriberaapp.ribera.utils.emails.bookingRejectUserEmailDto;
 
@@ -581,8 +582,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
     Mono<String> fingMethodPäymentByBookingId(@Param("bookingid") Integer bookingid);
 
     @Query("""
-          select  case when bf.bookingfeedingid is not null then true else false end from booking_feeding bf where bf.bookingid=:bookingId limit 1
+          select * from booking_feeding bf where bf.bookingid=:bookingId 
         """)
-    Mono<Boolean> getSelectBookingIsAlimentation(Integer bookingId);
+    Flux<BookingFeedingEntity> getSelectBookingFeedingOfBookingId(Integer bookingId);
 
 }

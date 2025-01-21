@@ -103,7 +103,7 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                             });
                            
 
-                }).switchIfEmpty(Mono.just(UserNameAndDiscountDto.empty()));
+                });
     }
 
     @Override
