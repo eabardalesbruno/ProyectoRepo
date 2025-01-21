@@ -22,4 +22,8 @@ public class DiscountEntity {
     private float percentage;
     @Column("name")
     private String name;
+    @Column("applytoreservation")
+    private boolean applyToReservation;
+    @Column("applytofood")
+    private boolean applyToFood;
 }

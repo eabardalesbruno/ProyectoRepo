@@ -8,9 +8,11 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
+import com.proriberaapp.ribera.Domain.dto.DiscountDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
+import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.UserApiClient;
 import com.proriberaapp.ribera.services.client.UserClientService;
@@ -28,6 +30,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -44,6 +47,8 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Autowired
     private VerifiedDiscountService verifiedDiscountService;
+    @Autowired
+    private BookingService bookingService;
     private final WalletServiceImpl walletServiceImpl;
     @Value("${url.api.ruc}")
     private String rucApi;
@@ -718,11 +723,18 @@ public class UserClientServiceImpl implements UserClientService {
     }
 
     @Override
-    public Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId) {
-        return Mono.zip(this.userClientRepository.findById(userId),
-                this.verifiedDiscountService.verifiedPercentajeDiscount(userId))
-                .flatMap(tuple -> {
-                    return Mono.just(new UserNameAndDiscountDto(tuple.getT1().getUsername(), tuple.getT2()));
+    public Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId, Integer bookingId) {
+ 
+        return Mono.zip(this.verifiedDiscountService.verifiedPercentajeDiscount(userId),
+                this.bookingService.bookingIsAlimentation(bookingId).switchIfEmpty(Mono.just(false))).flatMap(data -> {
+                    List<DiscountDto> discountDtosReservation = data.getT1().getDiscounts().stream()
+                            .filter(discount -> discount.isApplyToReservation()).toList();
+                    Boolean isAlimentation = data.getT2();
+                    if (!isAlimentation) {  
+                        data.getT1().setDiscounts(discountDtosReservation);
+                    }
+                    data.getT1().calculatedPercentage();
+                    return Mono.just(data.getT1());
                 });
     }
 

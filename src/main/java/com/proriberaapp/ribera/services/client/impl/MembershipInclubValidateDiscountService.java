@@ -10,6 +10,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.MembershipDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseDataMembershipDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseInclubLoginDto;
+import com.proriberaapp.ribera.Domain.dto.DiscountDto;
+import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Infraestructure.repository.DiscountRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.MembershipsService;
@@ -75,19 +77,33 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
     }
 
     @Override
-    public Mono<Float> verifiedPercentajeDiscount(int userId) {
+    public Mono<UserNameAndDiscountDto> verifiedPercentajeDiscount(int userId) {
         return this.userClientRepository.findById(userId)
                 .flatMap(userData -> {
                     return this.loadMembershipsInsortInclub(
                             userData.getUsername())
                             .flatMap(memberships -> {
+                                if(memberships.size()==0){
+                                    return Mono.just(UserNameAndDiscountDto.empty());
+                                }
                                 return this.discountRepository
                                         .getDiscountWithItemsAndCurrentYear(userId,
-                                                memberships.stream().map(d -> d.getIdPackage()).toList());
-                            }).map(discountBd -> discountBd.getPercentage())
-                            .switchIfEmpty(Mono.just(0f));
+                                                memberships.stream().map(d -> d.getIdPackage()).toList())
+                                        .collectList().flatMap(listPercentage -> {
+                                            return Mono.just(UserNameAndDiscountDto.builder()
+                                                    .username(userData.getUsername())
+                                                    .percentage(listPercentage.stream().map(p -> p.getPercentage()).reduce(0.0f,
+                                                            Float::sum))
+                                                    .discounts(listPercentage.stream()
+                                                            .map(p -> new DiscountDto(p.getId(), p.getName(), p.getPercentage(),
+                                                                    p.isApplyToReservation(), p.isApplyToFood()))
+                                                            .toList())
+                                                    .build());
+                                        });
+                            });
+                           
 
-                });
+                }).switchIfEmpty(Mono.just(UserNameAndDiscountDto.empty()));
     }
 
     @Override

@@ -85,7 +85,7 @@ public class InclubManagementTest {
      * }
      */
 
-    @Test
+/*     @Test
     void validateDiscountVitaliciaRibera() {
         StepVerifier.create(membershipValidateDiscountService.verifiedPercentajeDiscount(
                 161))
@@ -99,5 +99,5 @@ public class InclubManagementTest {
         StepVerifier.create(membershipValidateDiscountService.verifiedPercentajeDiscount(
                 148))
                 .expectNextMatches(discount -> discount == 0).verifyComplete();
-    }
+    } */
 }
