@@ -44,8 +44,10 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
         JOIN booking b ON ro.roomofferid = b.roomofferid
         JOIN paymentbook pb ON b.bookingid = pb.bookingid
         JOIN paymentstate ps ON pb.paymentstateid = ps.paymentstateid
-        WHERE b.daybookingend <= :daybookingend::TIMESTAMP AND b.daybookinginit >= :daybookinginit::TIMESTAMP
-        AND r.roomnumber = :roomnumber
+        WHERE r.roomnumber = :roomnumber
+        AND (:bookingid IS NULL OR b.bookingid = :bookingid)
+        AND (:daybookingend IS NULL OR b.daybookingend <= :daybookingend::TIMESTAMP)
+        AND (:daybookinginit IS NULL OR b.daybookinginit >= :daybookinginit::TIMESTAMP)
         AND (:roomtypeid IS NULL OR r.roomtypeid = :roomtypeid)
         AND (:numberadults IS NULL OR b.numberadults = :numberadults)
     	AND (:numberchildren IS NULL OR b.numberchildren = :numberchildren)
@@ -58,6 +60,7 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
             @Param("roomtypeid") Integer roomtypeid,
             @Param("numberadults") Integer numberadults,
             @Param("numberchildren") Integer numberchildren,
-            @Param("numberbabies") Integer numberbabies);
+            @Param("numberbabies") Integer numberbabies,
+            @Param("bookingid") Integer bookingid);
 
 }
