@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Domain.dto.PaymentBookWithChannelDto;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -148,7 +149,8 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                                  pb.percentagediscount,
                                 pb.totalcostwithoutdiscount,
                                 pb.invoicedocumentnumber,
-                                pb.invoicetype
+                                pb.invoicetype,
+                                b.bookingid
                                FROM paymentbook pb
                                JOIN userclient u ON u.userclientid = pb.userclientid
                                join booking b on b.bookingid=pb.bookingid
@@ -164,5 +166,4 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
 
         @Query("update paymentbook set cancelreasonid = :cancelreasonid where bookingid = :bookingId")
         Mono<Void> setCancelForBookingId( Integer cancelreasonid,Integer bookingId);
-
 }
