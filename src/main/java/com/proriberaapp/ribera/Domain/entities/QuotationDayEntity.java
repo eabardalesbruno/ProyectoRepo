@@ -8,12 +8,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Table("day")
+@Table("quotation_day")
 @Setter
 @Getter
 @Builder
 public class QuotationDayEntity {
     @Id
+    @Column("id")
     private Integer id;
     @Column("idquotation")
     private Integer idQuotation;
