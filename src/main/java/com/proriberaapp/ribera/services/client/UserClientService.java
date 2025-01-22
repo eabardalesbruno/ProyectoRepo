@@ -51,7 +51,7 @@ public interface UserClientService {
 
     Mono<Void> sendEventContactInfo(EventContactInfo eventContactInfo);
 
-    Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId);
+    Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId,Integer bookingId);
 
     Mono<CompanyDataDto> loadDataRuc(String ruc);
 

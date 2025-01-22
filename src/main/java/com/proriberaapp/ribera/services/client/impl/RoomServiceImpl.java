@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDashboardDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Api.controllers.client.dto.CompanionsDto;
+import com.proriberaapp.ribera.Domain.dto.PaymentDetailDTO;
 import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
@@ -31,6 +32,7 @@ public class RoomServiceImpl implements RoomService {
     private final RoomOfferRepository roomOfferRepository;
     private final BookingRepository bookingRepository;
     private final CompanionsRepository companionsRepository;
+    private final PaymentBookRepository paymentBookRepository;
 
     @Override
     public Mono<RoomEntity> save(RoomEntity roomEntity) {
@@ -141,11 +143,11 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public Flux<RoomDashboardDto> findAllViewRoomsDetail(String daybookinginit, String daybookingend, Integer roomtypeid, Integer numberadults, Integer numberchildren, Integer numberbabies) {
+    public Flux<RoomDashboardDto> findAllViewRoomsDetail(String daybookinginit, String daybookingend, Integer roomtypeid, Integer numberadults, Integer numberchildren, Integer numberbabies, Integer bookingid) {
         return roomRepository.findAllViewRooms().publishOn(Schedulers.boundedElastic()).flatMap(room -> {
             RoomDashboardDto roomDashboard = new RoomDashboardDto();
             roomDashboard.setRoomNumber(room);
-            List<RoomDetailDto> listRoomDetail = roomRepository.findAllViewRoomsDetail(daybookinginit, daybookingend, room, roomtypeid, numberadults, numberchildren, numberbabies).collectList().block();
+            List<RoomDetailDto> listRoomDetail = roomRepository.findAllViewRoomsDetail(daybookinginit, daybookingend, room, roomtypeid, numberadults, numberchildren, numberbabies, bookingid).collectList().block();
             //roomDashboard.setRoomStatus(listRoomDetail.size() > 0 ? "Evaluar" : "Libre");
             if (listRoomDetail.size() > 0) {
                 roomDashboard.setRoomStatus(listRoomDetail.get(0).getRoomStatus());
@@ -193,6 +195,11 @@ public class RoomServiceImpl implements RoomService {
                 return Mono.just(reservationDto);
             });
         });
+    }
+
+    @Override
+    public Mono<PaymentDetailDTO> findPaymentDetailByBookingId(Integer bookingid) {
+        return paymentBookRepository.getPaymentDetail(bookingid);
     }
 
 }

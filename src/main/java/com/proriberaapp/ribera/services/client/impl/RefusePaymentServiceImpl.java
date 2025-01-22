@@ -507,7 +507,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                         Integer bookingId = paymentBook.getBookingId();
 
                                         // Código de reserva
-                                        Integer codigoReserva = paymentBook.getPaymentBookId();
+                                        Integer codigoReserva = paymentBook.getBookingId();
 
                                         // Obtener datos relacionados desde bookingId
                                         return bookingRepository.findById(bookingId)

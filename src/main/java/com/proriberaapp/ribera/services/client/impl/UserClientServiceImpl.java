@@ -8,9 +8,12 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
+import com.proriberaapp.ribera.Domain.dto.DiscountDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
+import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
+import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.UserApiClient;
 import com.proriberaapp.ribera.services.client.UserClientService;
@@ -27,7 +30,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -44,6 +49,8 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Autowired
     private VerifiedDiscountService verifiedDiscountService;
+    @Autowired
+    private BookingService bookingService;
     private final WalletServiceImpl walletServiceImpl;
     @Value("${url.api.ruc}")
     private String rucApi;
@@ -718,11 +725,36 @@ public class UserClientServiceImpl implements UserClientService {
     }
 
     @Override
-    public Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId) {
-        return Mono.zip(this.userClientRepository.findById(userId),
-                this.verifiedDiscountService.verifiedPercentajeDiscount(userId))
-                .flatMap(tuple -> {
-                    return Mono.just(new UserNameAndDiscountDto(tuple.getT1().getUsername(), tuple.getT2()));
+    public Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId, Integer bookingId) {
+
+        return Mono
+                .zip(this.bookingService.findById(bookingId),
+                        this.verifiedDiscountService.verifiedPercentajeDiscount(userId),
+                        this.bookingService.getTotalFeedingAmount(bookingId).switchIfEmpty(Mono.just(0F)))
+                .flatMap(data -> {
+                    BookingEntity booking = data.getT1();
+                    UserNameAndDiscountDto discount = data.getT2();
+                    float totalPercentageDiscountAccommodation = discount.getDiscounts().stream()
+                            .filter(d -> d.isApplyToReservation()).map(DiscountDto::getPercentage)
+                            .reduce(0F, Float::sum);
+                    float totalPercentageDiscountFood = discount.getDiscounts().stream()
+                            .filter(d -> d.isApplyToFood()).map(DiscountDto::getPercentage)
+                            .reduce(0F, Float::sum);
+                    Float totalAmountFeeding = data.getT3();
+                    float totalAccommodation = booking.getCostFinal().subtract(new BigDecimal(totalAmountFeeding))
+                            .floatValue();
+                    float totalAccommodationWithDiscount = totalAccommodation * totalPercentageDiscountAccommodation
+                            / 100;
+                    float totalFoodWithDiscount = totalAmountFeeding * totalPercentageDiscountFood / 100;
+                    discount.setTotalDiscountAccommodation(totalAccommodationWithDiscount);
+                    discount.setTotalPercentageDiscountAccommodation(totalPercentageDiscountAccommodation);
+                    discount.setTotalDiscountFood(totalFoodWithDiscount);
+                    discount.setTotalPercentageDiscountFood(totalPercentageDiscountFood);
+                    discount.setTotalAmount(
+                            booking.getCostFinal().subtract(
+                                    new BigDecimal(totalAccommodationWithDiscount + totalFoodWithDiscount)).floatValue());
+
+                    return Mono.just(discount);
                 });
     }
 
