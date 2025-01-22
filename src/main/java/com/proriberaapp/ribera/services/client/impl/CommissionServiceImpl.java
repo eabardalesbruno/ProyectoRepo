@@ -28,8 +28,10 @@ public class CommissionServiceImpl implements CommissionService {
     public Mono<CommissionEntity> calculateAndSaveCommission(PaymentBookEntity paymentBook, Integer caseType) {
         return bookingRepository.findById(paymentBook.getBookingId())
                 .flatMap(booking -> {
-
                     BigDecimal totalAmount = booking.getCostFinal();
+                    if (totalAmount == null) {
+                        return Mono.error(new IllegalStateException("El monto total (costFinal) es nulo"));
+                    }
 
                     CommissionEntity commission = new CommissionEntity();
                     commission.setPaymentBookId(paymentBook.getPaymentBookId());
@@ -78,7 +80,9 @@ public class CommissionServiceImpl implements CommissionService {
                             return Mono.error(new IllegalArgumentException("Tipo de caso no válido"));
                     }
 
-                    return commissionRepository.save(commission);
+                    return commissionRepository.save(commission)
+                            .doOnSuccess(saved -> System.out.println("Comisión guardada exitosamente: " + saved))
+                            .doOnError(error -> System.err.println("Error al guardar la comisión: " + error.getMessage()));
                 });
     }
 
