@@ -1309,4 +1309,21 @@ public class BookingServiceImpl implements BookingService {
                 });
         }
 
+        @Override
+        public Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(List<Integer> bookingStateId,
+                        Integer roomTypeId, Integer capacity, LocalDateTime offertimeInit, LocalDateTime offertimeEnd,
+                        int page, int size) {
+                int offset = page * size;
+
+                Flux<BookingStates> bookings = bookingRepository.findBookingsByStateIdPaginated(
+                                bookingStateId, roomTypeId, offertimeInit, offertimeEnd, size, offset);
+
+                Mono<Long> totalElements = bookingRepository.countBookingsByStateId(
+                                bookingStateId, roomTypeId, offertimeInit, offertimeEnd);
+
+                return bookings.collectList()
+                                .zipWith(totalElements)
+                                .map(tuple -> new PaginatedResponse<>(tuple.getT2(), tuple.getT1()));
+        }
+
 }
