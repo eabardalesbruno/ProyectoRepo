@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.quotationDayDto;
 import com.proriberaapp.ribera.Domain.dto.QuotationDto;
 import com.proriberaapp.ribera.Domain.entities.QuotationEntity;
 import com.proriberaapp.ribera.services.client.QuotationService;
@@ -17,6 +18,10 @@ public class QuotationController {
     @GetMapping
     public Flux<QuotationEntity> findAllQuotations() {
         return quotationService.findAllQuotations();
+    }
+    @GetMapping("/quotation-day/{quotationId}")
+    public Flux<quotationDayDto> findAllQuotations(@PathVariable Integer quotationId) {
+        return quotationService.getQuotationDaySelected(quotationId);
     }
 
     @GetMapping("/{quotationId}")
