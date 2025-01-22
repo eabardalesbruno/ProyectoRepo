@@ -125,6 +125,52 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                                     left join userpromoter up on up.userpromoterid=bo.userpromotorid
                                     left join useradmin ua on ua.useradminid=bo.receptionistid
                                             left join paymentbook pb on pb.bookingid=bo.bookingid
+                                    WHERE bo.bookingstateid in(:bookingStateId)
+                                   AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId)
+                                   AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR
+                                   bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd)
+                                  ORDER BY bo.bookingid DESC
+                                   LIMIT :limit OFFSET :offset
+                        """)
+        Flux<BookingStates> findBookingsByStateIdPaginated(
+                        @Param("bookingStateId") List<Integer> bookingStateId,
+                        @Param("roomTypeId") Integer roomTypeId,
+                        @Param("offertimeInit") LocalDateTime offertimeInit,
+                        @Param("offertimeEnd") LocalDateTime offertimeEnd,
+                        @Param("limit") int limit,
+                        @Param("offset") int offset);
+        @Query("""
+
+                            SELECT distinct us.firstname, us.lastname,us.documenttypeid,us.documentnumber,us.cellnumber, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image,
+                                   r.offertimeinit, r.offertimeend, us.email, bo.costfinal,
+                                   TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit,
+                                   TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend,
+                                       bs.bookingstateid, bs.bookingstatename,
+                                           rid.roomnumber,
+                        		   (SELECT b.bedtypename FROM bedroom be
+                        		   INNER JOIN bedstype b ON b.bedtypeid = be.bedtypeid
+                        		   WHERE be.roomid = rid.roomid LIMIT 1) bedtypename,
+                        		   (SELECT b.bedtypedescription FROM bedroom be
+                        		   INNER JOIN bedstype b ON b.bedtypeid = be.bedtypeid
+                        		   WHERE be.roomid = rid.roomid LIMIT 1) bedtypename,
+                                   bo.numberchildren+bo.numberbabies+bo.numberadultsextra+bo.numberadults+bo.numberadultsmayor as capacity,
+                                       r.riberapoints, r.inresortpoints, r.points,
+                               (CASE
+                                  WHEN up.userpromoterid is not null  THEN concat('PROMOTOR ',' - ',up.firstname,' ',up.lastname)
+                                  WHEN ua.useradminid is not null THEN concat('RECEPCION',' - ',ua.firstname,' ',ua.lastname)
+                                  when us.userclientid is not null and us.isuserinclub THEN 'WEB - Socio'
+                                  when us.userclientid is not null and not us.isuserinclub THEN 'WEB'
+                                    ELSE 'Sin clasificar' END) as channel,
+                                    pb.paymentbookid, (select case  when bookingfeedingid is not null then true else false end from booking_feeding bf where bf.bookingid=bo.bookingid limit 1) as isalimentation
+                                   FROM userclient us
+                        		   JOIN booking bo ON us.userclientid = bo.userclientid
+                                   JOIN roomoffer r ON r.roomofferid = bo.roomofferid
+                                   JOIN room rid ON rid.roomid = r.roomid
+                                   JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid
+                                    JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid
+                                    left join userpromoter up on up.userpromoterid=bo.userpromotorid
+                                    left join useradmin ua on ua.useradminid=bo.receptionistid
+                                            left join paymentbook pb on pb.bookingid=bo.bookingid
                                     WHERE bo.bookingstateid = :bookingStateId
                                    AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId)
                                    AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR
@@ -179,6 +225,24 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                         @Param("limit") int limit,
                         @Param("offset") int offset, Integer userId);
 
+        @Query("SELECT count(*) " +
+                        "FROM booking bo " +
+                        "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
+                        "JOIN room rid ON rid.roomid = r.roomid " +
+                        "JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid " +
+                        "JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid " +
+                        "JOIN userclient us ON us.userclientid = bo.userclientid " +
+                        "JOIN bedroom be ON be.roomid = rid.roomid " +
+                        "JOIN bedstype bt ON bt.bedtypeid = be.bedtypeid " +
+                        "WHERE bo.bookingstateid  in(:bookingStateId) " +
+                        "AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId) " +
+                        "AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR " +
+                        "bo.daybookinginit >= :offertimeInit AND bo.daybookingend <= :offertimeEnd) ")
+        Mono<Long> countBookingsByStateId(
+                        @Param("bookingStateId") List<Integer> bookingStateId,
+                        @Param("roomTypeId") Integer roomTypeId,
+                        @Param("offertimeInit") LocalDateTime offertimeInit,
+                        @Param("offertimeEnd") LocalDateTime offertimeEnd);
         @Query("SELECT count(*) " +
                         "FROM booking bo " +
                         "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
