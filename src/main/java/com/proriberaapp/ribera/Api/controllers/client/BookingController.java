@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -115,7 +116,7 @@ public class BookingController {
     // RESERVAS JMANRIQUE
     @GetMapping("/all")
     public Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(
-            @RequestParam Integer bookingStateId,
+            @RequestParam() Collection<Integer> bookingStateId,
             @RequestParam(required = false) Integer roomTypeId,
             @RequestParam(required = false) Integer capacity,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime offertimeInit,
@@ -123,7 +124,7 @@ public class BookingController {
             @RequestParam int page,
             @RequestParam int size) {
         return bookingService.findBookingsByStateIdPaginated(
-                bookingStateId, roomTypeId, capacity, offertimeInit, offertimeEnd, page, size);
+                bookingStateId.stream().toList(), roomTypeId, capacity, offertimeInit, offertimeEnd, page, size);
     }
 
     @GetMapping("/all/user/{userId}")
