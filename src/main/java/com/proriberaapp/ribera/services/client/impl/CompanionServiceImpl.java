@@ -259,8 +259,8 @@ public class CompanionServiceImpl implements CompanionsService {
                 continue;
             }
 
-            String gender = companion.getGenderId() == 1 ? "Masculino" : (companion.getGenderId() == 2 ? "Femenino" : "Indeterminado");
-            String documentType = companion.getTypeDocumentId() == 1 ? "DNI" : (companion.getTypeDocumentId() == 2 ? "RUC" : "Indeterminado");
+            String gender = (companion.getGenderId() != null) ? (companion.getGenderId() == 1 ? "Masculino" : (companion.getGenderId() == 2 ? "Femenino" : " ")) : " ";
+            String documentType = (companion.getTypeDocumentId() != null) ? (companion.getTypeDocumentId() == 1 ? "DNI" : (companion.getTypeDocumentId() == 2 ? "RUC" : " ")) : " ";
             String age = (companion.getYears() != null) ? String.valueOf(companion.getYears()) : "----";
 
             companionsHtml.append("<div class=\"companion\">")
