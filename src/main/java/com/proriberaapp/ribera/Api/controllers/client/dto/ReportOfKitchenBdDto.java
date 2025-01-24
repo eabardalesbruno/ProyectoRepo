@@ -11,6 +11,7 @@ public class ReportOfKitchenBdDto {
     private Integer numberchildren;
     private Integer numberadultsextra;
     private Integer numberadultsmayor;
+    private Integer numberinfants;
     private Integer totalperson;
     private Integer totaldinner;
     private Integer totalbreakfast;
