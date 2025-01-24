@@ -29,8 +29,42 @@ public class ReportKitchenPdf {
                             <td>%adultsmayor</td>
                             <td>%adultsextra</td>
                             <td>%number_children</td>
+                            <td>%number_infants</td>
                             <td>%alimentation</td>
                         </tr>
+                """;
+
+        ReportOfKitchenBdDto reportOfKitchenEmpty = new ReportOfKitchenBdDto();
+        reportOfKitchenEmpty.setNumberadults(0);
+        reportOfKitchenEmpty.setNumberadultsmayor(0);
+        reportOfKitchenEmpty.setNumberadultsextra(0);
+        reportOfKitchenEmpty.setNumberchildren(0);
+        reportOfKitchenEmpty.setNumberinfants(0);
+        reportOfKitchenEmpty.setTotalbreakfast(0);
+        reportOfKitchenEmpty.setTotallunch(0);
+        reportOfKitchenEmpty.setTotaldinner(0);
+        reportOfKitchenEmpty.setTotalperson(0);
+        ReportOfKitchenBdDto reportOfKitchenDtoTotal = this.reportOfKitchenDto.stream().reduce(
+                reportOfKitchenEmpty,
+                (a, b) -> {
+                    a.setNumberadults(a.getNumberadults() + b.getNumberadults());
+                    a.setNumberadultsmayor(a.getNumberadultsmayor() + b.getNumberadultsmayor());
+                    a.setNumberadultsextra(a.getNumberadultsextra() + b.getNumberadultsextra());
+                    a.setNumberchildren(a.getNumberchildren() + b.getNumberchildren());
+                    a.setNumberinfants(a.getNumberinfants() + b.getNumberinfants());
+
+                    return a;
+                });
+        String templateTotal = """
+                <tr>
+                <td colspan="3" class="principal">Total</td>
+                <td>%number_adults</td>
+                <td>%adultsmayor</td>
+                <td>%adultsextra</td>
+                <td>%number_children</td>
+                <td>%number_infants</td>
+                <td></td>
+                </tr>
                 """;
         String valueTemplateItem = this.reportOfKitchenDto.stream()
                 .map(d -> templateItem.replace("%number_room", d.getRoomnumber())
@@ -40,8 +74,15 @@ public class ReportKitchenPdf {
                         .replace("%adultsmayor", d.getNumberadultsmayor().toString())
                         .replace("%adultsextra", d.getNumberadultsextra().toString())
                         .replace("%number_children", d.getNumberchildren().toString())
+                        .replace("%number_infants", d.getNumberinfants().toString())
                         .replace("%alimentation", d.isIsalimentation() ? "Si" : "No"))
-                .reduce("", String::concat);
+                .reduce("", String::concat)
+                .concat(templateTotal.replace("%number_adults", reportOfKitchenDtoTotal.getNumberadults().toString())
+                        .replace("%adultsmayor", reportOfKitchenDtoTotal.getNumberadultsmayor().toString())
+                        .replace("%adultsextra", reportOfKitchenDtoTotal.getNumberadultsextra().toString())
+                        .replace("%number_children", reportOfKitchenDtoTotal.getNumberchildren().toString())
+                        .replace("%number_infants", reportOfKitchenDtoTotal.getNumberinfants().toString()));
+
         Integer totalBreakfast = this.reportOfKitchenDto.stream().mapToInt(ReportOfKitchenBdDto::getTotalbreakfast)
                 .sum();
         Integer totalLunch = this.reportOfKitchenDto.stream().mapToInt(ReportOfKitchenBdDto::getTotallunch).sum();
@@ -70,7 +111,7 @@ public class ReportKitchenPdf {
                  </head>
                  <body>
                      <p><strong>HOTEL</strong></p>
-                     <h1>REPORTE DE COCINA</h1>
+                     <h1>REPORTE COCINA</h1>
                      <p><strong>Fecha:%date</strong></p>
                      <p><strong>Fecha y hora reporte:%current_date_hour</strong></p>
                                  <table>
@@ -107,6 +148,7 @@ public class ReportKitchenPdf {
                      <th class="principal">Adulto mayor</th>
                      <th class="principal">Adultos extra</th>
                      <th class="principal">Niños</th>
+                     <th class="principal">Infantes</th>
                      <th class="principal">Alimentación</th>
                      </tr>
                      </thead>
