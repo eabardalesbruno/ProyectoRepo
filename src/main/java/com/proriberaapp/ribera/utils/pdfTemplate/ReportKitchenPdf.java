@@ -130,9 +130,9 @@ public class ReportKitchenPdf {
                                              <tr>
                                                  <td>
 
-                                                 <strong>  Desayunos( %desayunos )</strong>
+                                                 <strong>Desayunos( %desayunos )</strong>
                                                     <strong>Almuerzos( %almuerzos )</strong>
-                                                   <strong>  Cenas( %cenas )</strong>
+                                                   <strong> Cenas( %cenas )</strong>
                                                   </td>
                                              </tr>
                                              </tbody>
