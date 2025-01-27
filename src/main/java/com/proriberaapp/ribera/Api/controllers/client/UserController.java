@@ -23,9 +23,6 @@ import reactor.core.publisher.Mono;
 import static com.proriberaapp.ribera.utils.GeneralMethods.generatePassword;
 
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -345,11 +342,9 @@ public class UserController {
         return this.userClientService.updateUser(entity);
     }
 
-    @PutMapping("recovery-password")
-    public String putMethodName(@RequestBody() String email) {
-        // TODO: process PUT request
-
-        return "";
+    @GetMapping("/recovery-password/{email}")
+    public Mono<Void> sendStepsRecoveryPassword(@PathVariable() String email) {
+        return this.userClientService.sendCodeRecoveryPassword(email);
     }
 
 }

@@ -8,10 +8,8 @@ public class CodeGenerator {
     private static final Random RANDOM = new SecureRandom();
 
     public static String generateCode() {
-        // Generate random number between 0 and 99999999
         int randomNumber = RANDOM.nextInt(100000000);
 
-        // Format to 8 digits with leading zeros
         return String.format("%08d", randomNumber);
     }
 
