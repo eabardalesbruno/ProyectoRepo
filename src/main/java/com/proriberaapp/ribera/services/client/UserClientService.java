@@ -51,12 +51,15 @@ public interface UserClientService {
 
     Mono<Void> sendEventContactInfo(EventContactInfo eventContactInfo);
 
-    Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId,Integer bookingId);
+    Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId, Integer bookingId);
 
     Mono<CompanyDataDto> loadDataRuc(String ruc);
 
     Mono<TotalUsersDTO> countUsers(Integer month);
 
     Mono<Void> updateUser(UserClientDto userClientEntity);
+
+    Mono<Void> sendCodeRecoveryPassword(String email);
+    Mono<Void> validateCode(String code);
 
 }

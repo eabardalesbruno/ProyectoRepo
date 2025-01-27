@@ -800,4 +800,16 @@ public class UserClientServiceImpl implements UserClientService {
 
     }
 
+    @Override
+    public Mono<Void> sendCodeRecoveryPassword(String email) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'sendCodeRecoveryPassword'");
+    }
+
+    @Override
+    public Mono<Void> validateCode(String code) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'validateCode'");
+    }
+
 }
