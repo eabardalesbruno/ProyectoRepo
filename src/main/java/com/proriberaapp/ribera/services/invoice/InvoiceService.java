@@ -133,7 +133,7 @@ public class InvoiceService implements InvoiceServiceI {
                                 status = InvoiceStatus.PENDINGTOSEND;
                         }
                         invoiceDomain.setKeySupplier(responseInvoice.getKey());
-                        invoiceDomain.setSupplierNote(responseInvoice.getSunat_note());
+                        invoiceDomain.setSupplierNote(responseInvoice.getSunat_description());
 
                         invoiceDomain.setStatus(status);
                         invoiceDomain.setLinkPdf(responseInvoice.getLink_pdf());
