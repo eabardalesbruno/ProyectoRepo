@@ -16,4 +16,11 @@ public interface PasswordResetCodeRepository extends R2dbcRepository<PasswordRes
             WHERE reset_code = :code
             """)
     Mono<PasswordResetCodeEntity> findByCode(String code);
+
+    @Query("""
+             UPDATE password_reset_codes
+            SET used = true
+            WHERE reset_code = :code
+            """)
+    Mono<Void> usedCode(String code);
 }

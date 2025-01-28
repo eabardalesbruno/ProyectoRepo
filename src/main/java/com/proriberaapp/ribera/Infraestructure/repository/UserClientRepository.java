@@ -90,7 +90,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
 
     @Query("""
             update userclient set password = :passwordEnconded
-            where userclientid = :userClientId
-            """)
+            where userclientid = :userClientId;
+                """)
     Mono<Void> updatePassword(Integer userClientId, String passwordEnconded);
 }

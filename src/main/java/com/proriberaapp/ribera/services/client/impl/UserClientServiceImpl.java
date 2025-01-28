@@ -829,8 +829,8 @@ public class UserClientServiceImpl implements UserClientService {
     public Mono<Void> changePassword(String code, String password) {
         String passwordEncoded = passwordEncoder.encode(password);
         return this.passwordResetCodeService.verfiedCode(code)
-                .flatMap(passwordReset -> this.userClientRepository.updatePassword(passwordReset.getUser_id(),
-                        passwordEncoded));
+                .flatMap(passwordReset -> Mono.zip(this.userClientRepository.updatePassword(passwordReset.getUser_id(),
+                        passwordEncoded), this.passwordResetCodeService.useCode(code))).then();
     }
 
 }

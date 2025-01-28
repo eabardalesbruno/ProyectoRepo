@@ -44,7 +44,7 @@ public class PasswordResetCodeService {
         Mono<PasswordResetCodeEntity> codeEntity = passwordResetCodeRepository.findByCode(code);
         return codeEntity.flatMap(entity -> {
             LocalDateTime currentTime = LocalDateTime.now();
-            LocalDateTime expiration =  entity.getExpiresAt() ;
+            LocalDateTime expiration = entity.getExpiresAt();
             if (entity.getUsed()) {
                 return Mono.error(new PasswordResetCodeUsedException(code));
             }
@@ -53,5 +53,8 @@ public class PasswordResetCodeService {
             }
             return Mono.just(entity);
         }).switchIfEmpty(Mono.error(new PasswordResetCodeNotFoundException(code)));
+    }
+    public Mono<Void>   useCode(String code){
+        return passwordResetCodeRepository.usedCode(code);
     }
 }
