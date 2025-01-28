@@ -826,9 +826,11 @@ public class UserClientServiceImpl implements UserClientService {
     }
 
     @Override
-    public Mono<Void> validateCode(String code) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'validateCode'");
+    public Mono<Void> changePassword(String code, String password) {
+        String passwordEncoded = passwordEncoder.encode(password);
+        return this.passwordResetCodeService.verfiedCode(code)
+                .flatMap(passwordReset -> this.userClientRepository.updatePassword(passwordReset.getUser_id(),
+                        passwordEncoded));
     }
 
 }

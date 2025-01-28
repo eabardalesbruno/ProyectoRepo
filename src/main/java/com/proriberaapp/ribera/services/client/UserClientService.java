@@ -60,6 +60,8 @@ public interface UserClientService {
     Mono<Void> updateUser(UserClientDto userClientEntity);
 
     Mono<Void> sendCodeRecoveryPassword(String email);
-    Mono<Void> validateCode(String code);
+
+  
+    Mono<Void> changePassword(String code, String password);
 
 }
