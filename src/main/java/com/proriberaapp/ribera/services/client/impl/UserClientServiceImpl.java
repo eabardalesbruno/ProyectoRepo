@@ -810,7 +810,7 @@ public class UserClientServiceImpl implements UserClientService {
     @Override
     public Mono<Void> sendCodeRecoveryPassword(String email) {
         return userClientRepository.findByEmail(email)
-                .switchIfEmpty(Mono.error(new RuntimeException("El correo electrónico no está registrado")))
+                .switchIfEmpty(Mono.empty())
                 .flatMap(user -> {
                     return this.passwordResetCodeService.generateResetCode("client", user.getUserClientId())
                             .flatMap(code -> {
