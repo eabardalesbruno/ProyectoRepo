@@ -80,11 +80,17 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
             Integer userClientId);
 
     @Query("""
-            update userclient set  genderid = :#{#userClientDto.genderId},
-            documentnumber = :#{#userClientDto.documentNumber},
-                    address = :#{#userClientDto.address}, cellnumber = :#{#userClientDto.cellNumber}, email = :#{#userClientDto.email},
-                    countryId = :#{#userClientDto.countryId}
-where userclientid = :#{#userClientDto.userClientId}
-            """)
+                        update userclient set  genderid = :#{#userClientDto.genderId},
+                        documentnumber = :#{#userClientDto.documentNumber},
+                                address = :#{#userClientDto.address}, cellnumber = :#{#userClientDto.cellNumber}, email = :#{#userClientDto.email},
+                                countryId = :#{#userClientDto.countryId}
+            where userclientid = :#{#userClientDto.userClientId}
+                        """)
     Mono<Void> updateBasicData(UserClientDto userClientDto);
+
+    @Query("""
+            update userclient set password = :passwordEnconded
+            where userclientid = :userClientId;
+                """)
+    Mono<Void> updatePassword(Integer userClientId, String passwordEnconded);
 }
