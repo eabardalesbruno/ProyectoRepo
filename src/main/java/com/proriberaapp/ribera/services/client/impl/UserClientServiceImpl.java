@@ -62,6 +62,9 @@ public class UserClientServiceImpl implements UserClientService {
     @Value("${url.api.ruc.token}")
     private String rucApiToken;
 
+    @Value("${url.base.frontend}")
+    private String baseUrlFront;
+
     /*
      * @Override
      * public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
@@ -817,7 +820,7 @@ public class UserClientServiceImpl implements UserClientService {
                                 BaseEmailReserve emailTemplate = new BaseEmailReserve();
                                 EmailTemplateCodeRecoveryPassword emailTemplateRecovery = new EmailTemplateCodeRecoveryPassword(
                                         code,
-                                        user.getFirstName());
+                                        user.getFirstName(), this.baseUrlFront);
                                 emailTemplate.addEmailHandler(emailTemplateRecovery);
                                 String bodyEmail = emailTemplate.execute();
                                 return this.emailService.sendEmail(email, "Recuperar contraseña", bodyEmail);
@@ -830,7 +833,8 @@ public class UserClientServiceImpl implements UserClientService {
         String passwordEncoded = passwordEncoder.encode(password);
         return this.passwordResetCodeService.verfiedCode(code)
                 .flatMap(passwordReset -> Mono.zip(this.userClientRepository.updatePassword(passwordReset.getUser_id(),
-                        passwordEncoded), this.passwordResetCodeService.useCode(code))).then();
+                        passwordEncoded), this.passwordResetCodeService.useCode(code)))
+                .then();
     }
 
 }

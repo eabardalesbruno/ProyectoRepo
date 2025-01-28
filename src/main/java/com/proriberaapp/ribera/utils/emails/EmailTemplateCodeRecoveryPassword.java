@@ -6,10 +6,12 @@ public class EmailTemplateCodeRecoveryPassword implements EmailHandler {
     private String code;
 
     private String clientName;
+    private String baseUrl;
 
-    public EmailTemplateCodeRecoveryPassword( String code, String clientName) {
+    public EmailTemplateCodeRecoveryPassword(String code, String clientName, String baseUrl) {
         this.code = code;
         this.clientName = clientName;
+        this.baseUrl = baseUrl;
     }
 
     @Override
@@ -25,7 +27,7 @@ public class EmailTemplateCodeRecoveryPassword implements EmailHandler {
                  <p class="font-size">Estimado(a) %clientName. Estás recibiendo este email porque se ha solicitado un cambio de contraseña para tu cuenta.
                  </p>
                  <p class="font-size">
-                 <a href="http://localhost:4200/recovery-password?code=%code" class="button">Restablecer contraseña</a>
+                 <a href="%baseUrl/recovery-password?code=%code" class="button">Restablecer contraseña</a>
                   </p>
                    <p class="font-size">
                   Si no has solicitado un cambio de contraseña, puedes ignorar o eliminar este e-mail.
@@ -33,7 +35,8 @@ public class EmailTemplateCodeRecoveryPassword implements EmailHandler {
                  El equipo de Ribera del Rio Club Resort.
                  </p>
                 """;
-        return body.replace("%clientName", clientName).replace("%code", code);
+        return body.replace("%clientName", clientName).replace("%code", code)
+                .replace("%baseUrl", baseUrl);
     }
 
     @Override
