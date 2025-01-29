@@ -142,6 +142,10 @@ public class PDFGeneratorService {
                 "      .form-table td { padding:6px 1px;}"+
                 "      .Ti {height: 50px;}"+
                 "      .form-table th { background-color: #e7f5e7; font-weight: bold;padding: 7px 0.3px;}" +
+                "      .form-tableA{ width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 20px; border: 1px solid #006600; overflow: hidden;}" +
+                "      .form-tableA th, .form-tableA td { border: 1px solid #006600; text-align: center; vertical-align: middle; font-size: 12px;}" +
+                "      .form-tableA td { padding:12px 1px;}" +
+                "      .form-tableA th { background-color: #e7f5e7; font-weight: bold; padding: 3px 0.3px;}"+
                 "      .info-title { font-weight: bold; color: #006600; margin-top: 10px;}" +
                 "      .grid-container {display: flex;flex-wrap: wrap;flex-direction: row;gap: 10px;width: 100%;margin-top: 0;}" +
                 "      .info-box { display: inline-block; width: 350px; padding: 8px 10px; margin-right: 5px; margin-bottom: 10px; font-size: 14px; border: 1px solid #006600; border-radius: 12px; box-sizing: border-box;}"+
@@ -261,7 +265,7 @@ public class PDFGeneratorService {
             htmlContent += "<div class=\"grid-container\">";
             for (ReservationReportDto companion : entity.getLstCompanions()) {
                 numCompanions++;
-                htmlContent += "<table class=\"form-table no-break\">\n" +
+                htmlContent += "<table class=\"form-tableA no-break\">\n" +
                         "          <strong>Acompañante " + numCompanions + ":</strong><br />\n" +
                         "          <tr>\n" +
                         "            <th colspan=\"2\">NOMBRE COMPLETO / Full Name</th>\n" +
@@ -305,7 +309,7 @@ public class PDFGeneratorService {
             }
             htmlContent += "</div>"+
                     " <!-- Footer Section with its own container -->\n" +
-                    "    <div class=\"footer-container no-break\">\n" +
+                    "    <div class=\"footer-container \">\n" +
                     "        <div class=\"footer\">\n" +
                     "            <div class=\"info-section\">\n" +
                     "                <div class=\"info-title\">Políticas y Penalidades:</div>\n" +
