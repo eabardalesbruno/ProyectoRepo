@@ -133,8 +133,8 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
         invoiceMap.put("documento_que_se_modifica_numero", "");
         invoiceMap.put("tipo_de_nota_de_credito", "");
         invoiceMap.put("tipo_de_nota_de_debito", "");
-        invoiceMap.put("enviar_automaticamente_a_la_sunat", "false");
-        invoiceMap.put("enviar_automaticamente_al_cliente", "false");
+        invoiceMap.put("enviar_automaticamente_a_la_sunat", "true");
+        invoiceMap.put("enviar_automaticamente_al_cliente", "true");
         invoiceMap.put("cancelado", "true");
         invoiceMap.put("condiciones_de_pago", "");
         invoiceMap.put("condicion_de_pago_tipo", "1");
