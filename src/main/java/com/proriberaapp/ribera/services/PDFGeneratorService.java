@@ -119,6 +119,8 @@ public class PDFGeneratorService {
     }
 
     public static File generateReservationPdfFromHtml(ReservationReportDto entity) throws IOException {
+
+
         String htmlContent = "<!DOCTYPE html>" +
                 "<html lang=\"en\">" +
                 "<head>" +
@@ -174,9 +176,9 @@ public class PDFGeneratorService {
                 "<th>NACIONALIDAD / Nationality</th>" +
                 "</tr>" +
                 "<tr>" +
-                "<td colspan=\"2\">" + entity.getFullname() + "</td>" +
-                "<td>" + entity.getDocumentType() + " : " + entity.getDocumentNumber() + "</td>" +
-                "<td>" + entity.getCountrydesc() + "</td>" +
+                "<td colspan=\"2\">" + (entity.getFullname() != null ? entity.getFullname() : "") + "</td>" +
+                "<td>" + entity.getDocumentType()  + " : " + entity.getDocumentNumber() + "</td>" +
+                "<td>" + (entity.getCountrydesc() != null ? entity.getCountrydesc() : "") + "</td>" +
                 "</tr>" +
                 "<tr>" +
                 "<th>GENERO / Genre</th>" +
@@ -186,7 +188,7 @@ public class PDFGeneratorService {
                 "<tr>" +
                 "<td >"+  " " +" </td>" +
                 "<td>" +  " " + " </td>" +
-                " <td colspan=\"2\">" + entity.getEmail() + "</td>" +
+                " <td colspan=\"2\">" + (entity.getEmail() != null ? entity.getEmail() : "" )+ "</td>" +
                 "</tr>"+
                 "<tr>" +
                 "<th>LLEGADA / Arrival</th>" +
@@ -195,10 +197,10 @@ public class PDFGeneratorService {
                 "<th>DEPARTAMENTO / Apartment</th>" +
                 "</tr>" +
                 "<tr>" +
-                "<td>" + entity.getDayBookingInit() + "</td>" +
-                "<td>" + entity.getDayBookingEnd() + "</td>" +
+                "<td>" + (entity.getDayBookingInit() != null ? entity.getDayBookingInit() : "") + "</td>" +
+                "<td>" + (entity.getDayBookingEnd() != null ? entity.getDayBookingEnd() : "") + "</td>" +
                 "<td>" + (entity.getNumberAdults() +" "+ entity.getNumberBabies()  +" "+ entity.getNumberChildren()) + "</td>" +
-                "<td>" + entity.getRoomName() + "</td>" +
+                "<td>" + (entity.getRoomName()!= null ? entity.getRoomName() : "") + "</td>" +
                 "</tr>" +
                 "<tr>" +
                 "<th>TELÉFONO / Phone</th>" +
@@ -207,18 +209,18 @@ public class PDFGeneratorService {
                 "<th>PAÍS / Country</th>" +
                 "</tr>" +
                 "<tr>" +
-                "<td>" + entity.getCellphone() + "</td>" +
-                "<td>" + entity.getAddress()+ "</td>" +
+                "<td>" + (entity.getCellphone() != null ? entity.getCellphone() : "") + "</td>" +
+                "<td>" + (entity.getAddress() != null ? entity.getAddress() : "")+ "</td>" +
                 "<td>" + " " + "</td>" +
-                "<td>" + entity.getCountrydesc() + "</td>" +
+                "<td>" + (entity.getCountrydesc() != null ? entity.getCountrydesc() : "") + "</td>" +
                 "</tr>" +
                 "<tr>" +
                 "<th colspan=\"3\">FORMA DE PAGO / Payment Method</th>" +
                 "<th>HAB N / Room Nr</th>" +
                 "</tr>" +
                 "<tr>" +
-                "<td colspan=\"3\">" + entity.getMethodPayment() + "</td>" +
-                "<td>" + entity.getRoomNumber() + "</td>" +
+                "<td colspan=\"3\">" + (entity.getMethodPayment() != null ? entity.getMethodPayment() : "")+ "</td>" +
+                "<td>" + (entity.getRoomNumber() != null ? entity.getRoomNumber() : "") + "</td>" +
                 "</tr>" +
                 "<tr>" +
                 "<th colspan=\"2\">TARIFA / Tariff</th> " +
@@ -269,7 +271,7 @@ public class PDFGeneratorService {
                         "          <tr>\n" +
                         "            <td colspan=\"2\">"+ companion.getFullname() +"</td>\n" +
                         "            <td> " + companion.getDocumentType() + " : " + companion.getDocumentNumber() + "</td>" +
-                        "            <td> " + companion.getCountrydesc() + "</td>\n" +
+                        "            <td> " + (companion.getCountrydesc() != null ? companion.getCountrydesc() : "") + "</td>\n" +
                         "          </tr>\n" +
                         "          <tr>\n" +
                         "            <th>TELÉFONO / Phone</th>\n" +
@@ -278,10 +280,10 @@ public class PDFGeneratorService {
                         "            <th>PAÍS / Country</th>" +
                         "          </tr>\n" +
                         "          <tr>\n" +
-                        "            <td>" + companion.getCellphone()+ "</td>\n" +
+                        "            <td>" + (companion.getCellphone() != null ? companion.getCellphone() : "")+ "</td>\n" +
                         "            <td>" +""+ "</td>\n" +
                         "            <td>" + " " + "</td>\n" +
-                        "            <td>" + companion.getCountrydesc() + "</td>" +
+                        "            <td>" + (companion.getCountrydesc() != null ? companion.getCountrydesc() : "")+ "</td>" +
                         "          </tr>" +
                         "          <tr>\n" +
                         "             <th >CORREO ELECTRÓNICO / Email</th>\n" +
@@ -290,10 +292,10 @@ public class PDFGeneratorService {
                         "            <th>EDAD / Age</th>" +
                         "          </tr>\n" +
                         "          <tr>\n" +
-                        "            <td >" + companion.getEmail() + "</td>\n" +
-                        "            <td>" + companion.getGender() + "</td>\n" +
+                        "            <td >" + (companion.getEmail() != null ? companion.getEmail() : "") + "</td>\n" +
+                        "            <td>" + (companion.getGender() != null ? companion.getGender() : "")+ "</td>\n" +
                         "            <td>" + "" + "</td>\n" +
-                        "            <td>" + companion.getYears() + "</td>" +
+                        "            <td>" + (companion.getYears() != null ? companion.getYears() : "") + "</td>" +
                         "          </tr>\n" +
 
                         "        </table>";
