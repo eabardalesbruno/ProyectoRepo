@@ -144,10 +144,11 @@ public class PDFGeneratorService {
                 "      .form-table th { background-color: #e7f5e7; font-weight: bold;padding: 7px 0.3px;}" +
                 "      .form-tableA{ width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 20px; border: 1px solid #006600; overflow: hidden;}" +
                 "      .form-tableA th, .form-tableA td { border: 1px solid #006600; text-align: center; vertical-align: middle; font-size: 12px;}" +
-                "      .form-tableA td { padding:12px 1px;}" +
+                "      .form-tableA td { padding:10px 1px;}" +
                 "      .form-tableA th { background-color: #e7f5e7; font-weight: bold; padding: 3px 0.3px;}"+
                 "      .info-title { font-weight: bold; color: #006600; margin-top: 10px;}" +
                 "      .grid-container {display: flex;flex-wrap: wrap;flex-direction: row;gap: 10px;width: 100%;margin-top: 0;}" +
+                "      .as { font-size: 13px;}"+
                 "      .info-box { display: inline-block; width: 350px; padding: 8px 10px; margin-right: 5px; margin-bottom: 10px; font-size: 14px; border: 1px solid #006600; border-radius: 12px; box-sizing: border-box;}"+
                 "      .info-box strong { display: inline; margin-bottom: 2px;}" +
                 "      .signature-container { display: inline-block; justify-content: space-between; margin-bottom: 0px; margin-top: 0px;}" +
@@ -182,7 +183,7 @@ public class PDFGeneratorService {
                 "<tr>" +
                 "<td colspan=\"2\">" + (entity.getFullname() != null ? entity.getFullname() : "") + "</td>" +
                 "<td>" + entity.getDocumentType()  + " : " + entity.getDocumentNumber() + "</td>" +
-                "<td>" + (entity.getCountrydesc() != null ? entity.getCountrydesc() : "") + "</td>" +
+                "<td>" + (entity.getCourtesy() != null ? entity.getCourtesy() : "") + "</td>" +
                 "</tr>" +
                 "<tr>" +
                 "<th>GENERO / Genre</th>" +
@@ -190,14 +191,14 @@ public class PDFGeneratorService {
                 "<th colspan=\"2\">CORREO ELECTRÓNICO / Email</th>"+
                 "</tr>" +
                 "<tr>" +
-                "<td >"+  " " +" </td>" +
-                "<td>" +  " " + " </td>" +
+                "<td >"+   (entity.getGender() != null ? entity.getGender() : "" ) +" </td>" +
+                "<td>" +  (entity.getBirthdate() != null ? entity.getBirthdate() : "" ) + " </td>" +
                 " <td colspan=\"2\">" + (entity.getEmail() != null ? entity.getEmail() : "" )+ "</td>" +
                 "</tr>"+
                 "<tr>" +
                 "<th>LLEGADA / Arrival</th>" +
                 "<th>SALIDA / Departure</th>" +
-                "<th>PERSONAS / Pax</th>" +
+                "<th>PERSONAS / Persons</th>" +
                 "<th>DEPARTAMENTO / Apartment</th>" +
                 "</tr>" +
                 "<tr>" +
@@ -228,7 +229,7 @@ public class PDFGeneratorService {
                 "</tr>" +
                 "<tr>" +
                 "<th colspan=\"2\">TARIFA / Tariff</th> " +
-                "<th colspan=\"2\">MOTIVO DE VAIJE / Nationality</th>" +
+                "<th colspan=\"2\">MOTIVO DE VAIJE Y HOSPEDAJE / Reason for Travel and Lodging</th>" +
                 "</tr>" +
                 "<tr>" +
                 "<td colspan=\"2\" class=\"Ti\">"+ " " +  "</td>" +
@@ -266,7 +267,7 @@ public class PDFGeneratorService {
             for (ReservationReportDto companion : entity.getLstCompanions()) {
                 numCompanions++;
                 htmlContent += "<table class=\"form-tableA no-break\">\n" +
-                        "          <strong>Acompañante " + numCompanions + ":</strong><br />\n" +
+                        "          <strong class=\"as\">Acompañante " + numCompanions + ":</strong><br />\n" +
                         "          <tr>\n" +
                         "            <th colspan=\"2\">NOMBRE COMPLETO / Full Name</th>\n" +
                         "            <th>TIPO DE DOCUMENTO / ID Type</th>\n" +
@@ -275,7 +276,7 @@ public class PDFGeneratorService {
                         "          <tr>\n" +
                         "            <td colspan=\"2\">"+ companion.getFullname() +"</td>\n" +
                         "            <td> " + companion.getDocumentType() + " : " + companion.getDocumentNumber() + "</td>" +
-                        "            <td> " + (companion.getCountrydesc() != null ? companion.getCountrydesc() : "") + "</td>\n" +
+                        "            <td> " + (companion.getCourtesy() != null ? companion.getCourtesy() : "") + "</td>\n" +
                         "          </tr>\n" +
                         "          <tr>\n" +
                         "            <th>TELÉFONO / Phone</th>\n" +
@@ -298,7 +299,7 @@ public class PDFGeneratorService {
                         "          <tr>\n" +
                         "            <td >" + (companion.getEmail() != null ? companion.getEmail() : "") + "</td>\n" +
                         "            <td>" + (companion.getGender() != null ? companion.getGender() : "")+ "</td>\n" +
-                        "            <td>" + "" + "</td>\n" +
+                        "            <td>" + (companion.getBirthdate() != null ? companion.getBirthdate() : "") +"</td>\n" +
                         "            <td>" + (companion.getYears() != null ? companion.getYears() : "") + "</td>" +
                         "          </tr>\n" +
 

@@ -1,9 +1,8 @@
 package com.proriberaapp.ribera.Domain.dto;
 
-import com.proriberaapp.ribera.Domain.entities.FeedingEntity;
 import lombok.Data;
-import org.springframework.data.relational.core.mapping.Column;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Data
@@ -28,6 +27,8 @@ public class ReservationReportDto {
     private String cellphone;
     private String image;
     private String address;
+    private String birthdate;
+    private String courtesy;
 
     private List<ReservationReportDto> lstCompanions;
 }
