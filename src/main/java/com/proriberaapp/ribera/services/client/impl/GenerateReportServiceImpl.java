@@ -2,9 +2,8 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ResponseFileDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.CompanionsDto;
-import com.proriberaapp.ribera.Api.controllers.client.dto.ReportOfKitchenBdDto;
-import com.proriberaapp.ribera.Api.controllers.client.dto.ReportOfKitchenDto;
 import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
+import com.proriberaapp.ribera.Domain.entities.CountryEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.PDFGeneratorService;
 import com.proriberaapp.ribera.services.client.GenerateReportService;
@@ -23,10 +22,10 @@ import reactor.core.scheduler.Schedulers;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +38,8 @@ public class GenerateReportServiceImpl implements GenerateReportService {
     private final RoomRepository roomRepository;
 
     private final UserClientRepository userRepository;
+
+    private final CountryRepository countryRepository;
 
     @Override
     public Mono<ResponseEntity<ResponseFileDto>> generateReportReservation(int idReservation) {
@@ -55,7 +56,10 @@ public class GenerateReportServiceImpl implements GenerateReportService {
 
 
             return userRepository.findById(bookingEntity.getUserClientId()).flatMap(userEntity -> {
-                reservationDto.setAddress(userEntity.getAddress());
+                String gender = (userEntity.getGenderId() != null) ? (userEntity.getGenderId() == 1 ? "Masculino" : (userEntity.getGenderId() == 2 ? "Femenino" : "")) : "";
+                reservationDto.setAddress(userEntity.getAddress() != null ? userEntity.getAddress() : "");
+                reservationDto.setGender(gender);
+                reservationDto.setBirthdate(userEntity.getBirthDate() != null ? userEntity.getBirthDate().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "");
 
                 return bookingRepository.fingMethodPäymentByBookingId(idReservation).publishOn(Schedulers.boundedElastic()).flatMap(methodPayment -> {
                     reservationDto.setMethodPayment(methodPayment);
@@ -66,6 +70,7 @@ public class GenerateReportServiceImpl implements GenerateReportService {
                         reservationDto.setRoomName(roomEntity.getRoomName());
                         reservationDto.setRoomNumber(roomEntity.getRoomNumber());
                         for (CompanionsDto item : items) {
+
                             if (item.isTitular()) {
                                 reservationDto.setDocumentType(item.getDocumenttypedesc());
                                 reservationDto.setDocumentNumber(item.getDocumentNumber());
@@ -74,6 +79,8 @@ public class GenerateReportServiceImpl implements GenerateReportService {
                                 reservationDto.setEmail(item.getEmail() != null ? item.getEmail() : "");
                                 reservationDto.setCountrydesc(item.getCountrydesc() != null ? item.getCountrydesc() : "");
                                 reservationDto.setCellphone(item.getCellphone() != null ? item.getCellphone() : "");
+                                reservationDto.setCourtesy(item.getCourtesy() != null ? item.getCourtesy() : "");
+
                             } else {
                                 ReservationReportDto reportDto = new ReservationReportDto();
                                 reportDto.setDocumentType(item.getDocumenttypedesc() != null ? item.getDocumenttypedesc() : "");
@@ -81,6 +88,11 @@ public class GenerateReportServiceImpl implements GenerateReportService {
                                 reportDto.setFullname(item.getFirstname() + " " + item.getLastname());
                                 reportDto.setYears(item.getYears() != null ? "" + item.getYears() : "");
                                 reportDto.setGender(item.getGenderdesc() != null ? item.getGenderdesc() : "");
+                                reportDto.setCourtesy(item.getCourtesy() != null ? item.getCourtesy() : "");
+                                reportDto.setCountrydesc(item.getCountrydesc() != null ? item.getCountrydesc() : "");
+                                reportDto.setCellphone(item.getCellphone() != null ? item.getCellphone() : "");
+                                reportDto.setEmail(item.getEmail() != null ? item.getEmail() : "");
+                                reportDto.setBirthdate(item.getBirthdate() != null ? item.getBirthdate().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")) : "");
                                 listCompanions.add(reportDto);
                                 reservationDto.setLstCompanions(listCompanions);
                             }
