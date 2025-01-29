@@ -14,6 +14,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/v1/payment-book")
@@ -31,7 +33,7 @@ public class PaymentBookController {
 
         return paymentBookService.createPaymentBook(paymentBook)
                 .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook))
-                .onErrorResume(error -> Mono.error(new RuntimeException("Error al cargar la imagen al servidor S3."))) ;
+                .onErrorResume(error -> Mono.error(new RuntimeException("Error al cargar la imagen al servidor S3.")));
     }
 
     @PostMapping("/booking-pay")
@@ -42,7 +44,7 @@ public class PaymentBookController {
 
     @PutMapping("/{id}")
     public Mono<ResponseEntity<PaymentBookEntity>> updatePaymentBook(@PathVariable Integer id,
-                                                                     @RequestBody PaymentBookEntity paymentBook) {
+            @RequestBody PaymentBookEntity paymentBook) {
         return paymentBookService.updatePaymentBook(id, paymentBook)
                 .map(updatedPaymentBook -> ResponseEntity.ok().body(updatedPaymentBook))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -56,29 +58,37 @@ public class PaymentBookController {
     }
 
     /*
-    @GetMapping
-    public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails(
-            @RequestParam int page,
-            @RequestParam int size) {
-        return paymentBookService.getAllPaymentBookDetails(page, size);
-    }
+     * @GetMapping
+     * public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails(
+     * 
+     * @RequestParam int page,
+     * 
+     * @RequestParam int size) {
+     * return paymentBookService.getAllPaymentBookDetails(page, size);
+     * }
      */
 
     /*
-    @PostMapping("/paged")
-    public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails(@RequestBody PaginationRequest paginationRequest) {
-        return paymentBookService.getAllPaymentBookDetails(paginationRequest.getPage(), paginationRequest.getSize());
-    }
+     * @PostMapping("/paged")
+     * public Flux<PaymentBookDetailsDTO> getAllPaymentBookDetails(@RequestBody
+     * PaginationRequest paginationRequest) {
+     * return
+     * paymentBookService.getAllPaymentBookDetails(paginationRequest.getPage(),
+     * paginationRequest.getSize());
+     * }
      */
 
     @PostMapping("/paged")
-    public Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetails(@RequestBody PaginationRequest paginationRequest) {
+    public Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetails(
+            @RequestBody PaginationRequest paginationRequest) {
         return paymentBookService.getAllPaymentBookDetails(paginationRequest.getPage(), paginationRequest.getSize());
     }
 
     @PostMapping("/pagedpayed")
-    public Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetailsPagado(@RequestBody PaginationRequest paginationRequest) {
-        return paymentBookService.getAllPaymentBookDetailsPagado(paginationRequest.getPage(), paginationRequest.getSize());
+    public Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetailsPagado(
+            @RequestBody PaginationRequest paginationRequest) {
+        return paymentBookService.getAllPaymentBookDetailsPagado(paginationRequest.getPage(),
+                paginationRequest.getSize());
     }
 
     @GetMapping("/user-client/{userClientId}")
@@ -92,13 +102,19 @@ public class PaymentBookController {
     }
 
     private String generateUniquePaymentToken() {
-        // Implementa la lógica para generar un token único (por ejemplo, utilizando JWT)
+        // Implementa la lógica para generar un token único (por ejemplo, utilizando
+        // JWT)
         return UUID.randomUUID().toString();
     }
 
+    @GetMapping("/create-invoice/{id}")
+    public Mono<Void> createInvoice(@PathVariable Integer id) {
+        return this.paymentBookService.createInvoice(id);
+    }
 
     @PostMapping("/create-payment-and-commission")
-    public Mono<ResponseEntity<PaymentBookEntity>> createPaymentAndCalculateCommission(@RequestBody PaymentBookEntity paymentBook, @RequestParam Integer caseType) {
+    public Mono<ResponseEntity<PaymentBookEntity>> createPaymentAndCalculateCommission(
+            @RequestBody PaymentBookEntity paymentBook, @RequestParam Integer caseType) {
         return paymentBookService.createPaymentBookAndCalculateCommission(paymentBook, caseType)
                 .map(savedPaymentBook -> new ResponseEntity<>(savedPaymentBook, HttpStatus.CREATED));
     }
