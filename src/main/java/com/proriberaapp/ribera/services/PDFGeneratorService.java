@@ -119,6 +119,8 @@ public class PDFGeneratorService {
     }
 
     public static File generateReservationPdfFromHtml(ReservationReportDto entity) throws IOException {
+
+
         String htmlContent = "<!DOCTYPE html>" +
                 "<html lang=\"en\">" +
                 "<head>" +
@@ -126,143 +128,46 @@ public class PDFGeneratorService {
                 "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />" +
                 "<title>Reserva</title>" +
                 "<style>" +
-                "     @page { size: A4; margin: 10mm; }\n" +
-                "    body {\n" +
-                "        font-family: Arial, sans-serif;\n" +
-                "        margin: 0;\n" +
-                "        padding: 0;\n" +
-                "        background-color: #fff;\n" +
-                "    }\n" +
-                "    .container {\n" +
-                "        max-width: 100%;\n" +
-                "        border: 2px solid #006600;\n" +
-                "        border-radius: 12px;\n" +
-                "        padding: 20px;\n" +
-                "    }\n" +
-                "    .header {\n" +
-                "        text-align: center;\n" +
-                "        margin-bottom: 20px;\n" +
-                "    }\n" +
-                "    .header img {\n" +
-                "        height: 80px;\n" +
-                "        margin-bottom: 10px;\n" +
-                "    }\n" +
-                "    .header h1 {\n" +
-                "        margin: 0;\n" +
-                "        font-size: 22px;\n" +
-                "        text-transform: uppercase;\n" +
-                "        color: #006600;\n" +
-                "    }\n" +
-                "    .header p {\n" +
-                "        margin: 0;\n" +
-                "        font-size: 14px;\n" +
-                "        color: #333;\n" +
-                "    }\n" +
-                "    .form-table {\n" +
-                "        width: 100%;\n" +
-                "        border-collapse: separate;\n" +
-                "        border-spacing: 0;\n" +
-                "        margin-bottom: 20px;\n" +
-                "        border: 1px solid #006600;\n" +
-                "        border-radius: 12px;\n" +
-                "        overflow: hidden;\n" +
-                "    }\n" +
-                "    .form-table th, .form-table td {\n" +
-                "        border: 1px solid #006600;\n" +
-                "        padding: 8px;\n" +
-                "        text-align: left;\n" +
-                "        font-size: 14px;\n" +
-                "    }\n" +
-                "    .form-table th {\n" +
-                "        background-color: #e7f5e7;\n" +
-                "        font-weight: bold;\n" +
-                "    }\n" +
-                "    .info-title {\n" +
-                "        font-weight: bold;\n" +
-                "        color: #006600;\n" +
-                "        margin-top: 10px;\n" +
-                "    }\n" +
-                "  .grid-container {\n" +
-                "    display: flex; \n" +
-                "    flex-wrap: wrap; flex-direction:row; \n" +
-                "    gap: 10px; \n" +
-                "    width: 100%;\n" +
-                "    margin-top: 0;\n" +
-                "}" +
-                ".info-box {\n" +
-                "    display:inline-block  ;width: 300px;\n" +
-                "    padding: 8px 10px;\n" +
-                "    margin-right: 5px; \n" +
-                "    margin-bottom: 10px; \n" +
-                "    font-size: 14px;\n" +
-                "    border: 1px solid #006600;\n" +
-                "    border-radius: 12px;\n" +
-                "    box-sizing: border-box;\n" +
-                "}" +
-                "\n" +
-                ".info-box strong {\n" +
-                "    display: inline;\n" +
-                "    margin-bottom: 2px;\n" +
-                "}" +
-                "   .signature-container {\n" +
-                "    display: inline-block;;\n" +
-                "    justify-content: space-between; margin-bottom:15px;\n" +
-                "    margin-top: 20px;\n" +
-                "}\n" +
-                "\n" +
-                ".signature {\ndisplay: inline-block;" +
-                "    text-align: center;\n" +
-                "    margin-top: 40px;\n" +
-                "    width: 300px;\n" +
-                "}\n" +
-                "\n" +
-                ".signature span {\n" +
-                "    display: inline-block;\n" +
-                "    border-top: 1px solid #006600;\n" +
-                "    margin-top: 20px;\n" +
-                "    font-size: 14px;\n" +
-                "}" +
-                "    .terms {\n" +
-                "        font-size: 12px;\n" +
-                "        margin-top: 20px;\n" +
-                "    }\n" +
-                "    .terms p {\n" +
-                "        margin: 5px 0;\n" +
-                "    }\n" +
-                "    .checkbox {\n" +
-                "        display: flex;\n" +
-                "        align-items: center;\n" +
-                "        gap: 5px;\n" +
-                "    }\n" +
-                "    .checkbox label {\n" +
-                "        font-size: 12px;\n" +
-                "    }\n" +
-                "    .footer-container {\n" +
-                "        max-width: 900px;\n" +
-                "        margin: auto;\n" +
-                "        padding: 20px;\n" +
-                "        background-color: #f1f1f1;\n" +
-                "        border-top: 2px solid #006600;\n" +
-                "        border-radius: 12px;\n" +
-                "        margin-top: 20px;\n" +
-                "    }\n" +
-                "    .footer .info-title {\n" +
-                "        margin-bottom: 10px;\n" +
-                "    }\n" +
-                "    .footer .policies ol {\n" +
-                "        margin: 0;\n" +
-                "        padding-left: 20px;\n" +
-                "    }\n" +
-                "    .policies li {\n" +
-                "        margin: 3px; font-size: 11px; " +
-                "    }"+
-                " .policies p {font-size: 12px}"+
+                "    @page { size: 210mm 297mm; margin: 10mm;}" +
+                "      body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #fff;}" +
+                "      .container { max-width: 100%; border: 2px solid #006600;  border-radius: 12px; padding: 20px; box-sizing: border-box; position: relative; }"+
+                "      .header { text-align: center; margin-bottom: 20px; position: relative; }" +
+                "      .header img { height: 80px; margin-bottom: 10px;}" +
+                "      .watermark { position: fixed;top: 50%; left: 50%; width: 60%; height:auto ;transform: translate(-50%, -50%);z-index: -1; opacity: 0.0; pointer-events: none; mix-blend-mode: multiply;}" +
+                "      .no-break { page-break-inside: avoid;}"+
+                "      .header h1 { margin: 0; font-size: 22px; text-transform: uppercase; color: #006600;}" +
+                "      .header p { margin: 0; font-size: 14px; color: #333;}" +
+                "      .form-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 20px; border: 1px solid #006600; overflow: hidden;}" +
+                "      .form-table th, .form-table td { border: 1px solid #006600; text-align: center; font-size: 12px; }" +
+                "      .form-table td { padding:6px 1px;}"+
+                "      .Ti {height: 50px;}"+
+                "      .form-table th { background-color: #e7f5e7; font-weight: bold;padding: 7px 0.3px;}" +
+                "      .form-tableA{ width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 20px; border: 1px solid #006600; overflow: hidden;}" +
+                "      .form-tableA th, .form-tableA td { border: 1px solid #006600; text-align: center; vertical-align: middle; font-size: 12px;}" +
+                "      .form-tableA td { padding:12px 1px;}" +
+                "      .form-tableA th { background-color: #e7f5e7; font-weight: bold; padding: 3px 0.3px;}"+
+                "      .info-title { font-weight: bold; color: #006600; margin-top: 10px;}" +
+                "      .grid-container {display: flex;flex-wrap: wrap;flex-direction: row;gap: 10px;width: 100%;margin-top: 0;}" +
+                "      .info-box { display: inline-block; width: 350px; padding: 8px 10px; margin-right: 5px; margin-bottom: 10px; font-size: 14px; border: 1px solid #006600; border-radius: 12px; box-sizing: border-box;}"+
+                "      .info-box strong { display: inline; margin-bottom: 2px;}" +
+                "      .signature-container { display: inline-block; justify-content: space-between; margin-bottom: 0px; margin-top: 0px;}" +
+                "      .signature { display: inline-block;text-align: center; margin-top: 40px; width: 300px;}" +
+                "      .signature span { display: inline-block; border-top: 1px solid #006600; margin-top: 20px; font-size: 14px;}" +
+                "      .terms { font-size: 12px; margin-top: 20px;}" +
+                "      .terms p { margin: 5px 0;} "+
+                "      .checkbox { display: flex; align-items: center; gap: 5px;}" +
+                "      .checkbox label { font-size: 12px;}" +
+                "      .footer-container { max-width: 900px; margin: auto; padding: 20px; border-top: 2px solid #006600; border-radius: 12px; margin-top: 20px;}" +
+                "      .footer .info-title { margin-bottom: 10px;}" +
+                "      .footer .policies ol { margin: 0; padding-left: 20px;}" +
+                "      .policies li { margin: 3px; font-size: 11px;}" +
+                "      .policies p { font-size: 12px;}"+
                 "</style>" +
                 "</head>" +
                 "<body>" +
                 "<div class=\"container\">" +
+                "<img class=\"watermark\" src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/landing/Logo-Ribera-Trasparente.png\" alt=\"Marca de agua\" />"+
                 "<div class=\"header\">" +
-                "<img src=\"https://i.postimg.cc/xT6NS6R9/Color-4x.png\" alt=\"Logo\" />" +
                 "<h1>TARJETA DE REGISTRO / GUEST REGISTER CARD</h1>" +
                 "<p>RIBERA DEL RIO CLUB RESORT S.A.<br/>RUC: 20608720911</p>" +
                 "</div>" +
@@ -275,10 +180,20 @@ public class PDFGeneratorService {
                 "<th>NACIONALIDAD / Nationality</th>" +
                 "</tr>" +
                 "<tr>" +
-                "<td colspan=\"2\">" + entity.getFullname() + "</td>" +
-                "<td>" + entity.getDocumentType() + " : " + entity.getDocumentNumber() + "</td>" +
-                "<td>" + entity.getCountrydesc() + "</td>" +
+                "<td colspan=\"2\">" + (entity.getFullname() != null ? entity.getFullname() : "") + "</td>" +
+                "<td>" + entity.getDocumentType()  + " : " + entity.getDocumentNumber() + "</td>" +
+                "<td>" + (entity.getCountrydesc() != null ? entity.getCountrydesc() : "") + "</td>" +
                 "</tr>" +
+                "<tr>" +
+                "<th>GENERO / Genre</th>" +
+                "<th>FECHA DE NACIMIENTO / Date of Birth</th>" +
+                "<th colspan=\"2\">CORREO ELECTRÓNICO / Email</th>"+
+                "</tr>" +
+                "<tr>" +
+                "<td >"+  " " +" </td>" +
+                "<td>" +  " " + " </td>" +
+                " <td colspan=\"2\">" + (entity.getEmail() != null ? entity.getEmail() : "" )+ "</td>" +
+                "</tr>"+
                 "<tr>" +
                 "<th>LLEGADA / Arrival</th>" +
                 "<th>SALIDA / Departure</th>" +
@@ -286,57 +201,61 @@ public class PDFGeneratorService {
                 "<th>DEPARTAMENTO / Apartment</th>" +
                 "</tr>" +
                 "<tr>" +
-                "<td>" + entity.getDayBookingInit() + "</td>" +
-                "<td>" + entity.getDayBookingEnd() + "</td>" +
+                "<td>" + (entity.getDayBookingInit() != null ? entity.getDayBookingInit() : "") + "</td>" +
+                "<td>" + (entity.getDayBookingEnd() != null ? entity.getDayBookingEnd() : "") + "</td>" +
                 "<td>" + (entity.getNumberAdults() +" "+ entity.getNumberBabies()  +" "+ entity.getNumberChildren()) + "</td>" +
-                "<td>" + entity.getRoomName() + "</td>" +
+                "<td>" + (entity.getRoomName()!= null ? entity.getRoomName() : "") + "</td>" +
                 "</tr>" +
                 "<tr>" +
-                "<th>DIRECCIÓN / Address</th>" +
                 "<th>TELÉFONO / Phone</th>" +
+                "<th>DIRECCIÓN / Address</th>" +
                 "<th>CIUDAD / City</th>" +
                 "<th>PAÍS / Country</th>" +
                 "</tr>" +
                 "<tr>" +
-                "<td>" + entity.getAddress()+ "</td>" +
-                "<td>" + entity.getCellphone() + "</td>" +
+                "<td>" + (entity.getCellphone() != null ? entity.getCellphone() : "") + "</td>" +
+                "<td>" + (entity.getAddress() != null ? entity.getAddress() : "")+ "</td>" +
                 "<td>" + " " + "</td>" +
-                "<td>" + entity.getCountrydesc() + "</td>" +
+                "<td>" + (entity.getCountrydesc() != null ? entity.getCountrydesc() : "") + "</td>" +
                 "</tr>" +
                 "<tr>" +
-                "<th>CORREO ELECTRÓNICO / Email</th>" +
-                "<th colspan=\"2\">FORMA DE PAGO / Payment Method</th>" +
+                "<th colspan=\"3\">FORMA DE PAGO / Payment Method</th>" +
                 "<th>HAB N / Room Nr</th>" +
                 "</tr>" +
                 "<tr>" +
-                "<td>" + entity.getEmail() + "</td>" +
-                "<td colspan=\"2\">" + entity.getMethodPayment() + "</td>" +
-                "<td>" + entity.getRoomNumber() + "</td>" +
+                "<td colspan=\"3\">" + (entity.getMethodPayment() != null ? entity.getMethodPayment() : "")+ "</td>" +
+                "<td>" + (entity.getRoomNumber() != null ? entity.getRoomNumber() : "") + "</td>" +
                 "</tr>" +
+                "<tr>" +
+                "<th colspan=\"2\">TARIFA / Tariff</th> " +
+                "<th colspan=\"2\">MOTIVO DE VAIJE / Nationality</th>" +
+                "</tr>" +
+                "<tr>" +
+                "<td colspan=\"2\" class=\"Ti\">"+ " " +  "</td>" +
+                "<td colspan=\"2\" class=\"Ti\"> </td>" +
+                "</tr>"+
                 "</table>" +
                 "</div>"+
-                "<!-- Terms and Check Section -->\n" +
-                "        <div class=\"terms\">\n" +
-                "            <p><strong>- El huésped deberá firmar su check in (ingreso) y su check out (salida).</strong></p>\n" +
-                "            <p><strong>- El huésped pagará una penalidad de S/ 50.00 (cincuenta soles) por hora o fracción por demora en abandonar el apartamento asignado por Ribera del Río.</strong></p>\n" +
-                "            <p><strong>- Marcar con Sí / No en los recuadros.</strong></p>\n" +
-                "            <div class=\"checkbox\">\n" +
-                "                <input type=\"checkbox\" id=\"data-processing\"></input>\n" +
-                "                <label for=\"data-processing\">Autorizo el tratamiento de mis datos para fines de prospección, promoción comercial para conocer las membresías de socios de Ribera del Río y sus empresas vinculadas amparado en Ley N° 29733, Ley de Protección de Datos Personales.</label>\n" +
+                "        <div class=\"terms\">" +
+                "            <p><strong>- El huésped deberá firmar su check in (ingreso) y su check out (salida).</strong></p>" +
+                "            <p><strong>- El huésped pagará una penalidad de S/ 50.00 (cincuenta soles) por hora o fracción por demora en abandonar el apartamento asignado por Ribera del Río.</strong></p>" +
+                "            <p><strong>- Marcar con Sí / No en los recuadros.</strong></p>" +
+                "            <div class=\"checkbox\">" +
+                "                <input type=\"checkbox\" id=\"data-processing\"></input>" +
+                "                <label for=\"data-processing\">Autorizo el tratamiento de mis datos para fines de prospección, promoción comercial para conocer las membresías de socios de Ribera del Río y sus empresas vinculadas amparado en Ley N° 29733, Ley de Protección de Datos Personales.</label>" +
                 "            </div>\n" +
-                "            <div class=\"checkbox\">\n" +
+                "            <div class=\"checkbox\">" +
                 "                <input type=\"checkbox\" id=\"terms-conditions\"></input >" +
-                "                <label for=\"terms-conditions\">Acepto los Términos y condiciones y Políticas de privacidad que están aquí.</label>\n" +
-                "            </div>\n" +
+                "                <label for=\"terms-conditions\">Acepto los Términos y condiciones y Políticas de privacidad que están aquí.</label>" +
+                "            </div>" +
                 "        </div>"+
-                "<!-- Signature Section -->\n" +
-                "        <div class=\"signature-container\">\n" +
-                "    <div class=\"signature\">\n" +
-                "        <span>CHECK IN<br />Firma</span>\n" +
-                "    </div>\n" +
-                "    <div class=\"signature\">\n" +
-                "        <span>CHECK OUT : HORA<br />Firma</span>\n" +
-                "    </div>\n" +
+                "        <div class=\"signature-container\">" +
+                "    <div class=\"signature\">" +
+                "        <span>CHECK IN<br />Firma</span>" +
+                "    </div>" +
+                "    <div class=\"signature\">" +
+                "        <span>CHECK OUT : HORA<br />Firma</span>" +
+                "    </div>" +
                 "</div>";
 
         // Companions Section
@@ -346,21 +265,51 @@ public class PDFGeneratorService {
             htmlContent += "<div class=\"grid-container\">";
             for (ReservationReportDto companion : entity.getLstCompanions()) {
                 numCompanions++;
-                htmlContent += "<div class=\"info-box\">" +
-                        "<strong>Acompañante " + numCompanions + ":</strong><br></br>" +
-                        "<strong>Señor(es):</strong> " + companion.getFullname() + "<br></br>" +
-                        "<strong>Tipo de Documento:</strong> " + companion.getDocumentType() + "<br></br>" +
-                        "<strong>Núm. de Documento:</strong> " + companion.getDocumentNumber() + "<br></br>" +
-                        "<strong>Género:</strong> " + companion.getGender() + "<br></br>" +
-                        "<strong>Edad:</strong> " + companion.getYears() + "<br></br>" +
-                        "</div>";
+                htmlContent += "<table class=\"form-tableA no-break\">\n" +
+                        "          <strong>Acompañante " + numCompanions + ":</strong><br />\n" +
+                        "          <tr>\n" +
+                        "            <th colspan=\"2\">NOMBRE COMPLETO / Full Name</th>\n" +
+                        "            <th>TIPO DE DOCUMENTO / ID Type</th>\n" +
+                        "            <th>NACIONALIDAD / Nationality</th>\n" +
+                        "          </tr>\n" +
+                        "          <tr>\n" +
+                        "            <td colspan=\"2\">"+ companion.getFullname() +"</td>\n" +
+                        "            <td> " + companion.getDocumentType() + " : " + companion.getDocumentNumber() + "</td>" +
+                        "            <td> " + (companion.getCountrydesc() != null ? companion.getCountrydesc() : "") + "</td>\n" +
+                        "          </tr>\n" +
+                        "          <tr>\n" +
+                        "            <th>TELÉFONO / Phone</th>\n" +
+                        "            <th>CIUDAD / City</th>\n" +
+                        "            <th>DIRECCIÓN / Address</th>\n" +
+                        "            <th>PAÍS / Country</th>" +
+                        "          </tr>\n" +
+                        "          <tr>\n" +
+                        "            <td>" + (companion.getCellphone() != null ? companion.getCellphone() : "")+ "</td>\n" +
+                        "            <td>" +""+ "</td>\n" +
+                        "            <td>" + " " + "</td>\n" +
+                        "            <td>" + (companion.getCountrydesc() != null ? companion.getCountrydesc() : "")+ "</td>" +
+                        "          </tr>" +
+                        "          <tr>\n" +
+                        "             <th >CORREO ELECTRÓNICO / Email</th>\n" +
+                        "            <th>GENERO / Genre</th>\n" +
+                        "            <th>FECHA DE NACIMIENTO / Date of Birth</th>\n" +
+                        "            <th>EDAD / Age</th>" +
+                        "          </tr>\n" +
+                        "          <tr>\n" +
+                        "            <td >" + (companion.getEmail() != null ? companion.getEmail() : "") + "</td>\n" +
+                        "            <td>" + (companion.getGender() != null ? companion.getGender() : "")+ "</td>\n" +
+                        "            <td>" + "" + "</td>\n" +
+                        "            <td>" + (companion.getYears() != null ? companion.getYears() : "") + "</td>" +
+                        "          </tr>\n" +
+
+                        "        </table>";
                 if (numCompanions % 2 == 0) {
                     htmlContent += "</div><div class=\"grid-container\">";
                 }
             }
             htmlContent += "</div>"+
                     " <!-- Footer Section with its own container -->\n" +
-                    "    <div class=\"footer-container\">\n" +
+                    "    <div class=\"footer-container \">\n" +
                     "        <div class=\"footer\">\n" +
                     "            <div class=\"info-section\">\n" +
                     "                <div class=\"info-title\">Políticas y Penalidades:</div>\n" +
