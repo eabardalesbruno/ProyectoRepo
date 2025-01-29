@@ -10,13 +10,17 @@ import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.DiscountDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
+import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
+import com.proriberaapp.ribera.services.client.PasswordResetCodeService;
 import com.proriberaapp.ribera.services.client.UserApiClient;
 import com.proriberaapp.ribera.services.client.UserClientService;
 import com.proriberaapp.ribera.services.client.VerifiedDiscountService;
+import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
+import com.proriberaapp.ribera.utils.emails.EmailTemplateCodeRecoveryPassword;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +33,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -49,11 +54,17 @@ public class UserClientServiceImpl implements UserClientService {
     private VerifiedDiscountService verifiedDiscountService;
     @Autowired
     private BookingService bookingService;
+    @Autowired
+    private PasswordResetCodeService passwordResetCodeService;
     private final WalletServiceImpl walletServiceImpl;
     @Value("${url.api.ruc}")
     private String rucApi;
     @Value("${url.api.ruc.token}")
     private String rucApiToken;
+
+    @Value("${url.base.frontend}")
+    private String baseUrlFront;
+
     /*
      * @Override
      * public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
@@ -724,17 +735,36 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Override
     public Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId, Integer bookingId) {
- 
-        return Mono.zip(this.verifiedDiscountService.verifiedPercentajeDiscount(userId),
-                this.bookingService.bookingIsAlimentation(bookingId).switchIfEmpty(Mono.just(false))).flatMap(data -> {
-                    List<DiscountDto> discountDtosReservation = data.getT1().getDiscounts().stream()
-                            .filter(discount -> discount.isApplyToReservation()).toList();
-                    Boolean isAlimentation = data.getT2();
-                    if (!isAlimentation) {  
-                        data.getT1().setDiscounts(discountDtosReservation);
-                    }
-                    data.getT1().calculatedPercentage();
-                    return Mono.just(data.getT1());
+
+        return Mono
+                .zip(this.bookingService.findById(bookingId),
+                        this.verifiedDiscountService.verifiedPercentajeDiscount(userId),
+                        this.bookingService.getTotalFeedingAmount(bookingId).switchIfEmpty(Mono.just(0F)))
+                .flatMap(data -> {
+                    BookingEntity booking = data.getT1();
+                    UserNameAndDiscountDto discount = data.getT2();
+                    float totalPercentageDiscountAccommodation = discount.getDiscounts().stream()
+                            .filter(d -> d.isApplyToReservation()).map(DiscountDto::getPercentage)
+                            .reduce(0F, Float::sum);
+                    float totalPercentageDiscountFood = discount.getDiscounts().stream()
+                            .filter(d -> d.isApplyToFood()).map(DiscountDto::getPercentage)
+                            .reduce(0F, Float::sum);
+                    Float totalAmountFeeding = data.getT3();
+                    float totalAccommodation = booking.getCostFinal().subtract(new BigDecimal(totalAmountFeeding))
+                            .floatValue();
+                    float totalAccommodationWithDiscount = totalAccommodation * totalPercentageDiscountAccommodation
+                            / 100;
+                    float totalFoodWithDiscount = totalAmountFeeding * totalPercentageDiscountFood / 100;
+                    discount.setTotalDiscountAccommodation(totalAccommodationWithDiscount);
+                    discount.setTotalPercentageDiscountAccommodation(totalPercentageDiscountAccommodation);
+                    discount.setTotalDiscountFood(totalFoodWithDiscount);
+                    discount.setTotalPercentageDiscountFood(totalPercentageDiscountFood);
+                    discount.setTotalAmount(
+                            booking.getCostFinal().subtract(
+                                    new BigDecimal(totalAccommodationWithDiscount + totalFoodWithDiscount))
+                                    .floatValue());
+
+                    return Mono.just(discount);
                 });
     }
 
@@ -778,6 +808,33 @@ public class UserClientServiceImpl implements UserClientService {
                 }).flatMap(d -> updateUserM)
                 .then();
 
+    }
+
+    @Override
+    public Mono<Void> sendCodeRecoveryPassword(String email) {
+        return userClientRepository.findByEmail(email)
+                .switchIfEmpty(Mono.empty())
+                .flatMap(user -> {
+                    return this.passwordResetCodeService.generateResetCode("client", user.getUserClientId())
+                            .flatMap(code -> {
+                                BaseEmailReserve emailTemplate = new BaseEmailReserve();
+                                EmailTemplateCodeRecoveryPassword emailTemplateRecovery = new EmailTemplateCodeRecoveryPassword(
+                                        code,
+                                        user.getFirstName(), this.baseUrlFront);
+                                emailTemplate.addEmailHandler(emailTemplateRecovery);
+                                String bodyEmail = emailTemplate.execute();
+                                return this.emailService.sendEmail(email, "Recuperar contraseña", bodyEmail);
+                            });
+                });
+    }
+
+    @Override
+    public Mono<Void> changePassword(String code, String password) {
+        String passwordEncoded = passwordEncoder.encode(password);
+        return this.passwordResetCodeService.verfiedCode(code)
+                .flatMap(passwordReset -> Mono.zip(this.userClientRepository.updatePassword(passwordReset.getUser_id(),
+                        passwordEncoded), this.passwordResetCodeService.useCode(code)))
+                .then();
     }
 
 }

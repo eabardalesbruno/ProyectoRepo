@@ -16,6 +16,7 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface BookingService extends BaseService<BookingEntity, BookingEntity> {
     Mono<S3UploadResponse> loadBoucher(Mono<FilePart> file, Integer folderNumber, String token);
@@ -58,6 +59,14 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Flux<BookingEntity> findBookingsByStateId(Integer bookingStateId);
 
+    Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(
+            List<Integer> bookingStateId,
+            Integer roomTypeId,
+            Integer capacity,
+            LocalDateTime offertimeInit,
+            LocalDateTime offertimeEnd,
+            int page,
+            int size);
     Mono<PaginatedResponse<BookingStates>> findBookingsByStateIdPaginated(
             Integer bookingStateId,
             Integer roomTypeId,
@@ -107,6 +116,6 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Flux<Long> getAllYearsInvoice();
 
-    Mono<Boolean> bookingIsAlimentation(Integer bookingId);
+    Mono<Float> getTotalFeedingAmount(Integer bookingId);
 
 }

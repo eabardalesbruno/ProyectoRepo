@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
+import com.proriberaapp.ribera.Domain.dto.UpdatePasswordDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.services.client.LoginInclubService;
@@ -23,7 +24,6 @@ import reactor.core.publisher.Mono;
 import static com.proriberaapp.ribera.utils.GeneralMethods.generatePassword;
 
 import org.springframework.web.reactive.function.client.WebClient;
-
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -334,12 +334,23 @@ public class UserController {
         return userClientService.sendEventContactInfo(eventContactInfo)
                 .map(ResponseEntity::ok);
     }
+
     @PutMapping("/update")
     public Mono<Void> putMethodName(@RequestHeader("Authorization") String token, @RequestBody UserClientDto entity) {
         Integer idUserClient = jwtProvider.getIdFromToken(token);
         entity.setUserClientId(idUserClient);
-        
+
         return this.userClientService.updateUser(entity);
+    }
+
+    @GetMapping("/recovery-password/{email}")
+    public Mono<Void> sendStepsRecoveryPassword(@PathVariable() String email) {
+        return this.userClientService.sendCodeRecoveryPassword(email);
+    }
+
+    @PutMapping("/recovery-password")
+    public Mono<Void> updatePassword(@RequestBody() UpdatePasswordDto passwordDto) {
+        return this.userClientService.changePassword(passwordDto.getCode(), passwordDto.getPassword());
     }
 
 }

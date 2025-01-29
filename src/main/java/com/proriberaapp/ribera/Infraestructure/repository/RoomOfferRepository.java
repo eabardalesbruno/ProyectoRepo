@@ -75,6 +75,8 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
              else false
              end as isbooking
            FROM viewroomofferreturn v
+          JOIN quotation_day qd on qd.idquotation=v.quotation_id
+          join "day" d on d."id"=qd.idday and to_char(now(),'d')::integer=d.numberofweek
              WHERE
               	:categoryName is  null or 	 v.categoryname=:categoryName
       		 and (
@@ -108,7 +110,8 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
 
       and (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId)
            """)
-  Flux<ViewRoomOfferReturn> findFilteredV2(
+  Flux<ViewRoomOfferReturn> 
+  findFilteredV2(
       Boolean isFirstState, Integer roomTypeId, String categoryName,
       LocalDate offerTimeInit,
       LocalDate offerTimeEnd,
@@ -119,7 +122,9 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
       SELECT v.*, r.state, r.numberdays
               FROM roomoffer r
               JOIN viewroomofferreturn v ON r.roomofferid = v.roomofferid
+             
               WHERE (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId)
+              and  join "day" d on d."id"=qd.idday and to_char(now(),'d')::integer=d.numberofweek
               AND (:infantCapacity IS NULL OR v.infantcapacity >= :infantCapacity)
               AND (:kidCapacity IS NULL OR v.kidcapacity >= :kidCapacity)
               AND (:adultCapacity IS NULL OR v.adultcapacity >= :adultCapacity)
