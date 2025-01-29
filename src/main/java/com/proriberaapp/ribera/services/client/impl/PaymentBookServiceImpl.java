@@ -4,8 +4,14 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Domain.dto.PaymentBookWithChannelDto;
 import com.proriberaapp.ribera.Domain.entities.*;
+import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
+import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
+import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
+import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
+import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.*;
+import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.PaymentByBankTransferTemplateEmail;
 
@@ -274,15 +280,20 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     private final CurrencyTypeRepository currencyTypeRepository;
     private final CommissionService commissionService;
 
+    private final InvoiceServiceI invoiceService;
+
     @Autowired
     public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository,
-                                  UserClientRepository userClientRepository,
-                                  BookingService bookingService,
-                                  RoomOfferRepository roomOfferRepository, RoomRepository roomRepository, S3Uploader s3Uploader,
-                                  EmailService emailService,
-                                  PaymentMethodRepository paymentMethodRepository,
-                                  PaymentStateRepository paymentStateRepository, PaymentTypeRepository paymentTypeRepository,
-                                  PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository, CommissionService commissionService) {
+            UserClientRepository userClientRepository,
+            BookingService bookingService,
+            RoomOfferRepository roomOfferRepository, RoomRepository roomRepository, S3Uploader s3Uploader,
+            EmailService emailService,
+            PaymentMethodRepository paymentMethodRepository,
+            PaymentStateRepository paymentStateRepository, PaymentTypeRepository paymentTypeRepository,
+            PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository,
+            CommissionService commissionService,
+            InvoiceServiceI invoiceService) {
+        this.invoiceService = invoiceService;
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
         this.bookingService = bookingService;
@@ -584,7 +595,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                     .dayBookingEnd(paymentBookEntity.getDayBookingEnd())
                                     .dayBookingInit(paymentBookEntity.getDayBookingInit())
                                     .totalCostWithOutDiscount(paymentBookEntity.getTotalCostWithOutDiscount());
-                                
+
                             if (userClient != null) {
                                 builder.userClientName(userClient.getFirstName());
                                 builder.userClientLastName(userClient.getLastName());
@@ -830,23 +841,49 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     }
 
     @Override
-    public Mono<PaymentBookEntity> createPaymentBookAndCalculateCommission(PaymentBookEntity paymentBook, Integer caseType) {
+    public Mono<PaymentBookEntity> createPaymentBookAndCalculateCommission(PaymentBookEntity paymentBook,
+            Integer caseType) {
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
         Timestamp timestamp = Timestamp.valueOf(localDateTime);
         paymentBook.setPaymentDate(timestamp);
 
         return paymentBookRepository.save(paymentBook)
-                .flatMap(savedPaymentBook ->
-                        updateBookingStateIfRequired(savedPaymentBook.getBookingId())
-                                .then(userClientRepository.findById(savedPaymentBook.getUserClientId())
-                                        .flatMap(userClient ->
-                                                sendPaymentConfirmationEmail(savedPaymentBook,
-                                                        userClient.getEmail(), userClient.getFirstName())))
-                                .then(
-                                        commissionService.calculateAndSaveCommission(savedPaymentBook, caseType)
-                                )
-                                .thenReturn(savedPaymentBook)
-                );
+                .flatMap(savedPaymentBook -> updateBookingStateIfRequired(savedPaymentBook.getBookingId())
+                        .then(userClientRepository.findById(savedPaymentBook.getUserClientId())
+                                .flatMap(userClient -> sendPaymentConfirmationEmail(savedPaymentBook,
+                                        userClient.getEmail(), userClient.getFirstName())))
+                        .then(
+                                commissionService.calculateAndSaveCommission(savedPaymentBook, caseType))
+                        .thenReturn(savedPaymentBook));
+    }
+
+    @Override
+    public Mono<Void> createInvoice(Integer paymentBookId) {
+        return this.paymentBookRepository.loadUserDataAndBookingData(paymentBookId)
+                .flatMap(paymentBook -> {
+                    InvoiceClientDomain clientDomain = new InvoiceClientDomain(
+                            paymentBook.getUsername(),
+                            paymentBook.getInvoicedocumentnumber(),
+                            paymentBook.getUseraddress(), paymentBook.getUserphone(),
+                            paymentBook.getUseremail(),
+                            paymentBook.getUserclientid());
+
+                    InvoiceCurrency invoiceCurrency = InvoiceCurrency
+                            .getInvoiceCurrencyByCurrency(paymentBook.getCurrencytypename());
+                    InvoiceType type = InvoiceType.getInvoiceTypeByName(paymentBook.getInvoicetype().toUpperCase());
+                    InvoiceDomain invoiceDomain = new InvoiceDomain(
+                            clientDomain,
+                            paymentBook.getPaymentbookid(), 18, invoiceCurrency,
+                            type, paymentBook.getPercentagediscount());
+                    invoiceDomain.setOperationCode(paymentBook.getOperationcode());
+                    invoiceDomain.addItemWithIncludedIgv(new InvoiceItemDomain(
+                            paymentBook.getRoomname(),
+                            paymentBook.getRoomname(), 1,
+                            BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount())));
+                    invoiceDomain.calculatedTotals();
+                    return this.invoiceService.save(invoiceDomain);
+
+                }).then();
     }
 
 }

@@ -15,9 +15,12 @@ import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
+import com.proriberaapp.ribera.services.client.PasswordResetCodeService;
 import com.proriberaapp.ribera.services.client.UserApiClient;
 import com.proriberaapp.ribera.services.client.UserClientService;
 import com.proriberaapp.ribera.services.client.VerifiedDiscountService;
+import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
+import com.proriberaapp.ribera.utils.emails.EmailTemplateCodeRecoveryPassword;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,11 +54,17 @@ public class UserClientServiceImpl implements UserClientService {
     private VerifiedDiscountService verifiedDiscountService;
     @Autowired
     private BookingService bookingService;
+    @Autowired
+    private PasswordResetCodeService passwordResetCodeService;
     private final WalletServiceImpl walletServiceImpl;
     @Value("${url.api.ruc}")
     private String rucApi;
     @Value("${url.api.ruc.token}")
     private String rucApiToken;
+
+    @Value("${url.base.frontend}")
+    private String baseUrlFront;
+
     /*
      * @Override
      * public Mono<UserClientEntity> registerUser(UserClientEntity userClient) {
@@ -752,7 +761,8 @@ public class UserClientServiceImpl implements UserClientService {
                     discount.setTotalPercentageDiscountFood(totalPercentageDiscountFood);
                     discount.setTotalAmount(
                             booking.getCostFinal().subtract(
-                                    new BigDecimal(totalAccommodationWithDiscount + totalFoodWithDiscount)).floatValue());
+                                    new BigDecimal(totalAccommodationWithDiscount + totalFoodWithDiscount))
+                                    .floatValue());
 
                     return Mono.just(discount);
                 });
@@ -798,6 +808,33 @@ public class UserClientServiceImpl implements UserClientService {
                 }).flatMap(d -> updateUserM)
                 .then();
 
+    }
+
+    @Override
+    public Mono<Void> sendCodeRecoveryPassword(String email) {
+        return userClientRepository.findByEmail(email)
+                .switchIfEmpty(Mono.empty())
+                .flatMap(user -> {
+                    return this.passwordResetCodeService.generateResetCode("client", user.getUserClientId())
+                            .flatMap(code -> {
+                                BaseEmailReserve emailTemplate = new BaseEmailReserve();
+                                EmailTemplateCodeRecoveryPassword emailTemplateRecovery = new EmailTemplateCodeRecoveryPassword(
+                                        code,
+                                        user.getFirstName(), this.baseUrlFront);
+                                emailTemplate.addEmailHandler(emailTemplateRecovery);
+                                String bodyEmail = emailTemplate.execute();
+                                return this.emailService.sendEmail(email, "Recuperar contraseña", bodyEmail);
+                            });
+                });
+    }
+
+    @Override
+    public Mono<Void> changePassword(String code, String password) {
+        String passwordEncoded = passwordEncoder.encode(password);
+        return this.passwordResetCodeService.verfiedCode(code)
+                .flatMap(passwordReset -> Mono.zip(this.userClientRepository.updatePassword(passwordReset.getUser_id(),
+                        passwordEncoded), this.passwordResetCodeService.useCode(code)))
+                .then();
     }
 
 }

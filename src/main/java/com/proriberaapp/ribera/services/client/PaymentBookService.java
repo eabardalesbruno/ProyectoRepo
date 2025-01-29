@@ -32,4 +32,9 @@ public interface PaymentBookService {
     Mono<PaymentBookEntity> savePaymentBook(PaymentBookEntity paymentBook);
 
     Mono<PaymentBookEntity> createPaymentBookAndCalculateCommission(PaymentBookEntity paymentBook, Integer caseType);
+
+    Mono<Void> createInvoice(Integer paymentBookId);
+
+
+
 }

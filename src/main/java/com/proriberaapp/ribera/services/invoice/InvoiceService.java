@@ -125,10 +125,17 @@ public class InvoiceService implements InvoiceServiceI {
                         return sunatInvoice.sendInvoice(invoice);
                 });
                 return response.flatMap(responseInvoice -> {
+                        InvoiceStatus status = InvoiceStatus.ACEPTED;
+                        if (responseInvoice.getSunat_responsecode() == "2") {
+                                status = InvoiceStatus.REJECTED;
+                        }
+                        if (responseInvoice.getSunat_responsecode() == "3") {
+                                status = InvoiceStatus.PENDINGTOSEND;
+                        }
                         invoiceDomain.setKeySupplier(responseInvoice.getKey());
-                        invoiceDomain.setSupplierNote(responseInvoice.getSunat_note());
-                        invoiceDomain.setStatus(responseInvoice.isAceptada_por_sunat() ? InvoiceStatus.ACEPTED
-                                        : InvoiceStatus.REJECTED);
+                        invoiceDomain.setSupplierNote(responseInvoice.getSunat_description());
+
+                        invoiceDomain.setStatus(status);
                         invoiceDomain.setLinkPdf(responseInvoice.getLink_pdf());
                         return Mono.just(invoiceDomain);
                 }).flatMap(invoiceD -> {
