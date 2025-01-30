@@ -19,6 +19,7 @@ public class UserDataDTO {
     private String lastName;
     private Integer countryId;
     private Integer walletId;
+    private boolean isuserinclub;
 
     public Mono<UserDataDTO> convertTo(UserClientEntity user) {
          UserDataDTO userDTO = new UserDataDTO();
@@ -34,6 +35,7 @@ public class UserDataDTO {
         userDTO.setEmail(user.getEmail());
         userDTO.setCountryId(user.getCountryId());
         userDTO.setWalletId(user.getWalletId());
+        userDTO.setIsuserinclub(user.isUserInclub());
         return Mono.just(userDTO);
     }
 }
