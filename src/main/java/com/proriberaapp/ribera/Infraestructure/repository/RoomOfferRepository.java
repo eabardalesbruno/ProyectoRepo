@@ -124,7 +124,6 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
               JOIN viewroomofferreturn v ON r.roomofferid = v.roomofferid
              
               WHERE (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId)
-              and  join "day" d on d."id"=qd.idday and to_char(now(),'d')::integer=d.numberofweek
               AND (:infantCapacity IS NULL OR v.infantcapacity >= :infantCapacity)
               AND (:kidCapacity IS NULL OR v.kidcapacity >= :kidCapacity)
               AND (:adultCapacity IS NULL OR v.adultcapacity >= :adultCapacity)
