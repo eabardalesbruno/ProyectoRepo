@@ -11,4 +11,7 @@ public interface MembershipsService {
 
     Mono<List<MembershipDto>> loadAllMemberships(int userId);
 
+    Mono<List<MembershipDto>> loadMembershipsInsortInclub(String username);
+    
+
 }
