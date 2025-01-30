@@ -43,7 +43,8 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
 
     }
 
-    private Mono<List<MembershipDto>> loadMembershipsInsortInclub(String username) {
+    @Override
+    public Mono<List<MembershipDto>> loadMembershipsInsortInclub(String username) {
         return this.loadDataUserRiber(username)
                 .flatMap(user -> {
                     String uri = URL_MEMBERSHIPS.concat("/").concat(String.valueOf(user.getData().getId()));
@@ -54,8 +55,7 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                             .retrieve()
                             .bodyToMono(ResponseDataMembershipDto.class)
                             .flatMap(response -> {
-                                List<MembershipDto> data = response.getData().stream()
-                                        .filter(p -> p.getIdFamilyPackage() == 2).toList();
+                                List<MembershipDto> data = response.getData().stream().toList();
                                 return data.size() > 0 ? Mono.just(data) : Mono.empty();
                             }).onErrorResume(e -> {
                                 return Mono.just(List.of());
@@ -88,7 +88,7 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                                 }
                                 return this.discountRepository
                                         .getDiscountWithItemsAndCurrentYear(userId,
-                                                memberships.stream().map(d -> d.getIdPackage()).toList())
+                                                memberships.stream().filter(d->d.getIdStatus()==1 && d.getIdFamilyPackage()==2).map(d -> d.getIdPackage()).toList())
                                         .collectList().flatMap(listPercentage -> {
                                             return Mono.just(UserNameAndDiscountDto.builder()
                                                     .username(userData.getUsername())

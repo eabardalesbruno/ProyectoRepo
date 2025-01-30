@@ -13,4 +13,5 @@ public class MembershipDto {
     private int idStatus;
     private int numberQuotas;
     private int idPackage;
+    private String creationDate;
 }
