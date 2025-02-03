@@ -60,4 +60,22 @@ public class CommissionEntity {
 
     @Column("processedat")
     private Timestamp processedAt;
+//
+    @Column("currencytypeid")
+    private Integer currencyTypeId;
+
+    @Column("serialnumber")
+    private String serialNumber;
+
+    @Column("status")
+    private String status;
+
+    @Column("rucnumber")
+    private String rucNumber;
+
+    @Column("useramount")
+    private BigDecimal userAmount;
+
+    @Column("daybookinginit")
+    private Timestamp dayBookingInit;
 }

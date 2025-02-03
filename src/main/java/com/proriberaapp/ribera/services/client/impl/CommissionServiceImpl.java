@@ -5,9 +5,9 @@ import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.CommissionRepository;
 import com.proriberaapp.ribera.services.client.CommissionService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -37,6 +37,11 @@ public class CommissionServiceImpl implements CommissionService {
                     commission.setPaymentBookId(paymentBook.getPaymentBookId());
                     commission.setPromoterId(booking.getUserPromotorId());
                     commission.setCaseType(caseType);
+
+                    commission.setCurrencyTypeId(paymentBook.getCurrencyTypeId());
+                    commission.setStatus("Pendiente");
+                    commission.setDayBookingInit(booking.getDayBookingInit());
+
 
                     Timestamp now = new Timestamp(System.currentTimeMillis());
                     commission.setCreatedAt(now);
@@ -80,14 +85,59 @@ public class CommissionServiceImpl implements CommissionService {
                             return Mono.error(new IllegalArgumentException("Tipo de caso no válido"));
                     }
 
-                    return commissionRepository.save(commission)
+                    return generateSerialNumber()
+                            .flatMap(serialNumber -> {
+                                commission.setSerialNumber(serialNumber);
+                                return commissionRepository.save(commission);
+                            })
                             .doOnSuccess(saved -> System.out.println("Comisión guardada exitosamente: " + saved))
                             .doOnError(error -> System.err.println("Error al guardar la comisión: " + error.getMessage()));
                 });
     }
 
+
+
+
+
     @Override
     public Mono<BigDecimal> getTotalCommissionByPromoterId(Integer promoterId){
         return commissionRepository.findTotalCommissionByPromoterId(promoterId);
+    }
+
+    @Override
+    public Flux<CommissionEntity> getCommissionByPromoterId(Integer promoterId) {
+        return commissionRepository.findByPromoterId(promoterId);
+    }
+
+    @Override
+    public Mono<CommissionEntity> getCommissionById(Integer commissionId) {
+        return commissionRepository.findByCommissionId(commissionId);
+    }
+
+    @Override
+    public Mono<CommissionEntity> updateCommission(Integer commissionId, Integer currencyTypeId, BigDecimal userAmount, String rucNumber, String invoiceDocument) {
+        return commissionRepository.findById(commissionId)
+                .flatMap(existingCommission -> {
+                    existingCommission.setCurrencyTypeId(currencyTypeId);
+                    existingCommission.setUserAmount(userAmount);
+                    existingCommission.setRucNumber(rucNumber);
+                    existingCommission.setInvoiceDocument(invoiceDocument);
+                    return commissionRepository.save(existingCommission);
+                });
+    }
+
+
+    public Mono<String> generateSerialNumber() {
+        return commissionRepository.findLastSerialNumber()
+                .map(this::incrementSerialNumber)
+                .switchIfEmpty(Mono.just("RE001"));
+    }
+
+    private String incrementSerialNumber(String lastSerial) {
+        String prefix = "RE";
+        String numericPart = lastSerial.substring(2);
+        int number = Integer.parseInt(numericPart) + 1;
+        String newNumericPart = String.format("%0" + numericPart.length() + "d", number);
+        return prefix + newNumericPart;
     }
 }

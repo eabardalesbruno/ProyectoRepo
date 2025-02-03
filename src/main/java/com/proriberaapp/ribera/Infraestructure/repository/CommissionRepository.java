@@ -22,4 +22,11 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
     @Query("SELECT * FROM commission c WHERE c.disbursementdate BETWEEN :startOfDay AND :endOfDay AND c.processed = false")
     Flux<CommissionEntity> findByDisbursementDateRange(@Param("startOfDay") Timestamp startOfDay, @Param("endOfDay") Timestamp endOfDay);
 
+
+    @Query("SELECT serialNumber FROM commission ORDER BY commissionId DESC LIMIT 1")
+    Mono<String> findLastSerialNumber();
+    Flux<CommissionEntity> findByPromoterId(Integer promoterId);
+
+    Mono<CommissionEntity> findByCommissionId(Integer commissionId);
+
 }

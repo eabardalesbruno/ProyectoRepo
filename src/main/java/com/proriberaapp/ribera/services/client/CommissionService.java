@@ -13,4 +13,10 @@ public interface CommissionService {
 
     Mono<BigDecimal> getTotalCommissionByPromoterId(Integer promoterId);
 
+    Flux<CommissionEntity> getCommissionByPromoterId(Integer promoterId);
+
+    Mono<CommissionEntity> getCommissionById(Integer commissionId);
+
+    Mono<CommissionEntity> updateCommission(Integer commissionId, Integer currencyTypeId, BigDecimal userAmount, String rucNumber, String invoiceDocument);
+
 }

@@ -290,22 +290,6 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                 BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount())));
                         invoiceDomain.calculatedTotals();
 
-                        Integer bookingId = paymentBook.getBookingid();
-                        return this.bookingRepository.findById(bookingId)
-                                .flatMap(booking -> {
-                                    if (booking.getUserPromotorId() != null ) {
-                                        return commissionService.calculateAndSaveCommission(mapToPaymentBookEntity(paymentBook), 1)
-                                                .then(generatePaymentConfirmationEmailBody(paymentBookId))
-                                                .flatMap(emailBody -> this.invoiceService.save(invoiceDomain)
-                                                        .then(Mono.zip(
-                                                                paymentBookRepository.confirmPayment(paymentBookId),
-                                                                this.emailService.sendEmail(
-                                                                        paymentBook.getUseremail(),
-                                                                        "Confirmación de Pago Aceptado",
-                                                                        emailBody)))
-                                                        .then());
-
-                                    } else {
                                         return generatePaymentConfirmationEmailBody(paymentBookId)
                                                 .flatMap(emailBody -> this.invoiceService.save(invoiceDomain)
                                                         .then(Mono.zip(
@@ -316,8 +300,6 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                                                         emailBody)))
                                                         .then());
                                     }
-                                });
-                    }
                     return Mono.empty();
                 });
     }

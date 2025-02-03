@@ -140,5 +140,24 @@ public class UserPromotersController {
                 .map(totalCommission -> ResponseEntity.ok(totalCommission))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/commissionAll")
+    public Mono<ResponseEntity<List<CommissionEntity>>> getCommissionByPromoterId(@RequestParam Integer promoterId) {
+        return commissionService.getCommissionByPromoterId(promoterId)
+                .collectList()
+                .map(commissions -> ResponseEntity.ok(commissions))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+
+    @GetMapping("/commission")
+    public Mono<CommissionEntity> getCommisionById (@RequestParam Integer commissionId) {
+        return commissionService.getCommissionById(commissionId);
+    }
+
+    @PutMapping("ComissionFile/{commissionId}")
+    public Mono<CommissionEntity> updateCommission(@PathVariable Integer commissionId, @RequestParam Integer currencyTypeId, @RequestParam BigDecimal userAmount, @RequestParam String rucNumber, @RequestParam String invoiceDocument) {
+        return commissionService.updateCommission(commissionId, currencyTypeId, userAmount, rucNumber, invoiceDocument);
+    }
 }
 
