@@ -9,6 +9,7 @@ import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.Infraestructure.viewRepository.RoomOfferViewRepository;
 import com.proriberaapp.ribera.services.client.RoomOfferService;
+import com.proriberaapp.ribera.utils.GeneralMethods;
 import com.proriberaapp.ribera.utils.TransformDate;
 
 import ch.qos.logback.core.helpers.Transform;
@@ -80,21 +81,24 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                         Integer adultExtraCapacity, Integer infantCapacity, List<Integer> feedingsSelected,
                         boolean isFirstState) {
                 int totalCapacityWithOutInfant = kidCapacity + adultCapacity + adultMayorCapacity + adultExtraCapacity;
-              /*   Flux<FeedingItemsGrouped> feedingsGrouped = this.feedingRepository
-                                .groupingByFamilyGroup(feedingsSelected);
-                Flux<FeedingEntity> feedings = this.feedingRepository.findAllById(feedingsSelected); */
-                 Flux<FeedingItemsGrouped> feedingsGrouped = Flux.defer(()->{
+                /*
+                 * Flux<FeedingItemsGrouped> feedingsGrouped = this.feedingRepository
+                 * .groupingByFamilyGroup(feedingsSelected);
+                 * Flux<FeedingEntity> feedings =
+                 * this.feedingRepository.findAllById(feedingsSelected);
+                 */
+                Flux<FeedingItemsGrouped> feedingsGrouped = Flux.defer(() -> {
                         if (feedingsSelected.size() > 0) {
                                 return this.feedingRepository.groupingByFamilyGroup(feedingsSelected);
                         }
                         return Flux.empty();
-                 });
-                 Flux<FeedingEntity> feedings = Flux.defer(()->{
+                });
+                Flux<FeedingEntity> feedings = Flux.defer(() -> {
                         if (feedingsSelected.size() > 0) {
                                 return this.feedingRepository.findAllById(feedingsSelected);
                         }
                         return Flux.empty();
-                 });
+                });
 
                 return roomOfferRepository.findFilteredV2(
                                 isFirstState,
@@ -163,35 +167,13 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                                         + roomOffer.getAdultsExtraReserve()
                                                                         + roomOffer.getAdultsMayorReserve()
                                                                         + roomOffer.getKidsReserve();
-                                                        Float costAdultMayor = feedingGroupedList.stream()
-                                                                        .filter(d -> d.getName().equals("Adulto Mayor"))
-                                                                        .map(FeedingItemsGrouped::getValue).findFirst()
-                                                                        .orElse(0f);
-                                                        Float costAdult = feedingGroupedList.stream()
-                                                                        .filter(d -> d.getName().equals("Adulto"))
-                                                                        .map(FeedingItemsGrouped::getValue).findFirst()
-                                                                        .orElse(0f);
-                                                        Float costKid = feedingGroupedList.stream()
-                                                                        .filter(d -> d.getName().equals("Niño"))
-                                                                        .map(FeedingItemsGrouped::getValue).findFirst()
-                                                                        .orElse(0f);
-                                                        Float costAdultExtra = feedingGroupedList.stream()
-                                                                        .filter(d -> d.getName().equals("Adulto Extra"))
-                                                                        .map(FeedingItemsGrouped::getValue).findFirst()
-                                                                        .orElse(0f);
-                                                        BigDecimal totalCostFeeding = BigDecimal.valueOf(costAdultMayor)
-                                                                        .multiply(BigDecimal.valueOf(roomOffer
-                                                                                        .getAdultsMayorReserve()))
-                                                                        .add(BigDecimal.valueOf(costAdult)
-                                                                                        .multiply(BigDecimal.valueOf(
-                                                                                                        roomOffer.getAdultsReserve())))
-                                                                        .add(BigDecimal.valueOf(costKid)
-                                                                                        .multiply(BigDecimal.valueOf(
-                                                                                                        roomOffer.getKidsReserve())))
-                                                                        .add(BigDecimal.valueOf(costAdultExtra)
-                                                                                        .multiply(BigDecimal.valueOf(
-                                                                                                        roomOffer.getAdultsExtraReserve())));
-
+                                                        BigDecimal totalCostFeeding = GeneralMethods
+                                                                        .calculatedAmountFeeding(feedingList,
+                                                                                        feedingGroupedList,
+                                                                                        roomOffer.getAdultsReserve(),
+                                                                                        roomOffer.getAdultsExtraReserve(),
+                                                                                        roomOffer.getAdultsMayorReserve(),
+                                                                                        roomOffer.getKidsReserve());
                                                         roomOffer.setCosttotal(
                                                                         roomOffer.getCosttotal().add(totalCostFeeding));
                                                         roomOffer.setListFeeding(feedingList);

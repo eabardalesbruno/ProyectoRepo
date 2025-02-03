@@ -22,7 +22,7 @@ public interface FeedingTypeFamilyGroupAndFeedingRepository
                         join feeding_type ft on ft."id"=ff.idfeedingtype
                         join family_group fg on fg."id"=ff.idfamilygroup
                                 where ff.idfeeding=:idfeeding
-                                order by id desc;
+                                order by ff.idfamilygroup desc;
                         """)
         Flux<FeedingItemDto> findByIdfeeding(Integer idfeeding);
 

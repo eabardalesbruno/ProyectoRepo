@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Domain.dto.BookingFeedingDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.BookingFeedingEntity;
+import com.proriberaapp.ribera.Domain.entities.FeedingEntity;
 import com.proriberaapp.ribera.Domain.entities.PartnerPointsEntity;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
@@ -388,55 +389,6 @@ public class BookingServiceImpl implements BookingService {
                 return bookingRepository.findAllCalendarDate(id);
         }
 
-        /*
-         * @Override
-         * public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest
-         * bookingSaveRequest) {
-         *
-         * if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
-         * return Mono.error(new CustomException(HttpStatus.
-         * BAD_REQUEST,"La fecha de inicio no puede ser anterior al día actual"));
-         * }
-         * assert bookingSaveRequest.getNumberBaby() != null;
-         * assert bookingSaveRequest.getNumberChild() != null;
-         * assert bookingSaveRequest.getNumberAdult() != null;
-         * if(bookingSaveRequest.getNumberBaby()+bookingSaveRequest.getNumberChild()+
-         * bookingSaveRequest.getNumberAdult() == 0){
-         * return Mono.error(new CustomException(HttpStatus.BAD_REQUEST,
-         * "Debe seleccionar al menos un huésped"));
-         * }
-         *
-         * Integer numberOfDays =
-         * calculateDaysBetween(bookingSaveRequest.getDayBookingInit(),
-         * bookingSaveRequest.getDayBookingEnd());
-         *
-         * Mono<RoomOfferEntity> roomOfferEntityMono =
-         * roomOfferRespository.findById(bookingSaveRequest.getRoomOfferId());
-         *
-         * BookingEntity bookingEntity = BookingEntity.createBookingEntity(userClientId,
-         * bookingSaveRequest, numberOfDays);
-         *
-         * return bookingRepository.findExistingBookings(
-         * bookingEntity.getRoomOfferId(),
-         * bookingEntity.getDayBookingInit(),
-         * bookingEntity.getDayBookingEnd())
-         * .hasElements()
-         * .flatMap(exists -> exists
-         * ? Mono.error(new CustomException(HttpStatus.
-         * BAD_REQUEST,"La reserva ya existe para las fechas seleccionadas"))
-         * : Mono.just(bookingEntity)
-         * .flatMap(bookingEntity1 -> roomOfferEntityMono
-         * .map(roomOfferEntity -> {
-         * bookingEntity1.setCostFinal(roomOfferEntity.getCost().multiply(BigDecimal.
-         * valueOf(numberOfDays)));
-         * return bookingEntity1;
-         * })
-         * )
-         * .flatMap(bookingRepository::save)
-         * );
-         * }
-         */
-
         @Override
         public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest, Boolean isPromotor,
                         Boolean isReceptionist) {
@@ -481,154 +433,23 @@ public class BookingServiceImpl implements BookingService {
                 // Calcular el número de días entre la fecha de inicio y fin
                 Integer numberOfDays = calculateDaysBetween(bookingSaveRequest.getDayBookingInit(),
                                 bookingSaveRequest.getDayBookingEnd());
-
-                // Obtener el nombre de la habitación
-                /*
-                 * return getRoomName(bookingSaveRequest.getRoomOfferId())
-                 * .flatMap(roomName -> {
-                 * // Obtener la oferta de habitación
-                 * return roomOfferRepository.findById(bookingSaveRequest.getRoomOfferId())
-                 * .flatMap(roomOfferEntity -> {
-                 * // Crear la entidad de reserva con los datos
-                 * // proporcionados
-                 * BookingEntity bookingEntity = BookingEntity
-                 * .createBookingEntity(userClientId,
-                 * bookingSaveRequest,
-                 * numberOfDays,
-                 * isPromotor,
-                 * isReceptionist);
-                 * 
-                 * // Cálculo del costo inicial (bebés, niños, adultos,
-                 * // etc.)
-                 * 
-                 * BigDecimal costFinal = GeneralMethods
-                 * .calculateCostTotal(
-                 * bookingSaveRequest
-                 * .getAdultCost()
-                 * .floatValue(),
-                 * bookingSaveRequest
-                 * .getAdultExtraCost()
-                 * .floatValue(),
-                 * bookingSaveRequest
-                 * .getAdultMayorCost()
-                 * .floatValue(),
-                 * bookingSaveRequest
-                 * .getKidCost()
-                 * .floatValue(),
-                 * bookingSaveRequest
-                 * .getInfantCost()
-                 * .floatValue(),
-                 * bookingSaveRequest
-                 * .getNumberAdult(),
-                 * bookingSaveRequest
-                 * .getNumberAdultExtra(),
-                 * bookingSaveRequest
-                 * .getNumberAdultMayor(),
-                 * bookingSaveRequest
-                 * .getNumberBaby(),
-                 * bookingSaveRequest
-                 * .getNumberChild(),
-                 * numberOfDays - 1);
-                 * List<Integer> feedingIDsAsIntegers = bookingSaveRequest
-                 * .getFeedingIDs()
-                 * .stream()
-                 * .map(Long::intValue)
-                 * .collect(Collectors.toList());
-                 * return feedingRepository
-                 * .findAllById(feedingIDsAsIntegers)
-                 * .collectList()
-                 * .flatMap(feedingList -> {
-                 * BigDecimal extraCost = feedingList
-                 * .stream()
-                 * .map(feeding -> feeding
-                 * .getCost()
-                 * .multiply(
-                 * BigDecimal.valueOf(
-                 * bookingSaveRequest
-                 * .getTotalCapacity())))
-                 * .reduce(BigDecimal.ZERO,
-                 * BigDecimal::add);
-                 * 
-                 * bookingEntity.setCostFinal(
-                 * costFinal.add(extraCost));
-                 * 
-                 * return bookingRepository
-                 * .findExistingBookings(
-                 * bookingEntity.getRoomOfferId(),
-                 * bookingEntity.getDayBookingInit(),
-                 * bookingEntity.getDayBookingEnd())
-                 * .hasElements()
-                 * .flatMap(exists -> {
-                 * if (exists) {
-                 * return Mono.error(
-                 * new CustomException(
-                 * HttpStatus.BAD_REQUEST,
-                 * "La reserva ya existe para las fechas seleccionadas"));
-                 * } else {
-                 * return bookingRepository
-                 * .save(bookingEntity)
-                 * .flatMap(savedBooking -> {
-                 * 
-                 * return saveBookingFeeding(
-                 * Long.parseLong(savedBooking
-                 * .getBookingId()
-                 * .toString()),
-                 * bookingSaveRequest
-                 * .getFeedingIDs(),
-                 * bookingSaveRequest
-                 * .getTotalCapacity())
-                 * .then(sendBookingConfirmationEmail(
-                 * savedBooking,
-                 * roomName,
-                 * totalPeoples)
-                 * .then(Mono.just(savedBooking)));
-                 * });
-                 * 
-                 * }
-                 * })
-                 * .map(bookingEntity1 -> {
-                 * if (bookingSaveRequest
-                 * .getFinalCostumer() != null) {
-                 * 
-                 * bookingSaveRequest
-                 * .getFinalCostumer()
-                 * .stream()
-                 * .map(finalCostumer -> finalCostumerRepository
-                 * .save(FinalCostumer
-                 * .toFinalCostumerEntity(
-                 * bookingEntity1.getBookingId(),
-                 * finalCostumer)));
-                 * } else {
-                 * userClientRepository
-                 * .findById(userClientId)
-                 * .map(userClient -> {
-                 * FinalCostumer finalCostumer = FinalCostumer
-                 * .builder()
-                 * .firstName(userClient
-                 * .getFirstName())
-                 * .lastName(userClient
-                 * .getLastName())
-                 * .documentType(userClient
-                 * .getDocumenttypeId() == 1
-                 * ? "DNI"
-                 * : "PAS")
-                 * .documentNumber(
-                 * userClient.getDocumentNumber())
-                 * .yearOld(calculateAge(
-                 * userClient.getBirthDate()))
-                 * .build();
-                 * finalCostumerRepository
-                 * .save(
-                 * FinalCostumer.toFinalCostumerEntity(
-                 * bookingEntity1.getBookingId(),
-                 * finalCostumer));
-                 * return finalCostumer;
-                 * });
-                 * }
-                 * return bookingEntity1;
-                 * });
-                 * });
-                 */
+                List<Integer> feedingIDsAsIntegers = bookingSaveRequest
+                                .getFeedingIDs()
+                                .stream()
+                                .map(Long::intValue)
+                                .collect(Collectors.toList());
+                Flux<FeedingItemsGrouped> feedingsGrouped = Flux.defer(() -> {
+                        if (feedingIDsAsIntegers.size() > 0) {
+                                return this.feedingRepository.groupingByFamilyGroup(feedingIDsAsIntegers);
+                        }
+                        return Flux.empty();
+                });
+                Flux<FeedingEntity> feedings = Flux.defer(() -> {
+                        if (feedingIDsAsIntegers.size() > 0) {
+                                return this.feedingRepository.findAllById(feedingIDsAsIntegers);
+                        }
+                        return Flux.empty();
+                });
                 return getRoomName(bookingSaveRequest.getRoomOfferId())
                                 .flatMap(roomName -> {
                                         // Obtener la oferta de habitación
@@ -673,31 +494,132 @@ public class BookingServiceImpl implements BookingService {
                                                                                                 bookingSaveRequest
                                                                                                                 .getNumberChild(),
                                                                                                 numberOfDays - 1);
-                                                                List<Integer> feedingIDsAsIntegers = bookingSaveRequest
-                                                                                .getFeedingIDs()
-                                                                                .stream()
-                                                                                .map(Long::intValue)
-                                                                                .collect(Collectors.toList());
-                                                                return feedingRepository
-                                                                                .findAllById(feedingIDsAsIntegers)
-                                                                                .collectList()
-                                                                                .flatMap(feedingList -> {
-                                                                                        BigDecimal extraCost = feedingList
-                                                                                                        .stream()
-                                                                                                        .map(feeding -> feeding
-                                                                                                                        .getCost()
-                                                                                                                        .multiply(
-                                                                                                                                        BigDecimal.valueOf(
-                                                                                                                                                        bookingSaveRequest
-                                                                                                                                                                        .getTotalCapacity())))
-                                                                                                        .reduce(BigDecimal.ZERO,
-                                                                                                                        BigDecimal::add);
+                                                                /*
+                                                                 * return feedingRepository
+                                                                 * .findAllById(feedingIDsAsIntegers)
+                                                                 * .collectList()
+                                                                 * .flatMap(feedingList -> {
+                                                                 * BigDecimal extraCost = feedingList
+                                                                 * .stream()
+                                                                 * .map(feeding -> feeding
+                                                                 * .getCost()
+                                                                 * .multiply(
+                                                                 * BigDecimal.valueOf(
+                                                                 * bookingSaveRequest
+                                                                 * .getTotalCapacity())))
+                                                                 * .reduce(BigDecimal.ZERO,
+                                                                 * BigDecimal::add);
+                                                                 * bookingEntity.setCostFinal(
+                                                                 * costFinal.add(extraCost));
+                                                                 * return bookingRepository
+                                                                 * .findExistingBookings(
+                                                                 * bookingEntity.getRoomOfferId(),
+                                                                 * bookingEntity.getDayBookingInit(),
+                                                                 * bookingEntity.getDayBookingEnd())
+                                                                 * .hasElements()
+                                                                 * .flatMap(exists -> {
+                                                                 * if (exists && bookingSaveRequest
+                                                                 * .getBookingId() == null) {
+                                                                 * return Mono.error(
+                                                                 * new CustomException(
+                                                                 * HttpStatus.BAD_REQUEST,
+                                                                 * "La reserva ya existe para las fechas seleccionadas")
+                                                                 * );
+                                                                 * } else {
+                                                                 * return bookingRepository
+                                                                 * .save(bookingEntity)
+                                                                 * .flatMap(savedBooking -> {
+                                                                 * // Guardar
+                                                                 * // los
+                                                                 * // datos
+                                                                 * // de
+                                                                 * // booking_feeding
+                                                                 * // después
+                                                                 * // de
+                                                                 * // guardar
+                                                                 * // booking
+                                                                 * return saveBookingFeeding(
+                                                                 * Long.parseLong(savedBooking
+                                                                 * .getBookingId()
+                                                                 * .toString()),
+                                                                 * bookingSaveRequest
+                                                                 * .getFeedingIDs(),
+                                                                 * bookingSaveRequest
+                                                                 * .getTotalCapacity())
+                                                                 * .then(sendBookingConfirmationEmail(
+                                                                 * savedBooking,
+                                                                 * roomName,
+                                                                 * totalPeoples,
+                                                                 * bookingSaveRequest
+                                                                 * .isPaying())
+                                                                 * .then(Mono.just(savedBooking)));
+                                                                 * });
+                                                                 * }
+                                                                 * })
+                                                                 * .map(bookingEntity1 -> {
+                                                                 * if (bookingSaveRequest
+                                                                 * .getFinalCostumer() != null) {
+                                                                 * bookingSaveRequest
+                                                                 * .getFinalCostumer()
+                                                                 * .stream()
+                                                                 * .map(finalCostumer -> finalCostumerRepository
+                                                                 * .save(FinalCostumer
+                                                                 * .toFinalCostumerEntity(
+                                                                 * bookingEntity1.getBookingId(),
+                                                                 * finalCostumer)));
+                                                                 * } else {
+                                                                 * userClientRepository
+                                                                 * .findById(userClientId)
+                                                                 * .map(userClient -> {
+                                                                 * FinalCostumer finalCostumer = FinalCostumer
+                                                                 * .builder()
+                                                                 * .firstName(userClient
+                                                                 * .getFirstName())
+                                                                 * .lastName(userClient
+                                                                 * .getLastName())
+                                                                 * .documentType(userClient
+                                                                 * .getDocumenttypeId() == 1
+                                                                 * ? "DNI"
+                                                                 * : "PAS")
+                                                                 * .documentNumber(
+                                                                 * userClient.getDocumentNumber())
+                                                                 * .yearOld(calculateAge(
+                                                                 * userClient.getBirthDate()))
+                                                                 * .build();
+                                                                 * finalCostumerRepository
+                                                                 * .save(
+                                                                 * FinalCostumer.toFinalCostumerEntity(
+                                                                 * bookingEntity1.getBookingId(),
+                                                                 * finalCostumer));
+                                                                 * return finalCostumer;
+                                                                 * });
+                                                                 * }
+                                                                 * return bookingEntity1;
+                                                                 * });
+                                                                 * });
+                                                                 */
+                                                                return Mono.zip(feedings
+                                                                                .collectList(),
+                                                                                feedingsGrouped.collectList())
+                                                                                .flatMap(monoZip -> {
+                                                                                        List<FeedingEntity> feedingList = monoZip
+                                                                                                        .getT1();
+                                                                                        List<FeedingItemsGrouped> feedingItemsGrouped = monoZip
+                                                                                                        .getT2();
+                                                                                        BigDecimal extraCost = GeneralMethods
+                                                                                                        .calculatedAmountFeeding(
+                                                                                                                        feedingList,
+                                                                                                                        feedingItemsGrouped,
+                                                                                                                        bookingSaveRequest
+                                                                                                                                        .getNumberAdult(),
+                                                                                                                        bookingSaveRequest
+                                                                                                                                        .getNumberAdultExtra(),
+                                                                                                                        bookingSaveRequest
+                                                                                                                                        .getNumberAdultMayor(),
+                                                                                                                        bookingSaveRequest
+                                                                                                                                        .getNumberChild());
                                                                                         bookingEntity.setCostFinal(
                                                                                                         costFinal.add(extraCost));
-
-                                                                                        // Verificar si ya existe una
-                                                                                        // reserva para las fechas
-                                                                                        // seleccionadas
                                                                                         return bookingRepository
                                                                                                         .findExistingBookings(
                                                                                                                         bookingEntity.getRoomOfferId(),
@@ -707,30 +629,11 @@ public class BookingServiceImpl implements BookingService {
                                                                                                         .flatMap(exists -> {
                                                                                                                 if (exists && bookingSaveRequest
                                                                                                                                 .getBookingId() == null) {
-                                                                                                                        // Si
-                                                                                                                        // la
-                                                                                                                        // reserva
-                                                                                                                        // ya
-                                                                                                                        // existe,
-                                                                                                                        // lanzar
-                                                                                                                        // una
-                                                                                                                        // excepción
                                                                                                                         return Mono.error(
                                                                                                                                         new CustomException(
                                                                                                                                                         HttpStatus.BAD_REQUEST,
                                                                                                                                                         "La reserva ya existe para las fechas seleccionadas"));
                                                                                                                 } else {
-                                                                                                                        // Si
-                                                                                                                        // la
-                                                                                                                        // reserva
-                                                                                                                        // no
-                                                                                                                        // existe,
-                                                                                                                        // guardarla
-                                                                                                                        // en
-                                                                                                                        // la
-                                                                                                                        // base
-                                                                                                                        // de
-                                                                                                                        // datos
                                                                                                                         return bookingRepository
                                                                                                                                         .save(bookingEntity)
                                                                                                                                         .flatMap(savedBooking -> {
@@ -764,13 +667,6 @@ public class BookingServiceImpl implements BookingService {
                                                                                                         .map(bookingEntity1 -> {
                                                                                                                 if (bookingSaveRequest
                                                                                                                                 .getFinalCostumer() != null) {
-                                                                                                                        // Guardar
-                                                                                                                        // los
-                                                                                                                        // datos
-                                                                                                                        // de
-                                                                                                                        // los
-                                                                                                                        // huéspedes
-                                                                                                                        // finales
                                                                                                                         bookingSaveRequest
                                                                                                                                         .getFinalCostumer()
                                                                                                                                         .stream()
