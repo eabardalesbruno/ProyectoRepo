@@ -140,5 +140,13 @@ public class UserPromotersController {
                 .map(totalCommission -> ResponseEntity.ok(totalCommission))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/commissionAll")
+    public Mono<ResponseEntity<List<CommissionEntity>>> getCommissionByPromoterId(@RequestParam Integer promoterId) {
+        return commissionService.getCommissionByPromoterId(promoterId)
+                .collectList()
+                .map(commissions -> ResponseEntity.ok(commissions))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
 }
 
