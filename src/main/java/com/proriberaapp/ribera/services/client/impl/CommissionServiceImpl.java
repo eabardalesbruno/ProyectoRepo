@@ -109,6 +109,23 @@ public class CommissionServiceImpl implements CommissionService {
         return commissionRepository.findByPromoterId(promoterId);
     }
 
+    @Override
+    public Mono<CommissionEntity> getCommissionById(Integer commissionId) {
+        return commissionRepository.findByCommissionId(commissionId);
+    }
+
+    @Override
+    public Mono<CommissionEntity> updateCommission(Integer commissionId, Integer currencyTypeId, BigDecimal userAmount, String rucNumber, String invoiceDocument) {
+        return commissionRepository.findById(commissionId)
+                .flatMap(existingCommission -> {
+                    existingCommission.setCurrencyTypeId(currencyTypeId);
+                    existingCommission.setUserAmount(userAmount);
+                    existingCommission.setRucNumber(rucNumber);
+                    existingCommission.setInvoiceDocument(invoiceDocument);
+                    return commissionRepository.save(existingCommission);
+                });
+    }
+
 
     public Mono<String> generateSerialNumber() {
         return commissionRepository.findLastSerialNumber()
