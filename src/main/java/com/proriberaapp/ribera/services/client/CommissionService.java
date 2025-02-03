@@ -13,4 +13,6 @@ public interface CommissionService {
 
     Mono<BigDecimal> getTotalCommissionByPromoterId(Integer promoterId);
 
+    Flux<CommissionEntity> getCommissionByPromoterId(Integer promoterId);
+
 }
