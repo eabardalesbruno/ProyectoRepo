@@ -38,6 +38,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -607,7 +608,7 @@ public class BookingServiceImpl implements BookingService {
                                                                                         List<FeedingItemsGrouped> feedingItemsGrouped = monoZip
                                                                                                         .getT2();
                                                                                         BigDecimal extraCost = GeneralMethods
-                                                                                                        .calculatedAmountFeeding(
+                                                                                                        .calculatedTotalAmountFeeding(
                                                                                                                         feedingList,
                                                                                                                         feedingItemsGrouped,
                                                                                                                         bookingSaveRequest
@@ -620,6 +621,7 @@ public class BookingServiceImpl implements BookingService {
                                                                                                                                         .getNumberChild());
                                                                                         bookingEntity.setCostFinal(
                                                                                                         costFinal.add(extraCost));
+
                                                                                         return bookingRepository
                                                                                                         .findExistingBookings(
                                                                                                                         bookingEntity.getRoomOfferId(),
@@ -646,14 +648,69 @@ public class BookingServiceImpl implements BookingService {
                                                                                                                                                 // de
                                                                                                                                                 // guardar
                                                                                                                                                 // booking
-                                                                                                                                                return saveBookingFeeding(
+                                                                                                                                                /*
+                                                                                                                                                 * return
+                                                                                                                                                 * saveBookingFeeding(
+                                                                                                                                                 * Long
+                                                                                                                                                 * .
+                                                                                                                                                 * parseLong
+                                                                                                                                                 * (
+                                                                                                                                                 * savedBooking
+                                                                                                                                                 * .getBookingId
+                                                                                                                                                 * (
+                                                                                                                                                 * )
+                                                                                                                                                 * .toString
+                                                                                                                                                 * (
+                                                                                                                                                 * )
+                                                                                                                                                 * )
+                                                                                                                                                 * ,
+                                                                                                                                                 * bookingSaveRequest
+                                                                                                                                                 * .getFeedingIDs
+                                                                                                                                                 * (
+                                                                                                                                                 * )
+                                                                                                                                                 * ,
+                                                                                                                                                 * bookingSaveRequest
+                                                                                                                                                 * .getTotalCapacity
+                                                                                                                                                 * (
+                                                                                                                                                 * )
+                                                                                                                                                 * )
+                                                                                                                                                 * .then
+                                                                                                                                                 * (
+                                                                                                                                                 * sendBookingConfirmationEmail(
+                                                                                                                                                 * savedBooking,
+                                                                                                                                                 * roomName,
+                                                                                                                                                 * totalPeoples,
+                                                                                                                                                 * bookingSaveRequest
+                                                                                                                                                 * .isPaying
+                                                                                                                                                 * (
+                                                                                                                                                 * )
+                                                                                                                                                 * )
+                                                                                                                                                 * .then
+                                                                                                                                                 * (
+                                                                                                                                                 * Mono
+                                                                                                                                                 * .
+                                                                                                                                                 * just
+                                                                                                                                                 * (
+                                                                                                                                                 * savedBooking
+                                                                                                                                                 * )
+                                                                                                                                                 * )
+                                                                                                                                                 * )
+                                                                                                                                                 * ;
+                                                                                                                                                 */
+                                                                                                                                                return saveSelectedBookingFeeding(
                                                                                                                                                                 Long.parseLong(savedBooking
                                                                                                                                                                                 .getBookingId()
                                                                                                                                                                                 .toString()),
+                                                                                                                                                                feedingList,
+                                                                                                                                                                feedingItemsGrouped,
                                                                                                                                                                 bookingSaveRequest
-                                                                                                                                                                                .getFeedingIDs(),
+                                                                                                                                                                                .getNumberAdult(),
                                                                                                                                                                 bookingSaveRequest
-                                                                                                                                                                                .getTotalCapacity())
+                                                                                                                                                                                .getNumberAdultExtra(),
+                                                                                                                                                                bookingSaveRequest
+                                                                                                                                                                                .getNumberAdultMayor(),
+                                                                                                                                                                bookingSaveRequest
+                                                                                                                                                                                .getNumberChild())
                                                                                                                                                                 .then(sendBookingConfirmationEmail(
                                                                                                                                                                                 savedBooking,
                                                                                                                                                                                 roomName,
@@ -1076,6 +1133,54 @@ public class BookingServiceImpl implements BookingService {
         @Override
         public Mono<BookingEntity> findByIdAndIdUserAdmin(Integer idUserAdmin, Integer bookingId) {
                 return bookingRepository.findByBookingIdAndUserClientId(idUserAdmin, bookingId);
+        }
+
+        private Mono<Void> saveSelectedBookingFeeding(Long bookingId, List<FeedingEntity> feedings,
+                        List<FeedingItemsGrouped> feedingItemsGrouped, Integer quantityAdultReserve,
+                        Integer quantityAdultExtraReserve, Integer quantityAdultMayorReserve,
+                        Integer quantityKidReserve) {
+                return Mono.just(GeneralMethods.calculatedAmountForFeeding(feedings, feedingItemsGrouped,
+                                quantityAdultReserve,
+                                quantityAdultExtraReserve, quantityAdultMayorReserve,
+                                quantityKidReserve)).flatMap(mapTotalAmount -> {
+                                        List<BookingFeedingEntity> bookingFeedingList = new ArrayList<>();
+                                        for (FeedingEntity feeding : feedings) {
+                                                BookingFeedingEntity bookingFeeding = new BookingFeedingEntity();
+                                                BigDecimal totalAmount = mapTotalAmount.get(feeding.getId());
+                                                bookingFeeding.setBookingId(bookingId);
+                                                bookingFeeding.setFeedingId(feeding.getId().longValue());
+                                                bookingFeeding.setBookingfeedingamout(totalAmount.floatValue());
+                                                bookingFeedingList.add(bookingFeeding);
+                                        }
+                                        return bookingFeedingRepository.saveAll(bookingFeedingList).then();
+                                });
+
+                /*
+                 * return Flux.fromIterable(feedingIds)
+                 * .flatMap(feedingId -> {
+                 * // Obtener el precio del alimento desde el feedingRepository
+                 * return feedingRepository.findById(feedingId.intValue())
+                 * .flatMap(feedingEntity -> {
+                 * BookingFeedingEntity bookingFeeding = new BookingFeedingEntity();
+                 * bookingFeeding.setBookingId(bookingId);
+                 * bookingFeeding.setFeedingId(feedingId);
+                 * 
+                 * // Calcular el monto (precio del alimento * capacidad
+                 * // total)
+                 * BigDecimal feedingAmount = feedingEntity.getCost()
+                 * .multiply(BigDecimal.valueOf(
+                 * totalCapacity));
+                 * bookingFeeding.setBookingfeedingamout(
+                 * feedingAmount.floatValue());
+                 * System.out.println("feedingAmount: " + feedingAmount);
+                 * System.out.println("bookingFeeding: "
+                 * + bookingFeeding.getFeedingId());
+                 * // Guardar el BookingFeedingEntity en la base de datos
+                 * return bookingFeedingRepository.save(bookingFeeding);
+                 * });
+                 * })
+                 * .then();
+                 */// Retorna un Mono<Void> cuando se completan todos los guardados
         }
 
         private Mono<Void> saveBookingFeeding(Long bookingId, List<Long> feedingIds, Integer totalCapacity) {

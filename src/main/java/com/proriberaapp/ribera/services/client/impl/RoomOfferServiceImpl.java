@@ -168,7 +168,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                                         + roomOffer.getAdultsMayorReserve()
                                                                         + roomOffer.getKidsReserve();
                                                         BigDecimal totalCostFeeding = GeneralMethods
-                                                                        .calculatedAmountFeeding(feedingList,
+                                                                        .calculatedTotalAmountFeeding(feedingList,
                                                                                         feedingGroupedList,
                                                                                         roomOffer.getAdultsReserve(),
                                                                                         roomOffer.getAdultsExtraReserve(),
