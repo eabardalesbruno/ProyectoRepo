@@ -11,7 +11,7 @@ import com.proriberaapp.ribera.services.admin.impl.FeedingTypeManagerServiceImpl
 import reactor.core.publisher.Flux;
 
 @RestController
-@RequestMapping("${url.api}/maintenance/feeding-type")
+@RequestMapping("/api/v1/maintenance/feeding-type")
 public class FeedingTypeManagerController {
     @Autowired  
     private FeedingTypeManagerServiceImpl feedingTypeManagerServiceImpl;

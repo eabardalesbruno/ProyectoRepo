@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@RequestMapping("${url.api}/maintenance/family-group")
+@RequestMapping("/api/v1/maintenance/family-group")
 public class FamiliyGroupManagerController {
     @Autowired
     private FamilyGroupManagerSeviceImpl familyGroupManagerSeviceImpl;
