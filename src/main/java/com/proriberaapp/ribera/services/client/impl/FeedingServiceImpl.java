@@ -69,6 +69,7 @@ public class FeedingServiceImpl implements FeedingService {
                      * }))
                      * .then(Mono.just(savedFeeding));
                      */
+
                     return Flux.fromIterable(entities)
                             .flatMap(entity -> this.feedingTypeFamilyGroupAndFeedingRepository.save(entity))
                             .collectList()
@@ -89,10 +90,32 @@ public class FeedingServiceImpl implements FeedingService {
 
     @Override
     public Mono<FeedingEntity> updateFeeding(FeedingDto feedingDTO) {
+        List<FeedingTypeFeedingGroupAndFeedingEntity> entities = feedingDTO
+                .getItems()
+                .stream().map(d -> {
+                    FeedingTypeFeedingGroupAndFeedingEntity feedingTypeFeedingGroupAndFeedingEntity = FeedingTypeFeedingGroupAndFeedingEntity
+                            .builder()
+                            .idfamilygroup(d.getFamilyGroupId())
+                            .idfeedingtype(d.getFeedingTypeId())
+                            .value(d.getValue())
+                            .idfeeding(
+                                    feedingDTO.getFeedingEntity().getId())
+                            .build();
+                    return feedingTypeFeedingGroupAndFeedingEntity;
+                }).collect(Collectors.toList());
+        Mono<Void> updateFeedingTypeFeeding = Mono.defer(() -> {
+            return this.feedingTypeFamilyGroupAndFeedingRepository
+                    .deleteByIdfeeding(feedingDTO.getFeedingEntity().getId())
+                    .switchIfEmpty( Flux.fromIterable(
+                                entities)
+                                .flatMap(d -> this.feedingTypeFamilyGroupAndFeedingRepository.save(d))
+                            .collectList().then());
+
+        });
         return feedingRepository.save(feedingDTO.getFeedingEntity())
                 .flatMap(updatedFeeding -> {
                     if (feedingDTO.getRoomOfferIds() == null || feedingDTO.getRoomOfferIds().isEmpty()) {
-                        return Mono.just(updatedFeeding);
+                        return updateFeedingTypeFeeding.then(Mono.just(updatedFeeding));
                     }
                     return roomOfferFeedingRepository.findByFeedingId(updatedFeeding.getId())
                             .collectList()
