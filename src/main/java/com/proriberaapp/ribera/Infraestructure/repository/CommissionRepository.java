@@ -25,7 +25,8 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
 
     @Query("SELECT serialNumber FROM commission ORDER BY commissionId DESC LIMIT 1")
     Mono<String> findLastSerialNumber();
-
     Flux<CommissionEntity> findByPromoterId(Integer promoterId);
+
+    Mono<CommissionEntity> findByCommissionId(Integer commissionId);
 
 }
