@@ -12,6 +12,7 @@ import com.proriberaapp.ribera.Domain.dto.DiscountDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
+import com.proriberaapp.ribera.Infraestructure.exception.PasswordNotMatchesException;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
@@ -835,6 +836,23 @@ public class UserClientServiceImpl implements UserClientService {
                 .flatMap(passwordReset -> Mono.zip(this.userClientRepository.updatePassword(passwordReset.getUser_id(),
                         passwordEncoded), this.passwordResetCodeService.useCode(code)))
                 .then();
+    }
+
+    @Override
+    public Mono<Void> updateAndValidatePassword(Integer userId, String currentPassword, String newPassword,
+            String confirmPassword) {
+        return this.userClientRepository.findById(userId).flatMap(user -> {
+            String passwordEncoded = passwordEncoder.encode(newPassword);
+            if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+                return Mono.error(new PasswordNotMatchesException("Actual", " password guardado"));
+            }
+            if (!newPassword.equals(confirmPassword)) {
+                return Mono.error(new PasswordNotMatchesException("Nueva", " confirmación de contraseña"));
+            }
+            user.setPassword(passwordEncoded);
+            return this.userClientRepository.save(user);
+        }).then();
+
     }
 
 }
