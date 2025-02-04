@@ -10,4 +10,5 @@ import java.util.List;
 public class FeedingDto {
     private FeedingEntity feedingEntity;
     private List<Integer> roomOfferIds;
+    private List<FeedingItemSaveDto> items;
 }

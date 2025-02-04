@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.FeedingItemsGrouped;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOffer;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOfferFiltro;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
@@ -8,6 +9,7 @@ import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.Infraestructure.viewRepository.RoomOfferViewRepository;
 import com.proriberaapp.ribera.services.client.RoomOfferService;
+import com.proriberaapp.ribera.utils.GeneralMethods;
 import com.proriberaapp.ribera.utils.TransformDate;
 
 import ch.qos.logback.core.helpers.Transform;
@@ -79,18 +81,36 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                         Integer adultExtraCapacity, Integer infantCapacity, List<Integer> feedingsSelected,
                         boolean isFirstState) {
                 int totalCapacityWithOutInfant = kidCapacity + adultCapacity + adultMayorCapacity + adultExtraCapacity;
-                Flux<FeedingEntity> feedings = this.feedingRepository.findAllById(feedingsSelected);
+                /*
+                 * Flux<FeedingItemsGrouped> feedingsGrouped = this.feedingRepository
+                 * .groupingByFamilyGroup(feedingsSelected);
+                 * Flux<FeedingEntity> feedings =
+                 * this.feedingRepository.findAllById(feedingsSelected);
+                 */
+                Flux<FeedingItemsGrouped> feedingsGrouped = Flux.defer(() -> {
+                        if (feedingsSelected.size() > 0) {
+                                return this.feedingRepository.groupingByFamilyGroup(feedingsSelected);
+                        }
+                        return Flux.empty();
+                });
+                Flux<FeedingEntity> feedings = Flux.defer(() -> {
+                        if (feedingsSelected.size() > 0) {
+                                return this.feedingRepository.findAllById(feedingsSelected);
+                        }
+                        return Flux.empty();
+                });
+
                 return roomOfferRepository.findFilteredV2(
                                 isFirstState,
                                 roomTypeId,
                                 categoryName, offerTimeInit, offerTimeEnd,
                                 kidCapacity, adultCapacity, adultMayorCapacity, adultExtraCapacity,
                                 infantCapacity)
-                                 .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
+                                .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
                                                 roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
                                                 .hasElements()
-                                                .map(hasConflicts -> !hasConflicts)) 
-                           
+                                                .map(hasConflicts -> !hasConflicts))
+
                                 .map(roomOffer -> {
                                         roomOffer.setKidsReserve(kidCapacity);
                                         roomOffer.setAdultsReserve(
@@ -138,20 +158,22 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                 }))
                                 .collectSortedList(Comparator.comparing(ViewRoomOfferReturn::getRoomOfferId))
                                 .flatMapMany(Flux::fromIterable)
-                                .flatMap(roomOffer -> feedings.collectList()
-                                                .map(feedingList -> {
+                                .flatMap(roomOffer -> Mono.zip(feedings
+                                                .collectList(), feedingsGrouped.collectList())
+                                                .map(zipMono -> {
+                                                        List<FeedingEntity> feedingList = zipMono.getT1();
+                                                        List<FeedingItemsGrouped> feedingGroupedList = zipMono.getT2();
                                                         Integer totalPerson = roomOffer.getAdultsReserve()
                                                                         + roomOffer.getAdultsExtraReserve()
                                                                         + roomOffer.getAdultsMayorReserve()
                                                                         + roomOffer.getKidsReserve();
-                                                        BigDecimal totalCostFeeding = feedingList.stream().reduce(
-                                                                        BigDecimal.ZERO,
-                                                                        (subtotal, element) -> subtotal
-                                                                                        .add(element.getCost()),
-                                                                        BigDecimal::add).multiply(
-                                                                                        BigDecimal
-                                                                                                        .valueOf(totalPerson));
-
+                                                        BigDecimal totalCostFeeding = GeneralMethods
+                                                                        .calculatedTotalAmountFeeding(feedingList,
+                                                                                        feedingGroupedList,
+                                                                                        roomOffer.getAdultsReserve(),
+                                                                                        roomOffer.getAdultsExtraReserve(),
+                                                                                        roomOffer.getAdultsMayorReserve(),
+                                                                                        roomOffer.getKidsReserve());
                                                         roomOffer.setCosttotal(
                                                                         roomOffer.getCosttotal().add(totalCostFeeding));
                                                         roomOffer.setListFeeding(feedingList);

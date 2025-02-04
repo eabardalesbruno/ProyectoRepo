@@ -2,12 +2,18 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.dto.FeedingDto;
 import com.proriberaapp.ribera.Domain.entities.FeedingEntity;
+import com.proriberaapp.ribera.Domain.entities.FeedingTypeFeedingGroupAndFeedingEntity;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferFeedingEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.FeedingRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.FeedingTypeFamilyGroupAndFeedingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferFeedingRepository;
 import com.proriberaapp.ribera.services.client.FeedingService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -19,6 +25,7 @@ public class FeedingServiceImpl implements FeedingService {
     private final FeedingRepository feedingRepository;
     private final BookingRepository bookingRepository;
     private final RoomOfferFeedingRepository roomOfferFeedingRepository;
+    private final FeedingTypeFamilyGroupAndFeedingRepository feedingTypeFamilyGroupAndFeedingRepository;
 
     @Override
     public Flux<FeedingEntity> findAllFeeding() {
@@ -34,25 +41,81 @@ public class FeedingServiceImpl implements FeedingService {
     public Mono<FeedingEntity> saveFeeding(FeedingDto feedingDTO) {
         return feedingRepository.save(feedingDTO.getFeedingEntity())
                 .flatMap(savedFeeding -> {
-                    return Flux.fromIterable(feedingDTO.getRoomOfferIds())
-                            .flatMap(roomOfferId -> {
-                                RoomOfferFeedingEntity roomOfferFeedingEntity = RoomOfferFeedingEntity.builder()
-                                        .roomOfferId(roomOfferId)
-                                        .feedingId(savedFeeding.getId())
+                    List<FeedingTypeFeedingGroupAndFeedingEntity> entities = feedingDTO
+                            .getItems()
+                            .stream().map(d -> {
+                                FeedingTypeFeedingGroupAndFeedingEntity feedingTypeFeedingGroupAndFeedingEntity = FeedingTypeFeedingGroupAndFeedingEntity
+                                        .builder()
+                                        .idfamilygroup(d.getFamilyGroupId())
+                                        .idfeedingtype(d.getFeedingTypeId())
+                                        .value(d.getValue())
+                                        .idfeeding(
+                                                savedFeeding.getId())
                                         .build();
-                                return roomOfferFeedingRepository.save(roomOfferFeedingEntity);
-                            })
-                            .then(Mono.just(savedFeeding)); // Devolver el FeedingEntity guardado después de guardar
-                                                            // todas las relaciones
+                                return feedingTypeFeedingGroupAndFeedingEntity;
+                            }).collect(Collectors.toList());
+                    /*
+                     * return Flux.zip(this.feedingTypeFamilyGroupAndFeedingRepository
+                     * .saveAll(feedingTypeFeedingGroupAndFeedingEntities),
+                     * Flux.fromIterable(feedingDTO.getRoomOfferIds())
+                     * .flatMap(roomOfferId -> {
+                     * RoomOfferFeedingEntity roomOfferFeedingEntity =
+                     * RoomOfferFeedingEntity.builder()
+                     * .roomOfferId(roomOfferId)
+                     * .feedingId(savedFeeding.getId())
+                     * .build();
+                     * return roomOfferFeedingRepository.save(roomOfferFeedingEntity);
+                     * 
+                     * }))
+                     * .then(Mono.just(savedFeeding));
+                     */
+
+                    return Flux.fromIterable(entities)
+                            .flatMap(entity -> this.feedingTypeFamilyGroupAndFeedingRepository.save(entity))
+                            .collectList()
+                            .flatMap(savedItems -> {
+                                return Flux.fromIterable(feedingDTO.getRoomOfferIds())
+                                        .flatMap(roomOfferId -> {
+                                            RoomOfferFeedingEntity roomOffer = RoomOfferFeedingEntity.builder()
+                                                    .roomOfferId(roomOfferId)
+                                                    .feedingId(savedFeeding.getId())
+                                                    .build();
+                                            return roomOfferFeedingRepository.save(roomOffer);
+                                        })
+                                        .collectList()
+                                        .thenReturn(savedFeeding);
+                            });
                 });
     }
 
     @Override
     public Mono<FeedingEntity> updateFeeding(FeedingDto feedingDTO) {
+        List<FeedingTypeFeedingGroupAndFeedingEntity> entities = feedingDTO
+                .getItems()
+                .stream().map(d -> {
+                    FeedingTypeFeedingGroupAndFeedingEntity feedingTypeFeedingGroupAndFeedingEntity = FeedingTypeFeedingGroupAndFeedingEntity
+                            .builder()
+                            .idfamilygroup(d.getFamilyGroupId())
+                            .idfeedingtype(d.getFeedingTypeId())
+                            .value(d.getValue())
+                            .idfeeding(
+                                    feedingDTO.getFeedingEntity().getId())
+                            .build();
+                    return feedingTypeFeedingGroupAndFeedingEntity;
+                }).collect(Collectors.toList());
+        Mono<Void> updateFeedingTypeFeeding = Mono.defer(() -> {
+            return this.feedingTypeFamilyGroupAndFeedingRepository
+                    .deleteByIdfeeding(feedingDTO.getFeedingEntity().getId())
+                    .switchIfEmpty( Flux.fromIterable(
+                                entities)
+                                .flatMap(d -> this.feedingTypeFamilyGroupAndFeedingRepository.save(d))
+                            .collectList().then());
+
+        });
         return feedingRepository.save(feedingDTO.getFeedingEntity())
                 .flatMap(updatedFeeding -> {
                     if (feedingDTO.getRoomOfferIds() == null || feedingDTO.getRoomOfferIds().isEmpty()) {
-                        return Mono.just(updatedFeeding);
+                        return updateFeedingTypeFeeding.then(Mono.just(updatedFeeding));
                     }
                     return roomOfferFeedingRepository.findByFeedingId(updatedFeeding.getId())
                             .collectList()
