@@ -3,23 +3,31 @@ package com.proriberaapp.ribera.Api.controllers.promoters;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PromotorDataDTO;
-import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
-import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
 import com.proriberaapp.ribera.Domain.enums.StatesUser;
+import com.proriberaapp.ribera.services.S3UploadService;
 import com.proriberaapp.ribera.services.client.CommissionService;
 import com.proriberaapp.ribera.services.promoters.UserPromoterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 
 import static com.proriberaapp.ribera.utils.GeneralMethods.generatePassword;
@@ -36,6 +44,9 @@ public class UserPromotersController {
 
     @Autowired
     private final CommissionService commissionService;
+
+    @Autowired
+    private final S3UploadService yourService;
 
     @PostMapping("/register")
     public Mono<Object> register( @RequestBody RegisterRequest registerRequest) {
@@ -155,9 +166,20 @@ public class UserPromotersController {
         return commissionService.getCommissionById(commissionId);
     }
 
-    @PutMapping("ComissionFile/{commissionId}")
-    public Mono<CommissionEntity> updateCommission(@PathVariable Integer commissionId, @RequestParam Integer currencyTypeId, @RequestParam BigDecimal userAmount, @RequestParam String rucNumber, @RequestParam String invoiceDocument) {
-        return commissionService.updateCommission(commissionId, currencyTypeId, userAmount, rucNumber, invoiceDocument);
+
+    @PutMapping("/{commissionId}/update")
+    public Mono<ResponseEntity<CommissionEntity>> updateCommission(@PathVariable Integer commissionId,
+            @RequestParam Integer currencyTypeId,
+            @RequestParam BigDecimal userAmount,
+            @RequestParam String rucNumber,
+            @RequestPart("file") Mono<FilePart> file,
+            @RequestParam Integer folderNumber) {
+        return commissionService.updateCommission(commissionId, currencyTypeId, userAmount, rucNumber, file, folderNumber)
+                .map(updatedCommission -> ResponseEntity.ok(updatedCommission))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
+
+
+
 }
 

@@ -78,4 +78,7 @@ public class CommissionEntity {
 
     @Column("daybookinginit")
     private Timestamp dayBookingInit;
+
+    @Column("dateofapplication")
+    private Timestamp dateofapplication;
 }
