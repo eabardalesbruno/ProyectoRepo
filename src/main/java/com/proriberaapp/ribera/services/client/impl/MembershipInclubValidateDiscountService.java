@@ -88,7 +88,7 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                                 }
                                 return this.discountRepository
                                         .getDiscountWithItemsAndCurrentYear(userId,
-                                                memberships.stream().filter(d->d.getIdStatus()==1 && d.getIdFamilyPackage()==2).map(d -> d.getIdPackage()).toList())
+                                                memberships.stream().filter(d->d.getIdFamilyPackage()==2).map(d -> d.getIdPackage()).toList())
                                         .collectList().flatMap(listPercentage -> {
                                             return Mono.just(UserNameAndDiscountDto.builder()
                                                     .username(userData.getUsername())
