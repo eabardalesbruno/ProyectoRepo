@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.FeedingItemsGrouped;
 import com.proriberaapp.ribera.Domain.entities.FeedingEntity;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -16,15 +17,17 @@ public interface FeedingRepository extends ReactiveCrudRepository<FeedingEntity,
     @Query("SELECT * FROM feeding WHERE state = :state")
     Flux<FeedingEntity> findAllState(Integer state);
 
-    
-        @Query("""
-                        select ftg.idfeeding,sum(ftg."value") as value, fg."name" as name from feeding_type_feeding_family_group ftg
-                                 join feeding_type ft on ft."id"=ftg.idfeedingtype
-                                 join family_group fg on fg."id"=ftg.idfamilygroup
-                                  where ftg.idfeeding in (:idfeeding)
-                                 GROUP BY fg."name",   ftg.idfeeding;
+    @Query("""
+            select ftg.idfeeding,sum(ftg."value") as value, fg."name" as name from feeding_type_feeding_family_group ftg
+                     join feeding_type ft on ft."id"=ftg.idfeedingtype
+                     join family_group fg on fg."id"=ftg.idfamilygroup
+                      where ftg.idfeeding in (:idfeeding)
+                     GROUP BY fg."name",   ftg.idfeeding;
 
-                         """)
-        Flux<FeedingItemsGrouped> groupingByFamilyGroup(List<Integer> idfeeding);
+             """)
+    Flux<FeedingItemsGrouped> groupingByFamilyGroup(List<Integer> idfeeding);
+
+    @Query("UPDATE feeding SET state = 2 WHERE id = :id")
+    Mono<Void> updateStateDelete(Integer id);
 
 }

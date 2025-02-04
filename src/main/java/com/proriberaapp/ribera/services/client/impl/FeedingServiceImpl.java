@@ -163,8 +163,7 @@ public class FeedingServiceImpl implements FeedingService {
 
     @Override
     public Mono<Void> deleteFeeding(Integer feedingId) {
-        System.out.println(feedingId);
-        return feedingRepository.deleteById(feedingId); // Obtener los roomOfferIds asociados
+        return feedingRepository.updateStateDelete(feedingId); // Obtener los roomOfferIds asociados
         // .flatMap(roomOfferFeeding -> {
         // Verificar si existe una reserva con bookingStateId = 3 para cada roomOfferId
         // return
