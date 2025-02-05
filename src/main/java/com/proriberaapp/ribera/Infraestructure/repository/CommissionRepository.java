@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
+import com.proriberaapp.ribera.Domain.dto.CommissionDTO;
 import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
@@ -28,5 +29,27 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
     Flux<CommissionEntity> findByPromoterId(Integer promoterId);
 
     Mono<CommissionEntity> findByCommissionId(Integer commissionId);
+
+
+    @Query("""
+        SELECT 
+            c.commissionid,
+            c.disbursementdate,
+            c.promoterid,
+            p.firstname || ' ' || p.lastname AS promoter_fullname,
+            c.rucnumber,
+            c.commissionamount,
+            c.currencytypeid,
+            c.status,
+            c.invoicedocument,
+            c.processed,
+            c.currencytypeid
+        FROM commission c
+        LEFT JOIN userpromoter p ON c.promoterid = p.userpromoterid
+        ORDER BY c.disbursementdate DESC
+        LIMIT :size OFFSET :offset
+    """)
+    Flux<CommissionDTO> findAllWithPromoter(int size, int offset);
+
 
 }

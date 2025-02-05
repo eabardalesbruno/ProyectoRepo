@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 
+import com.proriberaapp.ribera.Domain.dto.CommissionDTO;
 import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.services.client.CommissionService;
@@ -10,10 +11,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/commission")
@@ -35,6 +38,16 @@ public class CommissionController {
         return commissionService.getTotalCommissionByPromoterId(promoterId)
                 .map(totalCommission -> ResponseEntity.ok(totalCommission))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/allCommission")
+    public Flux<CommissionEntity> getAllCommission() {
+        return commissionService.getAllCommission();
+    }
+
+    @GetMapping("/commissionPaged")
+    public Flux<CommissionDTO> getCommissionsPaged(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        return commissionService.getCommissionsPaged(page, size);
     }
 
     @GetMapping("/commissionAll")
@@ -64,4 +77,14 @@ public class CommissionController {
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
     }
 
+    @PutMapping("/{commissionId}/status")
+    public Mono<ResponseEntity<CommissionEntity>> updateStatus(
+            @PathVariable Integer commissionId,
+            @RequestBody Map<String, String> request) {
+
+        String status = request.get("status");
+        return commissionService.updateStatusByCommissionId(commissionId, status)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
 }
