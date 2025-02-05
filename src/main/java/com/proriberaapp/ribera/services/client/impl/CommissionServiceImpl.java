@@ -4,13 +4,22 @@ import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.CommissionRepository;
+import com.proriberaapp.ribera.services.S3UploadService;
+import com.proriberaapp.ribera.services.admin.impl.S3ClientService;
 import com.proriberaapp.ribera.services.client.CommissionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 
@@ -22,6 +31,12 @@ public class CommissionServiceImpl implements CommissionService {
 
     @Autowired
     private BookingRepository bookingRepository;
+
+    @Autowired
+    private S3UploadService s3UploadService;
+
+    @Autowired
+    private S3ClientService s3ClientService;
 
 
     @Override
@@ -115,16 +130,23 @@ public class CommissionServiceImpl implements CommissionService {
     }
 
     @Override
-    public Mono<CommissionEntity> updateCommission(Integer commissionId, Integer currencyTypeId, BigDecimal userAmount, String rucNumber, String invoiceDocument) {
+    public Mono<CommissionEntity> updateCommission(Integer commissionId, Integer currencyTypeId, BigDecimal userAmount, String rucNumber, Mono<FilePart> file, Integer folderNumber) {
         return commissionRepository.findById(commissionId)
-                .flatMap(existingCommission -> {
-                    existingCommission.setCurrencyTypeId(currencyTypeId);
-                    existingCommission.setUserAmount(userAmount);
-                    existingCommission.setRucNumber(rucNumber);
-                    existingCommission.setInvoiceDocument(invoiceDocument);
-                    return commissionRepository.save(existingCommission);
-                });
+                .flatMap(existingCommission ->
+                        s3ClientService.uploadFile(file, folderNumber)
+                                .flatMap(url -> {
+                                    existingCommission.setCurrencyTypeId(currencyTypeId);
+                                    existingCommission.setUserAmount(userAmount);
+                                    existingCommission.setRucNumber(rucNumber);
+                                    existingCommission.setStatus("Activo");
+                                    existingCommission.setInvoiceDocument(url);
+                                    existingCommission.setDateofapplication(new Timestamp(System.currentTimeMillis()));
+                                    return commissionRepository.save(existingCommission);
+                                })
+                );
     }
+
+
 
 
     public Mono<String> generateSerialNumber() {
