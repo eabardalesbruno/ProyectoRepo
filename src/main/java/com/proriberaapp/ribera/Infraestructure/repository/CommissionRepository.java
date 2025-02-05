@@ -43,13 +43,14 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
             c.status,
             c.invoicedocument,
             c.processed,
-            c.currencytypeid
-        FROM commission c
+            c.currencytypeid,
+            (SELECT COUNT(*) FROM commission WHERE rucnumber IS NOT NULL) AS total_commissions
+            FROM commission c
         LEFT JOIN userpromoter p ON c.promoterid = p.userpromoterid
+        WHERE c.rucnumber IS NOT NULL
         ORDER BY c.disbursementdate DESC
         LIMIT :size OFFSET :offset
     """)
     Flux<CommissionDTO> findAllWithPromoter(int size, int offset);
-
 
 }

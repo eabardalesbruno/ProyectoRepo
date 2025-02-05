@@ -40,4 +40,7 @@ public class CommissionDTO {
 
     @Column("currencytypeid")
     private Integer currencyTypeId;
+
+    @Column("total_commissions")
+    private Integer total_commissions;
 }

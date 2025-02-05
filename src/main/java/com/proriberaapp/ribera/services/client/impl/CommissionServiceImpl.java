@@ -158,7 +158,6 @@ public class CommissionServiceImpl implements CommissionService {
         return commissionRepository.findAllWithPromoter(size, offset);
     }
 
-
     public Mono<String> generateSerialNumber() {
         return commissionRepository.findLastSerialNumber()
                 .map(this::incrementSerialNumber)
