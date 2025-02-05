@@ -28,4 +28,8 @@ public class InvoiceResponse {
                 ", link_pdf='" + link_pdf + '\'' +
                 '}';
     }
+
+    public static InvoiceResponse dummyData(){
+        return new InvoiceResponse("key","numero",false,"sunat_description","sunat_note","3","link_pdf");
+    }
 }
