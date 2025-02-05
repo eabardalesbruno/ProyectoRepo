@@ -34,15 +34,31 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
     @Value("${sunat.api.token}")
     private String token;
 
+    @Value("${app.enviar-comprobante-facturacion}")
+    private Boolean enviarComprobanteFacturacion;
+
     @Override
     public Mono<InvoiceResponse> sendInvoice(InvoiceDomain invoice) {
         JSONObject invoiceJson = this.formatJson(invoice);
-        return this.sendToFacturator(invoiceJson);
+        System.out.println("VARIABLEEEEEEEE "+enviarComprobanteFacturacion);
+        Mono<InvoiceResponse> response =Mono.defer(()->{
+            if (enviarComprobanteFacturacion) {
+                System.out.println("Enviando a facturador");
+ 
+                 return this.sendToFacturator(invoiceJson); 
+            } else {
+                System.out.println("No se envia a facturador");
+                return Mono.just(InvoiceResponse.dummyData());
+            }
+        });
+       /*  return this.sendToFacturator(invoiceJson); */
+        return response;
 
     }
 
     private Mono<InvoiceResponse> sendToFacturator(JSONObject invoiceJson) {
         WebClient client = this.configureFetchVisualCont();
+
         Mono<InvoiceResponse> response = client.post()
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Token token=" + this.token)
