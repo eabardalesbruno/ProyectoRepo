@@ -254,22 +254,26 @@ public class CompanionServiceImpl implements CompanionsService {
     private String generatebody(String titularName, String titularLastName, String titulartypeDocument, int titularAge, String titularDocument,
                                 String titularCellphone, String titularEmail, List<CompanionsEntity> companions) {
         StringBuilder companionsHtml = new StringBuilder();
+        boolean hasCompanion = false;
         for (CompanionsEntity companion : companions) {
             if (Boolean.TRUE.equals(companion.isTitular())) {
                 continue;
             }
 
-            String gender = (companion.getGenderId() != null) ? (companion.getGenderId() == 1 ? "Masculino" : (companion.getGenderId() == 2 ? "Femenino" : " ")) : " ";
-            String documentType = (companion.getTypeDocumentId() != null) ? (companion.getTypeDocumentId() == 1 ? "DNI" : (companion.getTypeDocumentId() == 2 ? "RUC" : " ")) : " ";
-            String age = (companion.getYears() != null) ? String.valueOf(companion.getYears()) : "----";
+            if (companion.getFirstname() != null && !companion.getFirstname().isEmpty()) {
+                hasCompanion = true;
+                String gender = (companion.getGenderId() != null) ? (companion.getGenderId() == 1 ? "Masculino" : (companion.getGenderId() == 2 ? "Femenino" : " ")) : " ";
+                String documentType = (companion.getTypeDocumentId() != null) ? (companion.getTypeDocumentId() == 1 ? "DNI" : (companion.getTypeDocumentId() == 2 ? "RUC" : " ")) : " ";
+                String age = (companion.getYears() != null) ? String.valueOf(companion.getYears()) : "----";
 
-            companionsHtml.append("<div class=\"companion\">")
-                    .append("<p><strong>Nombre:</strong> ").append(companion.getFirstname()).append(" ").append(companion.getLastname()).append("</p>")
-                    .append("<p><strong>Tipo de Documento:</strong> ").append(documentType).append("</p>")
-                    .append("<p><strong>Número de Documento:</strong> ").append(companion.getDocumentNumber()).append("</p>")
-                    .append("<p><strong>Género:</strong> ").append(gender).append("</p>")
-                    .append("<p><strong>Edad:</strong> ").append(age).append("</p>")
-                    .append("</div>");
+                companionsHtml.append("<div class=\"companion\">")
+                        .append("<p><strong>Nombre:</strong> ").append(companion.getFirstname()).append(" ").append(companion.getLastname()).append("</p>")
+                        .append("<p><strong>Tipo de Documento:</strong> ").append(documentType).append("</p>")
+                        .append("<p><strong>Número de Documento:</strong> ").append(companion.getDocumentNumber()).append("</p>")
+                        .append("<p><strong>Género:</strong> ").append(gender).append("</p>")
+                        .append("<p><strong>Edad:</strong> ").append(age).append("</p>")
+                        .append("</div>");
+            }
         }
 
         String titularGender = titularDocument != null && titularDocument.equals("1") ? "Masculino" : "Femenino";
@@ -446,7 +450,9 @@ public class CompanionServiceImpl implements CompanionsService {
                 "                                                <p><strong>Email:</strong> " + titularEmail + "</p>\n" +
                 "                                            </div>\n" +
                 "                                        <h2>Acompañantes</h2>\n" +
-                "                                        <div class=\"section\">\n" + companionsHtml + "</div>\n" +
+                "                                        <div class=\"section\">\n" +
+                (hasCompanion ? companionsHtml.toString() : "<p>No se registraron acompañantes.</p>") +
+                "</div>\n" +
                 "                                        </div>\n" +
                 "                                    </table>\n" +
                 "                                </td>\n" +
