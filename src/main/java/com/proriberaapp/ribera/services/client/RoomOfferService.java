@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferRetu
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.services.BaseService;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,5 +28,7 @@ public interface RoomOfferService extends BaseService<RoomOfferEntity, RoomOffer
                         LocalDate offerTimeEnd,
                         Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
                         Integer adultExtra);
+
+        Mono<ViewRoomOfferReturn> findRoomOfferById(Integer id);
 
 }

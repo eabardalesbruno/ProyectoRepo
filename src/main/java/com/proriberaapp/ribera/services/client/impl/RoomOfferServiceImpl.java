@@ -407,4 +407,23 @@ public class RoomOfferServiceImpl implements RoomOfferService {
         private Integer calculatePoints(BigDecimal price, Integer points) {
                 return price.intValue() / points;
         }
+
+        @Override
+        public Mono<ViewRoomOfferReturn> findRoomOfferById(Integer roomOfferId) {
+                return Mono.zip(this.roomOfferRepository.findViewRoomOfferReturnByRoomOfferId(roomOfferId),
+                                servicesRepository
+                                                .findAllViewComfortReturn(
+                                                                roomOfferId)
+                                                .collectList(),
+                                bedroomRepository.findAllViewBedroomReturn(
+                                                roomOfferId)
+                                                .collectList())
+                                .flatMap(tuple -> {
+                                        ViewRoomOfferReturn viewRoomOfferReturn = tuple.getT1();
+                                        viewRoomOfferReturn.setListAmenities(tuple.getT2());
+                                        viewRoomOfferReturn.setListBedroomReturn(tuple.getT3());
+                                        return Mono.just(viewRoomOfferReturn);
+                                }).switchIfEmpty(
+                                                Mono.error(new IllegalArgumentException("No se encontró la oferta")));
+        }
 }
