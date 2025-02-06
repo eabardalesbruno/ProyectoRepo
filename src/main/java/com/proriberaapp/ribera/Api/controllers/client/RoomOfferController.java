@@ -30,6 +30,10 @@ public class RoomOfferController {
     public Mono<RoomOfferEntity> findRoomOfferById(@PathVariable Integer id) {
         return roomOfferService.findById(id);
     }
+    @GetMapping("/detail/{id}")
+    public Mono<ViewRoomOfferReturn> findDetailRoomOfferById(@PathVariable Integer id) {
+        return roomOfferService.findRoomOfferById(id);
+    }
 
     @GetMapping("/find/all")
     public Flux<RoomOfferEntity> findAllRoomOffers() {
