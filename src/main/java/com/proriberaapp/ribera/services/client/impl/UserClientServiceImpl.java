@@ -855,10 +855,10 @@ public class UserClientServiceImpl implements UserClientService {
     @Override
     public Mono<Void> changePassword(String code, String password) {
         String passwordEncoded = passwordEncoder.encode(password);
-
         return this.passwordResetCodeService.verfiedCode(code)
                 .flatMap(passwordReset -> {
-                    return Mono.firstWithValue(
+                    // Verificamos si el código corresponde a un UserClientEntity o un UserPromoterEntity
+                    return Mono.zip(
                                     this.userClientRepository.updatePassword(passwordReset.getUser_id(), passwordEncoded),
                                     this.userPromoterRepository.updatePassword(passwordReset.getUser_id(), passwordEncoded)
                             )
