@@ -4,7 +4,6 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PromotorDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
-import com.proriberaapp.ribera.Domain.dto.UpdatePasswordDto;
 import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
 import com.proriberaapp.ribera.Domain.enums.StatesUser;
 import com.proriberaapp.ribera.services.promoters.UserPromoterService;
@@ -119,9 +118,4 @@ public class UserPromotersController {
         return userPromoterService.updatePassword(id, newPassword);
     }
 
-
-
-
-
 }
-
