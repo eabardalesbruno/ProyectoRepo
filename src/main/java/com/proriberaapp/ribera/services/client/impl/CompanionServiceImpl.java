@@ -254,212 +254,110 @@ public class CompanionServiceImpl implements CompanionsService {
     private String generatebody(String titularName, String titularLastName, String titulartypeDocument, int titularAge, String titularDocument,
                                 String titularCellphone, String titularEmail, List<CompanionsEntity> companions) {
         StringBuilder companionsHtml = new StringBuilder();
+        boolean hasCompanion = false;
         for (CompanionsEntity companion : companions) {
             if (Boolean.TRUE.equals(companion.isTitular())) {
                 continue;
             }
+            if (companion.getFirstname() != null && !companion.getFirstname().isEmpty()) {
+                hasCompanion = true;
+                String gender = (companion.getGenderId() != null) ? (companion.getGenderId() == 1 ? "Masculino" : (companion.getGenderId() == 2 ? "Femenino" : " ")) : " ";
+                String documentType = (companion.getTypeDocumentId() != null) ? (companion.getTypeDocumentId() == 1 ? "DNI" : (companion.getTypeDocumentId() == 2 ? "RUC" : " ")) : " ";
+                String age = (companion.getYears() != null) ? String.valueOf(companion.getYears()) : "----";
 
-            String gender = (companion.getGenderId() != null) ? (companion.getGenderId() == 1 ? "Masculino" : (companion.getGenderId() == 2 ? "Femenino" : " ")) : " ";
-            String documentType = (companion.getTypeDocumentId() != null) ? (companion.getTypeDocumentId() == 1 ? "DNI" : (companion.getTypeDocumentId() == 2 ? "RUC" : " ")) : " ";
-            String age = (companion.getYears() != null) ? String.valueOf(companion.getYears()) : "----";
-
-            companionsHtml.append("<div class=\"companion\">")
-                    .append("<p><strong>Nombre:</strong> ").append(companion.getFirstname()).append(" ").append(companion.getLastname()).append("</p>")
-                    .append("<p><strong>Tipo de Documento:</strong> ").append(documentType).append("</p>")
-                    .append("<p><strong>Número de Documento:</strong> ").append(companion.getDocumentNumber()).append("</p>")
-                    .append("<p><strong>Género:</strong> ").append(gender).append("</p>")
-                    .append("<p><strong>Edad:</strong> ").append(age).append("</p>")
-                    .append("</div>");
+                companionsHtml.append("<div class=\"companion\">")
+                        .append("<p><strong>Nombre:</strong> ").append(companion.getFirstname()).append(" ").append(companion.getLastname()).append("</p>")
+                        .append("<p><strong>Tipo de Documento:</strong> ").append(documentType).append("</p>")
+                        .append("<p><strong>Número de Documento:</strong> ").append(companion.getDocumentNumber()).append("</p>")
+                        .append("<p><strong>Género:</strong> ").append(gender).append("</p>")
+                        .append("<p><strong>Edad:</strong> ").append(age).append("</p>")
+                        .append("</div>");
+            }
         }
-
         String titularGender = titularDocument != null && titularDocument.equals("1") ? "Masculino" : "Femenino";
         String titularDocumentType = titulartypeDocument.equals("1") ? "DNI" : "RUC";
         String titularAgeValue = titularAge > 0 ? String.valueOf(titularAge) : "----";
 
-        String html = "<html lang=\"es\">\n" +
-                "<head>\n" +
-                "    <meta charset=\"UTF-8\">\n" +
-                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "    <title>Detalles de Reserva</title>\n" +
-                "    <style>\n" +
-                "        body {\n" +
-                "            width: 100%;\n" +
-                "            background: rgb(246, 247, 251);\n" +
-                "            padding-bottom: 40px;\n" +
-                "            padding-top: 40px;\n" +
-                "            font-family: Arial, sans-serif;\n" +
-                "            margin: 0;\n" +
-                "        }\n" +
-                "        .button {\n" +
-                "            width: 90%;\n" +
-                "            display: inline-block;\n" +
-                "            padding: 10px;\n" +
-                "            background-color: #025928;\n" +
-                "            color: white !important;\n" +
-                "            text-align: center;\n" +
-                "            text-decoration: none;\n" +
-                "            border-radius: 0px;\n" +
-                "        }\n" +
-                "        .card {\n" +
-                "            background-color: rgb(246, 247, 251);\n" +
-                "            padding: 24px;\n" +
-                "        }\n" +
-                "        .container, .footer-message {\n" +
-                "            width: 100%;\n" +
-                "            max-width: 900px;\n" +
-                "            margin: 0 auto;\n" +
-                "            box-sizing: border-box;\n" +
-                "        }\n" +
-                "        .header {\n" +
-                "            position: relative;\n" +
-                "        }\n" +
-                "        .header img.banner {\n" +
-                "            width: 100%;\n" +
-                "            height: auto;\n" +
-                "            border-top-left-radius: 8px;\n" +
-                "            border-top-right-radius: 8px;\n" +
-                "        }\n" +
-                "        .header img.logo {\n" +
-                "            width: 105px;\n" +
-                "            top: 25.5px;\n" +
-                "            right: 22px;\n" +
-                "            position: absolute;\n" +
-                "        }\n" +
-                "        .body {\n" +
-                "            padding: 40px;\n" +
-                "            box-sizing: border-box;\n" +
-                "            font-family: 'Product Sans', sans-serif;\n" +
-                "        }\n" +
-                "        .footer-message {\n" +
-                "            background-color: white;\n" +
-                "            padding: 24px 40px;\n" +
-                "            border-radius: 8px;\n" +
-                "            margin: 20px auto;\n" +
-                "            text-align: center;\n" +
-                "        }\n" +
-                "        .font-italic {\n" +
-                "            font-style: italic;\n" +
-                "        }\n" +
-                "        .font-size {\n" +
-                "            font-size: 16px;\n" +
-                "        }\n" +
-                "        .extra-style {\n" +
-                "            color: #333;\n" +
-                "            font-weight: bold;\n" +
-                "        }\n" +
-                "        .img {\n" +
-                "            width: 100% !important;\n" +
-                "            height: 100% !important;\n" +
-                "            object-fit: cover;\n" +
-                "        }\n" +
-                "        .check-in {\n" +
-                "            margin: 0;\n" +
-                "            font-size: 12px;\n" +
-                "            color: #216D42;\n" +
-                "            font-weight: 400;\n" +
-                "        }\n" +
-                "        .room-name {\n" +
-                "            margin: 0;\n" +
-                "            font-size: 20px;\n" +
-                "        }\n" +
-                "        p.no-margin {\n" +
-                "            margin: 0;\n" +
-                "        }\n" +
-                "        .container-data {\n" +
-                "            vertical-align: baseline;\n" +
-                "            font-size: 14px;\n" +
-                "        }\n" +
-                "        .container-img {\n" +
-                "            width: 433px;\n" +
-                "            padding-right: 16px;\n" +
-                "        }\n" +
-                "        .container-img .img {\n" +
-                "            width: 433px;\n" +
-                "        }\n" +
-                "        .table-layout {\n" +
-                "            font-family: 'Product Sans', sans-serif;\n" +
-                "            width: 100%;\n" +
-                "        }\n" +
-                "        .hr {\n" +
-                "            border: 1px solid #E1E1E1;\n" +
-                "            margin: 0;\n" +
-                "        }\n" +
-                "        .font {\n" +
-                "            font-size: 16px;\n" +
-                "            font-family: 'Product Sans', sans-serif;\n" +
-                "        }\n" +
-                "        .strong-text {\n" +
-                "            color: #384860;\n" +
-                "            font-style: italic;\n" +
-                "        }\n" +
-                "        .container {\n" +
-                "            width: 600px;\n" +
-                "            margin: 20px auto;\n" +
-                "            padding: 20px;\n" +
-                "            background: white;\n" +
-                "            border-radius: 10px;\n" +
-                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
-                "        }\n" +
-                "        .section {\n" +
-                "            margin-bottom: 20px;\n" +
-                "        }\n" +
-                "        h2 {\n" +
-                "            color: #0d5f05;\n" +
-                "        }\n" +
-                "        p {\n" +
-                "            margin: 5px 0;\n" +
-                "        }\n" +
-                "        .companion {\n" +
-                "            margin-bottom: 10px;\n" +
-                "            padding: 10px;\n" +
-                "            border: 1px solid #ddd;\n" +
-                "            border-radius: 5px;\n" +
-                "        }\n" +
-                "    </style>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <table class=\"container\" cellpadding=\"0\" cellspacing=\"0\">\n" +
-                "        <tr>\n" +
-                "            <td class=\"header\">\n" +
-                "                <img class=\"banner\" src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Bienvenido\"/>\n" +
-                "            </td>\n" +
-                "        </tr>\n" +
-                "        <tr>\n" +
-                "            <td class=\"body\">\n" +
-                "                <p class=\"font\">Estimado(a), <strong>" + titularName  + titularLastName + "</strong></p>\n" +
-                "                <p class=\"font\">El presente es para informar que se completó exitosamente el registro de sus acompañantes\n" +
-                "                <div class=\"card\">\n" +
-                "                    <table class=\"table-layout\">\n" +
-                "                        <tbody>\n" +
-                "                            <tr>\n" +
-                "                                <td width=\"16\"></td>\n" +
-                "                                <td class=\"container-data\">\n" +
-                "                                    <table width=\"100%\" style=\"box-sizing: border-box;\">\n" +
-                "                                        <div class=\"container\">\n" +
-                "                                            <h2>Información del Titular</h2>\n" +
-                "                                            <div class=\"section\">\n" +
-                "                                                <p><strong>Nombre Completo:</strong> " + titularName + " " + titularLastName + "</p>\n" +
-                "                                                <p><strong>Edad:</strong> " + titularAgeValue + "</p>\n" +
-                "                                                <p><strong>Tipo de Documento:</strong> " + titularDocumentType + "</p>\n" +
-                "                                                <p><strong>Número de Documento:</strong> " + titularDocument + "</p>\n" +
-                "                                                <p><strong>Celular:</strong> " + titularCellphone + "</p>\n" +
-                "                                                <p><strong>Email:</strong> " + titularEmail + "</p>\n" +
-                "                                            </div>\n" +
-                "                                        <h2>Acompañantes</h2>\n" +
-                "                                        <div class=\"section\">\n" + companionsHtml + "</div>\n" +
-                "                                        </div>\n" +
-                "                                    </table>\n" +
-                "                                </td>\n" +
-                "                            </tr>\n" +
-                "                        </tbody>\n" +
-                "                    </table>\n" +
-                "                </div>\n" +
-                "            </td>\n" +
-                "        </tr>\n" +
-                "    </table>\n" +
-                "</body>\n" +
+        String html = "<html lang=\"es\">" +
+                "<head>" +
+                "    <meta charset=\"UTF-8\">" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                "    <title>Detalles de Reserva</title>" +
+                "    <style>" +
+                "        body {width: 100%;background: rgb(246, 247, 251);padding-bottom: 40px;padding-top: 40px;font-family: Arial, sans-serif;margin: 0;}" +
+                "        .button {width: 90%;display: inline-block;padding: 10px;background-color: #025928;color: white !important;text-align: center;text-decoration: none;border-radius: 0px;}" +
+                "        .card {background-color: rgb(246, 247, 251);padding: 24px;}" +
+                "        .container, .footer-message {width: 100%;max-width: 900px;margin: 0 auto;box-sizing: border-box;}" +
+                "        .header {position: relative;}" +
+                "        .header img.banner {width: 100%;height: auto;border-top-left-radius: 8px;border-top-right-radius: 8px;}" +
+                "        .header img.logo {width: 105px;top: 25.5px;right: 22px;position: absolute;}" +
+                "        .body {padding: 40px;box-sizing: border-box;font-family: 'Product Sans', sans-serif;}" +
+                "        .footer-message {background-color: white;padding: 24px 40px;border-radius: 8px;margin: 20px auto;text-align: center;}" +
+                "        .font-italic {font-style: italic;}" +
+                "        .font-size {font-size: 16px;}" +
+                "        .extra-style {color: #333;font-weight: bold;}" +
+                "        .img { max-width: 100%;height: auto;}" +
+                "        .check-in {margin: 0;font-size: 12px;color: #216D42;font-weight: 400;}" +
+                "        .room-name {margin: 0;font-size: 20px;}" +
+                "        p.no-margin {margin: 0;}" +
+                "        .container-data {vertical-align: baseline;font-size: 14px;}" +
+                "        .container-img {width: 433px;padding-right: 16px;}" +
+                "        .container-img .img {width: 433px;}" +
+                "        .table-layout {font-family: 'Product Sans', sans-serif;width: 100%;}" +
+                "        .hr {border: 1px solid #E1E1E1;margin: 0;}" +
+                "        .font {font-size: 16px;font-family: 'Product Sans', sans-serif;}" +
+                "        .strong-text {color: #384860;font-style: italic;}" +
+                "        .container {width: 100%;max-width: 600px;margin: 20px auto;padding: 20px;background: white;border-radius: 10px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);}" +
+                "        .section {margin-bottom: 20px;}" +
+                "        h2 {color: #0d5f05;}" +
+                "        p {margin: 5px 0;}" +
+                "        .companion {margin-bottom: 10px;padding: 10px;border: 1px solid #ddd;border-radius: 5px;}" +
+                "    </style>" +
+                "</head>" +
+                "<body>" +
+                "    <table class=\"container\" cellpadding=\"0\" cellspacing=\"0\">" +
+                "        <tr>" +
+                "            <td class=\"header\">" +
+                "                <img class=\"banner\" src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Bienvenido\"/>" +
+                "            </td>" +
+                "        </tr>" +
+                "        <tr>" +
+                "            <td class=\"body\">" +
+                "                <p class=\"font\">Estimado(a), <strong>" + titularName  + titularLastName + "</strong></p>" +
+                "                <p class=\"font\">El presente es para informar que se completó exitosamente el registro de sus acompañantes" +
+                "                <div class=\"card\">" +
+                "                    <table class=\"table-layout\">" +
+                "                        <tbody>" +
+                "                            <tr>" +
+                "                                <td width=\"16\"></td>" +
+                "                                <td class=\"container-data\">" +
+                "                                    <table width=\"100%\" style=\"box-sizing: border-box;\">" +
+                "                                        <div class=\"container\">" +
+                "                                            <h2>Información del Titular</h2>" +
+                "                                            <div class=\"section\">" +
+                "                                                <p><strong>Nombre Completo:</strong> " + titularName + " " + titularLastName + "</p>" +
+                "                                                <p><strong>Edad:</strong> " + titularAgeValue + "</p>" +
+                "                                                <p><strong>Tipo de Documento:</strong> " + titularDocumentType + "</p>" +
+                "                                                <p><strong>Número de Documento:</strong> " + titularDocument + "</p>" +
+                "                                                <p><strong>Celular:</strong> " + titularCellphone + "</p>" +
+                "                                                <p><strong>Email:</strong> " + titularEmail + "</p>" +
+                "                                            </div>" +
+                "                                        <h2>Acompañantes</h2>" +
+                "                                        <div class=\"section\">" +
+                                                            (hasCompanion ? companionsHtml.toString() : "<p>No se registraron acompañantes.</p>") +
+                "                                         </div>" +
+                "                                        </div>" +
+                "                                    </table>" +
+                "                                </td>" +
+                "                            </tr>" +
+                "                        </tbody>" +
+                "                    </table>" +
+                "                </div>" +
+                "            </td>" +
+                "        </tr>" +
+                "    </table>" +
+                "</body>" +
                 "</html>";
-
         return html;
     }
 
