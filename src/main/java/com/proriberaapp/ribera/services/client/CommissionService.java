@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client;
 
 import com.proriberaapp.ribera.Domain.dto.CommissionDTO;
+import com.proriberaapp.ribera.Domain.dto.CommissionPromoterDto;
 import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import org.springframework.core.io.FileSystemResource;
@@ -18,7 +19,7 @@ public interface CommissionService {
 
     Flux<CommissionEntity> getCommissionByPromoterId(Integer promoterId);
 
-    Mono<CommissionEntity> getCommissionById(Integer commissionId);
+    Mono<CommissionPromoterDto> getCommissionById(Integer commissionId);
 
     Mono<CommissionEntity> updateCommission(Integer commissionId, Integer currencyTypeId, BigDecimal userAmount, String rucNumber, Mono<FilePart> file, Integer folderNumber);
 
