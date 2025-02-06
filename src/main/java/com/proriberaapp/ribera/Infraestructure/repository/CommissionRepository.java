@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Domain.dto.CommissionDTO;
+import com.proriberaapp.ribera.Domain.dto.CommissionPromoterDto;
 import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
@@ -23,13 +24,13 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
     @Query("SELECT * FROM commission c WHERE c.disbursementdate BETWEEN :startOfDay AND :endOfDay AND c.processed = false")
     Flux<CommissionEntity> findByDisbursementDateRange(@Param("startOfDay") Timestamp startOfDay, @Param("endOfDay") Timestamp endOfDay);
 
-
     @Query("SELECT serialNumber FROM commission ORDER BY commissionId DESC LIMIT 1")
     Mono<String> findLastSerialNumber();
+
     Flux<CommissionEntity> findByPromoterId(Integer promoterId);
 
-    Mono<CommissionEntity> findByCommissionId(Integer commissionId);
-
+    @Query("SELECT c.commissionid, c.serialnumber, c.createdat, c.currencytypeid, c.commissionamount, c.rucnumber, c.status, c.dateofapplication, c.invoicedocument, b.bookingid FROM commission c JOIN paymentbook p ON c.paymentbookid = p.paymentbookid JOIN booking b ON p.bookingid = b.bookingid WHERE c.commissionid = :commissionId")
+    Mono<CommissionPromoterDto> findByCommissionId(@Param("commissionId") Integer commissionId);
 
     @Query("""
         SELECT 

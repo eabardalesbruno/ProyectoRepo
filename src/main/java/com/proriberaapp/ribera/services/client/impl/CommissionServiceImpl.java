@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.dto.CommissionDTO;
+import com.proriberaapp.ribera.Domain.dto.CommissionPromoterDto;
 import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
@@ -101,10 +102,6 @@ public class CommissionServiceImpl implements CommissionService {
                 });
     }
 
-
-
-
-
     @Override
     public Mono<BigDecimal> getTotalCommissionByPromoterId(Integer promoterId){
         return commissionRepository.findTotalCommissionByPromoterId(promoterId);
@@ -116,7 +113,7 @@ public class CommissionServiceImpl implements CommissionService {
     }
 
     @Override
-    public Mono<CommissionEntity> getCommissionById(Integer commissionId) {
+    public Mono<CommissionPromoterDto> getCommissionById(Integer commissionId) {
         return commissionRepository.findByCommissionId(commissionId);
     }
 

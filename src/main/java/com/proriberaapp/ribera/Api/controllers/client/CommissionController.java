@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 
 import com.proriberaapp.ribera.Domain.dto.CommissionDTO;
+import com.proriberaapp.ribera.Domain.dto.CommissionPromoterDto;
 import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.services.client.CommissionService;
@@ -58,12 +59,10 @@ public class CommissionController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-
     @GetMapping("/commission")
-    public Mono<CommissionEntity> getCommisionById (@RequestParam Integer commissionId) {
+    public Mono<CommissionPromoterDto> getCommisionById (@RequestParam Integer commissionId) {
         return commissionService.getCommissionById(commissionId);
     }
-
 
     @PutMapping("/{commissionId}/update")
     public Mono<ResponseEntity<CommissionEntity>> updateCommission(@PathVariable Integer commissionId,
