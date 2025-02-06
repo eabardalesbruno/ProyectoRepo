@@ -12,8 +12,10 @@ import com.proriberaapp.ribera.Domain.dto.DiscountDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
+import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
 import com.proriberaapp.ribera.Infraestructure.exception.PasswordNotMatchesException;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.UserPromoterRepository;
 import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.PasswordResetCodeService;
@@ -65,6 +67,9 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Value("${url.base.frontend}")
     private String baseUrlFront;
+
+    @Autowired
+    private UserPromoterRepository userPromoterRepository;
 
     /*
      * @Override
@@ -814,45 +819,88 @@ public class UserClientServiceImpl implements UserClientService {
     @Override
     public Mono<Void> sendCodeRecoveryPassword(String email) {
         return userClientRepository.findByEmail(email)
-                .switchIfEmpty(Mono.empty())
+                .cast(Object.class)
+                .switchIfEmpty(
+                        userPromoterRepository.findByEmail(email).cast(Object.class)
+                )
                 .flatMap(user -> {
-                    return this.passwordResetCodeService.generateResetCode("client", user.getUserClientId())
-                            .flatMap(code -> {
-                                BaseEmailReserve emailTemplate = new BaseEmailReserve();
-                                EmailTemplateCodeRecoveryPassword emailTemplateRecovery = new EmailTemplateCodeRecoveryPassword(
-                                        code,
-                                        user.getFirstName(), this.baseUrlFront);
-                                emailTemplate.addEmailHandler(emailTemplateRecovery);
-                                String bodyEmail = emailTemplate.execute();
-                                return this.emailService.sendEmail(email, "Recuperar contraseña", bodyEmail);
-                            });
+                    if (user instanceof UserClientEntity) {
+                        UserClientEntity userClient = (UserClientEntity) user;
+                        return this.passwordResetCodeService.generateResetCode("client", userClient.getUserClientId())
+                                .flatMap(code -> {
+                                    BaseEmailReserve emailTemplate = new BaseEmailReserve();
+                                    EmailTemplateCodeRecoveryPassword emailTemplateRecovery = new EmailTemplateCodeRecoveryPassword(
+                                            code, userClient.getFirstName(), this.baseUrlFront);
+                                    emailTemplate.addEmailHandler(emailTemplateRecovery);
+                                    String bodyEmail = emailTemplate.execute();
+                                    return this.emailService.sendEmail(email, "Recuperar contraseña", bodyEmail);
+                                });
+                    } else if (user instanceof UserPromoterEntity) {
+                        UserPromoterEntity userPromoter = (UserPromoterEntity) user;
+                        return this.passwordResetCodeService.generateResetCode("promoter", userPromoter.getUserPromoterId())
+                                .flatMap(code -> {
+                                    BaseEmailReserve emailTemplate = new BaseEmailReserve();
+                                    EmailTemplateCodeRecoveryPassword emailTemplateRecovery = new EmailTemplateCodeRecoveryPassword(
+                                            code, userPromoter.getFirstName(), this.baseUrlFront);
+                                    emailTemplate.addEmailHandler(emailTemplateRecovery);
+                                    String bodyEmail = emailTemplate.execute();
+                                    return this.emailService.sendEmail(email, "Recuperar contraseña", bodyEmail);
+                                });
+                    }
+                    return Mono.empty();
                 });
     }
+
 
     @Override
     public Mono<Void> changePassword(String code, String password) {
         String passwordEncoded = passwordEncoder.encode(password);
         return this.passwordResetCodeService.verfiedCode(code)
-                .flatMap(passwordReset -> Mono.zip(this.userClientRepository.updatePassword(passwordReset.getUser_id(),
-                        passwordEncoded), this.passwordResetCodeService.useCode(code)))
+                .flatMap(passwordReset -> {
+                    // Verificamos si el código corresponde a un UserClientEntity o un UserPromoterEntity
+                    return Mono.zip(
+                                    this.userClientRepository.updatePassword(passwordReset.getUser_id(), passwordEncoded),
+                                    this.userPromoterRepository.updatePassword(passwordReset.getUser_id(), passwordEncoded)
+                            )
+                            .then(this.passwordResetCodeService.useCode(code));
+                })
                 .then();
     }
 
     @Override
     public Mono<Void> updateAndValidatePassword(Integer userId, String currentPassword, String newPassword,
-            String confirmPassword) {
-        return this.userClientRepository.findById(userId).flatMap(user -> {
-            String passwordEncoded = passwordEncoder.encode(newPassword);
-            if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
-                return Mono.error(new PasswordNotMatchesException("Actual", " password guardado"));
-            }
-            if (!newPassword.equals(confirmPassword)) {
-                return Mono.error(new PasswordNotMatchesException("Nueva", " confirmación de contraseña"));
-            }
-            user.setPassword(passwordEncoded);
-            return this.userClientRepository.save(user);
-        }).then();
-
+                                                String confirmPassword) {
+        return userClientRepository.findById(userId)
+                .cast(Object.class)
+                .switchIfEmpty(
+                        userPromoterRepository.findById(userId).cast(Object.class)
+                )
+                .flatMap(user -> {
+                    String passwordEncoded = passwordEncoder.encode(newPassword);
+                    if (user instanceof UserClientEntity) {
+                        UserClientEntity userClient = (UserClientEntity) user;
+                        if (!passwordEncoder.matches(currentPassword, userClient.getPassword())) {
+                            return Mono.error(new PasswordNotMatchesException("Actual", " password guardado"));
+                        }
+                        if (!newPassword.equals(confirmPassword)) {
+                            return Mono.error(new PasswordNotMatchesException("Nueva", " confirmación de contraseña"));
+                        }
+                        userClient.setPassword(passwordEncoded);
+                        return this.userClientRepository.save(userClient);
+                    } else if (user instanceof UserPromoterEntity) {
+                        UserPromoterEntity userPromoter = (UserPromoterEntity) user;
+                        if (!passwordEncoder.matches(currentPassword, userPromoter.getPassword())) {
+                            return Mono.error(new PasswordNotMatchesException("Actual", " password guardado"));
+                        }
+                        if (!newPassword.equals(confirmPassword)) {
+                            return Mono.error(new PasswordNotMatchesException("Nueva", " confirmación de contraseña"));
+                        }
+                        userPromoter.setPassword(passwordEncoded);
+                        return this.userPromoterRepository.save(userPromoter);
+                    }
+                    return Mono.empty();
+                })
+                .then();
     }
 
 }
