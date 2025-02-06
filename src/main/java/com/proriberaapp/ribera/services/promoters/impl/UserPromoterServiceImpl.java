@@ -9,15 +9,20 @@ import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
 import com.proriberaapp.ribera.Domain.enums.StatesUser;
+import com.proriberaapp.ribera.Infraestructure.exception.PasswordNotMatchesException;
 import com.proriberaapp.ribera.Infraestructure.repository.UserPromoterRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletRepository;
+import com.proriberaapp.ribera.services.client.PasswordResetCodeService;
 import com.proriberaapp.ribera.services.client.impl.WalletServiceImpl;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.impl.WalletServiceImpl;
 import com.proriberaapp.ribera.services.promoters.UserPromoterService;
+import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
+import com.proriberaapp.ribera.utils.emails.EmailTemplateCodeRecoveryPassword;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -293,5 +298,6 @@ public class UserPromoterServiceImpl implements UserPromoterService {
             return user;
         }).flatMap(userPromoterRepository::save);
     }
+
 
 }

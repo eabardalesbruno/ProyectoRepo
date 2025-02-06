@@ -21,4 +21,5 @@ public interface UserPromoterService {
     Mono<Void> savePromoter(UserPromoterDto entity);
     Mono<List<String>> getStatus();
     Mono<UserPromoterEntity> updatePassword(Integer id, String newPassword);
+
 }
