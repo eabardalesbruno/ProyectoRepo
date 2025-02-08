@@ -346,127 +346,30 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                 + "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
                 + "    <title>Document</title>"
                 + "    <style>"
-                + "        body {"
-                + "            width: 100%;"
-                + "            background: rgb(246, 247, 251);"
-                + "            padding-bottom: 40px;"
-                + "            padding-top: 40px;"
-                + "            font-family: Arial, sans-serif;"
-                + "            margin: 0;"
-                + "        }"
-                + "        .button {"
-                + "            width: 90%;"
-                + "            display: inline-block;"
-                + "            padding: 10px;"
-                + "            background-color: #025928;"
-                + "            color: white !important;"
-                + "            text-align: center;"
-                + "            text-decoration: none;"
-                + "            border-radius: 0px;"
-                + "        }"
-                + "        .card {"
-                + "            background-color: rgb(246, 247, 251);"
-                + "            padding: 24px;"
-                + "        }"
-                + "        .container {"
-                + "            width: 100%;"
-                + "            max-width: 900px;"
-                + "            margin: 0 auto;"
-                + "            background-color: white;"
-                + "            border-radius: 8px;"
-                + "            box-sizing: border-box;"
-                + "            font-family: 'Product Sans', sans-serif;"
-                + "        }"
-                + "        .header {"
-                + "            position: relative;"
-                + "        }"
-                + "        .header img.banner {"
-                + "            width: 100%;"
-                + "            border-top-left-radius: 8px;"
-                + "            border-top-right-radius: 8px;"
-                + "        }"
-                + "        .header img.logo {"
-                + "            width: 105px;"
-                + "            top: 25.5px;"
-                + "            right: 22px;"
-                + "            position: absolute;"
-                + "        }"
-                + "        .body {"
-                + "            padding: 40px;"
-                + "            box-sizing: border-box;"
-                + "            font-family: 'Product Sans', sans-serif;"
-                + "        }"
-                + "        .footer-message {"
-                + "            width: 100%;"
-                + "            max-width: 900px;"
-                + "            background-color: white;"
-                + "            padding: 24px 40px;"
-                + "            border-radius: 8px;"
-                + "            box-sizing: border-box;"
-                + "            margin: 20px auto;"
-                + "            text-align: center;"
-                + "            font-family: Arial, sans-serif;"
-                + "        }"
-                + "        .font-italic {"
-                + "            font-style: italic;"
-                + "        }"
-                + "        .font-size {"
-                + "            font-size: 16px;"
-                + "        }"
-                + "        .extra-style {"
-                + "            color: #333;"
-                + "            font-weight: bold;"
-                + "        }"
-                + "        .img {"
-                + "            width: 100% !important;"
-                + "            height: 100% !important;"
-                + "            object-fit: cover;"
-                + "        }"
-                + "        .check-in {"
-                + "            margin: 0;"
-                + "            font-size: 12px;"
-                + "            color: #216D42;"
-                + "            font-weight: 400;"
-                + "        }"
-                + "        .room-name {"
-                + "            margin: 0;"
-                + "            font-size: 20px;"
-                + "        }"
-                + "        p.no-margin {"
-                + "            margin: 0;"
-                + "        }"
-                + "        .container-data {"
-                + "            vertical-align: baseline;"
-                + "            font-size: 14px;"
-                + "        }"
-                + "        .container-img {"
-                + "            width: 433px;"
-                + "            padding-right: 16px;"
-                + "        }"
-                + "        .container-img .img {"
-                + "            width: 433px;"
-                + "        }"
-                + "        .table-layout {"
-                + "            font-family: 'Product Sans', sans-serif;"
-                + "            width: 100%;"
-                + "        }"
-                + "        .hr {"
-                + "            border: 1px solid #E1E1E1;"
-                + "            margin: 0;"
-                + "        }"
-                + "        .font {"
-                + "            font-size: 16px;"
-                + "            font-family: 'Product Sans', sans-serif;"
-                + "        }"
-                + "        .card {"
-                + "            width: 100%;"
-                + "            padding: 24px;"
-                + "            box-sizing: border-box;"
-                + "        }"
-                + "        .strong-text {"
-                + "            color: #384860;"
-                + "            font-style: italic;"
-                + "        }"
+                + "        body {width: 100%;background: rgb(246, 247, 251);padding-bottom: 40px;padding-top: 40px;font-family: Arial, sans-serif;margin: 0;}"
+                + "        .button {width: 90%;display: inline-block;padding: 10px;background-color: #025928;color: white !important; text-align: center;text-decoration: none; border-radius: 0px;}"
+                + "        .card {background-color: rgb(246, 247, 251);padding: 24px;}"
+                + "        .container {width: 100%;max-width: 900px;margin: 0 auto;background-color: white;border-radius: 8px;box-sizing: border-box;font-family: 'Product Sans', sans-serif;}"
+                + "        .header {position: relative;}"
+                + "        .header img.banner {width: 100%;border-top-left-radius: 8px;border-top-right-radius: 8px;}"
+                + "        .header img.logo {width: 105px;top: 25.5px;right: 22px;position: absolute;}"
+                + "        .body {padding: 40px;box-sizing: border-box;font-family: 'Product Sans', sans-serif;}"
+                + "        .footer-message {width: 100%;max-width: 900px;background-color: white;padding: 24px 40px;border-radius: 8px;box-sizing: border-box;margin: 20px auto;text-align: center;font-family: Arial, sans-serif;}"
+                + "        .font-italic {font-style: italic;}"
+                + "        .font-size {font-size: 16px;}"
+                + "        .extra-style {color: #333;font-weight: bold;}"
+                + "        .img {width: 100% !important;height: 100% !important;object-fit: cover;}"
+                + "        .check-in {margin: 0;font-size: 12px;color: #216D42;font-weight: 400;}"
+                + "        .room-name {margin: 0;font-size: 20px;}"
+                + "        p.no-margin {margin: 0;}"
+                + "        .container-data {vertical-align: baseline;font-size: 14px;}"
+                + "        .container-img {width: 433px;padding-right: 16px;}"
+                + "        .container-img .img {width: 433px;}"
+                + "        .table-layout {font-family: 'Product Sans', sans-serif;width: 100%;}"
+                + "        .hr {border: 1px solid #E1E1E1;margin: 0;}"
+                + "        .font {font-size: 16px;font-family: 'Product Sans', sans-serif;}"
+                + "        .card {width: 100%;padding: 24px;box-sizing: border-box;}"
+                + "        .strong-text {color: #384860;font-style: italic;}"
                 + "    </style>"
                 + "</head>"
                 + "<body>"
@@ -616,7 +519,6 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                     if (userPromoterId == null) {
                         return Mono.error(new Exception("La wallet no tiene un promotor asociado."));
                     }
-
                     return bookingRepository.findByUserPromotorIdAndBookingStateId(userPromoterId, 3)
                             .flatMap(booking ->
                                     roomOfferRepository.findById(booking.getRoomOfferId())
@@ -723,169 +625,90 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     private Mono<String> generateSuccessEmailBodyOrigin(WalletEntity walletEntityOrigin, WalletEntity walletEntityDestiny, BigDecimal amount, String operationCode, Timestamp transactionDate) {
         String formattedDate = transactionDate.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
 
-        String body = "<!DOCTYPE html>\n" +
-                "<html lang=\"es\">\n" +
-                "<head>\n" +
-                "    <meta charset=\"UTF-8\">\n" +
-                "    <title>Transferencia Exitosa</title>\n" +
-                "    <style>\n" +
-                "        body {\n" +
-                "            font-family: Arial, sans-serif;\n" +
-                "            margin: 0;\n" +
-                "            padding: 0;\n" +
-                "            color: black;\n" +
-                "            background-color: white;\n" +
-                "        }\n" +
-                "        .header {\n" +
-                "            width: 100%;\n" +
-                "            position: relative;\n" +
-                "            background-color: white;\n" +
-                "            padding: 20px 0;\n" +
-                "        }\n" +
-                "        .logo-left {\n" +
-                "            width: 50px;\n" +
-                "            position: absolute;\n" +
-                "            top: 10px;\n" +
-                "            left: 10px;\n" +
-                "        }\n" +
-                "        .banner {\n" +
-                "            width: 100%;\n" +
-                "            display: block;\n" +
-                "            margin: 0 auto;\n" +
-                "        }\n" +
-                "        .container {\n" +
-                "            width: 500px;\n" +
-                "            background-color: #f4f4f4;\n" +
-                "            margin: 20px auto;\n" +
-                "            padding: 20px;\n" +
-                "            border-radius: 10px;\n" +
-                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
-                "            text-align: center;\n" +
-                "        }\n" +
-                "        .content {\n" +
-                "            text-align: left;\n" +
-                "            padding: 20px;\n" +
-                "        }\n" +
-                "        .content h3 {\n" +
-                "            margin: 10px 0;\n" +
-                "        }\n" +
-                "        .content p {\n" +
-                "            margin: 10px 0;\n" +
-                "        }\n" +
-                "        .footer {\n" +
-                "            width: 100%;\n" +
-                "            text-align: center;\n" +
-                "            margin: 20px 0;\n" +
-                "        }\n" +
-                "    </style>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <div class=\"header\">\n" +
-                "    </div>\n" +
-                "    <img class=\"banner\" src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Bienvenido\">\n" +
-                "    <div class=\"container\">\n" +
-                "        <div class=\"content\">\n" +
-                "            <h1>Transferencia Exitosa</h1>\n" +
-                "            <h3>Estimado cliente,</h3>\n" +
-                "            <p>Su transferencia ha sido realizada con éxito.</p>\n" +
-                "            <div style=\"background-color: #e0e0e0; padding: 10px; border-radius: 5px;\">\n" +
-                "                <p><strong>Detalles de la Transferencia</strong></p>\n" +
-                "                <p><strong>Monto Transferido:</strong> S/." + amount + "</p>\n" +
-                "                <p><strong>Tarjeta Origen:</strong> " + walletEntityOrigin.getCardNumber() + "</p>\n" +
-                "                <p><strong>Tarjeta Destino:</strong> " + walletEntityDestiny.getCardNumber() + "</p>\n" +
-                "                <p><strong>Código de Operación:</strong> " + operationCode + "</p>\n" +
-                "                <p><strong>Fecha de Transacción:</strong> " + formattedDate + "</p>\n" +
-                "            </div>\n" +
-                "            <p>¡Gracias por usar nuestros servicios! Si tienes alguna pregunta, no dudes en contactarnos.</p>\n" +
-                "        </div>\n" +
-                "    </div>\n" +
-                "    <div class=\"footer\">\n" +
-                "        <p>&copy; 2024 Ciéneguilla Ribera del Río</p>\n" +
-                "    </div>\n" +
-                "</body>\n" +
+        String body = "<!DOCTYPE html>" +
+                "<html lang=\"es\">" +
+                "<head>" +
+                "    <meta charset=\"UTF-8\">" +
+                "    <title>Transferencia Exitosa</title>" +
+                "    <style>" +
+                "        body {font-family: Arial, sans-serif;margin: 0;padding: 0;color: black;background-color: white;}" +
+                "        .header {width: 100%;position: relative;background-color: white;padding: 20px 0;}" +
+                "        .logo-left {width: 50px;position: absolute;top: 10px;left: 10px;}" +
+                "        .banner {width: 100%;display: block;margin: 0 auto;}" +
+                "        .container {width: 500px;background-color: #f4f4f4;margin: 20px auto;padding: 20px;border-radius: 10px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);text-align: center;}" +
+                "        .content {text-align: left;padding: 20px;}" +
+                "        .content h3 {margin: 10px 0;}" +
+                "        .content p {margin: 10px 0;}" +
+                "        .footer {width: 100%;text-align: center;margin: 20px 0;}" +
+                "    </style>" +
+                "</head>" +
+                "<body>" +
+                "    <div class=\"header\">" +
+                "    </div>" +
+                "    <img class=\"banner\" src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Bienvenido\">" +
+                "    <div class=\"container\">" +
+                "        <div class=\"content\">" +
+                "            <h1>Transferencia Exitosa</h1>" +
+                "            <h3>Estimado cliente,</h3>" +
+                "            <p>Su transferencia ha sido realizada con éxito.</p>" +
+                "            <div style=\"background-color: #e0e0e0; padding: 10px; border-radius: 5px;\">" +
+                "                <p><strong>Detalles de la Transferencia</strong></p>" +
+                "                <p><strong>Monto Transferido:</strong> S/." + amount + "</p>" +
+                "                <p><strong>Tarjeta Origen:</strong> " + walletEntityOrigin.getCardNumber() + "</p>" +
+                "                <p><strong>Tarjeta Destino:</strong> " + walletEntityDestiny.getCardNumber() + "</p>" +
+                "                <p><strong>Código de Operación:</strong> " + operationCode + "</p>" +
+                "                <p><strong>Fecha de Transacción:</strong> " + formattedDate + "</p>" +
+                "            </div>" +
+                "            <p>¡Gracias por usar nuestros servicios! Si tienes alguna pregunta, no dudes en contactarnos.</p>" +
+                "        </div>" +
+                "    </div>" +
+                "    <div class=\"footer\">" +
+                "        <p>&copy; 2024 Ciéneguilla Ribera del Río</p>" +
+                "    </div>" +
+                "</body>" +
                 "</html>";
-
         return Mono.just(body);
     }
 
 
     private Mono<String> generateSuccessEmailBodyForDestination(String walletEntityOrigin, BigDecimal amount, Timestamp transactionDate) {
         String formattedDate = transactionDate.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
-        String body = "<html>\n" +
-                "<head>\n" +
-                "    <title>Recibiste Fondos</title>\n" +
-                "    <style>\n" +
-                "        body {\n" +
-                "            font-family: Arial, sans-serif;\n" +
-                "            margin: 0;\n" +
-                "            padding: 0;\n" +
-                "            color: black;\n" +
-                "            background-color: white;\n" +
-                "        }\n" +
-                "        .header {\n" +
-                "            width: 100%;\n" +
-                "            position: relative;\n" +
-                "            background-color: white;\n" +
-                "            padding: 20px 0;\n" +
-                "        }\n" +
-                "        .logo-left {\n" +
-                "            width: 50px;\n" +
-                "            position: absolute;\n" +
-                "            top: 10px;\n" +
-                "            left: 10px;\n" +
-                "        }\n" +
-                "        .banner {\n" +
-                "            width: 100%;\n" +
-                "            display: block;\n" +
-                "            margin: 0 auto;\n" +
-                "        }\n" +
-                "        .container {\n" +
-                "            width: 500px;\n" +
-                "            background-color: #f4f4f4;\n" +
-                "            margin: 20px auto;\n" +
-                "            padding: 20px;\n" +
-                "            border-radius: 10px;\n" +
-                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
-                "            text-align: center;\n" +
-                "        }\n" +
-                "        .content {\n" +
-                "            text-align: left;\n" +
-                "            padding: 20px;\n" +
-                "        }\n" +
-                "        .content h3 {\n" +
-                "            margin: 10px 0;\n" +
-                "        }\n" +
-                "        .content p {\n" +
-                "            margin: 10px 0;\n" +
-                "        }\n" +
-                "        .footer {\n" +
-                "            width: 100%;\n" +
-                "            text-align: center;\n" +
-                "            margin: 20px 0;\n" +
-                "        }\n" +
-                "    </style>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <div class=\"header\">\n" +
-                "    </div>\n" +
-                "    <img class=\"banner\" src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Bienvenido\">\n" +
-                "    <div class=\"container\">\n" +
-                "        <div class=\"content\">\n" +
-                "            <h1>Recibiste Fondos a la Wallet</h1>\n" +
-                "            <h3>Estimado cliente,</h3>\n" +
-                "            <p>¡Felicidades! Has recibido los fondos de una transferencia exitosa.</p>\n" +
-                "            <div style=\"background-color: #e0e0e0; padding: 10px; border-radius: 5px;\">\n" +
-                "                <p><strong>Detalles de la Transferencia</strong></p>\n" +
-                "                <p><strong>Monto Recibido:</strong> S/." + amount + "</p>\n" +
-                "                <p><strong>Fecha de Transacción:</strong> " + formattedDate + "</p>\n" +
-                "            </div>\n" +
-                "            <p>¡Gracias por usar nuestros servicios! Si tienes alguna pregunta, no dudes en contactarnos.</p>\n" +
-                "        </div>\n" +
-                "    </div>\n" +
-                "    <div class=\"footer\">\n" +
-                "        <p>&copy; 2024 Ciéneguilla Ribera del Río</p>\n" +
-                "    </div>\n" +
-                "</body>\n" +
+        String body = "<html>" +
+                "<head>" +
+                "    <title>Recibiste Fondos</title>" +
+                "    <style>" +
+                "        body {font-family: Arial, sans-serif;margin: 0;padding: 0;color: black;background-color: white;}" +
+                "        .header {width: 100%;position: relative;background-color: white;padding: 20px 0;}" +
+                "        .logo-left {width: 50px;position: absolute;top: 10px;left: 10px;}" +
+                "        .banner {width: 100%;display: block;margin: 0 auto;}" +
+                "        .container {width: 500px;background-color: #f4f4f4;margin: 20px auto;padding: 20px;border-radius: 10px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);text-align: center;}" +
+                "        .content {text-align: left;padding: 20px;}" +
+                "        .content h3 {margin: 10px 0;}" +
+                "        .content p {margin: 10px 0;}" +
+                "        .footer {width: 100%;text-align: center;margin: 20px 0;}" +
+                "    </style>" +
+                "</head>" +
+                "<body>" +
+                "    <div class=\"header\">" +
+                "    </div>" +
+                "    <img class=\"banner\" src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Bienvenido\">" +
+                "    <div class=\"container\">" +
+                "        <div class=\"content\">" +
+                "            <h1>Recibiste Fondos a la Wallet</h1>" +
+                "            <h3>Estimado cliente,</h3>" +
+                "            <p>¡Felicidades! Has recibido los fondos de una transferencia exitosa.</p>" +
+                "            <div style=\"background-color: #e0e0e0; padding: 10px; border-radius: 5px;\">" +
+                "                <p><strong>Detalles de la Transferencia</strong></p>" +
+                "                <p><strong>Monto Recibido:</strong> S/." + amount + "</p>" +
+                "                <p><strong>Fecha de Transacción:</strong> " + formattedDate + "</p>" +
+                "            </div>" +
+                "            <p>¡Gracias por usar nuestros servicios! Si tienes alguna pregunta, no dudes en contactarnos.</p>" +
+                "        </div>" +
+                "    </div>" +
+                "    <div class=\"footer\">" +
+                "        <p>&copy; 2024 Ciéneguilla Ribera del Río</p>" +
+                "    </div>" +
+                "</body>" +
                 "</html>";
 
         return Mono.just(body);
@@ -894,6 +717,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     //Metodo de recarga de comisones para promotor
     @Scheduled(cron = "0 0 0 * * ?")
     public Flux<WalletTransactionEntity> processPendingCommissions() {
+        System.out.println("Procesando comisiones pendientes...");
         LocalDate today = LocalDate.now();
         Timestamp startOfDay = Timestamp.valueOf(today.atStartOfDay());
         Timestamp endOfDay = Timestamp.valueOf(today.atTime(LocalTime.MAX));
@@ -942,16 +766,19 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     }
 
 
+    @Scheduled(fixedRate = 5000)
+    public void schedlugin (){
+        System.out.println("Se ejecuto el scheduler");
+    }
+
+
     @Override
     public Map<String, Object> getExchangeRate(String date) {
         String url = urlApiTipoCambio + "?date=" + date;
-
         HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         headers.set("Authorization", tokenApiTipoCambio);
-
         HttpEntity<String> entity = new HttpEntity<>(headers);
-
         RestTemplate restTemplate = new RestTemplate();
         ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
 
@@ -968,6 +795,4 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                         .switchIfEmpty(Mono.just(code))
         );
     }
-
-
 }
