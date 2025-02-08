@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import reactor.core.publisher.Mono;
 
 public interface BookingFeedingRepository extends R2dbcRepository<BookingFeedingEntity, Integer> {
 
@@ -22,4 +23,6 @@ public interface BookingFeedingRepository extends R2dbcRepository<BookingFeeding
             where bookingId=:bookingId
             """)
     Flux<BookingFeedingDto> listBookingFeedingByBookingId(Integer bookingId);
+
+    Mono<BookingFeedingEntity> findByBookingId(Integer bookingId);
 }

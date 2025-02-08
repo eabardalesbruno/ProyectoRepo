@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client;
 
+import com.proriberaapp.ribera.Domain.dto.CommissionAdminDto;
 import com.proriberaapp.ribera.Domain.dto.CommissionDTO;
 import com.proriberaapp.ribera.Domain.dto.CommissionPromoterDto;
 import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
@@ -28,4 +29,6 @@ public interface CommissionService {
     Flux<CommissionDTO> getCommissionsPaged(int page, int size);
 
     Mono<CommissionEntity> updateStatusByCommissionId(Integer commissionId, String status);
+
+    Mono<CommissionAdminDto> getPaymentBookDetails(Integer paymentBookId);
 }
