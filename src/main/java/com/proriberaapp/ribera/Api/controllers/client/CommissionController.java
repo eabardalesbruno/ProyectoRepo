@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 
+import com.proriberaapp.ribera.Domain.dto.CommissionAdminDto;
 import com.proriberaapp.ribera.Domain.dto.CommissionDTO;
 import com.proriberaapp.ribera.Domain.dto.CommissionPromoterDto;
 import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
@@ -74,6 +75,11 @@ public class CommissionController {
         return commissionService.updateCommission(commissionId, currencyTypeId, userAmount, rucNumber, file, folderNumber)
                 .map(updatedCommission -> ResponseEntity.ok(updatedCommission))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+    }
+
+    @GetMapping("/commission-details/{paymentBookId}")
+    public Mono<CommissionAdminDto> getComissionDetails(@PathVariable Integer paymentBookId) {
+        return commissionService.getPaymentBookDetails(paymentBookId);
     }
 
     @PutMapping("/{commissionId}/status")

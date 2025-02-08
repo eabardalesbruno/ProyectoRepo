@@ -1,9 +1,12 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Domain.dto.CommissionAdminDto;
 import com.proriberaapp.ribera.Domain.dto.CommissionDTO;
 import com.proriberaapp.ribera.Domain.dto.CommissionPromoterDto;
+import com.proriberaapp.ribera.Domain.entities.BookingFeedingEntity;
 import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.BookingFeedingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.CommissionRepository;
 import com.proriberaapp.ribera.services.admin.impl.S3ClientService;
@@ -30,76 +33,80 @@ public class CommissionServiceImpl implements CommissionService {
     @Autowired
     private S3ClientService s3ClientService;
 
+    @Autowired
+    private BookingFeedingRepository bookingFeedingRepository;
+
 
     @Override
     public Mono<CommissionEntity> calculateAndSaveCommission(PaymentBookEntity paymentBook, Integer caseType) {
         return bookingRepository.findById(paymentBook.getBookingId())
-                .flatMap(booking -> {
-                    BigDecimal totalAmount = booking.getCostFinal();
-                    if (totalAmount == null) {
-                        return Mono.error(new IllegalStateException("El monto total (costFinal) es nulo"));
-                    }
+                .flatMap(booking -> bookingFeedingRepository.findByBookingId(booking.getBookingId())
+                        .switchIfEmpty(Mono.just(new BookingFeedingEntity()))
+                        .flatMap(bookingFeeding -> {
+                            BigDecimal totalAmount = booking.getCostFinal();
+                            if (totalAmount == null) {
+                                return Mono.error(new IllegalStateException("El monto total (costFinal) es nulo"));
+                            }
+                            BigDecimal feedingAmount = bookingFeeding.getBookingfeedingamout() != null
+                                    ? BigDecimal.valueOf(bookingFeeding.getBookingfeedingamout())
+                                    : BigDecimal.ZERO;
+                            totalAmount = totalAmount.subtract(feedingAmount);
+                            if (totalAmount.compareTo(BigDecimal.ZERO) < 0) {
+                                totalAmount = BigDecimal.ZERO;
+                            }
 
-                    CommissionEntity commission = new CommissionEntity();
-                    commission.setPaymentBookId(paymentBook.getPaymentBookId());
-                    commission.setPromoterId(booking.getUserPromotorId());
-                    commission.setCaseType(caseType);
+                            CommissionEntity commission = new CommissionEntity();
+                            commission.setPaymentBookId(paymentBook.getPaymentBookId());
+                            commission.setPromoterId(booking.getUserPromotorId());
+                            commission.setCaseType(caseType);
+                            commission.setCurrencyTypeId(paymentBook.getCurrencyTypeId());
+                            commission.setStatus("Pendiente");
+                            commission.setDayBookingInit(booking.getDayBookingInit());
 
-                    commission.setCurrencyTypeId(paymentBook.getCurrencyTypeId());
-                    commission.setStatus("Pendiente");
-                    commission.setDayBookingInit(booking.getDayBookingInit());
+                            Timestamp now = new Timestamp(System.currentTimeMillis());
+                            commission.setCreatedAt(now);
 
+                            LocalDate currentDate = now.toLocalDateTime().toLocalDate();
+                            int dayOfMonth = currentDate.getDayOfMonth();
+                            LocalDate disbursementDate = (dayOfMonth <= 15)
+                                    ? currentDate.withDayOfMonth(20)
+                                    : currentDate.plusMonths(1).withDayOfMonth(5);
 
-                    Timestamp now = new Timestamp(System.currentTimeMillis());
-                    commission.setCreatedAt(now);
+                            commission.setDisbursementDate(Timestamp.valueOf(disbursementDate.atStartOfDay()));
+                            switch (caseType) {
+                                case 1:
+                                    commission.setRiberaAmount(totalAmount);
+                                    commission.setCommissionAmount(totalAmount.multiply(new BigDecimal("0.15")));
+                                    commission.setPartnerPayment(BigDecimal.ZERO);
+                                    commission.setAdminFee(BigDecimal.ZERO);
+                                    commission.setServiceFee(BigDecimal.ZERO);
+                                    break;
+                                case 2:
+                                    commission.setRiberaAmount(totalAmount);
+                                    commission.setCommissionAmount(totalAmount.multiply(new BigDecimal("0.15")));
+                                    commission.setPartnerPayment(totalAmount.multiply(new BigDecimal("0.50")));
+                                    commission.setAdminFee(totalAmount.multiply(new BigDecimal("0.05")));
+                                    commission.setServiceFee(totalAmount.multiply(new BigDecimal("0.30")));
+                                    break;
+                                case 3:
+                                    commission.setRiberaAmount(totalAmount.multiply(new BigDecimal("0.30")));
+                                    commission.setCommissionAmount(BigDecimal.ZERO);
+                                    commission.setPartnerPayment(BigDecimal.ZERO);
+                                    commission.setAdminFee(BigDecimal.ZERO);
+                                    commission.setServiceFee(totalAmount.multiply(new BigDecimal("0.30")));
+                                    break;
+                                default:
+                                    return Mono.error(new IllegalArgumentException("Tipo de caso no válido"));
+                            }
 
-                    LocalDate currentDate = now.toLocalDateTime().toLocalDate();
-                    int dayOfMonth = currentDate.getDayOfMonth();
-                    LocalDate disbursementDate;
-                    if (dayOfMonth <= 15) {
-                        disbursementDate = currentDate.withDayOfMonth(20);
-                    } else {
-                        disbursementDate = currentDate.plusMonths(1).withDayOfMonth(5);
-                    }
-                    commission.setDisbursementDate(Timestamp.valueOf(disbursementDate.atStartOfDay()));
-
-                    switch (caseType) {
-                        case 1:
-                            commission.setRiberaAmount(totalAmount);
-                            commission.setCommissionAmount(totalAmount.multiply(new BigDecimal("0.15")));
-                            commission.setPartnerPayment(BigDecimal.ZERO);
-                            commission.setAdminFee(BigDecimal.ZERO);
-                            commission.setServiceFee(BigDecimal.ZERO);
-                            break;
-
-                        case 2:
-                            commission.setRiberaAmount(totalAmount);
-                            commission.setCommissionAmount(totalAmount.multiply(new BigDecimal("0.15")));
-                            commission.setPartnerPayment(totalAmount.multiply(new BigDecimal("0.50")));
-                            commission.setAdminFee(totalAmount.multiply(new BigDecimal("0.05")));
-                            commission.setServiceFee(totalAmount.multiply(new BigDecimal("0.30")));
-                            break;
-
-                        case 3:
-                            commission.setRiberaAmount(totalAmount.multiply(new BigDecimal("0.30")));
-                            commission.setCommissionAmount(BigDecimal.ZERO);
-                            commission.setPartnerPayment(BigDecimal.ZERO);
-                            commission.setAdminFee(BigDecimal.ZERO);
-                            commission.setServiceFee(totalAmount.multiply(new BigDecimal("0.30")));
-                            break;
-
-                        default:
-                            return Mono.error(new IllegalArgumentException("Tipo de caso no válido"));
-                    }
-
-                    return generateSerialNumber()
-                            .flatMap(serialNumber -> {
-                                commission.setSerialNumber(serialNumber);
-                                return commissionRepository.save(commission);
-                            })
-                            .doOnSuccess(saved -> System.out.println("Comisión guardada exitosamente: " + saved))
-                            .doOnError(error -> System.err.println("Error al guardar la comisión: " + error.getMessage()));
-                });
+                            return generateSerialNumber()
+                                    .flatMap(serialNumber -> {
+                                        commission.setSerialNumber(serialNumber);
+                                        return commissionRepository.save(commission);
+                                    })
+                                    .doOnSuccess(saved -> System.out.println("Comisión guardada exitosamente: " + saved))
+                                    .doOnError(error -> System.err.println("Error al guardar la comisión: " + error.getMessage()));
+                        }));
     }
 
     @Override
@@ -141,6 +148,11 @@ public class CommissionServiceImpl implements CommissionService {
                     commission.setStatus(status);
                     return commissionRepository.save(commission);
                 });
+    }
+
+    @Override
+    public Mono<CommissionAdminDto> getPaymentBookDetails(Integer paymentBookId) {
+        return commissionRepository.findByPaymentBookId(paymentBookId);
     }
 
 

@@ -717,6 +717,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     //Metodo de recarga de comisones para promotor
     @Scheduled(cron = "0 0 0 * * ?")
     public Flux<WalletTransactionEntity> processPendingCommissions() {
+        System.out.println("Procesando comisiones pendientes...");
         LocalDate today = LocalDate.now();
         Timestamp startOfDay = Timestamp.valueOf(today.atStartOfDay());
         Timestamp endOfDay = Timestamp.valueOf(today.atTime(LocalTime.MAX));
@@ -762,6 +763,12 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                                                 });
                                     });
                         }));
+    }
+
+
+    @Scheduled(fixedRate = 5000)
+    public void schedlugin (){
+        System.out.println("Se ejecuto el scheduler");
     }
 
 
