@@ -49,7 +49,8 @@ public class QuotationServiceImpl implements QuotationService {
                                 .adultMayorCost(quotationDto.getAdultMayorCost())
                                 .adultExtraCost(quotationDto.getAdultExtraCost())
                                 .build();
-                List<Integer> daysSelected=quotationDto.getDays().stream().filter(d -> d.isSelected()).map(d -> d.getId()).toList();
+                List<Integer> daysSelected = quotationDto.getDays().stream().filter(d -> d.isSelected())
+                                .map(d -> d.getId()).toList();
                 return quotationRepository.getQuotationFindOfferAndDays(quotationDto.getRoomOfferIds(),
                                 daysSelected)
                                 .collectList()
@@ -82,10 +83,17 @@ public class QuotationServiceImpl implements QuotationService {
                                                                                                 .roomOfferId(roomOfferId)
                                                                                                 .build())
                                                                                 .collect(Collectors.toList());
-                                                                return quotationRoomOfferRepository.saveAll(
-                                                                                quotationRoomOffers)
-                                                                                .flatMap(d -> quotationDayRepository
-                                                                                                .saveAll(days))
+                                                                /*
+                                                                 * return quotationRoomOfferRepository.saveAll(
+                                                                 * quotationRoomOffers)
+                                                                 * .flatMap(d -> quotationDayRepository
+                                                                 * .saveAll(days))
+                                                                 * .then(Mono.just(savedQuotation));
+                                                                 */
+                                                                return Flux.zip(quotationRoomOfferRepository.saveAll(
+                                                                                quotationRoomOffers).collectList(),
+                                                                                quotationDayRepository
+                                                                                                .saveAll(days).collectList())
                                                                                 .then(Mono.just(savedQuotation));
                                                                 /*
                                                                  * return Flux.zip(quotationRoomOfferRepository.saveAll(
