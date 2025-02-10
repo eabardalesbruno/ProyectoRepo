@@ -1,10 +1,9 @@
 package com.proriberaapp.ribera.services.admin.impl;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import com.proriberaapp.ribera.Infraestructure.repository.ExcelRepository;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.relational.core.mapping.Column;
@@ -28,6 +27,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ExcelServiceImpl {
+
+    @Autowired
+    private final ExcelRepository excelRepository;
 
     public Mono<ByteArrayResource> generateExcelFromEntitiesByMonth(List<BookingWithPaymentDTO> entities) {
         try (InputStream is = new ClassPathResource("template.xlsm").getInputStream();
@@ -250,4 +252,63 @@ public class ExcelServiceImpl {
             return Mono.error(new RuntimeException("Error generating Excel file", e));
         }
     }
+
+    //Excel de Comisiones
+    public Mono<byte[]> generateExcel() {
+        return excelRepository.findExcelReportCommission()
+                .map(dto -> new String[]{
+                        dto.getCodigoReserva(),
+                        dto.getPromotor(),
+                        dto.getRucNumber(),
+                        dto.getFacturaLink(),
+                        dto.getEstado(),
+                        dto.getNombreHabitacion(),
+                        ESTADO_HABITACION_MAP.getOrDefault(dto.getEstadoHabitacion(), "Desconocido"),
+                        dto.getNombreTitular(),
+                        (dto.getCurrencytypeid() == 1 ? "S/." : dto.getCurrencytypeid() == 2 ? "$" : "Desconocido"),
+                        dto.getCostoFinal().toString(),
+                        (dto.getCostoAlimentos() != null ? dto.getCostoAlimentos() : BigDecimal.ZERO).toString(),
+                        dto.getCostoSinAlimentos().toString(),
+                        dto.getComision().toString()
+                })
+                .collectList()
+                .flatMap(this::createExcelFileFromTemplate);
+    }
+
+    private Mono<byte[]> createExcelFileFromTemplate(List<String[]> data) {
+        return Mono.fromSupplier(() -> {
+            try (InputStream templateStream = new ClassPathResource("templateComision.xlsx").getInputStream();
+                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+                Workbook workbook = new XSSFWorkbook(templateStream);
+                Sheet sheet = workbook.getSheetAt(0);
+
+                int rowNum = sheet.getLastRowNum() + 1;
+
+                for (String[] rowData : data) {
+                    Row row = sheet.createRow(rowNum++);
+                    for (int colNum = 0; colNum < rowData.length; colNum++) {
+                        row.createCell(colNum).setCellValue(rowData[colNum]);
+                    }
+                }
+
+                workbook.write(outputStream);
+                return outputStream.toByteArray();
+            } catch (IOException e) {
+                throw new RuntimeException("Error al generar el archivo Excel desde la plantilla", e);
+            }
+        });
+    }
+
+
+    private static final Map<String, String> ESTADO_HABITACION_MAP = Map.of(
+            "1", "Rechazado",
+            "2", "Aceptado",
+            "3", "Pendiente",
+            "4", "Anulado",
+            "5", "Finalizado",
+            "6", "Ocupado",
+            "7", "Limpieza",
+            "8", "Libre"
+    );
 }
