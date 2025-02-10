@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.FeedingItemsGrouped;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOffer;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOfferFiltro;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
+import com.proriberaapp.ribera.Domain.dto.QuotationOfferDto;
 import com.proriberaapp.ribera.Domain.entities.FeedingEntity;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
@@ -99,18 +100,158 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                         }
                         return Flux.empty();
                 });
+                Mono<List<QuotationOfferDto>> quotationOfferDto = Mono.defer(() -> {
+                        return this.roomOfferRepository
+                                        .getQuotationByRangeDateAndRoomOfferId(offerTimeInit, offerTimeEnd)
+                                        .collectList();
+                });
+                Mono<List<ViewRoomOfferReturn>> viewReturn = Mono.defer(() -> {
+                        return roomOfferRepository.findFilteredV2(
+                                        isFirstState,
+                                        roomTypeId,
+                                        categoryName, offerTimeInit, offerTimeEnd,
+                                        kidCapacity, adultCapacity, adultMayorCapacity, adultExtraCapacity,
+                                        infantCapacity)
+                                        .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
+                                                        roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
+                                                        .hasElements()
+                                                        .map(hasConflicts -> !hasConflicts))
+                                        .collectList();
+                });
+                Mono.zip(viewReturn, quotationOfferDto)
+                                .flatMap(tuple -> {
+                                        List<ViewRoomOfferReturn> returnView = tuple.getT1();
+                                        List<QuotationOfferDto> quotationOfferDtos = tuple.getT2();
+                                        for (ViewRoomOfferReturn viewRoomOfferReturn : returnView) {
+                                                QuotationOfferDto quotation = quotationOfferDtos.stream()
+                                                                .filter(quotationOfferDto1 -> quotationOfferDto1
+                                                                                .getRoom_offer_id()
+                                                                                .equals(viewRoomOfferReturn
+                                                                                                .getRoomOfferId()))
+                                                                .findFirst().orElse(null);
+                                                if (quotation != null) {
+                                                        viewRoomOfferReturn.setAdultcost(
+                                                                        BigDecimal.valueOf(quotation.getAdult_cost()));
 
-                return roomOfferRepository.findFilteredV2(
-                                isFirstState,
-                                roomTypeId,
-                                categoryName, offerTimeInit, offerTimeEnd,
-                                kidCapacity, adultCapacity, adultMayorCapacity, adultExtraCapacity,
-                                infantCapacity)
-                                .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
-                                                roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
-                                                .hasElements()
-                                                .map(hasConflicts -> !hasConflicts))
+                                                }
+                                        }
+                                        return Mono.just(returnView);
 
+                                }).flatMapMany(Flux::fromIterable);
+
+                /*
+                 * return roomOfferRepository.findFilteredV2(
+                 * isFirstState,
+                 * roomTypeId,
+                 * categoryName, offerTimeInit, offerTimeEnd,
+                 * kidCapacity, adultCapacity, adultMayorCapacity, adultExtraCapacity,
+                 * infantCapacity)
+                 * .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
+                 * roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
+                 * .hasElements()
+                 * .map(hasConflicts -> !hasConflicts))
+                 * 
+                 * .map(roomOffer -> {
+                 * roomOffer.setKidsReserve(kidCapacity);
+                 * roomOffer.setAdultsReserve(
+                 * isFirstState ? roomOffer.getMincapacity() : adultCapacity);
+                 * roomOffer.setAdultsMayorReserve(adultMayorCapacity);
+                 * roomOffer.setAdultsExtraReserve(adultExtraCapacity);
+                 * roomOffer.setInfantsReserve(infantCapacity);
+                 * roomOffer.setTotalPerson(TransformDate.calculatePersons(
+                 * roomOffer.getAdultsReserve(),
+                 * roomOffer.getKidsReserve(), roomOffer.getInfantsReserve(),
+                 * roomOffer.getAdultsExtraReserve(),
+                 * roomOffer.getAdultsMayorReserve()));
+                 * 
+                 * BigDecimal totalCostPerson = roomOffer.getAdultextracost().multiply(
+                 * BigDecimal.valueOf(roomOffer.getAdultsExtraReserve()))
+                 * .add(roomOffer.getAdultmayorcost()
+                 * .multiply(BigDecimal.valueOf(roomOffer
+                 * .getAdultsMayorReserve())))
+                 * .add(roomOffer.getAdultcost()
+                 * .multiply(BigDecimal.valueOf(
+                 * roomOffer.getAdultsReserve())))
+                 * .add(roomOffer.getKidcost().multiply(BigDecimal
+                 * .valueOf(roomOffer.getKidsReserve())));
+                 * roomOffer.setTotalCapacity(roomOffer.getAdultcapacity()
+                 * + roomOffer.getKidcapacity()
+                 * + roomOffer.getAdultextra()
+                 * + roomOffer.getAdultmayorcapacity());
+                 * totalCostPerson = totalCostPerson
+                 * .multiply(BigDecimal.valueOf(roomOffer.getNumberofnights()));
+                 * roomOffer.setCosttotal(totalCostPerson);
+                 * return roomOffer;
+                 * })
+                 * .flatMap(roomOffer -> servicesRepository
+                 * .findAllViewComfortReturn(roomOffer.getRoomOfferId())
+                 * .collectList()
+                 * .flatMap(comfortList -> {
+                 * roomOffer.setListAmenities(comfortList);
+                 * return bedroomRepository
+                 * .findAllViewBedroomReturn(roomOffer.getRoomId())
+                 * .collectList()
+                 * .map(bedroomList -> {
+                 * roomOffer.setListBedroomReturn(
+                 * bedroomList);
+                 * return roomOffer;
+                 * });
+                 * }))
+                 * .collectSortedList(Comparator.comparing(ViewRoomOfferReturn::getRoomOfferId))
+                 * .flatMapMany(Flux::fromIterable)
+                 * .flatMap(roomOffer -> Mono.zip(feedings
+                 * .collectList(), feedingsGrouped.collectList())
+                 * .map(zipMono -> {
+                 * List<FeedingEntity> feedingList = zipMono.getT1();
+                 * List<FeedingItemsGrouped> feedingGroupedList = zipMono.getT2();
+                 * Integer totalPerson = roomOffer.getAdultsReserve()
+                 * + roomOffer.getAdultsExtraReserve()
+                 * + roomOffer.getAdultsMayorReserve()
+                 * + roomOffer.getKidsReserve();
+                 * BigDecimal totalCostFeeding = GeneralMethods
+                 * .calculatedTotalAmountFeeding(feedingList,
+                 * feedingGroupedList,
+                 * roomOffer.getAdultsReserve(),
+                 * roomOffer.getAdultsExtraReserve(),
+                 * roomOffer.getAdultsMayorReserve(),
+                 * roomOffer.getKidsReserve());
+                 * roomOffer.setCosttotal(
+                 * roomOffer.getCosttotal().add(totalCostFeeding));
+                 * roomOffer.setListFeeding(feedingList);
+                 * roomOffer.setAmountFeeding(totalCostFeeding);
+                 * return roomOffer;
+                 * }));
+                 */
+                return Mono.zip(viewReturn, quotationOfferDto)
+                                .flatMap(tuple -> {
+                                        List<ViewRoomOfferReturn> returnView = tuple.getT1();
+                                        List<QuotationOfferDto> quotationOfferDtos = tuple.getT2();
+                                        for (ViewRoomOfferReturn viewRoomOfferReturn : returnView) {
+                                                QuotationOfferDto quotation = quotationOfferDtos.stream()
+                                                                .filter(quotationOfferDto1 -> quotationOfferDto1
+                                                                                .getRoom_offer_id()
+                                                                                .equals(viewRoomOfferReturn
+                                                                                                .getRoomOfferId()))
+                                                                .findFirst().orElse(null);
+                                                if (quotation != null) {
+                                                        viewRoomOfferReturn.setAdultcost(
+                                                                        BigDecimal.valueOf(quotation.getAdult_cost()));
+                                                        viewRoomOfferReturn.setKidcost(
+                                                                        BigDecimal.valueOf(quotation.getKid_cost()));
+                                                        viewRoomOfferReturn.setAdultextracost(
+                                                                        BigDecimal.valueOf(quotation
+                                                                                        .getAdult_extra_cost()));
+                                                        viewRoomOfferReturn.setAdultmayorcost(
+                                                                        BigDecimal.valueOf(quotation
+                                                                                        .getAdult_mayor_cost()));
+                                                        viewRoomOfferReturn.setInfantcost(
+                                                                        BigDecimal.valueOf(quotation.getInfant_cost()));
+
+                                                }
+                                        }
+                                        return Mono.just(returnView);
+
+                                }).flatMapMany(Flux::fromIterable)
                                 .map(roomOffer -> {
                                         roomOffer.setKidsReserve(kidCapacity);
                                         roomOffer.setAdultsReserve(
@@ -138,7 +279,8 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                         + roomOffer.getKidcapacity()
                                                         + roomOffer.getAdultextra()
                                                         + roomOffer.getAdultmayorcapacity());
-                                        totalCostPerson=totalCostPerson.multiply(BigDecimal.valueOf(roomOffer.getNumberofnights()));
+                                        totalCostPerson = totalCostPerson
+                                                        .multiply(BigDecimal.valueOf(roomOffer.getNumberofnights()));
                                         roomOffer.setCosttotal(totalCostPerson);
                                         return roomOffer;
                                 })
@@ -182,100 +324,6 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                 }));
 
         }
-        /*
-         * @Override
-         * public Flux<ViewRoomOfferReturn> findFilteredV2(Integer roomTypeId, LocalDate
-         * offerTimeInit,
-         * LocalDate offerTimeEnd,
-         * Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
-         * Integer adultExtraCapacity, Integer infantCapacity, List<Integer>
-         * feedingsSelected,
-         * boolean isFirstState) {
-         * int totalAdultRequest = adultCapacity + adultMayorCapacity +
-         * adultExtraCapacity;
-         * int totalKidRequest = kidCapacity + infantCapacity;
-         * Integer adultCapacityDefault = totalAdultRequest == 0 ? 1 : adultCapacity;
-         * Integer kidCapacityDefault = totalKidRequest == 0 ? (adultCapacityDefault >
-         * 1) ? 0 : 1 : kidCapacity;
-         * Integer totalKidCapacity = kidCapacityDefault + infantCapacity;
-         * Integer totalAdultCapacity = adultCapacityDefault + adultMayorCapacity +
-         * adultExtraCapacity;
-         * if (isFirstState) {
-         * totalKidCapacity = 1;
-         * totalAdultCapacity = 1;
-         * }
-         * 
-         * Integer totalCapacity = totalKidCapacity + totalAdultCapacity;
-         * Integer totalCapacityWithOutInfant = kidCapacityDefault +
-         * adultCapacityDefault + adultMayorCapacity
-         * + adultExtraCapacity;
-         * Flux<FeedingEntity> feedings =
-         * this.feedingRepository.findAllById(feedingsSelected);
-         * return roomOfferRepository.findFilteredV2(roomTypeId, offerTimeInit,
-         * offerTimeEnd,
-         * kidCapacityDefault, adultCapacityDefault, adultMayorCapacity,
-         * adultExtraCapacity,
-         * infantCapacity)
-         * .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
-         * roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
-         * .hasElements()
-         * .map(hasConflicts -> !hasConflicts))
-         * .map(roomOffer -> {
-         * if (isFirstState) {
-         * roomOffer.setKidsReserve(0);
-         * roomOffer.setAdultsReserve(roomOffer.getMincapacity());
-         * roomOffer.setAdultsMayorReserve(0);
-         * roomOffer.setAdultsExtraReserve(0);
-         * roomOffer.setInfantsReserve(0);
-         * } else {
-         * roomOffer.setKidsReserve(kidCapacityDefault);
-         * roomOffer.setAdultsReserve(adultCapacityDefault);
-         * roomOffer.setAdultsMayorReserve(adultMayorCapacity);
-         * roomOffer.setAdultsExtraReserve(adultExtraCapacity);
-         * roomOffer.setInfantsReserve(infantCapacity);
-         * }
-         * roomOffer.setTotalPerson(TransformDate.calculatePersons(
-         * roomOffer.getAdultsReserve(),
-         * roomOffer.getKidsReserve(), roomOffer.getInfantsReserve(),
-         * roomOffer.getAdultsExtraReserve(),
-         * roomOffer.getAdultsMayorReserve()));
-         * return roomOffer;
-         * })
-         * .flatMap(roomOffer -> servicesRepository
-         * .findAllViewComfortReturn(roomOffer.getRoomOfferId())
-         * .collectList()
-         * .flatMap(comfortList -> {
-         * roomOffer.setListAmenities(comfortList);
-         * return bedroomRepository
-         * .findAllViewBedroomReturn(roomOffer.getRoomId())
-         * .collectList()
-         * .map(bedroomList -> {
-         * roomOffer.setListBedroomReturn(
-         * bedroomList);
-         * return roomOffer;
-         * });
-         * }))
-         * .collectSortedList(Comparator.comparing(ViewRoomOfferReturn::getRoomOfferId))
-         * .flatMapMany(Flux::fromIterable)
-         * .flatMap(roomOffer -> feedings.collectList()
-         * .map(feedingList -> {
-         * 
-         * BigDecimal totalCostFeeding = feedingList.stream().reduce(
-         * BigDecimal.ZERO,
-         * (subtotal, element) -> subtotal
-         * .add(element.getCost()),
-         * BigDecimal::add).multiply(
-         * BigDecimal
-         * .valueOf(totalCapacityWithOutInfant));
-         * 
-         * roomOffer.setCosttotal(
-         * roomOffer.getCosttotal().add(totalCostFeeding));
-         * roomOffer.setListFeeding(feedingList);
-         * return roomOffer;
-         * }));
-         * 
-         * }
-         */
 
         @Override
         public Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId,
