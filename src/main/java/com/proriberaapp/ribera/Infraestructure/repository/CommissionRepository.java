@@ -75,7 +75,7 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
     """)
     Mono<CommissionAdminDto> findByPaymentBookId(Integer paymentBookId);
 
-    @Query("       SELECT * FROM commission WHERE EXTRACT(DAY FROM disbursementdate) IN (10, 20) AND status = 'Activo'")
+    @Query("SELECT * FROM commission WHERE EXTRACT(DAY FROM disbursementdate) IN (05, 20) AND status = 'Activo' and processed = False ")
     Flux<CommissionEntity> findValidCommissionsForProcessing();
 
 }

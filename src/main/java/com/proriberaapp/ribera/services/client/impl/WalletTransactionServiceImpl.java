@@ -23,7 +23,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -720,6 +719,9 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                 .groupBy(CommissionEntity::getPromoterId)
                 .flatMap(groupedCommissions -> groupedCommissions.collectList()
                         .flatMap(commissions -> {
+                            if(commissions.isEmpty()) {
+                                return Mono.empty();
+                            }
                             Integer promoterId = commissions.get(0).getPromoterId();
                             BigDecimal totalAmount = commissions.stream()
                                     .map(CommissionEntity::getCommissionAmount)
