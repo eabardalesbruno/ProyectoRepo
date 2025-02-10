@@ -714,21 +714,11 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
         return Mono.just(body);
     }
 
-    //Metodo de recarga de comisones para promotor
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 0 10 5,20 * ?" , zone = "America/Lima")
     public Flux<WalletTransactionEntity> processPendingCommissions() {
-        System.out.println("Procesando comisiones pendientes...");
-        LocalDate today = LocalDate.now();
-        Timestamp startOfDay = Timestamp.valueOf(today.atStartOfDay());
-        Timestamp endOfDay = Timestamp.valueOf(today.atTime(LocalTime.MAX));
-
-        System.out.println("Start of day: " + startOfDay);
-        System.out.println("End of day: " + endOfDay);
-
-        return commissionRepository.findByDisbursementDateRange(startOfDay, endOfDay)
+        return commissionRepository.findValidCommissionsForProcessing()
                 .groupBy(CommissionEntity::getPromoterId)
-                .flatMap(groupedCommissions -> groupedCommissions
-                        .collectList()
+                .flatMap(groupedCommissions -> groupedCommissions.collectList()
                         .flatMap(commissions -> {
                             Integer promoterId = commissions.get(0).getPromoterId();
                             BigDecimal totalAmount = commissions.stream()
@@ -737,7 +727,6 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
                             return walletRepository.findByUserPromoterId(promoterId)
                                     .flatMap(wallet -> {
-                                        System.out.println("Found wallet: " + wallet.getWalletId() + " for promoter: " + promoterId);
                                         wallet.setBalance(wallet.getBalance().add(totalAmount));
 
                                         return generateUniqueOperationCode()
@@ -763,12 +752,6 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                                                 });
                                     });
                         }));
-    }
-
-
-    @Scheduled(fixedRate = 5000)
-    public void schedlugin (){
-        System.out.println("Se ejecuto el scheduler");
     }
 
 

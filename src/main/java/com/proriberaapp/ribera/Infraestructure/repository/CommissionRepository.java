@@ -17,12 +17,8 @@ import java.sql.Timestamp;
 @Repository
 public interface CommissionRepository extends R2dbcRepository <CommissionEntity, Integer> {
 
-
     @Query("SELECT SUM(commissionamount) FROM commission WHERE promoterid = :promoterId")
     Mono<BigDecimal> findTotalCommissionByPromoterId(@Param("promoterId") Integer promoterId);
-
-    @Query("SELECT * FROM commission c WHERE c.disbursementdate BETWEEN :startOfDay AND :endOfDay AND c.processed = false  and c.status = 'Activo'")
-    Flux<CommissionEntity> findByDisbursementDateRange(@Param("startOfDay") Timestamp startOfDay, @Param("endOfDay") Timestamp endOfDay);
 
     @Query("SELECT serialNumber FROM commission ORDER BY commissionId DESC LIMIT 1")
     Mono<String> findLastSerialNumber();
@@ -55,8 +51,6 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
     """)
     Flux<CommissionDTO> findAllWithPromoter(int size, int offset);
 
-
-
     @Query("""
         SELECT
             pb.paymentbookid,
@@ -80,5 +74,8 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
         WHERE pb.paymentbookid = :paymentBookId
     """)
     Mono<CommissionAdminDto> findByPaymentBookId(Integer paymentBookId);
+
+    @Query("       SELECT * FROM commission WHERE EXTRACT(DAY FROM disbursementdate) IN (10, 20) AND status = 'Activo'")
+    Flux<CommissionEntity> findValidCommissionsForProcessing();
 
 }

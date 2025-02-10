@@ -16,7 +16,7 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 
 @EnableWebFlux
 @SpringBootApplication
-//@EnableScheduling
+@EnableScheduling
 public class RiberaApplication {
 
 	@Bean
