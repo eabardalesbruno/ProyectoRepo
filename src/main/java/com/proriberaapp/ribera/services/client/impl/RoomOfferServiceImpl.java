@@ -138,7 +138,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                         + roomOffer.getKidcapacity()
                                                         + roomOffer.getAdultextra()
                                                         + roomOffer.getAdultmayorcapacity());
-
+                                        totalCostPerson=totalCostPerson.multiply(BigDecimal.valueOf(roomOffer.getNumberofnights()));
                                         roomOffer.setCosttotal(totalCostPerson);
                                         return roomOffer;
                                 })
