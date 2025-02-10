@@ -73,7 +73,8 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
                    when v.categoryname='MATRIMONIAL' and  (:adultCapacity+:adultMayorCapacity+:adultExtra+:kidCapacity)>=v.mincapacity and v.adultextra+v.adultcapacity+v.adultmayorcapacity>=(:adultCapacity+:adultMayorCapacity+:adultExtra) and v.infantcapacity+v.kidcapacity>=(:infantCapacity+:kidCapacity) then true
                    when v.categoryname='DOBLE' and  (:adultCapacity+:adultMayorCapacity+:adultExtra+:kidCapacity)>=v.mincapacity and v.adultextra+v.adultcapacity+v.adultmayorcapacity>=(:adultCapacity+:adultMayorCapacity+:adultExtra) and v.infantcapacity+v.kidcapacity>=(:infantCapacity+:kidCapacity) then true
                    else false
-                   end as isbooking
+                           end as isbooking,
+                                   calculate_nights(:offerTimeInit,:offerTimeEnd) as numberofnights
                  FROM viewroomofferreturn v
                 JOIN quotation_day qd on qd.idquotation=v.quotation_id
                 join "day" d on d."id"=qd.idday and to_char(now(),'d')::integer=d.numberofweek

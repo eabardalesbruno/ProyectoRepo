@@ -87,6 +87,16 @@ public class TransformDate {
         return Integer.parseInt(dayNumberFormatter.format(timestamp));
     }
 
+    public static long calculateDaysDifference(LocalDate dayBookingInit, LocalDate dayBookingEnd) {
+        if (dayBookingInit == null || dayBookingEnd == null) {
+            throw new IllegalArgumentException("Both Timestamps must be non-null");
+        }
+
+     
+
+        // Calcular la diferencia de días
+        return ChronoUnit.DAYS.between(dayBookingInit, dayBookingEnd);
+    }
     public static long calculateDaysDifference(Timestamp dayBookingInit, Timestamp dayBookingEnd) {
         if (dayBookingInit == null || dayBookingEnd == null) {
             throw new IllegalArgumentException("Both Timestamps must be non-null");
