@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOffer;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
+import com.proriberaapp.ribera.Domain.dto.QuotationOfferDto;
 import com.proriberaapp.ribera.Domain.entities.RoomOfferEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
@@ -160,5 +161,22 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
 
     @Query("SELECT * FROM viewroomofferreturn WHERE roomofferid = :roomOfferId")
     Mono<ViewRoomOfferReturn> findViewRoomOfferReturnByRoomOfferId(Integer roomOfferId);
+
+    @Query("""
+                    select qr.room_offer_id,sum(q.adult_cost) adult_cost,sum(q.kid_cost) kid_cost,sum(q.adult_extra_cost) adult_extra_cost,sum(q.adult_mayor_cost) as adult_mayor_cost,sum(q.infant_cost) infant_cost   from quotation_roomoffer qr
+                    join quotation q on q.quotation_id=qr.quotation_id
+                    join quotation_day qd on qd.idquotation=q.quotation_id
+                    join "day" d on d."id"=qd.idday
+                    where d.numberofweek in(  SELECT
+                          (EXTRACT(DOW FROM fecha_inicio::date)+1) as dow
+                      FROM generate_series(
+                        :offerTimeInit::date,
+                        :offerTimeEnd::date-1,
+                        '1 day'::interval
+                      ) fecha_inicio)
+                       GROUP BY qr.room_offer_id
+                    """)
+    Flux<QuotationOfferDto> getQuotationByRangeDateAndRoomOfferId(LocalDate offerTimeInit,
+                    LocalDate offerTimeEnd);
 
 }
