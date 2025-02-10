@@ -1,0 +1,386 @@
+package com.proriberaapp.ribera.services.client.impl;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.proriberaapp.ribera.Api.controllers.payme.dto.TransactionNecessaryResponse;
+import com.proriberaapp.ribera.Domain.dto.BookingAndRoomNameDto;
+import com.proriberaapp.ribera.Domain.entities.*;
+import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
+import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
+import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
+import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
+import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
+import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
+import com.proriberaapp.ribera.services.client.EmailService;
+import com.proriberaapp.ribera.services.client.NiubizService;
+import com.proriberaapp.ribera.services.client.RefusePaymentService;
+import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
+import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
+import com.proriberaapp.ribera.utils.emails.BookingEmailDto;
+import com.proriberaapp.ribera.utils.emails.ConfirmPaymentByBankTransferAndCardTemplateEmail;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.jose4j.base64url.internal.apache.commons.codec.binary.Base64;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class NiubizServiceImpl implements NiubizService {
+
+    @Autowired
+    private WebClient nibuizClient;
+
+    @Value("${niubiz.user}")
+    private String user;
+
+    @Value("${niubiz.password}")
+    private String password;
+
+    @Value("${frontend.webapi.url}")
+    private String urlFrontEnd;
+
+    @Autowired
+    BookingRepository bookingRepository;
+
+    @Autowired
+    UserClientRepository userClientRepository;
+
+    @Autowired
+    PaymentBookRepository paymentBookRepository;
+
+    @Autowired
+    InvoiceServiceI invoiceService;
+
+    @Autowired
+    EmailService emailService;
+
+    @Autowired
+    RefusePaymentService refusePaymentService;
+
+    @Override
+    public Mono<String> getSecurityToken() {
+        //aW50ZWdyYWNpb25lc0BuaXViaXouY29tLnBlOl83ejNAOGZG
+        String credentials = user + ":" + password;
+        String basic = "Basic "+Base64.encodeBase64String(credentials.getBytes());
+        return nibuizClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/api.security/v1/security")
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", basic)
+                .exchangeToMono(response -> {
+                    HttpStatus httpStatus = (HttpStatus) response.statusCode();
+                    if (httpStatus.is4xxClientError() || httpStatus.is5xxServerError()) {
+                        return response.createException().flatMap(Mono::error);
+                    }
+                    return response.bodyToMono(String.class);
+                });
+    }
+
+    @Override
+    public Mono<Object> getTokenSession(String token, Object body) {
+        return nibuizClient.post()
+                .uri(uriBuilder -> uriBuilder.path("/api.ecommerce/v2/ecommerce/token/session/456879852")
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body)
+                .exchangeToMono(response -> {
+                    HttpStatus httpStatus = (HttpStatus) response.statusCode();
+                    if (httpStatus.is4xxClientError() || httpStatus.is5xxServerError()) {
+                        return response.createException().flatMap(Mono::error);
+                    }
+                    return response.bodyToMono(Object.class);
+                });
+    }
+
+    @Override
+    public Mono<String> tofinalize(NiubizAutorizationEntity niubizEntity, String token, Long purchaseNumber, Double amount) {
+        String urlWeb = urlFrontEnd+"/manager/bookings-manager";
+
+        NiubizAutorizationBodyEntity body = new NiubizAutorizationBodyEntity();
+        body.setChannel("web");
+        body.setCaptureType("manual");
+        body.setCountable(true);
+        NiubizAuthorizationOrderEntity order = new NiubizAuthorizationOrderEntity();
+        order.setTokenId(niubizEntity.getTransactionToken());
+        order.setPurchaseNumber(purchaseNumber.toString());
+        order.setAmount(amount);
+        order.setCurrency("PEN");
+        body.setOrder(order);
+        return nibuizClient.post()
+                .uri(uriBuilder -> uriBuilder.path("/api.authorization/v3/authorization/ecommerce/456879852")
+                        .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body)
+                .exchangeToMono(response -> {
+                    HttpStatus httpStatus = (HttpStatus) response.statusCode();
+                    if (httpStatus.is4xxClientError() || httpStatus.is5xxServerError()) {
+                        //return response.createException().flatMap(Mono::error);
+                        return Mono.just(urlWeb+"/0");
+                    }
+                    return response.bodyToMono(Object.class).flatMap(object -> {
+                        ObjectMapper mapper = new ObjectMapper();
+                        String transactionId = null;
+                        try {
+                            String json = mapper.writeValueAsString(object);
+                            JsonNode jsonNode = mapper.readTree(json);
+                            JsonNode jsonDataMap = jsonNode.get("dataMap");
+                            JsonNode idTransaction = jsonDataMap.get("TRANSACTION_ID");
+                            transactionId = idTransaction.asText();
+                        } catch (JsonProcessingException e) {
+                            transactionId = "-1";
+                        }
+                        return Mono.just(urlWeb+"/"+transactionId);
+                    });
+                });
+    }
+
+    @Override
+    public Mono<Object> savePayNiubiz(Integer bookingId, String invoiceType, String invoiceDocumentNumber, Double totalDiscount, Double percentageDiscount, Double totalCostWithOutDiscount, Double amount, String transactionId) {
+        return bookingRepository.findByBookingId(bookingId)
+                .flatMap(booking -> {
+                    booking.setBookingStateId(2);
+                    return Mono.zip(bookingRepository.save(booking),
+                            this.bookingRepository.getRoomNameAndDescriptionfindByBookingId(booking.getBookingId()),
+                            userClientRepository.findById(booking.getUserClientId()));
+                }).flatMap(tuple -> {
+                    BookingEntity updatedBooking = tuple.getT1();
+                    BookingAndRoomNameDto bookingAndRoomNameDto = tuple.getT2();
+                    UserClientEntity userClient = tuple.getT3();
+                    BigDecimal monto = new BigDecimal(amount);
+                    BigDecimal totalCost = monto.divide(BigDecimal.valueOf(100000));
+                    InvoiceType type = InvoiceType.getInvoiceTypeByName(invoiceType.toUpperCase());
+                    InvoiceClientDomain invoiceClientDomain = new InvoiceClientDomain(
+                            userClient.getFirstName(),
+                            invoiceDocumentNumber,
+                            userClient.getAddress(),
+                            userClient.getCellNumber(),
+                            userClient.getEmail(),
+                            updatedBooking.getUserClientId());
+                    InvoiceDomain invoice = new InvoiceDomain(
+                            invoiceClientDomain,
+                            updatedBooking.getBookingId(),
+                            18.0,
+                            InvoiceCurrency.PEN,
+                            type,
+                            percentageDiscount);
+                    //invoice.setOperationCode(authorizationResponse.getId());
+                    InvoiceItemDomain item = new InvoiceItemDomain(
+                            bookingAndRoomNameDto.getRoomName(),
+                            bookingAndRoomNameDto.getRoomDescription(),
+                            1,
+                            totalCost);
+                    invoice.addItemWithIncludedIgv(item);
+                    PaymentBookEntity paymentBook = PaymentBookEntity
+                            .builder()
+                            .bookingId(updatedBooking
+                                    .getBookingId())
+                            .userClientId(updatedBooking
+                                    .getUserClientId())
+                            .refuseReasonId(1)
+                            .paymentMethodId(1)
+                            .paymentStateId(2)
+                            .paymentTypeId(3)
+                            .paymentSubTypeId(6)
+                            .currencyTypeId(1)
+                            .amount(totalCost)
+                            .description("Pago exitoso")
+                            .paymentDate(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Lima"))))
+                            .operationCode(transactionId)
+                            .note("Nota de pago")
+                            .totalCost(totalCost)
+                            .invoiceDocumentNumber(invoiceDocumentNumber)
+                            .invoiceType(invoiceType)
+                            .imageVoucher("Pago con Tarjeta")
+                            .totalPoints(0)
+                            .paymentComplete(true)
+                            .pendingpay(1)
+                            .totalDiscount(totalDiscount)
+                            .percentageDiscount(percentageDiscount)
+                            .totalCostWithOutDiscount(totalCostWithOutDiscount)
+                            .build();
+                    return paymentBookRepository.save(paymentBook)
+                            .flatMap(paymentBookR -> {
+                                invoice.setPaymentBookId(paymentBookR.getPaymentBookId());
+                                return this.invoiceService
+                                        .save(invoice)
+                                        .then(sendSuccessEmail(
+                                                userClient.getEmail(),
+                                                paymentBookR.getPaymentBookId()));
+                            }).thenReturn(new TransactionNecessaryResponse(true))
+                            .onErrorResume(e -> bookingRepository
+                                    .findByBookingId(bookingId)
+                                    .flatMap(booking -> {
+                                        booking.setBookingStateId(3);
+                                        return bookingRepository.save(booking);
+                                    })
+                                    .flatMap(booking -> userClientRepository.findById(userClient.getUserClientId())
+                                            .flatMap(userCliente -> sendErrorEmail(userCliente.getEmail(), e.getMessage()))
+                                            .then(Mono.error(e))));
+                });
+    }
+
+    private Mono<Void> sendSuccessEmail(String email, int paymentBookId) {
+        System.out.println("Enviando correo de pago exitoso" + paymentBookId);
+        return this.refusePaymentService.getPaymentDetails(paymentBookId)
+                .map(paymentDetails -> {
+                    String nombres = (String) paymentDetails.get("Nombres");
+                    Integer codigoReserva = (Integer) paymentDetails.get("Codigo Reserva");
+                    String checkIn = (String) paymentDetails.get("Check In");
+                    String checkOut = (String) paymentDetails.get("Check Out");
+                    long duracionEstancia = (long) paymentDetails.get("Duración Estancia");
+                    String cantidadPersonas = (String) paymentDetails.get("Cantidad de Personas");
+                    String imagen = (String) paymentDetails.get("Imagen");
+                    String roomName = (String) paymentDetails.get("RoomName");
+                    BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+                    BookingEmailDto bookingEmailDto = new BookingEmailDto(
+                            roomName, nombres, codigoReserva.toString(), checkIn, checkOut,
+                            checkIn, imagen, (int) duracionEstancia,
+                            "Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico Etapa III, Cercado de Lima 15593",
+                            cantidadPersonas);
+                    ConfirmPaymentByBankTransferAndCardTemplateEmail confirmReserveBookingTemplateEmail = new ConfirmPaymentByBankTransferAndCardTemplateEmail(
+                            nombres, bookingEmailDto);
+                    baseEmailReserve.addEmailHandler(confirmReserveBookingTemplateEmail);
+                    System.out.println("Email body: " + baseEmailReserve.execute());
+                    return baseEmailReserve.execute();
+
+                }).flatMap(emailBody -> emailService.sendEmail(email, "Pago Exitoso", emailBody));
+    }
+
+    private Mono<Void> sendErrorEmail(String email, String errorMessage) {
+        String emailBody = generateErrorEmailBody(errorMessage);
+        return emailService.sendEmail(email, "Error en el Pago", emailBody);
+    }
+
+    private String generateErrorEmailBody(String errorMessage) {
+        String body = "<html>\n" +
+                "<head>\n" +
+                "    <title>Bienvenido</title>\n" +
+                "    <style>\n" +
+                "        body {\n" +
+                "            font-family: Arial, sans-serif;\n" +
+                "            margin: 0;\n" +
+                "            padding: 0;\n" +
+                "            color: black;\n" +
+                "            background-color: white; /* Color de fondo */\n" +
+                "        }\n" +
+                "        .header {\n" +
+                "            width: 100%;\n" +
+                "            position: relative;\n" +
+                "            background-color: white; /* Color de fondo del encabezado */\n" +
+                "            padding: 20px 0; /* Espaciado superior e inferior para el encabezado */\n"
+                +
+                "        }\n" +
+                "        .logos-right {\n" +
+                "            position: absolute;\n" +
+                "            top: 10px;\n" +
+                "            right: 10px;\n" +
+                "            display: flex;\n" +
+                "            gap: 5px;\n" +
+                "        }\n" +
+                "        .logos-right img {\n" +
+                "            width: 30px;\n" +
+                "            height: 30px;\n" +
+                "        }\n" +
+                "        .logo-left {\n" +
+                "            width: 50px;\n" +
+                "            position: absolute;\n" +
+                "            top: 10px;\n" +
+                "            left: 10px;\n" +
+                "        }\n" +
+                "        .banner {\n" +
+                "            width: 540px;\n" +
+                "            border-top-left-radius: 20px;\n" +
+                "            border-top-right-radius: 20px;\n" +
+                "            display: block;\n" +
+                "            margin: 0 auto;\n" +
+                "        }\n" +
+                "        .container {\n" +
+                "            width: 500px;\n" +
+                "            background-color: #f4f4f4; /* Fondo blanco del contenido */\n" +
+                "            margin: 0 auto;\n" +
+                "            padding: 20px;\n" +
+                "            border-bottom-left-radius: 10px;\n" +
+                "            border-bottom-right-radius: 10px;\n" +
+                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "        }\n" +
+                "        .content {\n" +
+                "            text-align: center;\n" +
+                "            padding: 20px;\n" +
+                "        }\n" +
+                "        .content h1 {\n" +
+                "            margin-top: 20px;\n" +
+                "            font-weight: bold;\n" +
+                "            font-style: italic;\n" +
+                "        }\n" +
+                "        .content h3, .content p {\n" +
+                "            margin: 10px 0;\n" +
+                "        }\n" +
+                "        .footer {\n" +
+                "            width: 100%;\n" +
+                "            text-align: center;\n" +
+                "            margin: 20px 0;\n" +
+                "        }\n" +
+                "        .help-section {\n" +
+                "            width: 500px;\n" +
+                "            background-color: #f4f4f4; /* Fondo blanco del contenido */\n" +
+                "            margin: 20px auto;\n" +
+                "            padding: 20px;\n" +
+                "            border-radius: 10px;\n" +
+                "            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n" +
+                "            text-align: center;\n" +
+                "        }\n" +
+                "    </style>\n" +
+                "</head>\n" +
+                "<body>\n" +
+                "    <div class=\"header\">\n" +
+                "        <!-- Encabezado con logos -->\n" +
+                "        <img class=\"logo-left\" src=\"https://bit.ly/4d7FuGX\" alt=\"Logo Izquierda\">\n"
+                +
+                "    </div>\n" +
+                "\n" +
+                "    <!-- Imagen de banner -->\n" +
+                "    <img class=\"banner\" src=\"https://bit.ly/46vO7sq\" alt=\"Bienvenido\">\n" +
+                "\n" +
+                "    <!-- Contenedor blanco con el contenido del mensaje -->\n" +
+                "    <div class=\"container\">\n" +
+                "        <div class=\"content\">\n" +
+                "            <p>Estimado cliente,</p>\n" +
+                "            <p>Ha ocurrido un error durante el procesamiento de su pago.</p>\n" +
+                "            <p>Detalles del error:</p>\n" +
+                "            <p>Error en el pago por motivos de su entidad bancaria</p>\n" +
+                "        </div>\n" +
+                "    </div>\n" +
+                "\n" +
+                "    <!-- Sección de ayuda -->\n" +
+                "    <div class=\"help-section\">\n" +
+                "        <h3>¿Necesitas ayuda?</h3>\n" +
+                "        <p>Comunicate con nosotros a través de los siguientes medios:</p>\n" +
+                "        <p>Correo: informesyreservas@cieneguilladelrio.com</p>\n" +
+                "    </div>\n" +
+                "</body>\n" +
+                "</html>";
+
+        return body;
+    }
+
+}

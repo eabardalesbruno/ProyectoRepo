@@ -81,7 +81,7 @@ public class SecurityConfig {
                                 "/api/v1/booking/find/**",
                                 "/api/v1/maintenance/**",
                                 "api/v1/booking-state/**",
-                                "/swagger-doc/**"
+                                "/api/v1/niubiz/**"
                         ).permitAll()
 
                         .pathMatchers("/api/v1/admin/**").hasRole("SUPER_ADMIN")
