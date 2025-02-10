@@ -50,6 +50,12 @@ public interface UserPromoterRepository extends R2dbcRepository<UserPromoterEnti
 
     @Query("SELECT DISTINCT status FROM userpromoter")
     Flux<String> getStatus();
+
+    @Query("""
+            update userpromoter set password = :passwordEnconded
+                        where userpromoterid = :userpromoterid;
+                """)
+    Mono<Void> updatePassword(Integer userpromoterid, String passwordEnconded);
 }
 
 

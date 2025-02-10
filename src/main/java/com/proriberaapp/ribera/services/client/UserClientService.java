@@ -61,7 +61,8 @@ public interface UserClientService {
 
     Mono<Void> sendCodeRecoveryPassword(String email);
 
-  
     Mono<Void> changePassword(String code, String password);
+
+    Mono<Void> updateAndValidatePassword(Integer userId,String currentPassword, String newPassword, String confirmPassword);
 
 }

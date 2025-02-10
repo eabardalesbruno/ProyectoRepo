@@ -353,4 +353,12 @@ public class UserController {
         return this.userClientService.changePassword(passwordDto.getCode(), passwordDto.getPassword());
     }
 
+    @PutMapping("/update-password")
+    public Mono<Void> setPasswordAndValidateCurrentPassword(@RequestHeader("Authorization") String token,
+            @RequestBody UpdatePasswordDto passwordDto) {
+        Integer idUserClient = jwtProvider.getIdFromToken(token);
+        return this.userClientService.updateAndValidatePassword(idUserClient, passwordDto.getCurrentPassword(),
+                passwordDto.getPassword(), passwordDto.getConfirmPassword());
+    }
+
 }

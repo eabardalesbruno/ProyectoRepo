@@ -22,28 +22,24 @@ public interface QuotationRepository extends ReactiveCrudRepository<QuotationEnt
     Flux<quotationDayDto> getQuotationDaySelected(Integer quotationId);
 
     @Query("""
-                    select q.quotation_description,d."name" as dayname,r.offername from quotation q
-            join quotation_roomoffer qr on qr.quotation_id=q.quotation_id
-            join roomoffer r on r.roomofferid=qr.room_offer_id
-            join quotation_day qd on qd.idquotation=qd.idquotation
-            join "day" d on d."id"=qd.idday
-            where 
-             qd.idday in(:dayId)
-            					 and qr.room_offer_id in(:roomOfferId)
-            and qr.quotation_id<>:quotationIdIgnore
+                       select  q.quotation_description,d."name" as dayname,r.offername from quotation q
+                                    join quotation_roomoffer qr on qr.quotation_id=q.quotation_id and  qr.room_offer_id in(:roomOfferId)
+                            join quotation_day qd on qd.idquotation=q.quotation_id and qd.idday in(:dayId)
+                            join "day" d on d."id"=qd.idday
+                                    join roomoffer r on r.roomofferid=qr.room_offer_id
+                            where qr.quotation_id<>:quotationIdIgnore
 
                     """)
     Flux<QuotationOfferDayDto> getQuotationFindOfferAndDays(List<Integer> roomOfferId, List<Integer> dayId,
             Integer quotationIdIgnore);
 
     @Query("""
-                    select q.quotation_description,d."name" as dayname,r.offername from quotation q
-            join quotation_roomoffer qr on qr.quotation_id=q.quotation_id
-            join roomoffer r on r.roomofferid=qr.room_offer_id
-            join quotation_day qd on qd.idquotation=qd.idquotation
-            join "day" d on d."id"=qd.idday
-            where qr.room_offer_id in(:roomOfferId)
-            and d."id" in(:dayId)
+            
+                    select  q.quotation_description,d."name" as dayname,r.offername from quotation q
+                            join quotation_roomoffer qr on qr.quotation_id=q.quotation_id and  qr.room_offer_id in(:roomOfferId)
+                    join quotation_day qd on qd.idquotation=q.quotation_id and qd.idday in(:dayId)
+                    join "day" d on d."id"=qd.idday
+                    join roomoffer r on r.roomofferid=qr.room_offer_id
                     """)
     Flux<QuotationOfferDayDto> getQuotationFindOfferAndDays(List<Integer> roomOfferId, List<Integer> dayId);
 

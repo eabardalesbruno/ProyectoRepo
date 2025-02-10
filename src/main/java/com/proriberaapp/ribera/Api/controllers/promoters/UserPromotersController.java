@@ -3,14 +3,9 @@ package com.proriberaapp.ribera.Api.controllers.promoters;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PromotorDataDTO;
-import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
-import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
-import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
-import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
 import com.proriberaapp.ribera.Domain.enums.StatesUser;
-import com.proriberaapp.ribera.services.client.CommissionService;
 import com.proriberaapp.ribera.services.promoters.UserPromoterService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import static com.proriberaapp.ribera.utils.GeneralMethods.generatePassword;
@@ -33,9 +27,6 @@ public class UserPromotersController {
     private final JwtProvider jwtProvider;
     @Autowired
     private final UserPromoterService userPromoterService;
-
-    @Autowired
-    private final CommissionService commissionService;
 
     @PostMapping("/register")
     public Mono<Object> register( @RequestBody RegisterRequest registerRequest) {
@@ -127,18 +118,4 @@ public class UserPromotersController {
         return userPromoterService.updatePassword(id, newPassword);
     }
 
-
-    @PostMapping("/calulatecommision")
-    public Mono<ResponseEntity<CommissionEntity>> calculateCommission(@RequestBody PaymentBookEntity paymentBook, @RequestParam Integer caseType) {
-        return commissionService.calculateAndSaveCommission(paymentBook,caseType)
-                .map(commissionEntity -> new ResponseEntity<>(commissionEntity, HttpStatus.OK));
-    }
-
-    @GetMapping("/total-commission")
-    public Mono<ResponseEntity<BigDecimal>> getTotalCommissionByPromterId(@RequestParam Integer promoterId) {
-        return commissionService.getTotalCommissionByPromoterId(promoterId)
-                .map(totalCommission -> ResponseEntity.ok(totalCommission))
-                .defaultIfEmpty(ResponseEntity.notFound().build());
-    }
 }
-

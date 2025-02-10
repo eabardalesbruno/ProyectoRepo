@@ -64,4 +64,7 @@ public class CompanionsDto {
     @Column("countrydesc")
     private String countrydesc;
 
+    @Column("courtesy")
+    private String courtesy;
+
 }

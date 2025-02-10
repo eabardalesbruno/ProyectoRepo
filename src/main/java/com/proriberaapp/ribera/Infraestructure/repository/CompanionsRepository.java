@@ -20,7 +20,8 @@ public interface CompanionsRepository extends R2dbcRepository<CompanionsEntity, 
 
     @Query("""
      select c.*, dt.documenttypedesc, g.genderdesc,
-       (select countrydesc from country where countryid = c.countryid) countrydesc
+       (select countrydesc from country where countryid = c.countryid) countrydesc,
+       (SELECT courtesy FROM country WHERE countryid = c.countryid) AS courtesy
      from companions c
      left join documenttype dt on c.typedocumentid = dt.documenttypeid
      left join gender g on c.genderid = g.genderid
