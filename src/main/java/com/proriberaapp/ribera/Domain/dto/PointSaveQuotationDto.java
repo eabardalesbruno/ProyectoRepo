@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PointSaveQuotationDto {
-    private Integer idPointType;
+    private PointTypeDto pointType;
     private double factor;
     private List<PointDaysDto> days;
     private Integer id;
