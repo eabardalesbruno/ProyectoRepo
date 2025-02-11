@@ -13,4 +13,5 @@ public class PointsTypeEntity {
     private String pointstypedesc;
     @Column("statepointstypeid")
     private Integer statepointstypeid;
+    private boolean isquotable;
 }
