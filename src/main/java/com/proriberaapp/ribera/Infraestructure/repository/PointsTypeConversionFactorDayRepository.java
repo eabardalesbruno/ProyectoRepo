@@ -6,6 +6,8 @@ import com.proriberaapp.ribera.Domain.entities.PointTypeConversionFactorDayEntit
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
@@ -19,23 +21,24 @@ public interface PointsTypeConversionFactorDayRepository
     Flux<PointTypeConversionFactorDayEntity> getDaysIgnoreIdFactorConversion(Integer idpointtype);
 
     @Query("""
-                select id from points_coversion_factor_day where idpointtype=:idpointtype
+                select id from points_coversion_factor_day where idpointtype<>:idpointtype
                 and idconversionfactor<>:id
+                and idday in(:daysSelected)
 
             """)
-    Flux<PointTypeConversionFactorDayEntity> getDaysIgnoreIdFactorConversion(Integer idpointtype, Integer id);
+    Flux<PointTypeConversionFactorDayEntity> getDaysIgnoreIdFactorConversion(Integer idpointtype, Integer id,
+            List<Integer> daysSelected);
 
     @Query("""
                 delete from points_coversion_factor_day where idconversionfactor=:idconversionfactor
             """)
     Mono<Void> deleteFindConversionFactoId(Integer idconversionfactor);
 
-     @Query("""
+    @Query("""
             select d.*,(case when qd."id" is not null then true else false end) as selected from "day" d
             left join points_coversion_factor_day qd on qd.idday=d."id" and qd.idconversionfactor=:idconversionfactor
             order by d.id asc
             """)
     Flux<PointQuotationDayDto> getQuotationDaySelected(Integer idconversionfactor);
-
 
 }

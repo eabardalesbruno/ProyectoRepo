@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
@@ -22,6 +23,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class PointQuotationController {
     @Autowired
     private PointQuotationService pointQuotationService;
+
+    @GetMapping()
+    public Flux<PointSaveQuotationDto> getAll() {
+        return pointQuotationService.findAll();
+    }
 
     @GetMapping("/days/{conversionId}")
     public Flux<PointQuotationDayDto> getMethodName(@PathVariable("conversionId") Integer conversionId) {
@@ -34,7 +40,7 @@ public class PointQuotationController {
         return this.pointQuotationService.save(entity);
     }
 
-    @PostMapping("/update")
+    @PutMapping("/update")
     public Mono<Void> update(@RequestBody PointSaveQuotationDto entity) {
         return this.pointQuotationService.update(entity);
     }

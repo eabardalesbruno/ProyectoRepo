@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PointQuotationDayDto;
 import com.proriberaapp.ribera.Domain.dto.PointDaysDto;
 import com.proriberaapp.ribera.Domain.dto.PointSaveQuotationDto;
+import com.proriberaapp.ribera.Domain.dto.PointTypeDto;
 import com.proriberaapp.ribera.Domain.entities.PointTypeConversionFactorDayEntity;
 import com.proriberaapp.ribera.Domain.entities.PointTypeConversionFactorEntity;
 import com.proriberaapp.ribera.Domain.entities.PointTypeConversionFactorDayEntity.PointTypeConversionFactorDayEntityBuilder;
@@ -82,6 +83,7 @@ public class PointQuotationServiceImpl implements PointQuotationService {
                                         .idpointtype(pointSaveQuotationDto.getPointType()
                                                         .getPointstypeid())
                                         .id(pointSaveQuotationDto.getId())
+                                        .state(1)
                                         .build();
                         return this.pointsTypeConversionFactorRepository.save(entity)
                                         .flatMap(entitySaved -> {
@@ -93,19 +95,19 @@ public class PointQuotationServiceImpl implements PointQuotationService {
                                                                                 .idConversionFactor(entitySaved.getId())
                                                                                 .idDay(day.getId()).build())
                                                                 .collect(Collectors.toList());
-                                                return Mono.zip(
-                                                                this.pointsTypeConversionFactorDayRepository
-                                                                                .deleteFindConversionFactoId(
-                                                                                                entitySaved.getId()),
-                                                                this.pointsTypeConversionFactorDayRepository
-                                                                                .saveAll(days).collectList())
-                                                                .then();
+                                                return this.pointsTypeConversionFactorDayRepository
+                                                                .deleteFindConversionFactoId(
+                                                                                entitySaved.getId())
+                                                                .then(this.pointsTypeConversionFactorDayRepository
+                                                                                .saveAll(days).then());
                                         });
                 });
                 return this.pointsTypeConversionFactorDayRepository
                                 .getDaysIgnoreIdFactorConversion(pointSaveQuotationDto.getPointType()
                                                 .getPointstypeid(),
-                                                pointSaveQuotationDto.getId())
+                                                pointSaveQuotationDto.getId(),
+                                                daysSelected.stream().map(day -> day.getId())
+                                                                .collect(Collectors.toList()))
                                 .collectList()
                                 .flatMap(list -> {
                                         if (list.size() > 0) {
@@ -123,8 +125,17 @@ public class PointQuotationServiceImpl implements PointQuotationService {
 
         @Override
         public Flux<PointSaveQuotationDto> findAll() {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'findAll'");
+                return this.pointsTypeConversionFactorRepository.getAllWithPointType()
+                                .map(point -> {
+                                        PointSaveQuotationDto dto = new PointSaveQuotationDto();
+                                        PointTypeDto pointType = new PointTypeDto();
+                                        pointType.setPointstypeid(point.getPointstypeid());
+                                        pointType.setPointstypedesc(point.getPointstypedesc());
+                                        dto.setPointType(pointType);
+                                        dto.setFactor(point.getFactor());
+                                        dto.setId(point.getId());
+                                        return dto;
+                                });
         }
 
 }
