@@ -17,6 +17,6 @@ public class PointQuotationDto {
     private Integer id;
     private Integer pointstypeid;
     private String pointstypedesc;
-    private double factor;
+    private double costPerNight;
 
 }

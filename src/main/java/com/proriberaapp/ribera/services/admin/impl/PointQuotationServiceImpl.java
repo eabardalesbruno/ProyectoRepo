@@ -40,7 +40,7 @@ public class PointQuotationServiceImpl implements PointQuotationService {
                                 .collect(Collectors.toList());
                 Mono<Void> savedPoint = Mono.defer(() -> {
                         PointTypeConversionFactorEntity entity = PointTypeConversionFactorEntity.builder()
-                                        .factor(pointSaveQuotationDto.getFactor())
+                                        .costPerNight(pointSaveQuotationDto.getCostPerNight())
                                         .idpointtype(pointSaveQuotationDto.getPointType().getPointstypeid())
                                         .build();
                         return this.pointsTypeConversionFactorRepository.save(entity)
@@ -79,7 +79,7 @@ public class PointQuotationServiceImpl implements PointQuotationService {
 
                 Mono<Void> savedPoint = Mono.defer(() -> {
                         PointTypeConversionFactorEntity entity = PointTypeConversionFactorEntity.builder()
-                                        .factor(pointSaveQuotationDto.getFactor())
+                                        .costPerNight(pointSaveQuotationDto.getCostPerNight())
                                         .idpointtype(pointSaveQuotationDto.getPointType()
                                                         .getPointstypeid())
                                         .id(pointSaveQuotationDto.getId())
@@ -132,7 +132,7 @@ public class PointQuotationServiceImpl implements PointQuotationService {
                                         pointType.setPointstypeid(point.getPointstypeid());
                                         pointType.setPointstypedesc(point.getPointstypedesc());
                                         dto.setPointType(pointType);
-                                        dto.setFactor(point.getFactor());
+                                        dto.setCostPerNight(point.getCostPerNight());
                                         dto.setId(point.getId());
                                         return dto;
                                 });

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 public interface PointsTypeConversionFactorRepository
                 extends R2dbcRepository<PointTypeConversionFactorEntity, Integer> {
         @Query("""
-                        SELECT pt.*,ptf.id,ptf.factor FROM points_conversion_factor ptf
+                        SELECT pt.*,ptf.id,ptf.costpernight FROM points_conversion_factor ptf
                                                 join pointstype pt on pt.pointstypeid = ptf.idpointtype
                         """)
         Flux<PointQuotationDto> getAllWithPointType();

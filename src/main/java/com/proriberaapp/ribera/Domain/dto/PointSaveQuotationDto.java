@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class PointSaveQuotationDto {
     private PointTypeDto pointType;
-    private double factor;
+    private double costPerNight;
     private List<PointDaysDto> days;
     private Integer id;
 
