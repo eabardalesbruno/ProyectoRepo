@@ -3,9 +3,11 @@ package com.proriberaapp.ribera.services.point;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.proriberaapp.ribera.Domain.entities.PointTransactionEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PointTransactionRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.PointTransactionTypeRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.PointsTypeRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -16,27 +18,26 @@ import reactor.core.publisher.Mono;
 public class PointsTransactionService {
     private final Map<PointTransactionTypeEnum, PointsTransactionStrategy<?>> strategies;
     private final PointTransactionRepository pointTransactionRepository;
-    private final PointsTypeRepository pointsTypeRepository;
+    private final PointTransactionTypeRepository pointsTransactionTypeRepository;
 
     @SuppressWarnings("unchecked")
+    @Transactional
     public <T extends PointTransactionRequestDto> Mono<T> processTransaction(T request) {
         PointsTransactionStrategy<T> strategy = (PointsTransactionStrategy<T>) strategies.get(request.getType());
         if (strategy == null) {
             return Mono.error(new IllegalArgumentException("Invalid transaction type"));
         }
-        return this.pointsTypeRepository.findByName(request.getType().getDescription())
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid transaction type")))
-                .map(transactionType -> {
+        return this.pointsTransactionTypeRepository.findByName(request.getType().getDescription())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Not found transaction type")))
+                .flatMap(transactionType -> {
                     PointTransactionEntity pointTransactionEntity = PointTransactionEntity.builder()
                             .userid(request.getUserId())
-                            .transactiontypeid(transactionType.getPointstypeid())
+                            .transactiontypeid(transactionType.getId())
                             .build();
-                    return this.pointTransactionRepository.save(pointTransactionEntity).map(d -> {
-                        request.setTransactionId(d.getId());
-                        return request;
-                    });
+                    return this.pointTransactionRepository.save(pointTransactionEntity);
                 })
-                .flatMap(reuestMap -> {
+                .flatMap(requestMap -> {
+                    request.setTransactionId(requestMap.getId());
                     return strategy.execute(request)
                             .onErrorResume(ex -> Mono.error(new RuntimeException("Error processing transaction", ex)));
                 });
@@ -48,6 +49,10 @@ public class PointsTransactionService {
         request.setType(PointTransactionTypeEnum.TRANSFER);
         return processTransaction(request);
     }
-    
+
+    public Mono<PointConversionDto> convertPoints(PointConversionDto request) {
+        request.setType(PointTransactionTypeEnum.EXCHANGE);
+        return processTransaction(request);
+    }
 
 }

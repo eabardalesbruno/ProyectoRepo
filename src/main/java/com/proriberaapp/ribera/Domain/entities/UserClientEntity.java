@@ -71,6 +71,8 @@ public class UserClientEntity implements UserDetails {
     private boolean isUserInclub;
     private StatesUser status;
     private Timestamp createdat;
+    @Column("rewardpoints")
+    private double rewardPoints;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

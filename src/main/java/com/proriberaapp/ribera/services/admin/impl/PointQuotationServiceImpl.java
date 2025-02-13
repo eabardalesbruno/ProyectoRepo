@@ -128,9 +128,11 @@ public class PointQuotationServiceImpl implements PointQuotationService {
                 return this.pointsTypeConversionFactorRepository.getAllWithPointType()
                                 .map(point -> {
                                         PointSaveQuotationDto dto = new PointSaveQuotationDto();
-                                        PointTypeDto pointType = new PointTypeDto();
-                                        pointType.setPointstypeid(point.getPointstypeid());
-                                        pointType.setPointstypedesc(point.getPointstypedesc());
+                                        PointTypeDto pointType = PointTypeDto
+                                                        .builder()
+                                                        .pointstypedesc(point.getPointstypedesc())
+                                                        .pointstypeid(point.getPointstypeid())
+                                                        .build();
                                         dto.setPointType(pointType);
                                         dto.setCostPerNight(point.getCostPerNight());
                                         dto.setId(point.getId());

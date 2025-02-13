@@ -24,6 +24,7 @@ public class PointConversionStrategy implements PointsTransactionStrategy<PointC
                 .pointtypeid(request.getPointType().getPointstypeid())
                 .transactionid(request.getTransactionId())
                 .build();
+        request.setPointAcredited(pointAcredited);
         return this.pointConversionRepository.save(entity).map(d -> {
             request.setId(d.getId());
             return request;

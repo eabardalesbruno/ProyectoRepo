@@ -1,14 +1,14 @@
 package com.proriberaapp.ribera.services.point;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class PointTransactionRequestDto {
-    private Integer userId;
-    private Integer bookingId;
-    private PointTransactionTypeEnum type;
-    private Integer transactionId;
+    protected Integer userId;
+    protected PointTransactionTypeEnum type;
+    protected Integer transactionId;
   
 }
