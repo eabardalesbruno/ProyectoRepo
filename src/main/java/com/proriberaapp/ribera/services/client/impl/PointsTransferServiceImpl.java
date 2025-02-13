@@ -10,8 +10,7 @@ import reactor.core.publisher.Mono;
 
 @Service
 public class PointsTransferServiceImpl implements PointsTransferService {
-    private final PointsTransferRepository pointsTransferRepository;
-
+/* 
     @Autowired
     public PointsTransferServiceImpl(PointsTransferRepository pointsTransferRepository) {
         this.pointsTransferRepository = pointsTransferRepository;
@@ -50,5 +49,5 @@ public class PointsTransferServiceImpl implements PointsTransferService {
     @Override
     public Mono<Void> deletePointsTransfer(Integer id) {
         return pointsTransferRepository.deleteById(id);
-    }
+    } */
 }
