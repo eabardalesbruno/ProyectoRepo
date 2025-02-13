@@ -52,7 +52,6 @@ public class PointsTransactionServiceTest {
 
         @Test
         void savePointTransfer() {
-
                 PointTransferRequestDto pointConversionDto = PointTransferRequestDto.builder()
                                 .sourceUserId(83)
                                 .targetUserId(84)

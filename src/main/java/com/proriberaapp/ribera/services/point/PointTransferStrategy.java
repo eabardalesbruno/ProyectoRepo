@@ -30,7 +30,13 @@ public class PointTransferStrategy implements PointsTransactionStrategy<PointTra
         if (request.getSourceUserId() == request.getTargetUserId()) {
             return Mono.error(new IllegalArgumentException("Los usuarios no pueden ser iguales"));
         }
-   /*      Mono.zip(this.userClientRepository.findById(request.getSourceUserId())
+        Mono<PointTransferRequestDto> savePointTransfer = Mono.defer(() -> {
+            return this.pointTransferRepository.save(pointTransferEntity).flatMap(d -> {
+                request.setId(d.getId());
+                return Mono.just(request);
+            });
+        });
+        return Mono.zip(this.userClientRepository.findById(request.getSourceUserId())
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Usuario origen no encontrado"))),
                 this.userClientRepository.findById(request.getTargetUserId()))
                 .flatMap(tuples -> {
@@ -43,12 +49,9 @@ public class PointTransferStrategy implements PointsTransactionStrategy<PointTra
                     userTarget.setRewardPoints(userTarget.getRewardPoints() + request.getPointsAmount());
                     return this.userClientRepository.save(user)
                             .then(this.userClientRepository.save(userTarget));
-                }); */
-
-        return this.pointTransferRepository.save(pointTransferEntity).map(d -> {
-            request.setId(d.getId());
-            return request;
-        });
+                })
+                .then(
+                        savePointTransfer);
 
     }
 
