@@ -8,5 +8,6 @@ import lombok.Setter;
 public class PointTypeDto {
     private Integer pointstypeid;
     private String pointstypedesc;
+    private double factor;
     
 }

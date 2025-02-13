@@ -3,7 +3,9 @@ package com.proriberaapp.ribera.services.point;
 public enum PointTransactionTypeEnum {
     TRANSFER("Transferencia"),
     REWARD("Recompensa"),
-    REFUND("Reembolso");
+    REFUND("Reembolso"),
+    EXCHANGE("Conversión"),
+    CANJE("Canje");
 
     private String description;
 

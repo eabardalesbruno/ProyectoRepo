@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.proriberaapp.ribera.services.point.PointConversionStrategy;
 import com.proriberaapp.ribera.services.point.PointTransactionTypeEnum;
 import com.proriberaapp.ribera.services.point.PointTransferStrategy;
 import com.proriberaapp.ribera.services.point.PointsTransactionStrategy;
@@ -14,9 +15,10 @@ import com.proriberaapp.ribera.services.point.PointsTransactionStrategy;
 public class PointsStrategyConfig {
     @Bean
     public Map<PointTransactionTypeEnum, PointsTransactionStrategy<?>> strategies(
-            PointTransferStrategy transferStrategy) {
+            PointTransferStrategy transferStrategy, PointConversionStrategy conversionStrategy) {
         Map<PointTransactionTypeEnum, PointsTransactionStrategy<?>> strategies = new HashMap<>();
         strategies.put(PointTransactionTypeEnum.TRANSFER, transferStrategy);
+        strategies.put(PointTransactionTypeEnum.EXCHANGE, conversionStrategy);
         return strategies;
     }
 
