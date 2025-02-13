@@ -3,20 +3,17 @@ package com.proriberaapp.ribera.services;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ResponseFileDto;
 import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
-import com.proriberaapp.ribera.Domain.entities.*;
 
 import org.apache.commons.io.FileUtils;
 import org.jose4j.base64url.internal.apache.commons.codec.binary.Base64;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
+
 
 @Service
 public class PDFGeneratorService {
@@ -62,7 +59,7 @@ public class PDFGeneratorService {
                 + "    <div class=\"container\">"
                 + "        <div class=\"header\">"
                 + "            <div class=\"logo\">"
-                + "                <img src=\"https://i.postimg.cc/xT6NS6R9/Color-4x.png\" alt=\"Logo\" />"
+                + "                <img src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/ribera/landing/Logo-Ribera-Color.png\" alt=\"Logo\" />"
                 + "            </div>"
                 + "            <div class=\"header-text\">"
                 + "                <h1>CONSTANCIA DE PAGO WALLET</h1>"
