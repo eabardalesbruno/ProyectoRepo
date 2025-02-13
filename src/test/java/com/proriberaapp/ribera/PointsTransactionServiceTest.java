@@ -63,4 +63,17 @@ public class PointsTransactionServiceTest {
                 StepVerifier.create(pointsTransactionService.transferPoints(pointConversionDto).then())
                                 .verifyComplete();
         }
+        @Test
+        void errorTransferPoint() {
+                PointTransferRequestDto pointConversionDto = PointTransferRequestDto.builder()
+                                .sourceUserId(83)
+                                .targetUserId(84)
+                                .type(PointTransactionTypeEnum.TRANSFER)
+                                .pointsAmount(8000)
+                                .build();
+                pointConversionDto.setUserId(83);
+
+                StepVerifier.create(pointsTransactionService.transferPoints(pointConversionDto))
+                                .expectError(IllegalArgumentException.class);
+        }
 }

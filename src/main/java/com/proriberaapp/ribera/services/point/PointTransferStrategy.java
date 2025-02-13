@@ -38,7 +38,9 @@ public class PointTransferStrategy implements PointsTransactionStrategy<PointTra
         });
         return Mono.zip(this.userClientRepository.findById(request.getSourceUserId())
                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Usuario origen no encontrado"))),
-                this.userClientRepository.findById(request.getTargetUserId()))
+                this.userClientRepository.findById(request
+                        .getTargetUserId())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Usuario destino no encontrado"))))
                 .flatMap(tuples -> {
                     UserClientEntity user = tuples.getT1();
                     UserClientEntity userTarget = tuples.getT2();
