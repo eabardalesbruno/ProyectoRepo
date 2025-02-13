@@ -118,26 +118,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                         .map(hasConflicts -> !hasConflicts))
                                         .collectList();
                 });
-                Mono.zip(viewReturn, quotationOfferDto)
-                                .flatMap(tuple -> {
-                                        List<ViewRoomOfferReturn> returnView = tuple.getT1();
-                                        List<QuotationOfferDto> quotationOfferDtos = tuple.getT2();
-                                        for (ViewRoomOfferReturn viewRoomOfferReturn : returnView) {
-                                                QuotationOfferDto quotation = quotationOfferDtos.stream()
-                                                                .filter(quotationOfferDto1 -> quotationOfferDto1
-                                                                                .getRoom_offer_id()
-                                                                                .equals(viewRoomOfferReturn
-                                                                                                .getRoomOfferId()))
-                                                                .findFirst().orElse(null);
-                                                if (quotation != null) {
-                                                        viewRoomOfferReturn.setAdultcost(
-                                                                        BigDecimal.valueOf(quotation.getAdult_cost()));
-
-                                                }
-                                        }
-                                        return Mono.just(returnView);
-
-                                }).flatMapMany(Flux::fromIterable);
+              
 
                 /*
                  * return roomOfferRepository.findFilteredV2(
@@ -233,19 +214,29 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                                                 .equals(viewRoomOfferReturn
                                                                                                 .getRoomOfferId()))
                                                                 .findFirst().orElse(null);
+
                                                 if (quotation != null) {
+
                                                         viewRoomOfferReturn.setAdultcost(
-                                                                        BigDecimal.valueOf(quotation.getAdult_cost()));
+                                                                        BigDecimal.valueOf(quotation.getAdult_cost()/ viewRoomOfferReturn.getNumberofnights()));
                                                         viewRoomOfferReturn.setKidcost(
-                                                                        BigDecimal.valueOf(quotation.getKid_cost()));
+                                                                        BigDecimal.valueOf(quotation.getKid_cost()
+                                                                                        / viewRoomOfferReturn
+                                                                                                        .getNumberofnights()));
                                                         viewRoomOfferReturn.setAdultextracost(
                                                                         BigDecimal.valueOf(quotation
-                                                                                        .getAdult_extra_cost()));
+                                                                                        .getAdult_extra_cost()
+                                                                                        / viewRoomOfferReturn
+                                                                                                        .getNumberofnights()));
                                                         viewRoomOfferReturn.setAdultmayorcost(
                                                                         BigDecimal.valueOf(quotation
-                                                                                        .getAdult_mayor_cost()));
+                                                                                        .getAdult_mayor_cost()
+                                                                                        / viewRoomOfferReturn
+                                                                                                        .getNumberofnights()));
                                                         viewRoomOfferReturn.setInfantcost(
-                                                                        BigDecimal.valueOf(quotation.getInfant_cost()));
+                                                                        BigDecimal.valueOf(quotation.getInfant_cost()
+                                                                                        / viewRoomOfferReturn
+                                                                                                        .getNumberofnights()));
 
                                                 }
                                         }
