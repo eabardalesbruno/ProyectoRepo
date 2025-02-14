@@ -62,6 +62,7 @@ public class CommissionServiceImpl implements CommissionService {
                             commission.setCurrencyTypeId(paymentBook.getCurrencyTypeId());
                             commission.setStatus("Pendiente");
                             commission.setDayBookingInit(booking.getDayBookingInit());
+                            commission.setReceptionistId(booking.getReceptionistId());
 
                             Timestamp now = new Timestamp(System.currentTimeMillis());
                             commission.setCreatedAt(now);
