@@ -19,7 +19,7 @@ public class PointConversionEntity {
     private double pointdebited;
     private Integer pointtypeid;
     private Integer transactionid;
-    private String membreshipname;
+    private String membershipname;
 
     
 }

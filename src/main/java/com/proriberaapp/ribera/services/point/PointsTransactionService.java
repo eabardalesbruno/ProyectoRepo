@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.proriberaapp.ribera.Domain.entities.PointTransactionEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.PointTransactionRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.PointTransactionTypeRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.PointsTypeRepository;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -22,7 +21,7 @@ public class PointsTransactionService {
 
     @SuppressWarnings("unchecked")
     @Transactional
-    public <T extends PointTransactionRequestDto> Mono<T> processTransaction(T request) {
+    private  <T extends PointTransactionRequestDto> Mono<T> processTransaction(T request) {
         PointsTransactionStrategy<T> strategy = (PointsTransactionStrategy<T>) strategies.get(request.getType());
         if (strategy == null) {
             return Mono.error(new IllegalArgumentException("Invalid transaction type"));
@@ -53,6 +52,10 @@ public class PointsTransactionService {
     public Mono<PointConversionDto> convertPoints(PointConversionDto request) {
         request.setType(PointTransactionTypeEnum.EXCHANGE);
         return processTransaction(request);
+    }
+
+    public Mono<?> pointsExchange() {
+        return Mono.empty();
     }
 
 }

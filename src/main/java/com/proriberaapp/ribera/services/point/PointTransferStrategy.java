@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 
 import com.proriberaapp.ribera.Domain.entities.PointTransferEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
+import com.proriberaapp.ribera.Infraestructure.exception.InsufficientPointsException;
+import com.proriberaapp.ribera.Infraestructure.exception.UserNotFoundException;
 import com.proriberaapp.ribera.Infraestructure.repository.PointsTransferRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 
@@ -37,15 +39,15 @@ public class PointTransferStrategy implements PointsTransactionStrategy<PointTra
             });
         });
         return Mono.zip(this.userClientRepository.findById(request.getSourceUserId())
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Usuario origen no encontrado"))),
+                .switchIfEmpty(Mono.error(new UserNotFoundException("Usuario origen no encontrado"))),
                 this.userClientRepository.findById(request
                         .getTargetUserId())
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Usuario destino no encontrado"))))
+                .switchIfEmpty(Mono.error(new UserNotFoundException("Usuario destino no encontrado"))))
                 .flatMap(tuples -> {
                     UserClientEntity user = tuples.getT1();
                     UserClientEntity userTarget = tuples.getT2();
                     if (user.getRewardPoints() < request.getPointsAmount()) {
-                        return Mono.error(new IllegalArgumentException("El usuario no tiene suficientes puntos"));
+                        return Mono.error(new InsufficientPointsException());
                     }
                     user.setRewardPoints(user.getRewardPoints() - request.getPointsAmount());
                     userTarget.setRewardPoints(userTarget.getRewardPoints() + request.getPointsAmount());

@@ -8,4 +8,5 @@ import lombok.Getter;
 public class PointTransactionTypeDto {
     private Integer id;
     private String name;
+    private String color;
 }

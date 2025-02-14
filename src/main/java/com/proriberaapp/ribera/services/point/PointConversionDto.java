@@ -15,6 +15,7 @@ public class PointConversionDto extends PointTransactionRequestDto {
     private Integer pointDebited;
     private PointTypeDto pointType;
     private String membershipName;
+    private Integer membershipId;
     private Integer transactionId;
     private double pointAcredited;
     private Integer id;

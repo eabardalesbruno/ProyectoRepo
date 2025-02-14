@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.proriberaapp.ribera.Domain.dto.PointTypeDto;
+import com.proriberaapp.ribera.Infraestructure.exception.InsufficientPointsException;
 import com.proriberaapp.ribera.services.point.PointConversionDto;
 import com.proriberaapp.ribera.services.point.PointTransactionTypeEnum;
 import com.proriberaapp.ribera.services.point.PointTransferRequestDto;
@@ -74,6 +75,6 @@ public class PointsTransactionServiceTest {
                 pointConversionDto.setUserId(83);
 
                 StepVerifier.create(pointsTransactionService.transferPoints(pointConversionDto))
-                                .expectError(IllegalArgumentException.class);
+                                .expectError(InsufficientPointsException.class);
         }
 }
