@@ -81,4 +81,7 @@ public class CommissionEntity {
 
     @Column("dateofapplication")
     private Timestamp dateofapplication;
+
+    @Column("receptionistid")
+    private Integer receptionistId;
 }
