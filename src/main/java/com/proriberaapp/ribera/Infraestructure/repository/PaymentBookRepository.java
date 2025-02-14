@@ -24,7 +24,7 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
         Mono<Integer> findUserClientIdByPaymentBookId(Integer id);
 
         @Query("""
-                                SELECT pb.*,
+                                SELECT  pb.*,  bo.createdat, 
                           (CASE
                                         WHEN up.userpromoterid is not null  THEN concat('PROMOTOR ',' - ',up.firstname,' ',up.lastname)
                                         WHEN ua.useradminid is not null THEN concat('RECEPCION',' - ',ua.firstname,' ',ua.lastname)
@@ -100,7 +100,8 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                             ELSE
                                           'Sin clasificar' END) as channel,
                                       pb.invoicedocumentnumber ,
-                                      pb.invoicetype
+                                      pb.invoicetype,
+                                      b.createdat
                                           from     paymentbook pb
                                           join userclient uc on uc.userclientid=pb.userclientid
                                           join documenttype dt on dt.documenttypeid=uc.documenttypeid

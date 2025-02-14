@@ -96,7 +96,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
   @Query("""
 
           SELECT distinct us.firstname, us.lastname,us.documenttypeid,us.documentnumber,us.cellnumber, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image,
-                 r.offertimeinit, r.offertimeend, us.email, bo.costfinal,
+                 r.offertimeinit, r.offertimeend, us.email, bo.costfinal,bo.createdat,
                  TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit,
                  TO_CHAR(bo.daybookingend, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookingend,
                      bs.bookingstateid, bs.bookingstatename,
