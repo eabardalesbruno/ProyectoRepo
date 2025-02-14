@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.entities.FullDayDetailEntity;
 import com.proriberaapp.ribera.Domain.entities.FullDayEntity;
+import com.proriberaapp.ribera.Domain.entities.FullDayFoodEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.FullDayDetailRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.FullDayFoodRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.FullDayRepository;
@@ -25,8 +26,11 @@ public class FullDayServiceImpl implements FullDayService {
 
     private final FullDayDetailRepository fullDayDetailRepository;
 
+    private final FullDayFoodRepository fullDayFoodRepository;
+
     @Override
-    public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type, List<FullDayDetailEntity> details) {
+    public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type,
+                                               List<FullDayDetailEntity> details, List<FullDayFoodEntity> foods) {
         FullDayEntity fullDay = FullDayEntity.builder()
                 .receptionistId(receptionistId)
                 .userPromoterId(userPromoterId)
@@ -39,12 +43,16 @@ public class FullDayServiceImpl implements FullDayService {
         return fullDayRepository.save(fullDay)
                 .flatMap(savedFullDay -> Flux.fromIterable(details)
                         .map(detail -> calcularPrecios(detail, type))
-                        .map(detail -> {
-                            detail.setFulldayid(savedFullDay.getFulldayid());
-                            return detail;
-                        })
                         .flatMap(fullDayDetailRepository::save)
                         .collectList()
+                        .flatMap(savedDetails -> {
+                            if (type.equalsIgnoreCase("Full Day Todo Completo")) {
+                                return saveFood(savedDetails, foods)
+                                        .thenReturn(savedDetails);
+                            } else {
+                                return Mono.just(savedDetails);
+                            }
+                        })
                         .flatMap(savedDetails -> {
                             BigDecimal totalPrice = savedDetails.stream()
                                     .map(FullDayDetailEntity::getFinalPrice)
@@ -56,6 +64,25 @@ public class FullDayServiceImpl implements FullDayService {
                         .thenReturn(savedFullDay)
                 );
     }
+
+    @Override
+    public Mono<Void> saveFood(List<FullDayDetailEntity> savedDetails, List<FullDayFoodEntity> foods) {
+        if (savedDetails.isEmpty() || foods.isEmpty()) {
+            return Mono.empty();
+        }
+        return Flux.fromIterable(foods)
+                .index()
+                .flatMap(tuple -> {
+                    long index = tuple.getT1();
+                    FullDayFoodEntity food = tuple.getT2();
+                    FullDayDetailEntity targetDetail = savedDetails.get((int) (index % savedDetails.size()));
+                    food.setFulldaydetailid(targetDetail.getFulldaydetailid());
+
+                    return fullDayFoodRepository.save(food);
+                })
+                .then();
+    }
+
 
     private FullDayDetailEntity calcularPrecios(FullDayDetailEntity detail, String type) {
         BigDecimal basePrice = getBasePrice(detail.getTypePerson());
@@ -73,7 +100,6 @@ public class FullDayServiceImpl implements FullDayService {
 
         return detail;
     }
-
 
     private BigDecimal getBasePrice(String typePerson) {
         switch (typePerson.toUpperCase()) {

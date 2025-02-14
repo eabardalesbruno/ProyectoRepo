@@ -25,7 +25,8 @@ public class FullDayController {
                         request.getUserPromoterId(),
                         request.getUserClientId(),
                         request.getType(),
-                        request.getDetails()
+                        request.getDetails(),
+                        request.getFoods()
                 )
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.badRequest().build());

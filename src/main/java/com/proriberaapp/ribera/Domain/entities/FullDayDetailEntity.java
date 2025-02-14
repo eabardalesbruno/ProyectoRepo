@@ -41,5 +41,4 @@ public class FullDayDetailEntity {
     @Column("finalprice")
     private BigDecimal finalPrice;
 
-
 }
