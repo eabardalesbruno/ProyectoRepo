@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Domain.entities.FullDayDetailEntity;
 import com.proriberaapp.ribera.Domain.entities.FullDayEntity;
 import com.proriberaapp.ribera.Domain.entities.FullDayFoodEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
+import com.proriberaapp.ribera.services.client.CommissionService;
 import com.proriberaapp.ribera.services.client.FullDayService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,8 @@ public class FullDayServiceImpl implements FullDayService {
     private final FullDayFoodRepository fullDayFoodRepository;
 
     private final CommissionRepository commissionRepository;
+
+    private final CommissionService commissionService;
 
     @Override
     public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type,
@@ -159,9 +162,17 @@ public class FullDayServiceImpl implements FullDayService {
         commission.setCommissionAmount(commissionAmount);
         commission.setRiberaAmount(fullDay.getTotalPrice());
         commission.setCaseType(1);
+        commission.setPartnerPayment(BigDecimal.ZERO);
+        commission.setAdminFee(BigDecimal.ZERO);
+        commission.setServiceFee(BigDecimal.ZERO);
+        commission.setStatus("Pendiente");
+
+        commission.setDayBookingInit(fullDay.getPurchaseDate());
         commission.setCreatedAt(createdAt);
         commission.setDisbursementDate(disbursementDate);
-        return commissionRepository.save(commission)
+        return commissionService.generateSerialNumber()
+                .doOnNext(commission::setSerialNumber)
+                .then(commissionRepository.save(commission))
                 .thenReturn(fullDay);
     }
 
@@ -195,4 +206,7 @@ public class FullDayServiceImpl implements FullDayService {
         }
         return Timestamp.valueOf(disbursementDate.atStartOfDay());
     }
+
+
+
 }

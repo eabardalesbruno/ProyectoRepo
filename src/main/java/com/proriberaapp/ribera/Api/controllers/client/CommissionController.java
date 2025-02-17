@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Domain.dto.CommissionAdminDto;
 import com.proriberaapp.ribera.Domain.dto.CommissionDTO;
+import com.proriberaapp.ribera.Domain.dto.CommissionGroupResponse;
 import com.proriberaapp.ribera.Domain.dto.CommissionPromoterDto;
 import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
@@ -65,16 +66,16 @@ public class CommissionController {
         return commissionService.getCommissionById(commissionId);
     }
 
-    @PutMapping("/{commissionId}/update")
-    public Mono<ResponseEntity<CommissionEntity>> updateCommission(@PathVariable Integer commissionId,
-                                                                   @RequestParam Integer currencyTypeId,
-                                                                   @RequestParam BigDecimal userAmount,
-                                                                   @RequestParam String rucNumber,
-                                                                   @RequestPart("file") Mono<FilePart> file,
-                                                                   @RequestParam Integer folderNumber) {
-        return commissionService.updateCommission(commissionId, currencyTypeId, userAmount, rucNumber, file, folderNumber)
-                .map(updatedCommission -> ResponseEntity.ok(updatedCommission))
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+    @GetMapping("/getGroupedCommissions")
+    public Mono<ResponseEntity<CommissionGroupResponse>> getGroupedCommissions(
+            @RequestParam(required = false) Integer promoterId,
+            @RequestParam(required = false) Integer partnerId,
+            @RequestParam(required = false) Integer receptionistId,
+            @RequestParam Integer month) {
+
+        return commissionService.getGroupedCommissions(promoterId, partnerId, receptionistId, month)
+                .map(response -> ResponseEntity.ok(response))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/commission-details/{paymentBookId}")
@@ -92,4 +93,34 @@ public class CommissionController {
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
+
+    @PutMapping("/{commissionId}/update")
+    public Mono<ResponseEntity<CommissionEntity>> updateCommission(@PathVariable Integer commissionId,
+                                                                   @RequestParam Integer currencyTypeId,
+                                                                   @RequestParam BigDecimal userAmount,
+                                                                   @RequestParam String rucNumber,
+                                                                   @RequestPart("file") Mono<FilePart> file,
+                                                                   @RequestParam Integer folderNumber) {
+        return commissionService.updateCommission(commissionId, currencyTypeId, userAmount, rucNumber, file, folderNumber)
+                .map(updatedCommission -> ResponseEntity.ok(updatedCommission))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build()));
+    }
+
+
+    @PutMapping("/updateAllGrouped")
+    public Mono<ResponseEntity<CommissionGroupResponse>> updateAllGroupedCommissions(
+            @RequestParam List<Integer> commissionIds,
+            @RequestParam Integer promoterId,
+            @RequestParam Integer currencyTypeId,
+            @RequestParam BigDecimal userAmount,
+            @RequestParam String rucNumber,
+            @RequestPart("file") Mono<FilePart> file,
+            @RequestParam Integer folderNumber) {
+
+        return commissionService.updateAllGroupedCommissions(commissionIds, promoterId, currencyTypeId, userAmount, rucNumber, file, folderNumber)
+                .map(response -> ResponseEntity.ok(response))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+
 }

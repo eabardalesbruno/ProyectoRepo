@@ -20,7 +20,7 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
     @Query("SELECT SUM(commissionamount) FROM commission WHERE promoterid = :promoterId")
     Mono<BigDecimal> findTotalCommissionByPromoterId(@Param("promoterId") Integer promoterId);
 
-    @Query("SELECT serialNumber FROM commission ORDER BY commissionId DESC LIMIT 1")
+    @Query("SELECT c.serialNumber FROM commission c WHERE c.serialNumber ~ '^[0-9]+$' ORDER BY CAST(c.serialNumber AS INTEGER) DESC LIMIT 1;")
     Mono<String> findLastSerialNumber();
 
     Flux<CommissionEntity> findByPromoterId(Integer promoterId);
@@ -77,5 +77,19 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
 
     @Query("SELECT * FROM commission WHERE EXTRACT(DAY FROM disbursementdate) IN (05, 20) AND status = 'Activo' and processed = False ")
     Flux<CommissionEntity> findValidCommissionsForProcessing();
+
+
+    @Query("SELECT c FROM commission  c WHERE c.promoterId = :promoterId AND c.status = 'Pendiente'")
+    Flux<CommissionEntity> findByPromoterIdAndStatus(@Param("promoterId") Integer promoterId, @Param("status") String status);
+
+
+    @Query("SELECT * FROM commission WHERE (promoterid = :promoterId OR partnerid = :partnerId OR receptionistid = :receptionistId) " +
+            "AND status = 'Pendiente' AND EXTRACT(MONTH FROM commission.createdat) = :month")
+    Flux<CommissionEntity> findPendingCommissionsByIdsAndMonth(
+            @Param("promoterId") Integer promoterId,
+            @Param("partnerId") Integer partnerId,
+            @Param("receptionistId") Integer receptionistId,
+            @Param("month") Integer month
+    );
 
 }
