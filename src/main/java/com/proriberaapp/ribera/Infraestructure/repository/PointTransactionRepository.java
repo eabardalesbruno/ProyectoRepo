@@ -27,7 +27,7 @@ public interface PointTransactionRepository extends ReactiveCrudRepository<Point
             select ptype.factor as pointtypefactor,ptype.pointstypedesc as pointtypedesc,ptype.pointstypeid as pointtypeid,pt."id",pt.transactiontypeid,to_char(pc.created_at, 'YYYY-MM-dd HH24:MI:SS') as created_at,ptt."name" as transactiontypename,pc.membershipname,pc.pointdebited,pc.pointacredited,ptt.color as transactiontypecolor from pointstransaction pt
               join pointconversion pc on pc.transactionid=pt."id"
               join pointtransactiontype ptt on ptt."id"=pt.transactiontypeid
-              join pointstype ptype on ptype.pointstypeid=pc.pointtypeid;
+              join pointstype ptype on ptype.pointstypeid=pc.pointtypeid;  
                          """)
     Flux<PointTransactionExchangeRow> getPointTransactionExchangeRow();
 
