@@ -22,7 +22,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -213,41 +215,62 @@ public class CommissionServiceImpl implements CommissionService {
     }
 
     @Override
-    public Mono<CommissionGroupResponse> getGroupedCommissions(Integer promoterId, Integer partnerId, Integer receptionistId, Integer month) {
-        return commissionRepository.findPendingCommissionsByIdsAndMonth(promoterId, partnerId, receptionistId, month)
+    public Mono<Map<Integer, CommissionGroupResponse>> getGroupedCommissions(Integer promoterId, Integer partnerId, Integer receptionistId) {
+        return commissionRepository.findPendingCommissionsByIds(promoterId, partnerId, receptionistId)
                 .collectList()
                 .flatMap(pendingCommissions -> {
                     if (pendingCommissions.isEmpty()) {
                         return Mono.empty();
                     }
-                    List<CommissionEntity> firstHalf = pendingCommissions.stream()
-                            .filter(commission -> commission.getCreatedAt().toLocalDateTime().getDayOfMonth() <= 15)
-                            .collect(Collectors.toList());
+                    Map<Integer, List<CommissionEntity>> commissionsByMonth = pendingCommissions.stream()
+                            .collect(Collectors.groupingBy(commission ->
+                                    commission.getCreatedAt().toLocalDateTime().getMonthValue()));
 
-                    List<CommissionEntity> secondHalf = pendingCommissions.stream()
-                            .filter(commission -> commission.getCreatedAt().toLocalDateTime().getDayOfMonth() > 15)
-                            .collect(Collectors.toList());
-                    BigDecimal totalFirstHalf = firstHalf.stream()
-                            .map(CommissionEntity::getCommissionAmount)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    Map<Integer, CommissionGroupResponse> groupedResponses = new HashMap<>();
 
-                    BigDecimal totalSecondHalf = secondHalf.stream()
-                            .map(CommissionEntity::getCommissionAmount)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
-                    firstHalf.sort(Comparator.comparing(CommissionEntity::getCreatedAt));
-                    secondHalf.sort(Comparator.comparing(CommissionEntity::getCreatedAt));
-                    Timestamp firstDisbursementDate = firstHalf.isEmpty() ? null : firstHalf.get(0).getCreatedAt();
-                    Timestamp lastDisbursementDate = secondHalf.isEmpty() ? null : secondHalf.get(secondHalf.size() - 1).getCreatedAt();
+                    for (Map.Entry<Integer, List<CommissionEntity>> entry : commissionsByMonth.entrySet()) {
+                        Integer month = entry.getKey();
+                        List<CommissionEntity> commissions = entry.getValue();
+                        List<CommissionEntity> firstHalf = commissions.stream()
+                                .filter(commission -> commission.getCreatedAt().toLocalDateTime().getDayOfMonth() <= 15)
+                                .collect(Collectors.toList());
 
-                    CommissionGroupResponse response = new CommissionGroupResponse();
-                    response.setTotalCommissionAmount(totalFirstHalf.add(totalSecondHalf));
-                    response.setNumberOfCommissions(firstHalf.size() + secondHalf.size());
-                    response.setFirstDisbursementDate(firstDisbursementDate);
-                    response.setLastDisbursementDate(lastDisbursementDate);
-                    response.setFirstHalfCommissions(firstHalf);
-                    response.setSecondHalfCommissions(secondHalf);
+                        List<CommissionEntity> secondHalf = commissions.stream()
+                                .filter(commission -> commission.getCreatedAt().toLocalDateTime().getDayOfMonth() > 15)
+                                .collect(Collectors.toList());
+                        BigDecimal totalFirstHalf = firstHalf.stream()
+                                .map(CommissionEntity::getCommissionAmount)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                    return Mono.just(response);
+                        BigDecimal totalSecondHalf = secondHalf.stream()
+                                .map(CommissionEntity::getCommissionAmount)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        int numberOfFirstHalfCommissions = firstHalf.size();
+                        int numberOfSecondHalfCommissions = secondHalf.size();
+                        firstHalf.sort(Comparator.comparing(CommissionEntity::getCreatedAt));
+                        secondHalf.sort(Comparator.comparing(CommissionEntity::getCreatedAt));
+
+                        Timestamp firstDisbursementDate = firstHalf.isEmpty() ? null : firstHalf.get(0).getCreatedAt();
+                        Timestamp lastDisbursementDate = secondHalf.isEmpty() ? null : secondHalf.get(secondHalf.size() - 1).getCreatedAt();
+
+                        CommissionGroupResponse response = new CommissionGroupResponse();
+                        response.setTotalCommissionAmount(totalFirstHalf.add(totalSecondHalf));
+                        response.setNumberOfCommissions(numberOfFirstHalfCommissions + numberOfSecondHalfCommissions);
+                        response.setFirstDisbursementDate(firstDisbursementDate);
+                        response.setLastDisbursementDate(lastDisbursementDate);
+
+                        response.setTotalFirstHalfCommissionAmount(totalFirstHalf);
+                        response.setTotalSecondHalfCommissionAmount(totalSecondHalf);
+                        response.setNumberOfFirstHalfCommissions(numberOfFirstHalfCommissions);
+                        response.setNumberOfSecondHalfCommissions(numberOfSecondHalfCommissions);
+
+                        response.setFirstHalfCommissions(firstHalf);
+                        response.setSecondHalfCommissions(secondHalf);
+
+                        groupedResponses.put(month, response);
+                    }
+
+                    return Mono.just(groupedResponses);
                 });
     }
 

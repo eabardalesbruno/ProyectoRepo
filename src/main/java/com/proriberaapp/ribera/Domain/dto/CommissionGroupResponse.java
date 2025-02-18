@@ -17,6 +17,12 @@ public class CommissionGroupResponse {
     private int numberOfCommissions;
     private Timestamp firstDisbursementDate;
     private Timestamp lastDisbursementDate;
+
+    private BigDecimal totalFirstHalfCommissionAmount;
+    private BigDecimal totalSecondHalfCommissionAmount;
+    private int numberOfFirstHalfCommissions;
+    private int numberOfSecondHalfCommissions;
+
     private List<CommissionEntity> firstHalfCommissions;
     private List<CommissionEntity> secondHalfCommissions;
 }

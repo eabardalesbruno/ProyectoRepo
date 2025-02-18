@@ -67,15 +67,13 @@ public class CommissionController {
     }
 
     @GetMapping("/getGroupedCommissions")
-    public Mono<ResponseEntity<CommissionGroupResponse>> getGroupedCommissions(
+    public Mono<ResponseEntity<Map<Integer, CommissionGroupResponse>>> getGroupedCommissions(
             @RequestParam(required = false) Integer promoterId,
             @RequestParam(required = false) Integer partnerId,
-            @RequestParam(required = false) Integer receptionistId,
-            @RequestParam Integer month) {
-
-        return commissionService.getGroupedCommissions(promoterId, partnerId, receptionistId, month)
-                .map(response -> ResponseEntity.ok(response))
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+            @RequestParam(required = false) Integer receptionistId) {
+        return commissionService.getGroupedCommissions(promoterId, partnerId, receptionistId)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.noContent().build());
     }
 
     @GetMapping("/commission-details/{paymentBookId}")

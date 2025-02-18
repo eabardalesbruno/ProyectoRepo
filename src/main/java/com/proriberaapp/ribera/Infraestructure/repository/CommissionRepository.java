@@ -78,18 +78,12 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
     @Query("SELECT * FROM commission WHERE EXTRACT(DAY FROM disbursementdate) IN (05, 20) AND status = 'Activo' and processed = False ")
     Flux<CommissionEntity> findValidCommissionsForProcessing();
 
-
-    @Query("SELECT c FROM commission  c WHERE c.promoterId = :promoterId AND c.status = 'Pendiente'")
-    Flux<CommissionEntity> findByPromoterIdAndStatus(@Param("promoterId") Integer promoterId, @Param("status") String status);
-
-
     @Query("SELECT * FROM commission WHERE (promoterid = :promoterId OR partnerid = :partnerId OR receptionistid = :receptionistId) " +
-            "AND status = 'Pendiente' AND EXTRACT(MONTH FROM commission.createdat) = :month")
-    Flux<CommissionEntity> findPendingCommissionsByIdsAndMonth(
+            "AND status = 'Pendiente'")
+    Flux<CommissionEntity> findPendingCommissionsByIds(
             @Param("promoterId") Integer promoterId,
             @Param("partnerId") Integer partnerId,
-            @Param("receptionistId") Integer receptionistId,
-            @Param("month") Integer month
+            @Param("receptionistId") Integer receptionistId
     );
 
 }

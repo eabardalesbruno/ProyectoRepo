@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 public interface CommissionService {
 
@@ -38,6 +39,6 @@ public interface CommissionService {
 
     Mono<CommissionGroupResponse> updateAllGroupedCommissions(List<Integer> commissionIds, Integer promoterId, Integer currencyTypeId, BigDecimal userAmount, String rucNumber, Mono<FilePart> file, Integer folderNumber);
 
-    Mono<CommissionGroupResponse> getGroupedCommissions(Integer promoterId, Integer partnerId, Integer receptionistId, Integer month);
+    Mono<Map<Integer, CommissionGroupResponse>> getGroupedCommissions(Integer promoterId, Integer partnerId, Integer receptionistId);
 
 }
