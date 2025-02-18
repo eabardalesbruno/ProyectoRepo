@@ -14,31 +14,37 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PointsTypeConversionFactorDayRepository
-        extends R2dbcRepository<PointTypeConversionFactorDayEntity, Integer> {
-    @Query("""
-                select id from points_coversion_factor_day where idpointtype=:idpointtype
-            """)
-    Flux<PointTypeConversionFactorDayEntity> getDaysIgnoreIdFactorConversion(Integer idpointtype);
+                extends R2dbcRepository<PointTypeConversionFactorDayEntity, Integer> {
+        @Query("""
+                                    select fd.id from points_coversion_factor_day fd
+                                     join points_conversion_factor cf on cf.id=fd.idconversionfactor  and  cf.offerttypeid=:offerTypeId
+                                    where fd.idpointtype=:idpointtype
+                                                and idday in(:daysSelected)
+                                           
 
-    @Query("""
-                select id from points_coversion_factor_day where idpointtype<>:idpointtype
-                and idconversionfactor<>:id
-                and idday in(:daysSelected)
+                        """)
+        Flux<PointTypeConversionFactorDayEntity> getDaysIgnoreIdFactorConversion(Integer  idpointtype,
+                        List<Integer> daysSelected, Integer offerTypeId);
 
-            """)
-    Flux<PointTypeConversionFactorDayEntity> getDaysIgnoreIdFactorConversion(Integer idpointtype, Integer id,
-            List<Integer> daysSelected);
+        @Query("""
+                            select id from points_coversion_factor_day where idpointtype<>:idpointtype
+                            and idconversionfactor<>:id
+                            and idday in(:daysSelected)
 
-    @Query("""
-                delete from points_coversion_factor_day where idconversionfactor=:idconversionfactor
-            """)
-    Mono<Void> deleteFindConversionFactoId(Integer idconversionfactor);
+                        """)
+        Flux<PointTypeConversionFactorDayEntity> getDaysIgnoreIdFactorConversion(Integer idpointtype, Integer id,
+                        List<Integer> daysSelected);
 
-    @Query("""
-            select d.*,(case when qd."id" is not null then true else false end) as selected from "day" d
-            left join points_coversion_factor_day qd on qd.idday=d."id" and qd.idconversionfactor=:idconversionfactor
-            order by d.id asc
-            """)
-    Flux<PointQuotationDayDto> getQuotationDaySelected(Integer idconversionfactor);
+        @Query("""
+                            delete from points_coversion_factor_day where idconversionfactor=:idconversionfactor
+                        """)
+        Mono<Void> deleteFindConversionFactoId(Integer idconversionfactor);
+
+        @Query("""
+                        select d.*,(case when qd."id" is not null then true else false end) as selected from "day" d
+                        left join points_coversion_factor_day qd on qd.idday=d."id" and qd.idconversionfactor=:idconversionfactor
+                        order by d.id asc
+                        """)
+        Flux<PointQuotationDayDto> getQuotationDaySelected(Integer idconversionfactor);
 
 }

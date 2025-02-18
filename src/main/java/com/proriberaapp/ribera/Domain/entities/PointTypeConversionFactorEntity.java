@@ -18,6 +18,8 @@ public class PointTypeConversionFactorEntity {
     private Integer id;
     @Column("idpointtype")
     private Integer idpointtype;
+    @Column("offerttypeid")
+    private Integer offertTypeId;
     @Column("costpernight")
     private double costPerNight;
     @Column("state")

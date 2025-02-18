@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.PointQuotationDayDto;
+import com.proriberaapp.ribera.Domain.dto.OffertTypeDto;
 import com.proriberaapp.ribera.Domain.dto.PointDaysDto;
 import com.proriberaapp.ribera.Domain.dto.PointSaveQuotationDto;
 import com.proriberaapp.ribera.Domain.dto.PointTypeDto;
@@ -42,6 +43,7 @@ public class PointQuotationServiceImpl implements PointQuotationService {
                         PointTypeConversionFactorEntity entity = PointTypeConversionFactorEntity.builder()
                                         .costPerNight(pointSaveQuotationDto.getCostPerNight())
                                         .idpointtype(pointSaveQuotationDto.getPointType().getPointstypeid())
+                                        .offertTypeId(pointSaveQuotationDto.getOfferType().getOfferTypeId())
                                         .build();
                         return this.pointsTypeConversionFactorRepository.save(entity)
                                         .flatMap(entitySaved -> {
@@ -60,7 +62,8 @@ public class PointQuotationServiceImpl implements PointQuotationService {
 
                 return this.pointsTypeConversionFactorDayRepository
                                 .getDaysIgnoreIdFactorConversion(pointSaveQuotationDto.getPointType()
-                                                .getPointstypeid())
+                                                .getPointstypeid(),daysSelected.stream().map(day -> day.getId())
+                                                                .collect(Collectors.toList()), pointSaveQuotationDto.getOfferType().getOfferTypeId())
                                 .collectList()
                                 .flatMap(list -> {
                                         if (list.size() > 0) {
@@ -83,6 +86,7 @@ public class PointQuotationServiceImpl implements PointQuotationService {
                                         .idpointtype(pointSaveQuotationDto.getPointType()
                                                         .getPointstypeid())
                                         .id(pointSaveQuotationDto.getId())
+                                        .offertTypeId(pointSaveQuotationDto.getOfferType().getOfferTypeId())
                                         .state(1)
                                         .build();
                         return this.pointsTypeConversionFactorRepository.save(entity)
@@ -128,12 +132,18 @@ public class PointQuotationServiceImpl implements PointQuotationService {
                 return this.pointsTypeConversionFactorRepository.getAllWithPointType()
                                 .map(point -> {
                                         PointSaveQuotationDto dto = new PointSaveQuotationDto();
+                                        OffertTypeDto offerType= OffertTypeDto
+                                                        .builder()
+                                                        .offerTypeId(point.getOffertypeid())
+                                                        .offerTypeName(point.getOffertypename())
+                                                        .build();
                                         PointTypeDto pointType = PointTypeDto
                                                         .builder()
                                                         .pointstypedesc(point.getPointstypedesc())
                                                         .pointstypeid(point.getPointstypeid())
                                                         .build();
                                         dto.setPointType(pointType);
+                                        dto.setOfferType(offerType);
                                         dto.setCostPerNight(point.getCostPerNight());
                                         dto.setId(point.getId());
                                         return dto;
