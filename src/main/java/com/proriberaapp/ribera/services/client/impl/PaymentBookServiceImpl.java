@@ -605,6 +605,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                             }
                             if (booking != null) {
                                 builder.bookingName(booking.getDetail());
+                                builder.createdat(booking.getCreatedAt());
                             }
                             if (paymentMethod != null) {
                                 builder.paymentMethod(paymentMethod.getDescription());

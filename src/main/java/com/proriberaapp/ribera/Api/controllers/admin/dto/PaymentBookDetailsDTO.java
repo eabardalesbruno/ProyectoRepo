@@ -101,6 +101,8 @@ public class PaymentBookDetailsDTO {
     private String dayBookingEnd;
     @Column("daybookinginit")
     private String dayBookingInit;
+    @Column("createdat")
+    private Timestamp createdat;
 
     @Override
     public String toString() {

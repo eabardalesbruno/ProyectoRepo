@@ -1,7 +1,6 @@
 package com.proriberaapp.ribera.Domain.entities;
 
 import lombok.Builder;
-import lombok.Generated;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
