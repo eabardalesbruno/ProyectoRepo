@@ -77,7 +77,6 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
                            end as isbooking,
                                    calculate_nights(:offerTimeInit,:offerTimeEnd) as numberofnights
                  FROM viewroomofferreturn v
-                JOIN quotation_day qd on qd.idquotation=v.quotation_id
                    WHERE
                     	:categoryName is  null or 	 v.categoryname=:categoryName
             		 and (
