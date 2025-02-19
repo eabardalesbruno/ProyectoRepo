@@ -1,8 +1,10 @@
 package com.proriberaapp.ribera.services.point;
 
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Service;
 
-import com.proriberaapp.ribera.Domain.entities.PointConversionEntity;
+import com.proriberaapp.ribera.Domain.entities.PointTransactionConversionEntity;
 import com.proriberaapp.ribera.Infraestructure.exception.UserNotFoundException;
 import com.proriberaapp.ribera.Infraestructure.repository.PointConversionRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
@@ -19,13 +21,14 @@ public class PointConversionStrategy implements PointsTransactionStrategy<PointC
     @Override
     public Mono<PointConversionDto> execute(PointConversionDto request) {
         double pointAcredited = request.getPointType().getFactor() * request.getPointDebited();
-        PointConversionEntity entity = PointConversionEntity.builder()
+        PointTransactionConversionEntity entity = PointTransactionConversionEntity.builder()
                 .membershipname(request.getMembershipName())
                 .pointdebited(request.getPointDebited())
                 .pointacredited(pointAcredited)
                 .userid(request.getUserId())
                 .pointtypeid(request.getPointType().getPointstypeid())
                 .transactionid(request.getTransactionId())
+                .created_at(LocalDateTime.now())
                 .build();
         request.setPointAcredited(pointAcredited);
         // Llamada para sacar los puntos ,para saber si el usuario tiene puntos a

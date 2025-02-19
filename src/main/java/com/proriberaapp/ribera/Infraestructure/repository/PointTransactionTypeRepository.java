@@ -3,7 +3,7 @@ package com.proriberaapp.ribera.Infraestructure.repository;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 
-import com.proriberaapp.ribera.Domain.entities.PointConversionEntity;
+import com.proriberaapp.ribera.Domain.entities.PointTransactionConversionEntity;
 import com.proriberaapp.ribera.Domain.entities.PointTransactionTypeEntity;
 
 import reactor.core.publisher.Mono;
