@@ -1,13 +1,11 @@
 package com.proriberaapp.ribera.Crosscutting.security;
 
+import com.proriberaapp.ribera.Api.controllers.exception.RequestException;
 import com.proriberaapp.ribera.Domain.entities.UserAdminEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
 import com.proriberaapp.ribera.Domain.enums.Permission;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Header;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +14,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 public class JwtProvider {
@@ -85,6 +84,14 @@ public class JwtProvider {
     public Integer getIdFromToken(String token) {
         return getClaimsFromToken(token.substring(7)).get("id", Integer.class);
     }
+    public String getUsernameFromToken(String token) {
+        Claims claimsJws = getClaimsFromToken(resolveToken(token));
+        if (Objects.nonNull(claimsJws)) {
+            return claimsJws.getSubject();
+        }
+        throw new RequestException("The token is invalid.");
+
+    }
 
     public String getDocumentFromToken(String token) {
         return getClaimsFromToken(token.substring(7)).get("document", String.class);
@@ -124,5 +131,12 @@ public class JwtProvider {
     private Key getKey() {
         byte[] keyBytes = Decoders.BASE64URL.decode(jwtSecret);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    private String resolveToken(String bearerToken) {
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return bearerToken;
     }
 }
