@@ -30,4 +30,27 @@ public class FullDayTypeFoodEntity {
 
     @Column("price")
     private BigDecimal price;
+
+    //nuevas entidiades
+    @Column("urlimage")
+    private String urlImage;
+
+    @Column("entry")
+    private String Entry;
+
+    @Column("background")
+    private String Background;
+
+    @Column("drink")
+    private String Drink;
+
+    @Column("dessert")
+    private String Dessert;
+
+    @Column("quantity")
+    private Integer quantity;
+
+    @Column("currencytypeid")
+    private Integer currencyTypeId;
+
 }
