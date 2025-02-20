@@ -1327,4 +1327,9 @@ public class BookingServiceImpl implements BookingService {
                                 .map(tuple -> new PaginatedResponse<>(tuple.getT2(), tuple.getT1()));
         }
 
+        @Override
+        public Mono<BookingEntity> searchById(Integer bookingId) {
+                return this.bookingRepository.findById(bookingId);
+        }
+
 }

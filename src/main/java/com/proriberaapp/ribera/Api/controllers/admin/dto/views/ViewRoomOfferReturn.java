@@ -137,15 +137,13 @@ public class ViewRoomOfferReturn {
     BigDecimal costregular; // Cost. Adulto: S/.60.00 TODO: no tenemos tabla de costos
     String costregularstring; // Cost. Adulto: S/.60.00 TODO: no tenemos tabla de costos
     BigDecimal costtotal;
+    BigDecimal originalcosttotal;
     String costtotalstring;
     BigDecimal costexchange; // Cost. Adult. canje: S/.50.00
     String costexchangestring; // Cost. Adult. canje: S/.50.00
     BigDecimal costtotalexchange;
     String costtotalexchangestring;
     Integer pointribera; // Pts sem: 200 pts Pts fds: 300
-    String pointriberastring; // Pts sem: 200 pts Pts fds: 300
-    Integer pointinresort; // Pts sem: 200 pts Pts fds: 300
-    String pointinresortstring; // Pts sem: 200 pts Pts fds: 300
     String totalPerson;
     BigDecimal amountFeeding;
     Integer infantsReserve;
@@ -159,6 +157,15 @@ public class ViewRoomOfferReturn {
     Integer mincapacity;
     Boolean isbooking;
     Integer numberofnights;
+    Integer totalPointsRibera;
+    Integer totalPointsRiberaTop;
+    Integer totalPointsRequired;
+    Double totalPercentageDiscount;
+
+    Integer offertypeid;
+    Double totalDiscount;
+
+    Integer totalPointsReward;
 
     public static ViewRoomOfferReturn convertTo(Readable row) {
         return ViewRoomOfferReturn.builder()
@@ -197,9 +204,6 @@ public class ViewRoomOfferReturn {
                 .costtotalexchange(row.get("costtotalexchange", BigDecimal.class))
                 .costtotalexchangestring(row.get("costtotalexchangestring", String.class))
                 .pointribera(row.get("pointribera", Integer.class))
-                .pointriberastring(row.get("pointriberastring", String.class))
-                .pointinresort(row.get("pointinresort", Integer.class))
-                .pointinresortstring(row.get("pointinresortstring", String.class))
                 .build();
     }
 }

@@ -9,8 +9,8 @@ import java.sql.Timestamp;
 @Data
 @Table("pointstransfers")
 public class PointsTransferEntity {
-    @Id
-    private Integer pointstransferid;
+    @Id()
+    private Integer id;
     private Integer senderid;
     private Integer requesttypeid;
     private Timestamp datetransfer;

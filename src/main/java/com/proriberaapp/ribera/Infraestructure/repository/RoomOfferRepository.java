@@ -68,7 +68,7 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
      * """)
      */
     @Query("""
-                   SELECT v.*,case
+                   SELECT v.*,r.offertypeid,case
                    when :isFirstState  then true
                    when  v.categoryname='DEPARTAMENTO' and  (:adultCapacity+:adultMayorCapacity+:adultExtra+:kidCapacity)>=v.mincapacity then true
                    when v.categoryname='MATRIMONIAL' and  (:adultCapacity+:adultMayorCapacity+:adultExtra+:kidCapacity)>=v.mincapacity and v.adultextra+v.adultcapacity+v.adultmayorcapacity>=(:adultCapacity+:adultMayorCapacity+:adultExtra) and v.infantcapacity+v.kidcapacity>=(:infantCapacity+:kidCapacity) then true
@@ -76,7 +76,8 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
                    else false
                            end as isbooking,
                                    calculate_nights(:offerTimeInit,:offerTimeEnd) as numberofnights
-                 FROM viewroomofferreturn v
+                         FROM viewroomofferreturn v
+                 join roomoffer r on r.roomofferid=v.room_offer_id
                    WHERE
                     	:categoryName is  null or 	 v.categoryname=:categoryName
             		 and (

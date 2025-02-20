@@ -5,9 +5,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface PointsTransferService {
-    Mono<PointsTransferEntity> createPointsTransfer(PointsTransferEntity pointsTransfer);
+ /*    Mono<PointsTransferEntity> createPointsTransfer(PointsTransferEntity pointsTransfer);
     Mono<PointsTransferEntity> getPointsTransferById(Integer id);
     Flux<PointsTransferEntity> getAllPointsTransfers();
     Mono<PointsTransferEntity> updatePointsTransfer(Integer id, PointsTransferEntity pointsTransfer);
-    Mono<Void> deletePointsTransfer(Integer id);
+    Mono<Void> deletePointsTransfer(Integer id); */
 }
