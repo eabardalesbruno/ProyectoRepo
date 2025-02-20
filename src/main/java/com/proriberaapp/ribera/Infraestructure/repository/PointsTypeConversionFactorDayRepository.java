@@ -1,11 +1,13 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.PointQuotationDayDto;
+import com.proriberaapp.ribera.Domain.dto.PointGroupWithOffertRowDto;
 import com.proriberaapp.ribera.Domain.entities.PointTypeConversionFactorDayEntity;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.r2dbc.repository.Query;
@@ -46,5 +48,25 @@ public interface PointsTypeConversionFactorDayRepository
                         order by d.id asc
                         """)
         Flux<PointQuotationDayDto> getQuotationDaySelected(Integer idconversionfactor);
+
+
+        @Query("""
+                select  sum(pcf.costpernight) as point ,pt.pointstypeid,pt.pointstypedesc,pcf.offerttypeid  from points_conversion_factor pcf
+                   join points_coversion_factor_day pcfd on pcfd.idconversionfactor=pcf."id"
+                    join "day" d on d."id"=pcfd.idday
+                   join pointstype pt on pt.pointstypeid=pcf.idpointtype
+                    where d.numberofweek in(  SELECT
+                          (EXTRACT(DOW FROM fecha_inicio::date)+1) as dow
+                      FROM generate_series(
+                        :startDate::date,
+                        :endDate::date-1,
+                        '1 day'::interval
+                      ) fecha_inicio)
+                      GROUP BY pt.pointstypeid,pt.pointstypedesc ,pcf.offerttypeid
+                """)
+        Flux<PointGroupWithOffertRowDto> getTotalPointWithRangeDateSelected(LocalDate startDate, LocalDate endDate);
+
+
+
 
 }
