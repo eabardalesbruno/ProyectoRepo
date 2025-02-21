@@ -13,10 +13,12 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.quotationDayDto;
 
 @Getter
 @Setter
-public class PointQuotationDto {
+public class PointQuotationRawDto {
     private Integer id;
     private Integer pointstypeid;
     private String pointstypedesc;
+    private Integer offertypeid;
+    private String offertypename;
     private double costPerNight;
 
 }

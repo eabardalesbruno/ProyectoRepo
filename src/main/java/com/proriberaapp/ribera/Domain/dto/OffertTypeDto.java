@@ -7,9 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class PointTypeDto {
-    private Integer pointstypeid;
-    private String pointstypedesc;
-    private double factor;
-    
+public class OffertTypeDto {
+    private Integer offerTypeId;
+    private String offerTypeName;
 }

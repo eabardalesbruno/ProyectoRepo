@@ -551,13 +551,12 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                 .flatMap(paymentBook -> Mono.zip(
                         Mono.just(paymentBook),
                         userClientRepository.findById(paymentBook.getUserClientId()),
-                        bookingService.findById(paymentBook.getBookingId()),
+                        bookingService.searchById(paymentBook.getBookingId()),
                         paymentMethodRepository.findById(paymentBook.getPaymentMethodId()),
                         paymentStateRepository.findById(paymentBook.getPaymentStateId()),
                         paymentTypeRepository.findById(paymentBook.getPaymentTypeId()),
                         paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId()),
                         currencyTypeRepository.findById(paymentBook.getCurrencyTypeId()))
-                        .filter(tuple -> tuple.getT3() != null)
                         .map(tuple -> {
                             PaymentBookWithChannelDto paymentBookEntity = tuple.getT1();
                             UserClientEntity userClient = tuple.getT2();
@@ -634,6 +633,17 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
     }
 
+/*     @Override
+    public Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetailsPagado(int page, int size) {
+        int offset = page * size;
+        return paymentBookRepository.countByRefuseReasonIdAndPendingPay(1, 1)
+                .flatMap(elements -> paymentBookRepository.findAllPaged(1, size, offset)
+                        .collectList()
+                        .flatMap(paymentBookDetails -> {
+                            long totalElements = elements;
+                            return Mono.just(new PaginatedResponse<>(totalElements, paymentBookDetails));
+                        }));
+    } */
     @Override
     public Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetailsPagado(int page, int size) {
         int offset = page * size;
@@ -641,96 +651,9 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                 .flatMap(elements -> paymentBookRepository.findAllPaged(1, size, offset)
                         .collectList()
                         .flatMap(paymentBookDetails -> {
-                            long totalElements = paymentBookDetails.size();
+                            long totalElements = elements;
                             return Mono.just(new PaginatedResponse<>(totalElements, paymentBookDetails));
                         }));
-        /*
-         * return paymentBookRepository.countByRefuseReasonIdAndPendingPay(1, 1)
-         * .flatMap(elements ->
-         * paymentBookRepository.findAllByRefuseReasonIdAndPendingPay(1, 1, size,
-         * offset)
-         * 
-         * .flatMap(paymentBook -> Mono.zip(
-         * Mono.just(paymentBook),
-         * userClientRepository.findById(paymentBook.getUserClientId()),
-         * bookingService.findById(paymentBook.getBookingId()),
-         * paymentMethodRepository.findById(paymentBook.getPaymentMethodId()),
-         * paymentStateRepository.findById(paymentBook.getPaymentStateId()),
-         * paymentTypeRepository.findById(paymentBook.getPaymentTypeId()),
-         * paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId()),
-         * currencyTypeRepository.findById(paymentBook.getCurrencyTypeId()))
-         * .filter(tuple -> tuple.getT3() != null)
-         * .map(tuple -> {
-         * PaymentBookEntity paymentBookEntity = tuple.getT1();
-         * UserClientEntity userClient = tuple.getT2();
-         * BookingEntity booking = tuple.getT3();
-         * PaymentMethodEntity paymentMethod = tuple.getT4();
-         * PaymentStateEntity paymentState = tuple.getT5();
-         * PaymentTypeEntity paymentType = tuple.getT6();
-         * PaymentSubtypeEntity paymentSubtype = tuple.getT7();
-         * CurrencyTypeEntity currencyType = tuple.getT8();
-         * 
-         * PaymentBookDetailsDTO.PaymentBookDetailsDTOBuilder builder =
-         * PaymentBookDetailsDTO
-         * .builder()
-         * 
-         * .paymentBookId(paymentBookEntity.getPaymentBookId())
-         * .bookingId(paymentBookEntity.getBookingId())
-         * .userClientId(paymentBookEntity.getUserClientId())
-         * .paymentMethodId(paymentBookEntity.getPaymentMethodId())
-         * .paymentStateId(paymentBookEntity.getPaymentStateId())
-         * .refuseReasonId(paymentBookEntity.getRefuseReasonId())
-         * .paymentTypeId(paymentBookEntity.getPaymentTypeId())
-         * .paymentSubTypeId(paymentBookEntity.getPaymentSubTypeId())
-         * .currencyTypeId(paymentBookEntity.getCurrencyTypeId())
-         * .amount(paymentBookEntity.getAmount())
-         * .description(paymentBookEntity.getDescription())
-         * .paymentDate(paymentBookEntity.getPaymentDate())
-         * .operationCode(paymentBookEntity.getOperationCode())
-         * .note(paymentBookEntity.getNote())
-         * .totalCost(paymentBookEntity.getTotalCost())
-         * .imageVoucher(paymentBookEntity.getImageVoucher())
-         * .totalPoints(paymentBookEntity.getTotalPoints())
-         * .paymentComplete(paymentBookEntity.getPaymentComplete())
-         * .pendingPay(paymentBookEntity.getPendingpay());
-         * 
-         * if (userClient != null) {
-         * builder.userClientName(userClient.getFirstName());
-         * builder.userClientLastName(userClient.getLastName());
-         * builder.userClientEmail(userClient.getEmail());
-         * builder.userCellphoneNumber(userClient.getCellNumber());
-         * builder.userDocumentType(userClient.getDocumenttypeId());
-         * builder.userDocumentNumber(userClient.getDocumentNumber());
-         * }
-         * if (booking != null) {
-         * builder.bookingName(booking.getDetail());
-         * }
-         * if (paymentMethod != null) {
-         * builder.paymentMethod(paymentMethod.getDescription());
-         * }
-         * if (paymentState != null) {
-         * builder.paymentState(paymentState.getPaymentStateName());
-         * }
-         * if (paymentType != null) {
-         * builder.paymentType(paymentType.getPaymentTypeDesc());
-         * }
-         * if (paymentSubtype != null) {
-         * builder.paymentSubtype(paymentSubtype.getPaymentSubtypeDesc());
-         * }
-         * if (currencyType != null) {
-         * builder.currencyType(currencyType.getCurrencyTypeDescription());
-         * }
-         * 
-         * return builder.build();
-         * }))
-         * .collectList()
-         * .flatMap(paymentBookDetails -> {
-         * long totalElements = paymentBookDetails.size();
-         * 
-         * return Mono.just(new PaginatedResponse<>(totalElements, paymentBookDetails));
-         * 
-         * }));
-         */
     }
 
     private Mono<Void> sendPaymentConfirmationEmail(PaymentBookEntity paymentBook, String email, String userName) {
