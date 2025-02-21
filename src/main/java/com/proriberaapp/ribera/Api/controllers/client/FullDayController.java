@@ -7,10 +7,12 @@ import com.proriberaapp.ribera.services.client.FullDayService;
 import com.proriberaapp.ribera.services.client.FullDayTypeFoodService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,18 +69,56 @@ public class FullDayController {
     }
 
     @PostMapping("/typeFoodSave")
-    public Mono<FullDayTypeFoodEntity> createFullDayTypeFood(@RequestBody FullDayTypeFoodEntity fullDayTypeFoodEntity) {
-        return fullDayTypeFoodService.saveFullDayTypeFood(fullDayTypeFoodEntity);
+    public Mono<FullDayTypeFoodEntity> createFullDayTypeFood(@RequestPart("file") Mono<FilePart> file, @RequestParam("foodName") String foodName,
+                                                             @RequestParam("type") String type, @RequestParam("price") BigDecimal price, @RequestParam("entry") String entry,
+                                                             @RequestParam("background") String background, @RequestParam("drink") String drink, @RequestParam("dessert") String dessert,
+                                                             @RequestParam("quantity") Integer quantity, @RequestParam("currencyTypeId") Integer currencyTypeId, @RequestParam("folderNumber") Integer folderNumber) {
+        FullDayTypeFoodEntity fullDayTypeFoodEntity = FullDayTypeFoodEntity.builder()
+                .FoodName(foodName)
+                .type(type)
+                .price(price)
+                .Entry(entry)
+                .Background(background)
+                .Drink(drink)
+                .Dessert(dessert)
+                .quantity(quantity)
+                .currencyTypeId(currencyTypeId)
+                .build();
+
+        return fullDayTypeFoodService.saveFullDayTypeFood(fullDayTypeFoodEntity, file, folderNumber);
     }
 
-    @PutMapping("/typeFoodUp/{id}")
-    public Mono<FullDayTypeFoodEntity> updateFullDayTypeFood(@PathVariable Integer id, @RequestBody FullDayTypeFoodEntity fullDayTypeFoodEntity) {
-        return fullDayTypeFoodService.updateFullDayTypeFood(id, fullDayTypeFoodEntity);
+    @PutMapping("/typeFoodUp/{fullDayTypeFoodId}")
+    public Mono<ResponseEntity<FullDayTypeFoodEntity>> updateFullDayTypeFood(@PathVariable Integer fullDayTypeFoodId,
+            @RequestParam String foodName,
+            @RequestParam String background,
+            @RequestParam String drink,
+            @RequestParam String dessert,
+            @RequestParam String entry,
+            @RequestParam BigDecimal price,
+            @RequestParam Integer quantity,
+            @RequestParam Integer currencyTypeId,
+            @RequestPart(value = "file") Mono<FilePart> file,
+            @RequestParam Integer folderNumber) {
+
+        FullDayTypeFoodEntity fullDayTypeFoodEntity = new FullDayTypeFoodEntity();
+        fullDayTypeFoodEntity.setFoodName(foodName);
+        fullDayTypeFoodEntity.setBackground(background);
+        fullDayTypeFoodEntity.setDrink(drink);
+        fullDayTypeFoodEntity.setDessert(dessert);
+        fullDayTypeFoodEntity.setEntry(entry);
+        fullDayTypeFoodEntity.setPrice(price);
+        fullDayTypeFoodEntity.setQuantity(quantity);
+        fullDayTypeFoodEntity.setCurrencyTypeId(currencyTypeId);
+
+        return fullDayTypeFoodService.updateFullDayTypeFood(fullDayTypeFoodId, fullDayTypeFoodEntity, file, folderNumber)
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
 
     @DeleteMapping("/typeFoodDl/{id}")
-    public Mono<Void> deleteFullDayTypeFood(@PathVariable Integer id) {
-        return fullDayTypeFoodService.deleteFullDayTypeFood(id);
+    public Mono<Void> deleteFullDayTypeFood(@PathVariable("id") Integer fullDayTypeFoodId) {
+        return fullDayTypeFoodService.deleteFullDayTypeFood(fullDayTypeFoodId);
     }
 
 }
