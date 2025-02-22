@@ -907,6 +907,9 @@ public class BookingServiceImpl implements BookingService {
                                 .flatMapMany(listViews -> {
                                         List<Integer> ids = listViews.stream().map(ViewBookingReturn::getBookingId)
                                                         .collect(Collectors.toList());
+                                        if(ids.size() == 0) {
+                                           return Flux.empty();
+                                        }
                                         return Mono.zip(Mono.just(listViews), this.getBedsType(ids),
                                                         this.getComfortType(ids), this.getBookingFeeding(ids));
                                 }).flatMap(data -> {

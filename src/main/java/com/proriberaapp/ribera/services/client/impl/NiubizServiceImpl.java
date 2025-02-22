@@ -33,6 +33,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -52,8 +53,11 @@ public class NiubizServiceImpl implements NiubizService {
     @Value("${niubiz.password}")
     private String password;
 
-    @Value("${frontend.webapi.url}")
-    private String urlFrontEnd;
+    @Value("${frontend.webapi.admin-url}")
+    private String urlAdminFrontEnd;
+
+    @Value("${frontend.webapi.client-url}")
+    private String urlClientFrontEnd;
 
     @Autowired
     BookingRepository bookingRepository;
@@ -95,7 +99,7 @@ public class NiubizServiceImpl implements NiubizService {
     @Override
     public Mono<Object> getTokenSession(String token, Object body) {
         return nibuizClient.post()
-                .uri(uriBuilder -> uriBuilder.path("/api.ecommerce/v2/ecommerce/token/session/456879852")
+                .uri(uriBuilder -> uriBuilder.path("/api.ecommerce/v2/ecommerce/token/session/651029031")
                         .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", token)
@@ -111,8 +115,15 @@ public class NiubizServiceImpl implements NiubizService {
     }
 
     @Override
-    public Mono<String> tofinalize(NiubizAutorizationEntity niubizEntity, String token, Long purchaseNumber, Double amount) {
-        String urlWeb = urlFrontEnd+"/manager/bookings-manager";
+    public Mono<String> tofinalize(NiubizAutorizationEntity niubizEntity, String token, Long purchaseNumber, Double amount, Integer type) {
+        String urlWeb = "";
+        if (type == 1) {
+            urlWeb += urlAdminFrontEnd+"/manager/bookings-manager";
+        } else if (type == 2) {
+            urlWeb += urlClientFrontEnd+"/promotor/dashboard/reservas";
+        } else if (type == 3) {
+            urlWeb += urlClientFrontEnd+"/bookings/reservados";
+        }
 
         NiubizAutorizationBodyEntity body = new NiubizAutorizationBodyEntity();
         body.setChannel("web");
@@ -124,8 +135,16 @@ public class NiubizServiceImpl implements NiubizService {
         order.setAmount(amount);
         order.setCurrency("PEN");
         body.setOrder(order);
+        NiubizAuthorizationDataMapEntity datamap = new NiubizAuthorizationDataMapEntity();
+        datamap.setUrlAddress(urlClientFrontEnd);
+        datamap.setServiceLocationCityName("Lima");
+        datamap.setServiceLocationCountrySubdivisionCode("LIM");
+        datamap.setServiceLocationCountryCode("PER");
+        datamap.setServiceLocationPostalCode("15046");
+        body.setDataMap(datamap);
+        String finalUrlWeb = urlWeb;
         return nibuizClient.post()
-                .uri(uriBuilder -> uriBuilder.path("/api.authorization/v3/authorization/ecommerce/456879852")
+                .uri(uriBuilder -> uriBuilder.path("/api.authorization/v3/authorization/ecommerce/651029031")
                         .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", token)
@@ -133,23 +152,45 @@ public class NiubizServiceImpl implements NiubizService {
                 .bodyValue(body)
                 .exchangeToMono(response -> {
                     HttpStatus httpStatus = (HttpStatus) response.statusCode();
+                    ObjectMapper mapper = new ObjectMapper();
                     if (httpStatus.is4xxClientError() || httpStatus.is5xxServerError()) {
                         //return response.createException().flatMap(Mono::error);
-                        return Mono.just(urlWeb+"/0");
+                        return response.bodyToMono(Object.class).flatMap(object -> {
+                            String transactionId = null, dateTransaction = null, message = null, status = null;
+                            try {
+                                String json = mapper.writeValueAsString(object);
+                                JsonNode jsonNode = mapper.readTree(json);
+                                JsonNode jsonData = jsonNode.get("data");
+                                transactionId = jsonData.get("TRANSACTION_ID") != null ? jsonData.get("TRANSACTION_ID").asText() : "1";
+                                dateTransaction = jsonData.get("TRANSACTION_DATE").asText();
+                                status = jsonData.get("STATUS").asText();
+                                var messageCard = jsonData.get("ACTION_DESCRIPTION").asText();
+                                message = Base64.encodeBase64String(messageCard.getBytes());
+                            } catch (JsonProcessingException e) {
+                                message = "";
+                            }
+                            return Mono.just(finalUrlWeb +"?transactionId="+transactionId+"&dateTransaction="+dateTransaction+"&message="+message+"&status="+status);
+                        });
                     }
                     return response.bodyToMono(Object.class).flatMap(object -> {
-                        ObjectMapper mapper = new ObjectMapper();
-                        String transactionId = null;
+                        String currency = null, transactionId = null, dateTransaction = null, amountTransaction = null, cardTransaction = null, brand = null, status = null;
                         try {
                             String json = mapper.writeValueAsString(object);
                             JsonNode jsonNode = mapper.readTree(json);
                             JsonNode jsonDataMap = jsonNode.get("dataMap");
-                            JsonNode idTransaction = jsonDataMap.get("TRANSACTION_ID");
-                            transactionId = idTransaction.asText();
+                            transactionId = jsonDataMap.get("TRANSACTION_ID") != null ? jsonDataMap.get("TRANSACTION_ID").asText() : "";
+                            dateTransaction = jsonDataMap.get("TRANSACTION_DATE").asText();
+                            amountTransaction = jsonDataMap.get("AMOUNT").asText();
+                            cardTransaction = jsonDataMap.get("CARD").asText();
+                            cardTransaction = Base64.encodeBase64String(cardTransaction.getBytes());
+                            brand = jsonDataMap.get("BRAND").asText();
+                            status = jsonDataMap.get("STATUS").asText();
+                            JsonNode jsonOrder = jsonNode.get("order");
+                            currency = jsonOrder.get("currency").asText();
                         } catch (JsonProcessingException e) {
                             transactionId = "-1";
                         }
-                        return Mono.just(urlWeb+"/"+transactionId);
+                        return Mono.just(finalUrlWeb+"?transactionId="+transactionId+"&dateTransaction="+dateTransaction+"&amountTransaction="+amountTransaction+"&cardTransaction="+cardTransaction+"&brand="+brand+"&currency="+currency+"&status="+status);
                     });
                 });
     }
@@ -161,13 +202,12 @@ public class NiubizServiceImpl implements NiubizService {
                     booking.setBookingStateId(2);
                     return Mono.zip(bookingRepository.save(booking),
                             this.bookingRepository.getRoomNameAndDescriptionfindByBookingId(booking.getBookingId()),
-                            userClientRepository.findById(booking.getUserClientId()));
+                            userClientRepository.findByUserClientId(booking.getUserClientId()));
                 }).flatMap(tuple -> {
                     BookingEntity updatedBooking = tuple.getT1();
                     BookingAndRoomNameDto bookingAndRoomNameDto = tuple.getT2();
                     UserClientEntity userClient = tuple.getT3();
-                    BigDecimal monto = new BigDecimal(amount);
-                    BigDecimal totalCost = monto.divide(BigDecimal.valueOf(100000));
+                    BigDecimal totalCost = new BigDecimal(amount);// monto.divide(BigDecimal.valueOf(100000));
                     InvoiceType type = InvoiceType.getInvoiceTypeByName(invoiceType.toUpperCase());
                     InvoiceClientDomain invoiceClientDomain = new InvoiceClientDomain(
                             userClient.getFirstName(),

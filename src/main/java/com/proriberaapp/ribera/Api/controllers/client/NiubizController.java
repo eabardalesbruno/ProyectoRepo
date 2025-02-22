@@ -32,7 +32,29 @@ public class NiubizController {
 
     @PostMapping("/tofinalize")
     public Mono<ResponseEntity<Void>> tofinalize(@ModelAttribute NiubizAutorizationEntity niubizEntity, @RequestParam String token, @RequestParam Long purchaseNumber, @RequestParam Double amount) {
-        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount)
+        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 1)
+                .flatMap(redirect -> {
+                    return Mono.just(ResponseEntity
+                            .status(HttpStatus.TEMPORARY_REDIRECT)
+                            .header(HttpHeaders.LOCATION, redirect)
+                            .build());
+                });
+    }
+
+    @PostMapping("/endpromote")
+    public Mono<ResponseEntity<Void>> endpromote(@ModelAttribute NiubizAutorizationEntity niubizEntity, @RequestParam String token, @RequestParam Long purchaseNumber, @RequestParam Double amount) {
+        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 2)
+                .flatMap(redirect -> {
+                    return Mono.just(ResponseEntity
+                            .status(HttpStatus.TEMPORARY_REDIRECT)
+                            .header(HttpHeaders.LOCATION, redirect)
+                            .build());
+                });
+    }
+
+    @PostMapping("/endclient")
+    public Mono<ResponseEntity<Void>> endclient(@ModelAttribute NiubizAutorizationEntity niubizEntity, @RequestParam String token, @RequestParam Long purchaseNumber, @RequestParam Double amount) {
+        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 3)
                 .flatMap(redirect -> {
                     return Mono.just(ResponseEntity
                             .status(HttpStatus.TEMPORARY_REDIRECT)

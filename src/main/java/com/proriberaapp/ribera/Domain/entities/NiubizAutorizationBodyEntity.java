@@ -9,5 +9,6 @@ public class NiubizAutorizationBodyEntity {
     private String captureType;
     private boolean countable;
     private NiubizAuthorizationOrderEntity order;
+    private NiubizAuthorizationDataMapEntity dataMap;
 
 }
