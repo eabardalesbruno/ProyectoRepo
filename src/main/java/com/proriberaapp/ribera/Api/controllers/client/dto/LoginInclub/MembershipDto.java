@@ -14,4 +14,5 @@ public class MembershipDto {
     private int numberQuotas;
     private int idPackage;
     private String creationDate;
+    private Integer volumen;
 }

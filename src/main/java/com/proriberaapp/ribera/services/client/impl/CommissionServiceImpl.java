@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Domain.dto.CommissionAdminDto;
 import com.proriberaapp.ribera.Domain.dto.CommissionDTO;
+import com.proriberaapp.ribera.Domain.dto.CommissionGroupResponse;
 import com.proriberaapp.ribera.Domain.dto.CommissionPromoterDto;
 import com.proriberaapp.ribera.Domain.entities.BookingFeedingEntity;
 import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
@@ -20,6 +21,11 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CommissionServiceImpl implements CommissionService {
@@ -62,6 +68,7 @@ public class CommissionServiceImpl implements CommissionService {
                             commission.setCurrencyTypeId(paymentBook.getCurrencyTypeId());
                             commission.setStatus("Pendiente");
                             commission.setDayBookingInit(booking.getDayBookingInit());
+                            commission.setReceptionistId(booking.getReceptionistId());
 
                             Timestamp now = new Timestamp(System.currentTimeMillis());
                             commission.setCreatedAt(now);
@@ -110,7 +117,7 @@ public class CommissionServiceImpl implements CommissionService {
     }
 
     @Override
-    public Mono<BigDecimal> getTotalCommissionByPromoterId(Integer promoterId){
+    public Mono<BigDecimal> getTotalCommissionByPromoterId(Integer promoterId) {
         return commissionRepository.findTotalCommissionByPromoterId(promoterId);
     }
 
@@ -142,6 +149,132 @@ public class CommissionServiceImpl implements CommissionService {
     }
 
     @Override
+    public Mono<CommissionGroupResponse> updateAllGroupedCommissions(List<Integer> commissionIds, Integer promoterId, Integer currencyTypeId, BigDecimal userAmount, String rucNumber, Mono<FilePart> file, Integer folderNumber) {
+
+        return commissionRepository.findAllById(commissionIds)
+                .collectList()
+                .flatMap(pendingCommissions -> {
+                    if (pendingCommissions.isEmpty()) {
+                        return Mono.empty();
+                    }
+                    Timestamp firstCreatedAt = pendingCommissions.get(0).getCreatedAt();
+                    int firstMonth = firstCreatedAt.toLocalDateTime().getMonthValue();
+                    boolean sameMonth = pendingCommissions.stream()
+                            .allMatch(commission -> commission.getCreatedAt().toLocalDateTime().getMonthValue() == firstMonth);
+
+                    if (!sameMonth) {
+                        return Mono.error(new IllegalArgumentException("Las comisiones deben ser del mismo mes."));
+                    }
+
+                    List<CommissionEntity> firstHalf = pendingCommissions.stream()
+                            .filter(commission -> {
+                                int dayOfMonth = commission.getCreatedAt().toLocalDateTime().getDayOfMonth();
+                                return dayOfMonth <= 15;
+                            })
+                            .collect(Collectors.toList());
+
+                    List<CommissionEntity> secondHalf = pendingCommissions.stream()
+                            .filter(commission -> {
+                                int dayOfMonth = commission.getCreatedAt().toLocalDateTime().getDayOfMonth();
+                                return dayOfMonth > 15;
+                            })
+                            .collect(Collectors.toList());
+
+                    BigDecimal totalFirstHalf = firstHalf.stream()
+                            .map(CommissionEntity::getCommissionAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    BigDecimal totalSecondHalf = secondHalf.stream()
+                            .map(CommissionEntity::getCommissionAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    firstHalf.sort(Comparator.comparing(CommissionEntity::getCreatedAt));
+                    secondHalf.sort(Comparator.comparing(CommissionEntity::getCreatedAt));
+
+                    Timestamp firstDisbursementDate = firstHalf.isEmpty() ? null : firstHalf.get(0).getCreatedAt();
+                    Timestamp lastDisbursementDate = secondHalf.isEmpty() ? null : secondHalf.get(secondHalf.size() - 1).getCreatedAt();
+                    return s3ClientService.uploadFile(file, folderNumber)
+                            .flatMap(url -> {
+                                List<Mono<CommissionEntity>> updatedCommissions = pendingCommissions.stream()
+                                        .map(commission -> {
+                                            commission.setCurrencyTypeId(currencyTypeId);
+                                            commission.setRucNumber(rucNumber);
+                                            commission.setStatus("Activo");
+                                            commission.setInvoiceDocument(url);
+                                            commission.setDateofapplication(new Timestamp(System.currentTimeMillis()));
+                                            return commissionRepository.save(commission);
+                                        })
+                                        .collect(Collectors.toList());
+                                CommissionGroupResponse response = new CommissionGroupResponse();
+                                response.setTotalCommissionAmount(totalFirstHalf.add(totalSecondHalf));
+                                response.setNumberOfCommissions(firstHalf.size() + secondHalf.size());
+                                response.setFirstDisbursementDate(firstDisbursementDate);
+                                response.setLastDisbursementDate(lastDisbursementDate);
+                                return Flux.concat(updatedCommissions).collectList().then(Mono.just(response));
+                            });
+                });
+    }
+
+    @Override
+    public Mono<Map<Integer, CommissionGroupResponse>> getGroupedCommissions(Integer promoterId, Integer partnerId, Integer receptionistId) {
+        return commissionRepository.findPendingCommissionsByIds(promoterId, partnerId, receptionistId)
+                .collectList()
+                .flatMap(pendingCommissions -> {
+                    if (pendingCommissions.isEmpty()) {
+                        return Mono.empty();
+                    }
+                    Map<Integer, List<CommissionEntity>> commissionsByMonth = pendingCommissions.stream()
+                            .collect(Collectors.groupingBy(commission ->
+                                    commission.getCreatedAt().toLocalDateTime().getMonthValue()));
+
+                    Map<Integer, CommissionGroupResponse> groupedResponses = new HashMap<>();
+
+                    for (Map.Entry<Integer, List<CommissionEntity>> entry : commissionsByMonth.entrySet()) {
+                        Integer month = entry.getKey();
+                        List<CommissionEntity> commissions = entry.getValue();
+                        List<CommissionEntity> firstHalf = commissions.stream()
+                                .filter(commission -> commission.getCreatedAt().toLocalDateTime().getDayOfMonth() <= 15)
+                                .collect(Collectors.toList());
+
+                        List<CommissionEntity> secondHalf = commissions.stream()
+                                .filter(commission -> commission.getCreatedAt().toLocalDateTime().getDayOfMonth() > 15)
+                                .collect(Collectors.toList());
+                        BigDecimal totalFirstHalf = firstHalf.stream()
+                                .map(CommissionEntity::getCommissionAmount)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                        BigDecimal totalSecondHalf = secondHalf.stream()
+                                .map(CommissionEntity::getCommissionAmount)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        int numberOfFirstHalfCommissions = firstHalf.size();
+                        int numberOfSecondHalfCommissions = secondHalf.size();
+                        firstHalf.sort(Comparator.comparing(CommissionEntity::getCreatedAt));
+                        secondHalf.sort(Comparator.comparing(CommissionEntity::getCreatedAt));
+
+                        Timestamp firstDisbursementDate = firstHalf.isEmpty() ? null : firstHalf.get(0).getCreatedAt();
+                        Timestamp lastDisbursementDate = secondHalf.isEmpty() ? null : secondHalf.get(secondHalf.size() - 1).getCreatedAt();
+
+                        CommissionGroupResponse response = new CommissionGroupResponse();
+                        response.setTotalCommissionAmount(totalFirstHalf.add(totalSecondHalf));
+                        response.setNumberOfCommissions(numberOfFirstHalfCommissions + numberOfSecondHalfCommissions);
+                        response.setFirstDisbursementDate(firstDisbursementDate);
+                        response.setLastDisbursementDate(lastDisbursementDate);
+
+                        response.setTotalFirstHalfCommissionAmount(totalFirstHalf);
+                        response.setTotalSecondHalfCommissionAmount(totalSecondHalf);
+                        response.setNumberOfFirstHalfCommissions(numberOfFirstHalfCommissions);
+                        response.setNumberOfSecondHalfCommissions(numberOfSecondHalfCommissions);
+
+                        response.setFirstHalfCommissions(firstHalf);
+                        response.setSecondHalfCommissions(secondHalf);
+
+                        groupedResponses.put(month, response);
+                    }
+
+                    return Mono.just(groupedResponses);
+                });
+    }
+
+    @Override
     public Mono<CommissionEntity> updateStatusByCommissionId(Integer commissionId, String status) {
         return commissionRepository.findById(commissionId)
                 .flatMap(commission -> {
@@ -167,17 +300,16 @@ public class CommissionServiceImpl implements CommissionService {
         return commissionRepository.findAllWithPromoter(size, offset);
     }
 
+    @Override
     public Mono<String> generateSerialNumber() {
         return commissionRepository.findLastSerialNumber()
+                .filter(lastSerial -> lastSerial.matches("\\d+"))
                 .map(this::incrementSerialNumber)
-                .switchIfEmpty(Mono.just("RE001"));
+                .switchIfEmpty(Mono.just("001"));
     }
 
     private String incrementSerialNumber(String lastSerial) {
-        String prefix = "RE";
-        String numericPart = lastSerial.substring(2);
-        int number = Integer.parseInt(numericPart) + 1;
-        String newNumericPart = String.format("%0" + numericPart.length() + "d", number);
-        return prefix + newNumericPart;
+        int number = Integer.parseInt(lastSerial) + 1;
+        return String.format("%03d", number);
     }
 }

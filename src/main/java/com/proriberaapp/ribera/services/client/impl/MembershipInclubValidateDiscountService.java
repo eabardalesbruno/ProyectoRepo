@@ -38,9 +38,8 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
         return this.loadMembershipsInsortInclub(username)
                 .flatMap(s -> {
                     List<MembershipDto> activeMemberships = s.stream().filter(p -> p.getIdStatus() == 1).toList();
-                    return activeMemberships.isEmpty() ? Mono.just(null) : Mono.just(activeMemberships);
+                    return activeMemberships.isEmpty() ? Mono.just(List.of()) : Mono.just(activeMemberships);
                 });
-
     }
 
     @Override

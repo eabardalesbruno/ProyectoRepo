@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.relational.core.mapping.Column;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Data
@@ -22,8 +23,8 @@ public class BookingStates {
     private String roomtypename;
     private String email;
     private Double costfinal;
-    private LocalDateTime daybookinginit;
-    private LocalDateTime daybookingend;
+    private String daybookinginit;
+    private String daybookingend;
     private String image;
     private Integer capacity;
     private Integer bookingstateid;
@@ -44,5 +45,8 @@ public class BookingStates {
     private Integer nights;
     private String roomnumber;
     private boolean isalimentation;
+
+    @Column("createdat")
+    private Timestamp createdat;
 
 }

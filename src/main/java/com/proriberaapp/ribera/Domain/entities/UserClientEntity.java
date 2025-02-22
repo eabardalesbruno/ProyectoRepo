@@ -1,8 +1,12 @@
 package com.proriberaapp.ribera.Domain.entities;
 
 import com.proriberaapp.ribera.Domain.enums.StatesUser;
+
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
@@ -14,10 +18,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
-
-@Getter
-@Setter
+@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table("userclient")
 public class UserClientEntity implements UserDetails {
     @Id
@@ -71,6 +75,8 @@ public class UserClientEntity implements UserDetails {
     private boolean isUserInclub;
     private StatesUser status;
     private Timestamp createdat;
+    @Column("rewardpoints")
+    private double rewardPoints;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

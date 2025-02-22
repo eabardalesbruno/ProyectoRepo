@@ -83,6 +83,7 @@ public class SecurityConfig {
                                 "api/v1/booking-state/**",
                                 "api/v1/commission/**",
                                 "/api/v1/niubiz/**",
+                                "/api/v1/fullday/**",
                                 "/swagger-doc/**"
                         ).permitAll()
 

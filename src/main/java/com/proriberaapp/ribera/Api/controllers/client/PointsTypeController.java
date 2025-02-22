@@ -10,7 +10,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/points-types")
+@RequestMapping("/api/v1/points-types")
 public class PointsTypeController {
     private final PointsTypeService pointsTypeService;
 
@@ -32,9 +32,10 @@ public class PointsTypeController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
-    @GetMapping
-    public Flux<PointsTypeEntity> getAllPointsTypes() {
-        return pointsTypeService.getAllPointsTypes();
+    @GetMapping()
+    public Flux<PointsTypeEntity> getAllPointsTypes(@RequestParam("isQuotable") boolean isQuotable) {
+        System.out.println(isQuotable);
+        return pointsTypeService.getAllPointsTypes().filterWhen(d -> Mono.just(d.isIsquotable() == isQuotable));
     }
 
     @PutMapping("/{id}")
