@@ -18,7 +18,7 @@ public class PromotorDataDTO {
     private String lastName;
     private String address;
     private Integer walletId;
-
+    private Timestamp createdAt;
 
     public Mono<PromotorDataDTO> convertTo(UserPromoterEntity promotor) {
          PromotorDataDTO promotorDTO = new PromotorDataDTO();
@@ -31,6 +31,7 @@ public class PromotorDataDTO {
         promotorDTO.setEmail(promotor.getEmail());
         promotorDTO.setAddress(promotor.getAddress());
         promotorDTO.setWalletId(promotor.getWalletId());
+        promotorDTO.setCreatedAt(promotor.getCreatedAt());
         return Mono.just(promotorDTO);
     }
 }

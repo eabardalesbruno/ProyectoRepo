@@ -59,6 +59,9 @@ public class NiubizServiceImpl implements NiubizService {
     @Value("${frontend.webapi.client-url}")
     private String urlClientFrontEnd;
 
+    @Value("${niubiz.merchantId}")
+    private Integer merchantId;
+
     @Autowired
     BookingRepository bookingRepository;
 
@@ -99,7 +102,7 @@ public class NiubizServiceImpl implements NiubizService {
     @Override
     public Mono<Object> getTokenSession(String token, Object body) {
         return nibuizClient.post()
-                .uri(uriBuilder -> uriBuilder.path("/api.ecommerce/v2/ecommerce/token/session/651029031")
+                .uri(uriBuilder -> uriBuilder.path("/api.ecommerce/v2/ecommerce/token/session/"+merchantId)
                         .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", token)
@@ -144,7 +147,7 @@ public class NiubizServiceImpl implements NiubizService {
         body.setDataMap(datamap);
         String finalUrlWeb = urlWeb;
         return nibuizClient.post()
-                .uri(uriBuilder -> uriBuilder.path("/api.authorization/v3/authorization/ecommerce/651029031")
+                .uri(uriBuilder -> uriBuilder.path("/api.authorization/v3/authorization/ecommerce/"+merchantId)
                         .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", token)
