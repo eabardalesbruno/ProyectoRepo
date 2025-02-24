@@ -20,6 +20,7 @@ public class UserDataDTO {
     private Integer countryId;
     private Integer walletId;
     private boolean isuserinclub;
+    private Timestamp createdat;
 
     public Mono<UserDataDTO> convertTo(UserClientEntity user) {
          UserDataDTO userDTO = new UserDataDTO();
@@ -36,6 +37,7 @@ public class UserDataDTO {
         userDTO.setCountryId(user.getCountryId());
         userDTO.setWalletId(user.getWalletId());
         userDTO.setIsuserinclub(user.isUserInclub());
+        userDTO.setCreatedat(user.getCreatedat());
         return Mono.just(userDTO);
     }
 }
