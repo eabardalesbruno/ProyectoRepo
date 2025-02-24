@@ -118,4 +118,6 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Mono<Float> getTotalFeedingAmount(Integer bookingId);
 
+    Mono<BookingEntity> searchById(Integer bookingId);
+
 }
