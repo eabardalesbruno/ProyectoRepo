@@ -34,9 +34,6 @@ public class TicketEntryFullDayServiceImpl implements TicketEntryFullDayService 
     public Mono<TicketEntryFullDayEntity> updateEntry(Integer id, TicketEntryFullDayEntity entry) {
         return ticketEntryFullDayRepository.findById(id)
                 .flatMap(existingEntry -> {
-                    existingEntry.setCategory(entry.getCategory());
-                    existingEntry.setSubCategory(entry.getSubCategory());
-                    existingEntry.setType(entry.getType());
                     existingEntry.setStartDate(entry.getStartDate());
                     existingEntry.setEndDate(entry.getEndDate());
                     existingEntry.setAdultPrice(entry.getAdultPrice());
