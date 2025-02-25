@@ -15,6 +15,6 @@ public class PointTransactionExchangeDto {
     private PointTypeDto pointType;
     private String membershipName;
     private double pointDebited;
-    private double pointACredited;
+    private double pointAcredited;
     private String createdAt;
 }
