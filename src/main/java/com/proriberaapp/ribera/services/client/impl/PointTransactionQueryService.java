@@ -36,7 +36,7 @@ public class PointTransactionQueryService {
                     pointExchange.setId(pointRow.getId());
                     pointExchange.setMembershipName(pointRow.getMembershipname());
                     pointExchange.setPointDebited(pointRow.getPointdebited());
-                    pointExchange.setPointACredited(pointRow.getPointacredited());
+                    pointExchange.setPointAcredited(pointRow.getPointacredited());
                     pointExchange.setCreatedAt(pointRow.getCreated_at());
                     pointExchange.setPointType(pointTypeDto);
                     return pointExchange;
