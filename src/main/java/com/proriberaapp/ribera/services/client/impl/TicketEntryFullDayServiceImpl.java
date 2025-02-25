@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class TicketEntryFullDayServiceImpl implements TicketEntryFullDayService {
@@ -40,7 +42,23 @@ public class TicketEntryFullDayServiceImpl implements TicketEntryFullDayService 
                     existingEntry.setSeniorPrice(entry.getSeniorPrice());
                     existingEntry.setChildPrice(entry.getChildPrice());
                     existingEntry.setInfantPrice(entry.getInfantPrice());
-                    return ticketEntryFullDayRepository.save(existingEntry);
+
+                    Mono<TicketEntryFullDayEntity> saveEntry = ticketEntryFullDayRepository.save(existingEntry);
+                    if (id == 1) {
+                        Mono<TicketEntryFullDayEntity> updateEntry5 = ticketEntryFullDayRepository.findById(5)
+                                .flatMap(entry5 -> {
+                                    entry5.setStartDate(existingEntry.getStartDate());
+                                    entry5.setEndDate(existingEntry.getEndDate());
+                                    entry5.setAdultPrice(existingEntry.getAdultPrice().multiply(BigDecimal.valueOf(0.5)));
+                                    entry5.setSeniorPrice(existingEntry.getSeniorPrice().multiply(BigDecimal.valueOf(0.5)));
+                                    entry5.setChildPrice(existingEntry.getChildPrice().multiply(BigDecimal.valueOf(0.5)));
+                                    entry5.setInfantPrice(existingEntry.getInfantPrice().multiply(BigDecimal.valueOf(0.5)));
+                                    return ticketEntryFullDayRepository.save(entry5);
+                                });
+
+                        return saveEntry.then(updateEntry5).then(saveEntry);
+                    }
+                    return saveEntry;
                 });
     }
 
