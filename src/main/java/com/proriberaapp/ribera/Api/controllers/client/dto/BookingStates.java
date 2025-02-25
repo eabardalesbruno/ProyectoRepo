@@ -23,8 +23,8 @@ public class BookingStates {
     private String roomtypename;
     private String email;
     private Double costfinal;
-    private LocalDateTime daybookinginit;
-    private LocalDateTime daybookingend;
+    private String daybookinginit;
+    private String daybookingend;
     private String image;
     private Integer capacity;
     private Integer bookingstateid;
