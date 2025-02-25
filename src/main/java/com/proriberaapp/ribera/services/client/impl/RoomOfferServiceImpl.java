@@ -273,33 +273,12 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                                 viewRoomOfferReturn.getAdultsExtraReserve(),
                                                                 viewRoomOfferReturn.getAdultsMayorReserve()));
 
-                                                BigDecimal totalCostPerson = viewRoomOfferReturn
-                                                                .getAdultextracost().multiply(
-                                                                                BigDecimal.valueOf(viewRoomOfferReturn
-                                                                                                .getAdultsExtraReserve()))
-                                                                .add(viewRoomOfferReturn.getAdultmayorcost()
-                                                                                .multiply(BigDecimal.valueOf(
-                                                                                                viewRoomOfferReturn
-                                                                                                                .getAdultsMayorReserve())))
-                                                                .add(viewRoomOfferReturn.getAdultcost()
-                                                                                .multiply(BigDecimal.valueOf(
-                                                                                                viewRoomOfferReturn
-                                                                                                                .getAdultsReserve())))
-                                                                .add(viewRoomOfferReturn.getKidcost()
-                                                                                .multiply(BigDecimal
-                                                                                                .valueOf(viewRoomOfferReturn
-                                                                                                                .getKidsReserve())));
                                                 viewRoomOfferReturn.setTotalCapacity(viewRoomOfferReturn
                                                                 .getAdultcapacity()
                                                                 + viewRoomOfferReturn.getKidcapacity()
                                                                 + viewRoomOfferReturn.getAdultextra()
                                                                 + viewRoomOfferReturn.getAdultmayorcapacity());
-                                                totalCostPerson = totalCostPerson
-                                                                .multiply(BigDecimal.valueOf(
-                                                                                viewRoomOfferReturn
-                                                                                                .getNumberofnights()));
-                                                viewRoomOfferReturn.setCosttotal(totalCostPerson);
-                                                viewRoomOfferReturn.setOriginalcosttotal(totalCostPerson);
+
                                                 QuotationOfferDto quotation = quotationOfferDtos.stream()
                                                                 .filter(quotationOfferDto1 -> quotationOfferDto1
                                                                                 .getRoom_offer_id()
@@ -331,6 +310,24 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                                         BigDecimal.valueOf(quotation.getInfant_cost()
                                                                                         / viewRoomOfferReturn
                                                                                                         .getNumberofnights()));
+                                                        BigDecimal totalCostPerson = viewRoomOfferReturn
+                                                                        .getAdultextracost().multiply(
+                                                                                        BigDecimal.valueOf(
+                                                                                                        viewRoomOfferReturn
+                                                                                                                        .getAdultsExtraReserve()))
+                                                                        .add(viewRoomOfferReturn.getAdultmayorcost()
+                                                                                        .multiply(BigDecimal.valueOf(
+                                                                                                        viewRoomOfferReturn
+                                                                                                                        .getAdultsMayorReserve())))
+                                                                        .add(viewRoomOfferReturn.getAdultcost()
+                                                                                        .multiply(BigDecimal.valueOf(
+                                                                                                        viewRoomOfferReturn
+                                                                                                                        .getAdultsReserve())))
+                                                                        .add(viewRoomOfferReturn.getKidcost()
+                                                                                        .multiply(BigDecimal
+                                                                                                        .valueOf(viewRoomOfferReturn
+                                                                                                                        .getKidsReserve())));
+
                                                         BigDecimal totalCostFeeding = GeneralMethods
                                                                         .calculatedTotalAmountFeeding(feedingList,
                                                                                         feedingGroupedList,
@@ -341,10 +338,17 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                                                         viewRoomOfferReturn
                                                                                                         .getAdultsMayorReserve(),
                                                                                         viewRoomOfferReturn
-                                                                                                        .getKidsReserve());
-                                                        viewRoomOfferReturn.setCosttotal(
-                                                                        viewRoomOfferReturn.getCosttotal()
-                                                                                        .add(totalCostFeeding));
+                                                                                                        .getKidsReserve()).multiply(
+                                                                                        BigDecimal.valueOf(
+                                                                                                        viewRoomOfferReturn
+                                                                                                                        .getNumberofnights()));
+                                                        totalCostPerson = totalCostPerson
+                                                                        .multiply(BigDecimal.valueOf(
+                                                                                        viewRoomOfferReturn
+                                                                                                        .getNumberofnights()))
+                                                                        .add(totalCostFeeding);
+                                                        viewRoomOfferReturn.setCosttotal(totalCostPerson);
+                                                        viewRoomOfferReturn.setOriginalcosttotal(totalCostPerson);
                                                         viewRoomOfferReturn.setListFeeding(feedingList);
                                                         viewRoomOfferReturn.setAmountFeeding(totalCostFeeding);
                                                         viewRoomOfferReturn.setTotalPointsRibera(
