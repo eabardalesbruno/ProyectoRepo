@@ -224,7 +224,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
       @Param("offertimeInit") LocalDateTime offertimeInit,
       @Param("offertimeEnd") LocalDateTime offertimeEnd,
       @Param("limit") int limit,
-      @Param("offset") int offset, Integer userId);
+      @Param("offset") int offset, @Param("userId") Integer userId);
 
   @Query("SELECT count(*) " +
       "FROM booking bo " +
@@ -281,7 +281,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
       @Param("bookingStateId") Integer bookingStateId,
       @Param("roomTypeId") Integer roomTypeId,
       @Param("offertimeInit") LocalDateTime offertimeInit,
-      @Param("offertimeEnd") LocalDateTime offertimeEnd, Integer userId);
+      @Param("offertimeEnd") LocalDateTime offertimeEnd, @Param("userId") Integer userId);
 
   Mono<Boolean> existsByRoomOfferId(Integer roomOfferId);
 
