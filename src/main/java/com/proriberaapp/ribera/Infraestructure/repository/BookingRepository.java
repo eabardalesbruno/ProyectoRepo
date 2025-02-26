@@ -224,7 +224,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
       @Param("offertimeInit") LocalDateTime offertimeInit,
       @Param("offertimeEnd") LocalDateTime offertimeEnd,
       @Param("limit") int limit,
-      @Param("offset") int offset, Integer userId);
+      @Param("offset") int offset, @Param("userId") Integer userId);
 
   @Query("SELECT count(*) " +
       "FROM booking bo " +
