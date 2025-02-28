@@ -240,7 +240,7 @@ public class NiubizServiceImpl implements NiubizService {
                             .userClientId(updatedBooking
                                     .getUserClientId())
                             .refuseReasonId(1)
-                            .paymentMethodId(1)
+                            .paymentMethodId(6)//1
                             .paymentStateId(2)
                             .paymentTypeId(3)
                             .paymentSubTypeId(6)
