@@ -618,7 +618,7 @@ public class BookingServiceImpl implements BookingService {
                                                                                                                         bookingSaveRequest
                                                                                                                                         .getNumberAdultMayor(),
                                                                                                                         bookingSaveRequest
-                                                                                                                                        .getNumberChild());
+                                                                                                                                        .getNumberChild()).multiply(BigDecimal.valueOf(numberOfDays-1));
                                                                                         bookingEntity.setCostFinal(
                                                                                                         costFinal.add(extraCost));
 
