@@ -53,5 +53,6 @@ public class BookingStates {
     private String linkpdf;
     private String operationcode;
     private String operationnumber;
+    private String methods;
 
 }
