@@ -119,8 +119,9 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                 i.serie,
                 i.linkpdf,
                 i.operationcode,
-                LPAD(CAST(i.correlative AS CHAR),9,'0') operationnumber
-                 FROM userclient us
+                LPAD(CAST(i.correlative AS CHAR),9,'0') operationnumber,
+                (SELECT pm.description FROM paymentmethod pm WHERE pm.paymentmethodid = pb.paymentmethodid) methods
+               FROM userclient us
       		   JOIN booking bo ON us.userclientid = bo.userclientid
                  JOIN roomoffer r ON r.roomofferid = bo.roomofferid
                  JOIN room rid ON rid.roomid = r.roomid
