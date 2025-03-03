@@ -34,7 +34,6 @@ public class PointsTypeController {
 
     @GetMapping()
     public Flux<PointsTypeEntity> getAllPointsTypes(@RequestParam("isQuotable") boolean isQuotable) {
-        System.out.println(isQuotable);
         return pointsTypeService.getAllPointsTypes().filterWhen(d -> Mono.just(d.isIsquotable() == isQuotable));
     }
 

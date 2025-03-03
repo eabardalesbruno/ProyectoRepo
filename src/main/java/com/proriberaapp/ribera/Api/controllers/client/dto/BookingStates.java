@@ -49,4 +49,10 @@ public class BookingStates {
     @Column("createdat")
     private Timestamp createdat;
 
+    private String serie;
+    private String linkpdf;
+    private String operationcode;
+    private String operationnumber;
+    private String methods;
+
 }
