@@ -11,9 +11,9 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Builder
-@Table("fulldaydetail")
 @AllArgsConstructor
 @NoArgsConstructor
+@Table("fulldaydetail")
 public class FullDayDetailEntity {
 
     @Id
