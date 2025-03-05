@@ -7,6 +7,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Setter
@@ -40,5 +41,8 @@ public class FullDayDetailEntity {
 
     @Column("finalprice")
     private BigDecimal finalPrice;
+
+    @Column("fulldaytypefoodid")
+    private List<Integer> fulldayTypefoodid;
 
 }
