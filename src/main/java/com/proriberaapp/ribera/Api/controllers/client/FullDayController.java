@@ -1,11 +1,13 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.FullDayRequest;
+import com.proriberaapp.ribera.Domain.entities.FullDayDetailEntity;
 import com.proriberaapp.ribera.Domain.entities.FullDayEntity;
 import com.proriberaapp.ribera.Domain.entities.FullDayTypeFoodEntity;
 import com.proriberaapp.ribera.services.client.FullDayService;
 import com.proriberaapp.ribera.services.client.FullDayTypeFoodService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -39,6 +42,8 @@ public class FullDayController {
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.badRequest().build());
     }
+
+
 
     //FULLDAY TYPE FOOD CONTROLLER
 

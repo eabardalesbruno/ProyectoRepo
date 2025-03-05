@@ -66,4 +66,14 @@ public class TicketEntryFullDayServiceImpl implements TicketEntryFullDayService 
     public Mono<Void> deleteEntry(Integer id) {
         return ticketEntryFullDayRepository.deleteById(id);
     }
+
+    @Override
+    public Mono<Void> updateEnabledDaysForall(String enabledDays) {
+        return ticketEntryFullDayRepository.actualizarEnabledDaysParaTodos(enabledDays);
+    }
+
+    @Override
+    public Flux<String> getEnabledDaysAll() {
+        return ticketEntryFullDayRepository.obtenerEnabledDays();
+    }
 }

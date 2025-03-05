@@ -20,4 +20,8 @@ public interface FullDayTypeFoodRepository extends R2dbcRepository<FullDayTypeFo
             "AND (:name IS NULL OR LOWER(foodname) LIKE LOWER(CONCAT('%', :name, '%')))")
     Mono<Integer> countByType(String type, String name);
 
+
+
+    Mono<FullDayTypeFoodEntity> findByFullDayTypeFoodId(Integer fullDayTypeFoodId);
+
 }

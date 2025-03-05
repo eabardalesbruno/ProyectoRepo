@@ -337,6 +337,7 @@ public class PDFGeneratorService {
                     "                        <li>Al titular de la reserva se le hará entrega de llaves, tarjetas, controles de tv que serán devueltos durante el check out.</li>\n" +
                     "                        <li>No está permitido trasladar artículos (vasos, toallas, ropas de cama, muebles, menaje, etc.) fuera del apartamento, en caso de que algún artículo sufra deterioro o pérdida el titular de la reserva deberá asumir el precio.</li>\n" +
                     "                        <li>Alimentos y bebidas que no pertenezcan a la empresa solo podrán ser consumidas dentro de su apartamento.</li>\n" +
+                    "                        <li>No se permite el ingreso de armas de fuego, explosivos, sustancias peligrosas o ilícitas a Ribera del Río.</li>\n" +
                     "                        <li>El mantenimiento del apartamento se realizará cada 24 hrs.</li>\n" +
                     "                        <li>Como somos un apart hotel que protege la ecología está prohibido fumar dentro de los apartamentos, al incumplir está norma, el huésped tendrá que pagar una penalidad de acuerdo al grado de gravedad del siniestro.</li>\n" +
                     "                        <li>No está permitido realizar reuniones en los apartamentos o habitaciones o áreas públicas que perturben el orden público por la tranquilidad de los demás huéspedes desde las 20:00 hrs. Además, el volumen del televisor debe mantenerse en un nivel apropiado.</li>\n" +
@@ -345,13 +346,16 @@ public class PDFGeneratorService {
                     "                        <li>Las rutas de evacuación en caso de desastres naturales están debidamente señaladas. Recomendamos mantener la calma y seguir las indicaciones de nuestro personal.</li>\n" +
                     "                        <li>Si desea artículos para juegos de mesa, canchas deportivas, entre otros, puede solicitarlo en recepción y se brindarán con una identificación.</li>\n" +
                     "                        <li>Las visitas sólo podrán ser realizadas en el área de lobby en Recepción. Después de las 22:00h por seguridad se cerrarán las puertas del establecimiento, si desea salir será bajo su responsabilidad y deberá identificarse a seguridad con su respectivo brazalete.</li>\n" +
+                    "                        <li>Ribera del Río no se hace responsable de accidentes por causas fortuitas, fuerza mayor, conductas autodestructivas o acciones de terceros. No se responsabiliza por accidentes de menores de edad sin la compañía de sus padres o tutores</li>\n" +
+                    "                        <li>El huésped es responsable de los daños y perjuicios causados al mobiliario, infraestructura y/o equipos de Ribera del Río. Se cargarán los costos correspondientes.</li>\n" +
+                    "                        <li>Ribera del Río no se hace responsable por objetos olvidados en áreas públicas del establecimiento, ni por artículos olvidados dentro de las habitaciones una vez realizado el Check-out. Sin embargo, cualquier artículo, con la excepción de los artículos perecederos, que dejen nuestros huéspedes y que hayan sido encontrados después de la salida por el servicio de limpieza, se recogerá, ingresará y se guardará en un lugar seguro para que el propietario lo recoja hasta por quince (15) días, durante ese plazo ni Ribera del Río, ni sus trabajadores tendrán responsabilidad alguna sobre el deterioro que estos pudieran tener. Vencido este plazo, Ribera del Río está facultado para su donación, salvo que el cliente solicite lo contrario. En el caso de todos los objetos personales perecibles olvidados por nuestros huéspedes serán desechados de forma inmediata en atención a las normas de sanidad vigentes.</li>\n" +
                     "                    </ol>\n" +
                     "                    <p><strong>IV. Tránsito de instalaciones</strong></p>\n" +
                     "                    <ol>\n" +
                     "                        <li>La velocidad máxima permitida al interior de las instalaciones es de 15km/h.</li>\n" +
                     "                        <li>El tránsito de camionetas, autos, cuatrimotos y motos sólo está permitido por las pistas y parqueos.</li>\n" +
                     "                        <li>El no cumplimiento de los puntos 1 y 2 llevará a una sanción y penalidad.</li>\n" +
-                    "                        <li>No nos hacemos responsables por la pérdida de objetos personales ni por daños.</li>\n" +
+                    "                        <li>Deslindamos responsabilidad por daños generados por terceros en vehículos o pérdida de objetos en el interior de los mismos.</li>\n" +
                     "                    </ol>\n" +
                     "                </div>\n" +
                     "            </div>\n" +
