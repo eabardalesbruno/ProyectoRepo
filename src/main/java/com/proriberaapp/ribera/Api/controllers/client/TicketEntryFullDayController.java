@@ -40,4 +40,14 @@ public class TicketEntryFullDayController {
     public Mono<Void> deleteEntry(@PathVariable Integer id) {
         return ticketEntryFullDayService.deleteEntry(id);
     }
+
+    @PutMapping("/update-enabled-days")
+    public Mono<Void> updateEnabledDays(@RequestBody String enabledDays) {
+        return ticketEntryFullDayService.updateEnabledDaysForall(enabledDays);
+    }
+
+    @GetMapping("/enabled-days")
+    public Flux<String> getEnabledDays() {
+        return ticketEntryFullDayService.getEnabledDaysAll();
+    }
 }

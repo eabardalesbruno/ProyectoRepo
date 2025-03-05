@@ -16,4 +16,8 @@ public interface TicketEntryFullDayService {
 
     Mono<Void> deleteEntry(Integer id);
 
+    Mono<Void> updateEnabledDaysForall(String enabledDays);
+
+    Flux<String> getEnabledDaysAll();
+
 }

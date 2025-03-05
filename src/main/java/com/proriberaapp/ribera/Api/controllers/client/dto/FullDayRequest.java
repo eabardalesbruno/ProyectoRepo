@@ -16,5 +16,4 @@ public class FullDayRequest {
     private String type;
     private List<FullDayDetailEntity> details;
     private List<FullDayFoodEntity> foods;
-
 }
