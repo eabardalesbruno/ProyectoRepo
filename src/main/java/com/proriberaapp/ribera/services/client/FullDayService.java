@@ -5,11 +5,12 @@ import com.proriberaapp.ribera.Domain.entities.FullDayEntity;
 import com.proriberaapp.ribera.Domain.entities.FullDayFoodEntity;
 import reactor.core.publisher.Mono;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 public interface FullDayService {
 
-    Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type, List<FullDayDetailEntity> details, List<FullDayFoodEntity> foods);
+    Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type, Timestamp bookingdate, List<FullDayDetailEntity> details, List<FullDayFoodEntity> foods);
 
     Mono<Void> saveFood(List<FullDayDetailEntity> savedDetails, List<FullDayFoodEntity> foods);
 

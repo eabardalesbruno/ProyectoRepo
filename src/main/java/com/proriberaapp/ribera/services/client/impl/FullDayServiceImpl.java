@@ -36,7 +36,7 @@ public class FullDayServiceImpl implements FullDayService {
     private final FullDayTypeFoodRepository fullDayTypeFoodRepository;
 
     @Override
-    public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type,
+    public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type, Timestamp bookingdate,
                                                List<FullDayDetailEntity> details, List<FullDayFoodEntity> foods) {
         FullDayEntity fullDay = FullDayEntity.builder()
                 .receptionistId(receptionistId)
@@ -46,6 +46,7 @@ public class FullDayServiceImpl implements FullDayService {
                 .purchaseDate(Timestamp.from(Instant.now()))
                 .totalPrice(BigDecimal.ZERO)
                 .bookingstateid(3)
+                .bookingDate(bookingdate)
                 .build();
 
         return fullDayRepository.save(fullDay)

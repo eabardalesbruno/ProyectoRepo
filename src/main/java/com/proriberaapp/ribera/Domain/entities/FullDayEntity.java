@@ -41,4 +41,7 @@ public class FullDayEntity {
     @Column("bookingstateid")
     private Integer bookingstateid;
 
+    @Column("bookingdate")
+    private Timestamp  bookingDate;
+
 }

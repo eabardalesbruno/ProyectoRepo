@@ -306,7 +306,7 @@ public class CompanionServiceImpl implements CompanionsService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("El titular debe tener todos los campos completos."));
 
-        if (titular.getFirstname() == null || titular.getLastname() == null || titular.getBirthdate() == null) {
+        if (titular.getFirstname() == null || titular.getLastname() == null ) {
             return Flux.error(new IllegalArgumentException("El titular debe tener nombre, apellido y fecha de nacimiento."));
         }
         return Flux.fromIterable(updatedCompanions)
