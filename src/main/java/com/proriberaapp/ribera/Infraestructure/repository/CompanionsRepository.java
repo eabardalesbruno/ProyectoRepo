@@ -28,4 +28,7 @@ public interface CompanionsRepository extends R2dbcRepository<CompanionsEntity, 
      where c.bookingId = :bookingId""")
     Flux<CompanionsDto> getCompanionsByBookingId(@Param("bookingId") Integer bookingId);
 
+    @Query("SELECT * FROM companions WHERE fulldayid = :fulldayid")
+    Flux<CompanionsEntity> findByFullDayId(Integer fulldayid);
+
 }

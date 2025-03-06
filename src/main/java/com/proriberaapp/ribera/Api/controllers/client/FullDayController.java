@@ -1,13 +1,14 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.FullDayRequest;
-import com.proriberaapp.ribera.Domain.entities.FullDayDetailEntity;
+import com.proriberaapp.ribera.Domain.dto.CompanionsDto;
+import com.proriberaapp.ribera.Domain.entities.CompanionsEntity;
 import com.proriberaapp.ribera.Domain.entities.FullDayEntity;
 import com.proriberaapp.ribera.Domain.entities.FullDayTypeFoodEntity;
+import com.proriberaapp.ribera.services.client.CompanionsService;
 import com.proriberaapp.ribera.services.client.FullDayService;
 import com.proriberaapp.ribera.services.client.FullDayTypeFoodService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +26,8 @@ import java.util.Map;
 public class FullDayController {
 
     private final FullDayService fullDayService;
-
     private final FullDayTypeFoodService fullDayTypeFoodService;
+    private final CompanionsService companionsService;
 
     //FULLDAY CONTROLLER
     @PostMapping("/register")
@@ -124,6 +125,27 @@ public class FullDayController {
     @DeleteMapping("/typeFoodDl/{id}")
     public Mono<Void> deleteFullDayTypeFood(@PathVariable("id") Integer fullDayTypeFoodId) {
         return fullDayTypeFoodService.deleteFullDayTypeFood(fullDayTypeFoodId);
+    }
+
+    //Companions
+    @GetMapping("/by-fullday/{fulldayid}")
+    public Flux<CompanionsEntity> getCompanionsByFullDayId(@PathVariable Integer fulldayid) {
+        return companionsService.getCompanionsByFulldayId(fulldayid);
+    }
+
+    @PostMapping("/addCompanion")
+    public Flux<CompanionsEntity> addCompanionToFullDay(@RequestBody List<CompanionsEntity> companionsEntity) {
+        return companionsService.calculateAgeAndSaveFullDay(companionsEntity);
+    }
+
+    @GetMapping("/dni/{dni}")
+    public ResponseEntity<CompanionsDto> fetchCompanionByDni(@PathVariable String dni) {
+        try {
+            com.proriberaapp.ribera.Domain.dto.CompanionsDto companion = companionsService.fetchCompanionByDni(dni).block();
+            return ResponseEntity.ok(companion);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
 }

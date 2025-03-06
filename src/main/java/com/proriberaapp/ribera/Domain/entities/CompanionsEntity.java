@@ -16,7 +16,7 @@ import java.sql.Timestamp;
 public class CompanionsEntity {
     @Id
     @Column("companionid")
-    private Integer companionId;  //
+    private Integer companionId;
 
     @Column("category")
     private String category;
@@ -57,4 +57,6 @@ public class CompanionsEntity {
     @Column("istitular")
     private boolean isTitular = false;
 
+    @Column("fulldayid")
+    private Integer fulldayid;
 }

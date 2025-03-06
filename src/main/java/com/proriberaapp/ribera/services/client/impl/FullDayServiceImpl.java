@@ -45,6 +45,7 @@ public class FullDayServiceImpl implements FullDayService {
                 .type(type)
                 .purchaseDate(Timestamp.from(Instant.now()))
                 .totalPrice(BigDecimal.ZERO)
+                .bookingstateid(3)
                 .build();
 
         return fullDayRepository.save(fullDay)
