@@ -133,7 +133,7 @@ public class FullDayController {
         return companionsService.getCompanionsByFulldayId(fulldayid);
     }
 
-    @PostMapping("/add")
+    @PostMapping("/addCompanion")
     public Flux<CompanionsEntity> addCompanionToFullDay(@RequestBody List<CompanionsEntity> companionsEntity) {
         return companionsService.calculateAgeAndSaveFullDay(companionsEntity);
     }
