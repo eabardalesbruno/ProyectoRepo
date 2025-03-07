@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface CompanionsService  {
 
+    //Booking
     Flux<CompanionsEntity> getCompanionsByBookingId(Integer bookingId);
 
     Mono<CompanionsEntity> addCompanionBooking(CompanionsEntity companionsEntity);
@@ -23,5 +24,17 @@ public interface CompanionsService  {
     Flux<CompanionsEntity> updateMultipleCompanions(Integer bookingId, List<CompanionsEntity> companions);
 
     Flux<CompanionsEntity> updateCompanion(Integer bookingId, List<CompanionsEntity> companionsEntities);
+
+    //Fullday
+    Flux<CompanionsEntity> getCompanionsByFulldayId(Integer fulldayId);
+
+    Mono<CompanionsEntity> addCompanionFullday(CompanionsEntity companionsEntity);
+
+    Mono<Void> validateTotalCompanionsFullday(Integer fulldayId, Flux<CompanionsEntity> companionsEntity);
+
+    Flux<CompanionsEntity> updateMultipleCompanionsFullday(Integer fulldayId, List<CompanionsEntity> companions);
+
+    Flux<CompanionsEntity> calculateAgeAndSaveFullDay(List<CompanionsEntity> companionsEntities);
+
 
 }

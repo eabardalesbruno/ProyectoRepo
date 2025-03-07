@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Domain.entities.FullDayFoodEntity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Getter
@@ -14,6 +15,7 @@ public class FullDayRequest {
     private Integer userPromoterId;
     private Integer userClientId;
     private String type;
+    private Timestamp bookingDate;
     private List<FullDayDetailEntity> details;
     private List<FullDayFoodEntity> foods;
 }
