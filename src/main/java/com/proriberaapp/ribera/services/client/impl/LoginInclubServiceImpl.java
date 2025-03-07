@@ -63,7 +63,7 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                                                 long currentTimeMillis = System.currentTimeMillis();
                                                 Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
                                                 UserClientEntity userClientEntity = UserClientEntity.builder()
-                                                        .address(null)
+                                                        .address(responseInclubLoginDto.getData().getAddress())
                                                         .email(responseInclubLoginDto.getData().getEmail())
                                                         .googleEmail(null)
 
