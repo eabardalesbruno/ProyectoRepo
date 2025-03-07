@@ -38,4 +38,10 @@ public class FullDayEntity {
     @Column("totalprice")
     private BigDecimal totalPrice;
 
+    @Column("bookingstateid")
+    private Integer bookingstateid;
+
+    @Column("bookingdate")
+    private Timestamp  bookingDate;
+
 }
