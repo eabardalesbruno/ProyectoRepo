@@ -37,6 +37,7 @@ public class FullDayController {
                         request.getUserPromoterId(),
                         request.getUserClientId(),
                         request.getType(),
+                        request.getBookingDate(),
                         request.getDetails(),
                         request.getFoods()
                 )
