@@ -107,24 +107,51 @@ public class FullDayServiceImpl implements FullDayService {
     private Mono<FullDayDetailEntity> calcularPrecios(FullDayDetailEntity detail, String type) {
         return getBasePrice(detail.getTypePerson())
                 .flatMap(basePrice -> {
-                    Mono<BigDecimal> foodPriceMono = Flux.fromIterable(detail.getFulldayTypefoodid())
-                            .flatMap(id -> getFoodPriceById(id))
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-                    return foodPriceMono.flatMap(foodPrice -> {
-                        BigDecimal discount = BigDecimal.ZERO;
+                    BigDecimal discount;
+                    if (type.equalsIgnoreCase("Full Day Todo Completo")) {
+                        discount = basePrice.multiply(BigDecimal.valueOf(0.50));
+                    } else {
+                        discount = BigDecimal.ZERO;
+                    }
+                    if (detail.getFulldayTypefoodid() == null || detail.getFulldayTypefoodid().isEmpty()) {
+                        BigDecimal foodPrice = BigDecimal.ZERO;
                         if (type.equalsIgnoreCase("Full Day Todo Completo")) {
-                            discount = basePrice.multiply(BigDecimal.valueOf(0.50));
+                            switch (detail.getTypePerson().toUpperCase()) {
+                                case "ADULTO":
+                                    foodPrice = BigDecimal.valueOf(50);
+                                    break;
+                                case "ADULTO_MAYOR":
+                                    foodPrice = BigDecimal.valueOf(35);
+                                    break;
+                                case "NINO":
+                                    foodPrice = BigDecimal.valueOf(35);
+                                    break;
+                                case "INFANTE":
+                                    foodPrice = BigDecimal.ZERO;
+                                    break;
+                                default:
+                                    foodPrice = BigDecimal.ZERO;
+                            }
                         }
-
                         BigDecimal finalPrice = basePrice.subtract(discount).add(foodPrice)
                                 .multiply(BigDecimal.valueOf(detail.getQuantity()));
-
                         detail.setBasePrice(basePrice);
                         detail.setFoodPrice(foodPrice);
                         detail.setDiscountApplied(discount);
                         detail.setFinalPrice(finalPrice);
 
+                        return Mono.just(detail);
+                    }
+                    Mono<BigDecimal> foodPriceMono = Flux.fromIterable(detail.getFulldayTypefoodid())
+                            .flatMap(this::getFoodPriceById)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    return foodPriceMono.flatMap(foodPrice -> {
+                        BigDecimal finalPrice = basePrice.subtract(discount).add(foodPrice)
+                                .multiply(BigDecimal.valueOf(detail.getQuantity()));
+                        detail.setBasePrice(basePrice);
+                        detail.setFoodPrice(foodPrice);
+                        detail.setDiscountApplied(discount);
+                        detail.setFinalPrice(finalPrice);
                         return Mono.just(detail);
                     });
                 });
