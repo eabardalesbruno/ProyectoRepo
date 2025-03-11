@@ -281,18 +281,19 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     private final CommissionService commissionService;
 
     private final InvoiceServiceI invoiceService;
+    private final FullDayRepository fullDayRepository;
 
     @Autowired
     public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository,
-            UserClientRepository userClientRepository,
-            BookingService bookingService,
-            RoomOfferRepository roomOfferRepository, RoomRepository roomRepository, S3Uploader s3Uploader,
-            EmailService emailService,
-            PaymentMethodRepository paymentMethodRepository,
-            PaymentStateRepository paymentStateRepository, PaymentTypeRepository paymentTypeRepository,
-            PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository,
-            CommissionService commissionService,
-            InvoiceServiceI invoiceService) {
+                                  UserClientRepository userClientRepository,
+                                  BookingService bookingService,
+                                  RoomOfferRepository roomOfferRepository, RoomRepository roomRepository, S3Uploader s3Uploader,
+                                  EmailService emailService,
+                                  PaymentMethodRepository paymentMethodRepository,
+                                  PaymentStateRepository paymentStateRepository, PaymentTypeRepository paymentTypeRepository,
+                                  PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository,
+                                  CommissionService commissionService,
+                                  InvoiceServiceI invoiceService, FullDayRepository fullDayRepository) {
         this.invoiceService = invoiceService;
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
@@ -308,6 +309,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         this.currencyTypeRepository = currencyTypeRepository;
 
         this.commissionService = commissionService;
+        this.fullDayRepository = fullDayRepository;
     }
 
     @Override
@@ -332,6 +334,21 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                         userClient.getEmail(), userClient.getFirstName())))
                         .thenReturn(savedPaymentBook));
     }
+
+    @Override
+    public Mono<PaymentBookEntity> createPaymentForFullDay(PaymentBookEntity paymentBook) {
+        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
+        Timestamp timestamp = Timestamp.valueOf(localDateTime);
+        paymentBook.setPaymentDate(timestamp);
+
+        return paymentBookRepository.save(paymentBook)
+                .flatMap(savedPaymentBook ->
+                        updateFullDayStateIfRequired(savedPaymentBook.getFullDayId())
+                                .thenReturn(savedPaymentBook)
+                );
+    }
+
+
 
     @Override
     public Mono<PaymentBookEntity> updatePaymentBook(Integer id, PaymentBookEntity paymentBook) {
@@ -383,6 +400,17 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         return bookingService.updateBookingStatePay(bookingId, 3)
                 .filter(booking -> booking.getBookingStateId() == 2)
                 .flatMap(booking -> bookingService.updateBookingStatePay(bookingId, 2))
+                .then();
+    }
+
+    @Override
+    public Mono<Void> updateFullDayStateIfRequired(Integer fullDayId) {
+        return fullDayRepository.findById(fullDayId)
+                .filter(fullDay -> fullDay.getBookingstateid() == 3) // Si está en estado 3
+                .flatMap(fullDay -> {
+                    fullDay.setBookingstateid(2); // Cambiarlo a estado 2
+                    return fullDayRepository.save(fullDay);
+                })
                 .then();
     }
 

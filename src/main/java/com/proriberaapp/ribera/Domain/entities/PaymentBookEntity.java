@@ -88,4 +88,7 @@ public class PaymentBookEntity {
     private String invoiceDocumentNumber;
     @Column("invoicetype")
     private String invoiceType;
+
+    @Column("fulldayid")
+    private Integer fullDayId;
 }

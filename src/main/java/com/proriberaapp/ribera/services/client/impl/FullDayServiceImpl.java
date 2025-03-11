@@ -103,6 +103,25 @@ public class FullDayServiceImpl implements FullDayService {
                 .then();
     }
 
+    @Override
+    public Flux<FullDayEntity> getReservationsByAssociatedId(Integer id, String filterType) {
+        switch (filterType) {
+            case "receptionist":
+                return fullDayRepository.findByReceptionistId(id);
+            case "promoter":
+                return fullDayRepository.findByUserPromoterId(id);
+            case "client":
+                return fullDayRepository.findByUserClientId(id);
+            default:
+                return Flux.empty();
+        }
+    }
+
+    @Override
+    public Mono<FullDayEntity> findById(Integer id) {
+        return fullDayRepository.findById(id);
+    }
+
 
     private Mono<FullDayDetailEntity> calcularPrecios(FullDayDetailEntity detail, String type) {
         return getBasePrice(detail.getTypePerson())
