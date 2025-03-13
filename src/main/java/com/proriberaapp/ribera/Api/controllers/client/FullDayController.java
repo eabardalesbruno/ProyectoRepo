@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 import com.proriberaapp.ribera.Api.controllers.client.dto.FullDayRequest;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanionsDto;
+import com.proriberaapp.ribera.Domain.dto.PaymentDetailFulldayDTO;
 import com.proriberaapp.ribera.Domain.entities.CompanionsEntity;
 import com.proriberaapp.ribera.Domain.entities.FullDayEntity;
 import com.proriberaapp.ribera.Domain.entities.FullDayTypeFoodEntity;
@@ -57,14 +58,19 @@ public class FullDayController {
     }
 
     @GetMapping("/reservations/{filterType}")
-    public Flux<FullDayEntity> getReservations(@PathVariable String filterType, @RequestHeader("Authorization") String token) {
+    public Flux<FullDayEntity> getReservations(@PathVariable String filterType,@RequestParam  Integer bookingStateId, @RequestHeader("Authorization") String token) {
         Integer userId = jtp.getIdFromToken(token);
-        return fullDayService.getReservationsByAssociatedId(userId, filterType);
+        return fullDayService.getReservationsByAssociatedId(userId, filterType, bookingStateId);
     }
 
     @GetMapping("/reservation/{id}")
     public Mono<FullDayEntity> getReservationById(@PathVariable Integer id) {
         return fullDayService.findById(id);
+    }
+
+    @GetMapping("/reservations")
+    public Flux<PaymentDetailFulldayDTO> getReservationsAll() {
+        return fullDayService.getPaymentDetailFullday();
     }
 
     //FULLDAY TYPE FOOD CONTROLLER

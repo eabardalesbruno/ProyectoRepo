@@ -200,34 +200,37 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
 
         @Query("""
                                SELECT pb.paymentbookid,
-                               pb.operationcode,
-                               pb.note,
-                               pb.totalcost ,
-                               pb.imagevoucher,
-                               pb.totalpoints ,
-                               pb.paymentcomplete,
-                               pb.pendingpay ,
-                               u.userclientid as userClientId,
-                               u.firstname as userName,
-                               u.email as userEmail,
-                                u.address as userAddress,
-                                u.cellnumber as userPhone,
-                                u.documentnumber as useridentifierclient,
-                                r.roomname as roomName,
-                                r.roomnumber as roomNumber,
-                               	 ct.currencytypename,
-                               	 ct.currencytypeid,
-                                 pb.percentagediscount,
-                                pb.totalcostwithoutdiscount,
-                                pb.invoicedocumentnumber,
-                                pb.invoicetype,
-                                b.bookingid
-                               FROM paymentbook pb
-                               JOIN userclient u ON u.userclientid = pb.userclientid
-                               join booking b on b.bookingid=pb.bookingid
-                               join roomoffer ro on ro.roomofferid=b.roomofferid
-                               join room r on r.roomid=ro.roomid
-                               join currencytype ct on ct.currencytypeid=pb.currencytypeid
+                                 pb.operationcode,
+                                                              pb.note,
+                                                              pb.totalcost ,
+                                                              pb.imagevoucher,
+                                                              pb.totalpoints ,
+                                                              pb.paymentcomplete,
+                                                              pb.pendingpay ,
+                                                              u.userclientid as userClientId,
+                                                              u.firstname as userName,
+                                                              u.email as userEmail,
+                                                               u.address as userAddress,
+                                                               u.cellnumber as userPhone,
+                                                               u.documentnumber as useridentifierclient,
+                                                               r.roomname as roomName,
+                                                               r.roomnumber as roomNumber,
+                                                              	 ct.currencytypename,
+                                                              	 ct.currencytypeid,
+                                                                pb.percentagediscount,
+                                                               pb.totalcostwithoutdiscount,
+                                                               pb.invoicedocumentnumber,
+                                                               pb.invoicetype,
+                                                               b.bookingid,
+                                                               pb.fulldayid,
+                                                               f.type
+                                                              FROM paymentbook pb
+                                                              JOIN userclient u ON u.userclientid = pb.userclientid
+                                                              left join booking b on b.bookingid=pb.bookingid
+                                                              left join roomoffer ro on ro.roomofferid=b.roomofferid
+                                                              left join room r on r.roomid=ro.roomid
+                                                              left join currencytype ct on ct.currencytypeid=pb.currencytypeid
+                                                              LEFT JOIN fullday f ON f.fulldayid = pb.fulldayid
                         WHERE pb.paymentbookid = :paymentBookId
                         """)
         Mono<PaymentBookUserDTO> loadUserDataAndBookingData(int paymentBookId);

@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Domain.dto.PaymentDetailFulldayDTO;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.CommissionService;
@@ -34,6 +35,8 @@ public class FullDayServiceImpl implements FullDayService {
     private final TicketEntryFullDayRepository ticketEntryFullDayRepository;
 
     private final FullDayTypeFoodRepository fullDayTypeFoodRepository;
+
+    private final UserClientRepository userRepository;
 
     @Override
     public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type, Timestamp bookingdate,
@@ -104,14 +107,14 @@ public class FullDayServiceImpl implements FullDayService {
     }
 
     @Override
-    public Flux<FullDayEntity> getReservationsByAssociatedId(Integer id, String filterType) {
+    public Flux<FullDayEntity> getReservationsByAssociatedId(Integer id, String filterType, Integer bookingStateId) {
         switch (filterType) {
             case "receptionist":
-                return fullDayRepository.findByReceptionistId(id);
+                return fullDayRepository.findByReceptionistIdAndBookingStateId(id, bookingStateId);
             case "promoter":
-                return fullDayRepository.findByUserPromoterId(id);
+                return fullDayRepository.findByUserPromoterIdAndBookingStateId(id, bookingStateId);
             case "client":
-                return fullDayRepository.findByUserClientId(id);
+                return fullDayRepository.findByUserClientIdAndBookingStateId(id, bookingStateId);
             default:
                 return Flux.empty();
         }
@@ -120,6 +123,16 @@ public class FullDayServiceImpl implements FullDayService {
     @Override
     public Mono<FullDayEntity> findById(Integer id) {
         return fullDayRepository.findById(id);
+    }
+
+    @Override
+    public Flux<FullDayEntity> getReservationsAll() {
+        return fullDayRepository.findAll();
+    }
+
+    @Override
+    public Flux<PaymentDetailFulldayDTO> getPaymentDetailFullday() {
+        return fullDayRepository.findByAllPayment();
     }
 
 
@@ -199,6 +212,52 @@ public class FullDayServiceImpl implements FullDayService {
                     }
                 });
     }
+
+   /* private Mono<Boolean> verificarSocioYValidarInvitados(Integer userClientId, List<FullDayDetailEntity> details) {
+        return userRepository.findById(userClientId)
+                .flatMap(user -> {
+                    if (!user.isUserInclub()) {
+                        return Mono.just(true);
+                    }
+
+                    return obtenerLimiteInvitadosPorMembresia(user.getMembresia())
+                            .map(limite -> {
+                                long cantidadInvitados = details.stream()
+                                        .filter(detail -> !detail.getIsTitular())
+                                        .mapToLong(FullDayDetailEntity::getQuantity)
+                                        .sum();
+                                return cantidadInvitados <= limite;
+                            });
+                })
+                .defaultIfEmpty(true);
+    }
+
+    private Mono<Integer> obtenerLimiteInvitadosPorMembresia(String membresia) {
+        int limite;
+        switch (membresia.toUpperCase()) {
+            case "MINI":
+            case "EXPERIENCE":
+            case "LIGHT":
+            case "STANDARD":
+            case "VITALICIA":
+                limite = 4;
+                break;
+            case "VITALICIA PREMIUM":
+                limite = 8;
+                break;
+            case "VITALICIA ULTRA PREMIUM":
+                limite = 16;
+                break;
+            default:
+                limite = 0;
+        }
+        return Mono.just(limite);
+    }
+
+    */
+
+
+
 
     private Mono<FullDayEntity> calculateAndSaveCommission(FullDayEntity fullDay, List<FullDayDetailEntity> details) {
         BigDecimal commissionAmount = BigDecimal.ZERO;
