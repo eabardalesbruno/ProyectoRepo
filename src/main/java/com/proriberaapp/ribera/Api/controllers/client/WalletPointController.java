@@ -20,11 +20,28 @@ public class WalletPointController {
     @PostMapping
     public Mono<ResponseEntity<WalletPointResponse>> createWalletPoint(
             @RequestBody WalletPointRequest walletPointRequest, @RequestHeader("Authorization") String token) {
-        System.out.println(walletPointRequest);
         walletPointRequest.setUserId(jtp.getIdFromToken(token));
         return walletPointService.createWalletPoint(walletPointRequest)
                 .map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response))
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
+
+    @GetMapping
+    public Mono<ResponseEntity<WalletPointResponse>> getWalletPoints(@RequestHeader("Authorization") String token) {
+        Integer userId = jtp.getIdFromToken(token);
+        return walletPointService.getWalletPoints(userId)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @PutMapping
+    public Mono<ResponseEntity<WalletPointResponse>> updateWalletPoints(
+            @RequestBody WalletPointRequest request, @RequestHeader("Authorization") String token) {
+        Integer userId = jtp.getIdFromToken(token);
+        return walletPointService.updateWalletPoints(userId, request.getPoints())
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+    }
 }
+
 

@@ -9,4 +9,8 @@ import java.nio.channels.FileChannel;
 public interface WalletPointService {
 
     Mono<WalletPointResponse> createWalletPoint(WalletPointRequest walletPointRequest);
+
+    Mono<WalletPointResponse> getWalletPoints(Integer userId);
+
+    Mono<WalletPointResponse> updateWalletPoints(Integer userId, Double points);
 }
