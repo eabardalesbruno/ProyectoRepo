@@ -68,4 +68,17 @@ public class NiubizController {
         return niubizService.savePayNiubiz(bookingId, invoiceType, invoiceDocumentNumber, totalDiscount, percentageDiscount, totalCostWithOutDiscount, amount, transactionId);
     }
 
+    @PostMapping("/savePaymentNiubizFullDay")
+    public Mono<Object> savePayNiubizFullDay(@RequestParam Integer fullDayId,
+                                             @RequestParam String invoiceType,
+                                             @RequestParam String invoiceDocumentNumber,
+                                             @RequestParam Double totalDiscount,
+                                             @RequestParam Double percentageDiscount,
+                                             @RequestParam Double totalCostWithOutDiscount,
+                                             @RequestParam Double amount,
+                                             @RequestParam String transactionId) {
+        return niubizService.savePayNiubizFullDay(fullDayId, invoiceType, invoiceDocumentNumber, totalDiscount,
+                percentageDiscount, totalCostWithOutDiscount, amount, transactionId);
+    }
+
 }
