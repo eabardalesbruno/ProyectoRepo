@@ -45,7 +45,9 @@ public class WalletPointServiceImpl implements WalletPointService {
                 .as(transactionalOperator::transactional);
     }
 
-    public Mono<WalletPointResponse> updateWalletPoints(Integer userId, Integer points) {
+    @Override
+    public Mono<WalletPointResponse> updateWalletPoints(Integer userId, WalletPointRequest walletPointRequest) {
+        Double points = walletPointRequest.getPoints();
         return walletPointRepository.findByUserId(userId)
                 .switchIfEmpty(Mono.error(new RequestException("Wallet not found for user: " + userId)))
                 .flatMap(wallet -> {
@@ -61,14 +63,13 @@ public class WalletPointServiceImpl implements WalletPointService {
                 .as(transactionalOperator::transactional);
     }
 
-
-    private Mono<Void> saveWalletHistory(Integer userId, Integer points) {
+    private Mono<Void> saveWalletHistory(Integer userId, Double points) {
         WalletPointHistoryEntity history = walletPointUtils.buildWalletHistory(userId, points);
         return walletPointHistoryRepository.save(history)
                 .doOnNext(saved -> log.info("Wallet history saved for user: {}", userId))
                 .then();
     }
-
+    @Override
     public Mono<WalletPointResponse> getWalletByUserId(Integer userId) {
         return walletPointRepository.findByUserId(userId)
                 .map(walletPointMapper::toDto)

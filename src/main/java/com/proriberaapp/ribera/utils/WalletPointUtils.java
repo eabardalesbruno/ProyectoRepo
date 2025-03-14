@@ -30,7 +30,7 @@ public class WalletPointUtils {
                 .map(pointType -> Objects.nonNull(pointType) ? pointType.getFactor() : 0.0);
     }
 
-    public WalletPointHistoryEntity buildWalletHistory(Integer userId, Integer points) {
+    public WalletPointHistoryEntity buildWalletHistory(Integer userId, Double points) {
         return WalletPointHistoryEntity.builder()
                 .userId(userId)
                 .points(points)

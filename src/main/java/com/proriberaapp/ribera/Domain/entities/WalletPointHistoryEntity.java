@@ -20,7 +20,7 @@ public class WalletPointHistoryEntity {
     @Column("userid")
     private Integer userId;
 
-    private Integer points;
+    private Double points;
 
     @Column("transaction_date")
     private LocalDateTime transactionDate;
