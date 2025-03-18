@@ -15,8 +15,25 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface QuotationRepository extends ReactiveCrudRepository<QuotationEntity, Integer> {
     @Query("""
-            select d.*,(case when qd."id" is not null then true else false end) as selected from "day" d
+            SELECT DISTINCT q.*
+            FROM quotation q
+            JOIN quotation_day qd ON q.quotation_id = qd.idquotation
+            WHERE (
+                (:condition = 0 AND qd.idday IN (SELECT id FROM day WHERE name IN ('Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado')))
+                OR
+                (:condition = 1 AND qd.idday IN (SELECT id FROM day WHERE name IN ('Viernes', 'Sabado')))
+                OR
+                (:condition = 2 AND qd.idday IN (SELECT id FROM day WHERE name IN ('Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves')))
+            )
+            ORDER BY q.quotation_id ASC
+            """)
+    Flux<QuotationEntity> getAllQuotationByDays(Integer condition);
+
+    @Query("""
+            select d.*,(case when qd."id" is not null then true else false end) as selected, qy.id idyear
+            from "day" d
             left join quotation_day qd on qd.idday=d."id" and qd.idquotation=:quotationId
+            left join quotation_year qy on qy.id = qd.idyear
             order by d.id asc
             """)
     Flux<quotationDayDto> getQuotationDaySelected(Integer quotationId);
@@ -40,7 +57,8 @@ public interface QuotationRepository extends ReactiveCrudRepository<QuotationEnt
                     join quotation_day qd on qd.idquotation=q.quotation_id and qd.idday in(:dayId)
                     join "day" d on d."id"=qd.idday
                     join roomoffer r on r.roomofferid=qr.room_offer_id
+                    left join quotation_year qy on qy.id = qd.idyear and qy.id = :yearId
                     """)
-    Flux<QuotationOfferDayDto> getQuotationFindOfferAndDays(List<Integer> roomOfferId, List<Integer> dayId);
+    Flux<QuotationOfferDayDto> getQuotationFindOfferAndDays(Integer yearId, List<Integer> roomOfferId, List<Integer> dayId);
 
 }

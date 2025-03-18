@@ -16,9 +16,10 @@ public class QuotationController {
     private final QuotationService quotationService;
 
     @GetMapping
-    public Flux<QuotationEntity> findAllQuotations() {
-        return quotationService.findAllQuotations();
+    public Flux<QuotationEntity> findAllQuotation(@RequestParam("condition") Integer condition) {
+        return quotationService.findAllQuotations(condition);
     }
+
     @GetMapping("/quotation-day/{quotationId}")
     public Flux<quotationDayDto> findAllQuotations(@PathVariable Integer quotationId) {
         return quotationService.getQuotationDaySelected(quotationId);

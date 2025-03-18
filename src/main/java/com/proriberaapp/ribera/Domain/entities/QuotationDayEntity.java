@@ -20,4 +20,6 @@ public class QuotationDayEntity {
     private Integer idQuotation;
     @Column("idday")
     private Integer idDay;
+    @Column("idyear")
+    private Integer idYear;
 }

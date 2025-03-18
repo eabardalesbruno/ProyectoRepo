@@ -9,4 +9,5 @@ public class quotationDayDto {
     private Integer id;
     private String shortname;
     private boolean selected;
+    private Integer idyear;
 }
