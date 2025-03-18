@@ -11,6 +11,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import com.proriberaapp.ribera.Api.controllers.client.dto.quotationDayDto;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 
 @Getter
@@ -39,5 +40,17 @@ public class QuotationEntity {
 
     @Column("adult_extra_cost")
     private BigDecimal adultExtraCost;
+
+    @Column("kid_reward")
+    private BigInteger kidReward;
+
+    @Column("adult_reward")
+    private BigInteger adultReward;
+
+    @Column("adult_mayor_reward")
+    private BigInteger adultMayorReward;
+
+    @Column("adult_extra_reward")
+    private BigInteger adultExtraReward;
 
 }
