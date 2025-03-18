@@ -8,10 +8,12 @@ import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
+import com.proriberaapp.ribera.Domain.invoice.ProductSunatDomain;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceItemRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceTypeRepsitory;
+import com.proriberaapp.ribera.Infraestructure.repository.Invoice.ProductSunatRepository;
 import com.proriberaapp.ribera.services.client.CommissionService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.RefusePaymentService;
@@ -97,6 +99,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
         private final EmailService emailService;
         private final InvoiceServiceI invoiceService;
         private final CommissionService commissionService;
+        private final ProductSunatRepository productSunatRepository;
         @Autowired
         private BookingFeedingRepository bookingFeedingRepository;
 
@@ -110,7 +113,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                         InvoiceItemRepository invoiceItemRepository,
                                         InvoiceServiceI invoiceService,
                                         RoomOfferRepository roomOfferRepository,
-                                        RoomRepository roomRepository, CommissionService commissionService) {
+                                        RoomRepository roomRepository, CommissionService commissionService, ProductSunatRepository productSunatRepository) {
                 this.refusePaymentRepository = refusePaymentRepository;
                 this.paymentBookRepository = paymentBookRepository;
                 this.userClientRepository = userClientRepository;
@@ -120,6 +123,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                 this.roomOfferRepository = roomOfferRepository;
                 this.roomRepository = roomRepository;
             this.commissionService = commissionService;
+            this.productSunatRepository = productSunatRepository;
         }
 
         @Override
@@ -268,40 +272,68 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                     if (paymentBook.getPendingpay() == 0) {
                         paymentBook.setPaymentstateid(2);
                         paymentBook.setPendingpay(1);
+                        String roomOrType = paymentBook.getRoomname() != null ? paymentBook.getRoomname() : paymentBook.getType();
+                        String normalizedRoomOrType = normalizeText(roomOrType);
 
-                        InvoiceClientDomain clientDomain = new InvoiceClientDomain(
-                                paymentBook.getUsername(),
-                                paymentBook.getInvoicedocumentnumber(),
-                                paymentBook.getUseraddress(), paymentBook.getUserphone(),
-                                paymentBook.getUseremail(),
-                                paymentBook.getUserclientid());
+                        Mono<String> codSunatMono = this.productSunatRepository.findAll()
+                                .filter(product -> normalizeText(product.getDescription()).equals(normalizedRoomOrType))
+                                .map(ProductSunatDomain::getCodSunat)
+                                .defaultIfEmpty("631210")
+                                .next();
 
-                        InvoiceCurrency invoiceCurrency = InvoiceCurrency
-                                .getInvoiceCurrencyByCurrency(paymentBook.getCurrencytypename());
-                        InvoiceType type = InvoiceType.getInvoiceTypeByName(paymentBook.getInvoicetype().toUpperCase());
-                        InvoiceDomain invoiceDomain = new InvoiceDomain(
-                                clientDomain,
-                                paymentBook.getPaymentbookid(), 18, invoiceCurrency,
-                                type, paymentBook.getPercentagediscount());
-                        invoiceDomain.setOperationCode(paymentBook.getOperationcode());
-                        invoiceDomain.addItemWithIncludedIgv(new InvoiceItemDomain(
-                                paymentBook.getRoomname(),
-                                paymentBook.getRoomname(), 1,
-                                BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount())));
-                        invoiceDomain.calculatedTotals();
+                        return codSunatMono.flatMap(codSunat -> {
+                            InvoiceClientDomain clientDomain = new InvoiceClientDomain(
+                                    paymentBook.getUsername(),
+                                    paymentBook.getInvoicedocumentnumber(),
+                                    paymentBook.getUseraddress(),
+                                    paymentBook.getUserphone(),
+                                    paymentBook.getUseremail(),
+                                    paymentBook.getUserclientid());
 
-                                        return generatePaymentConfirmationEmailBody(paymentBookId)
-                                                .flatMap(emailBody -> this.invoiceService.save(invoiceDomain)
-                                                        .then(Mono.zip(
-                                                                paymentBookRepository.confirmPayment(paymentBookId),
-                                                                this.emailService.sendEmail(
-                                                                        paymentBook.getUseremail(),
-                                                                        "Confirmación de Pago Aceptado",
-                                                                        emailBody)))
-                                                        .then());
-                                    }
+                            InvoiceCurrency invoiceCurrency = InvoiceCurrency.getInvoiceCurrencyByCurrency(paymentBook.getCurrencytypename());
+                            InvoiceType type = InvoiceType.getInvoiceTypeByName(paymentBook.getInvoicetype().toUpperCase());
+
+                            InvoiceDomain invoiceDomain = new InvoiceDomain(
+                                    clientDomain,
+                                    paymentBook.getPaymentbookid(), 18, invoiceCurrency,
+                                    type, paymentBook.getPercentagediscount());
+                            invoiceDomain.setOperationCode(paymentBook.getOperationcode());
+
+                            InvoiceItemDomain invoiceItem = new InvoiceItemDomain(
+                                    roomOrType,
+                                    codSunat,
+                                    roomOrType,
+                                    1,
+                                    BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount()) // priceUnit
+                            );
+
+                            invoiceDomain.addItemWithIncludedIgv(invoiceItem);
+                            invoiceDomain.calculatedTotals();
+
+                            if (paymentBook.getRoomname() != null) {
+                                return generatePaymentConfirmationEmailBody(paymentBookId)
+                                        .flatMap(emailBody -> this.invoiceService.save(invoiceDomain)
+                                                .then(Mono.zip(
+                                                        paymentBookRepository.confirmPayment(paymentBookId),
+                                                        this.emailService.sendEmail(
+                                                                paymentBook.getUseremail(),
+                                                                "Confirmación de Pago Aceptado",
+                                                                emailBody)))
+                                                .then());
+                            } else {
+                                return this.invoiceService.save(invoiceDomain)
+                                        .then(paymentBookRepository.confirmPayment(paymentBookId))
+                                        .then();
+                            }
+                        });
+                    }
                     return Mono.empty();
                 });
+    }
+
+    private String normalizeText(String text) {
+        if (text == null) return "";
+        return text.trim().replaceAll("\\s+", " ");
     }
 
     private PaymentBookEntity mapToPaymentBookEntity(PaymentBookUserDTO dto) {

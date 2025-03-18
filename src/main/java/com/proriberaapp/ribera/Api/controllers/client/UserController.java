@@ -12,6 +12,7 @@ import com.proriberaapp.ribera.services.client.UserApiClient;
 import com.proriberaapp.ribera.services.client.UserClientService;
 import com.proriberaapp.ribera.services.client.UserRegistrationService;
 import com.proriberaapp.ribera.services.client.impl.WalletServiceImpl;
+import com.proriberaapp.ribera.utils.constants.DiscountTypeCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -311,10 +312,11 @@ public class UserController {
         return userClientService.findUserDTOById(idUserClient);
     }
 
-    @GetMapping("/find/discount/{bookingId}")
+    @GetMapping("/find/discount/{bookingId}/{discountType}")
     public Mono<UserNameAndDiscountDto> getDiscount(@RequestHeader("Authorization") String token,
-            @PathVariable Integer bookingId) {
+            @PathVariable Integer bookingId, @PathVariable DiscountTypeCode discountType) {
         Integer idUserClient = jwtProvider.getIdFromToken(token);
+        System.out.println(discountType);
         return this.userClientService.getPercentageDiscount(idUserClient, bookingId);
     }
 
