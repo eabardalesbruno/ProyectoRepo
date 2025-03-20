@@ -42,6 +42,14 @@ public class WalletPointController {
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
+
+    @PostMapping("/buy")
+    public Mono<ResponseEntity<WalletPointResponse>> buyPoints(@RequestBody WalletPointRequest request, @RequestHeader("Authorization") String token) {
+        Integer userId = jtp.getIdFromToken(token);
+        return walletPointService.buyPoints(userId, request)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+    }
 }
 
 
