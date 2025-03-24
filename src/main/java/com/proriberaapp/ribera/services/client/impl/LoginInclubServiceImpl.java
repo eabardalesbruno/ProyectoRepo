@@ -48,71 +48,68 @@ public class LoginInclubServiceImpl implements LoginInclubService {
     @Override
     public Mono<TokenValid> login(String userName, String password) {
         WebClient webClient = WebClient.create(this.URL_LOGIN_USER);
-        Mono<TokenValid> response = this.userClientRepository.findByUsername(userName)
-                .switchIfEmpty(
-                        this.verifiedCredentialsInclub(userName, password)
-                                .flatMap(responseValidate -> {
-                                    if (!responseValidate.isData()) {
-                                        return Mono.error(new CredentialsInvalidException());
+        return this.verifiedCredentialsInclub(userName, password)
+            .flatMap(responseValidate -> {
+                if (!responseValidate.isData()) {
+                    return Mono.error(new CredentialsInvalidException());
+                }
+                return webClient.get()
+                    .uri("/" + userName)
+                    .retrieve()
+                    .bodyToMono(ResponseInclubLoginDto.class)
+                    .flatMap(responseInclubLoginDto -> {
+                        return this.userClientRepository.findByUsername(userName)
+                                .flatMap(user -> {
+                                    // Verificar si el usuario tiene una wallet asociada
+                                    if (user.getWalletId() == null) {
+                                        // Si no tiene wallet, crear una nueva
+                                        return walletServiceImpl.createWalletUsuario(user.getUserClientId(), 1)
+                                                .flatMap(wallet -> {
+                                                    // Asociamos la wallet al usuario
+                                                    user.setWalletId(wallet.getWalletId());
+                                                    return userClientRepository.save(user) // Guardamos el usuario con la wallet
+                                                        .flatMap(userClientEntity -> {
+                                                            TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user)); // Generar token
+                                                            return Mono.just(tokenValid); // Devolvemos el token
+                                                        });
+
+                                                });
+                                    } else {
+                                        TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user)); // Generar token
+                                        return Mono.just(tokenValid); // Devolvemos el token
                                     }
-                                    return webClient.get()
-                                            .uri("/" + userName)
-                                            .retrieve()
-                                            .bodyToMono(ResponseInclubLoginDto.class)
-                                            .flatMap(responseInclubLoginDto -> {
-                                                long currentTimeMillis = System.currentTimeMillis();
-                                                Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
-                                                UserClientEntity userClientEntity = UserClientEntity.builder()
-                                                        .address(responseInclubLoginDto.getData().getAddress() != null ? responseInclubLoginDto.getData().getAddress() : null)
-                                                        .email(responseInclubLoginDto.getData().getEmail())
-                                                        .googleEmail(null)
-
-                                                        .userLevelId(1)
-                                                        .countryId(76)
-                                                        .role(1)
-                                                        .googleId(null)
-                                                        .password(password)
-                                                        .username(responseInclubLoginDto.getData().getUsername())
-                                                        .registerTypeId(13)
-                                                        .documentNumber(
-                                                                responseInclubLoginDto.getData().getNroDocument())
-                                                        .documenttypeId(1)
-                                                        .createdat(
-                                                                currentTimestamp)
-                                                        .cellNumber(responseInclubLoginDto.getData().getTelephone())
-                                                        .firstName(responseInclubLoginDto.getData().getName())
-                                                        .lastName(responseInclubLoginDto.getData().getLastName())
-                                                        .password(passwordEncoder.encode(password))
-                                                        .isUserInclub(true)
-                                                        .build();
-
-                                                return this.userClientRepository.save(userClientEntity);
-                                            });
-                                }))
-                .flatMap(user -> {
-                    if (!this.passwordEncoder.matches(password, user.getPassword())) {
-                        return Mono.error(new CredentialsInvalidException());
-                    }
-                    // Verificar si el usuario tiene una wallet asociada
-                    if (user.getWalletId() == null) {
-                        // Si no tiene wallet, crear una nueva
-                        return walletServiceImpl.createWalletUsuario(user.getUserClientId(), 1)
-                                .flatMap(wallet -> {
-                                    // Asociamos la wallet al usuario
-                                    user.setWalletId(wallet.getWalletId());
-                                    return userClientRepository.save(user)  // Guardamos el usuario con la wallet
-                                            .thenReturn(user); // Continuamos con el flujo
-                                });
-                    } else {
-                        return Mono.just(user); // Si ya tiene wallet, no hacemos nada
-                    }
-                })
-                .flatMap(user -> {
-                    TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user)); // Generar token
-                    return Mono.just(tokenValid); // Devolvemos el token
-                });
-
-        return response;
+                                }).switchIfEmpty(Mono.defer(() -> {
+                                    long currentTimeMillis = System.currentTimeMillis();
+                                    Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
+                                    UserClientEntity userClientEntity = UserClientEntity.builder()
+                                            .address(responseInclubLoginDto.getData().getAddress() != null ? responseInclubLoginDto.getData().getAddress() : null)
+                                            .email(responseInclubLoginDto.getData().getEmail())
+                                            .googleEmail(null)
+                                            .userLevelId(1)
+                                            .countryId(76)
+                                            .role(1)
+                                            .googleId(null)
+                                            //.password(password)
+                                            .username(responseInclubLoginDto.getData().getUsername())
+                                            .registerTypeId(13)
+                                            .documentNumber(
+                                                    responseInclubLoginDto.getData().getNroDocument())
+                                            .documenttypeId(1)
+                                            .createdat(currentTimestamp)
+                                            .cellNumber(responseInclubLoginDto.getData().getTelephone())
+                                            .firstName(responseInclubLoginDto.getData().getName())
+                                            .lastName(responseInclubLoginDto.getData().getLastName())
+                                            .password(passwordEncoder.encode(password))
+                                            .isUserInclub(true)
+                                            .build();
+                                    return this.userClientRepository.save(userClientEntity)
+                                        .flatMap(userClient -> {
+                                            TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(userClientEntity)); // Generar token
+                                            return Mono.just(tokenValid); // Devolvemos el token
+                                        });
+                                }));
+                    });
+            });
     }
 
     @Override
