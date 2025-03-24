@@ -1,9 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
-import com.proriberaapp.ribera.Domain.entities.CommissionEntity;
-import com.proriberaapp.ribera.Domain.entities.FullDayDetailEntity;
-import com.proriberaapp.ribera.Domain.entities.FullDayEntity;
-import com.proriberaapp.ribera.Domain.entities.FullDayFoodEntity;
+import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.CommissionService;
 import com.proriberaapp.ribera.services.client.FullDayService;
@@ -18,6 +15,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +31,10 @@ public class FullDayServiceImpl implements FullDayService {
 
     private final CommissionService commissionService;
 
+    private final TicketEntryFullDayRepository ticketEntryFullDayRepository;
+
+    private final FullDayTypeFoodRepository fullDayTypeFoodRepository;
+
     @Override
     public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type,
                                                List<FullDayDetailEntity> details, List<FullDayFoodEntity> foods) {
@@ -47,7 +49,7 @@ public class FullDayServiceImpl implements FullDayService {
 
         return fullDayRepository.save(fullDay)
                 .flatMap(savedEntity -> Flux.fromIterable(details)
-                        .map(detail -> {
+                        .flatMap(detail -> {
                             detail.setFulldayid(savedEntity.getFulldayid());
                             return calcularPrecios(detail, type);
                         })
@@ -83,61 +85,71 @@ public class FullDayServiceImpl implements FullDayService {
         if (savedDetails.isEmpty() || foods.isEmpty()) {
             return Mono.empty();
         }
-        return Flux.fromIterable(foods)
-                .index()
-                .flatMap(tuple -> {
-                    long index = tuple.getT1();
-                    FullDayFoodEntity food = tuple.getT2();
-                    FullDayDetailEntity targetDetail = savedDetails.get((int) (index % savedDetails.size()));
-                    food.setFulldaydetailid(targetDetail.getFulldaydetailid());
 
+        return Flux.fromIterable(foods)
+                .flatMap(food -> {
+                    FullDayDetailEntity targetDetail = savedDetails.stream()
+                            .filter(detail -> detail.getQuantity() > 0)
+                            .findFirst()
+                            .orElseThrow(() -> new IllegalStateException("No se encuentra detalle correspondiente"));
+
+                    targetDetail.getFulldayTypefoodid().add(food.getFulldayTypefoodid());
+                    targetDetail.setQuantity(targetDetail.getQuantity() - 1);
+                    food.setFulldaydetailid(targetDetail.getFulldaydetailid());
                     return fullDayFoodRepository.save(food);
                 })
                 .then();
     }
 
 
-    private FullDayDetailEntity calcularPrecios(FullDayDetailEntity detail, String type) {
-        BigDecimal basePrice = getBasePrice(detail.getTypePerson());
-        BigDecimal foodPrice = type.equalsIgnoreCase("Full Day Todo Completo") ? getFoodPrice(detail.getTypePerson()) : BigDecimal.ZERO;
-        BigDecimal discount = BigDecimal.ZERO;
-        if (type.equalsIgnoreCase("Full Day Todo Completo")) {
-            discount = basePrice.multiply(BigDecimal.valueOf(0.50));
-        }
-        BigDecimal finalPrice = basePrice.subtract(discount).add(foodPrice).multiply(BigDecimal.valueOf(detail.getQuantity()));
+    private Mono<FullDayDetailEntity> calcularPrecios(FullDayDetailEntity detail, String type) {
+        return getBasePrice(detail.getTypePerson())
+                .flatMap(basePrice -> {
+                    Mono<BigDecimal> foodPriceMono = Flux.fromIterable(detail.getFulldayTypefoodid())
+                            .flatMap(id -> getFoodPriceById(id))
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        detail.setBasePrice(basePrice);
-        detail.setFoodPrice(foodPrice);
-        detail.setDiscountApplied(discount);
-        detail.setFinalPrice(finalPrice);
+                    return foodPriceMono.flatMap(foodPrice -> {
+                        BigDecimal discount = BigDecimal.ZERO;
+                        if (type.equalsIgnoreCase("Full Day Todo Completo")) {
+                            discount = basePrice.multiply(BigDecimal.valueOf(0.50));
+                        }
 
-        return detail;
+                        BigDecimal finalPrice = basePrice.subtract(discount).add(foodPrice)
+                                .multiply(BigDecimal.valueOf(detail.getQuantity()));
+
+                        detail.setBasePrice(basePrice);
+                        detail.setFoodPrice(foodPrice);
+                        detail.setDiscountApplied(discount);
+                        detail.setFinalPrice(finalPrice);
+
+                        return Mono.just(detail);
+                    });
+                });
     }
 
-    private BigDecimal getBasePrice(String typePerson) {
-        switch (typePerson.toUpperCase()) {
-            case "ADULTO":
-                return BigDecimal.valueOf(40);
-            case "ADULTO_MAYOR":
-                return BigDecimal.valueOf(30);
-            case "NINO":
-                return BigDecimal.valueOf(30);
-            default:
-                throw new IllegalArgumentException("Tipo de persona no válido");
-        }
+    private Mono<BigDecimal> getFoodPriceById(Integer fulldayTypefoodid) {
+        return fullDayTypeFoodRepository.findById(fulldayTypefoodid)
+                .map(FullDayTypeFoodEntity::getPrice)
+                .defaultIfEmpty(BigDecimal.ZERO);
     }
 
-    private BigDecimal getFoodPrice(String typePerson) {
-        switch (typePerson.toUpperCase()) {
-            case "ADULTO":
-                return BigDecimal.valueOf(50);
-            case "ADULTO_MAYOR":
-                return BigDecimal.valueOf(30);
-            case "NINO":
-                return BigDecimal.valueOf(30);
-            default:
-                return BigDecimal.ZERO;
-        }
+    private Mono<BigDecimal> getBasePrice(String typePerson) {
+        return ticketEntryFullDayRepository.findByTicketEntryFullDayId(1)
+                .flatMap(ticket -> {
+                    switch (typePerson.toUpperCase()) {
+                        case "ADULTO":
+                            return Mono.just(ticket.getAdultPrice());
+                        case "ADULTO_MAYOR":
+                            return Mono.just(ticket.getSeniorPrice());
+                        case "NINO":
+                            return Mono.just(ticket.getChildPrice());
+                        case "INFANTE":
+                            return Mono.just(ticket.getInfantPrice());
+                        default:
+                            return Mono.error(new IllegalArgumentException("Tipo de persona no válido"));
+                    }
+                });
     }
 
     private Mono<FullDayEntity> calculateAndSaveCommission(FullDayEntity fullDay, List<FullDayDetailEntity> details) {
@@ -206,7 +218,4 @@ public class FullDayServiceImpl implements FullDayService {
         }
         return Timestamp.valueOf(disbursementDate.atStartOfDay());
     }
-
-
-
 }

@@ -12,4 +12,5 @@ public interface FullDayService {
     Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type, List<FullDayDetailEntity> details, List<FullDayFoodEntity> foods);
 
     Mono<Void> saveFood(List<FullDayDetailEntity> savedDetails, List<FullDayFoodEntity> foods);
+
 }

@@ -47,4 +47,7 @@ public class TicketEntryFullDayEntity {
     @Column("infantprice")
     private BigDecimal infantPrice;
 
+    @Column("enableddays")
+    private String enabledDays;
+
 }

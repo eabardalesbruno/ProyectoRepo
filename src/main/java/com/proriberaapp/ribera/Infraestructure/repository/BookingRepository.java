@@ -115,8 +115,13 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                 when us.userclientid is not null and us.isuserinclub THEN 'WEB - Socio'
                 when us.userclientid is not null and not us.isuserinclub THEN 'WEB'
                   ELSE 'Sin clasificar' END) as channel,
-                  pb.paymentbookid, (select case  when bookingfeedingid is not null then true else false end from booking_feeding bf where bf.bookingid=bo.bookingid limit 1) as isalimentation
-                 FROM userclient us
+                pb.paymentbookid, (select case  when bookingfeedingid is not null then true else false end from booking_feeding bf where bf.bookingid=bo.bookingid limit 1) as isalimentation,
+                i.serie,
+                i.linkpdf,
+                i.operationcode,
+                LPAD(CAST(i.correlative AS CHAR),9,'0') operationnumber,
+                (SELECT pm.description FROM paymentmethod pm WHERE pm.paymentmethodid = pb.paymentmethodid) methods
+               FROM userclient us
       		   JOIN booking bo ON us.userclientid = bo.userclientid
                  JOIN roomoffer r ON r.roomofferid = bo.roomofferid
                  JOIN room rid ON rid.roomid = r.roomid
@@ -124,7 +129,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
                   JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid
                   left join userpromoter up on up.userpromoterid=bo.userpromotorid
                   left join useradmin ua on ua.useradminid=bo.receptionistid
-                          left join paymentbook pb on pb.bookingid=bo.bookingid
+                  left join paymentbook pb on pb.bookingid=bo.bookingid
+		          left join invoice i on i.idpaymentbook = pb.paymentbookid
                   WHERE bo.bookingstateid in(:bookingStateId)
                  AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId)
                  AND (:offertimeInit IS NULL OR :offertimeEnd IS NULL OR
