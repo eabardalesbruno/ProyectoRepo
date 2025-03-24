@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Domain.dto.PaymentDetailFulldayDTO;
 import com.proriberaapp.ribera.Domain.entities.FullDayEntity;
+import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.data.repository.query.Param;
@@ -50,5 +51,12 @@ public interface FullDayRepository extends R2dbcRepository<FullDayEntity,Integer
       """)
     Flux<PaymentDetailFulldayDTO> findByAllPayment();
 
+    @Query("""
+    select u.cellnumber, u.countryid, u.firstname, u.lastname, 
+           u.documenttypeid, u.documentnumber, u.email, u.userclientid, u.role 
+    from userclient u 
+    where u.userclientid = :userId
+""")
+    Mono<UserClientEntity> findByUserclientid(@Param("userId") Integer userId);
 
 }

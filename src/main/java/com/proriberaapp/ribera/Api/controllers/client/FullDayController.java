@@ -3,11 +3,10 @@ package com.proriberaapp.ribera.Api.controllers.client;
 import com.proriberaapp.ribera.Api.controllers.client.dto.FullDayRequest;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanionsDto;
+import com.proriberaapp.ribera.Domain.dto.FoodDetailVisualCountDto;
 import com.proriberaapp.ribera.Domain.dto.PaymentDetailFulldayDTO;
-import com.proriberaapp.ribera.Domain.entities.CompanionsEntity;
-import com.proriberaapp.ribera.Domain.entities.FullDayEntity;
-import com.proriberaapp.ribera.Domain.entities.FullDayTypeFoodEntity;
-import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
+import com.proriberaapp.ribera.Domain.dto.VisualCountDetailsDTO;
+import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.services.client.CompanionsService;
 import com.proriberaapp.ribera.services.client.FullDayService;
@@ -175,4 +174,11 @@ public class FullDayController {
         }
     }
 
+    @GetMapping("/userclient/{userId}")
+    public Mono<UserClientEntity> getUserclientFullday(@PathVariable Integer userId) {
+        System.out.println("userId: " + userId);
+        return fullDayService.getUserclientFullday(userId)
+                .doOnSuccess(user -> System.out.println("Respuesta enviada: " + user))
+                .doOnError(error -> System.err.println("Error al obtener usuario: " + error.getMessage()));
+    }
 }

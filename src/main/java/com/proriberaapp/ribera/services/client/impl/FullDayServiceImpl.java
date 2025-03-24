@@ -1,6 +1,8 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Domain.dto.FoodDetailVisualCountDto;
 import com.proriberaapp.ribera.Domain.dto.PaymentDetailFulldayDTO;
+import com.proriberaapp.ribera.Domain.dto.VisualCountDetailsDTO;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.CommissionService;
@@ -37,6 +39,8 @@ public class FullDayServiceImpl implements FullDayService {
     private final FullDayTypeFoodRepository fullDayTypeFoodRepository;
 
     private final UserClientRepository userRepository;
+
+    private final PaymentBookRepository paymentBookRepository;
 
     @Override
     public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type, Timestamp bookingdate,
@@ -325,4 +329,45 @@ public class FullDayServiceImpl implements FullDayService {
         }
         return Timestamp.valueOf(disbursementDate.atStartOfDay());
     }
+
+@Override
+    public Flux<FoodDetailVisualCountDto> getPaymentDetails(Integer bookingId) {
+        return paymentBookRepository.findPaymentDetailsByBookingId(bookingId);
+    }
+
+    @Override
+    public Mono<VisualCountDetailsDTO> getVisualCountDetails(Integer bookingId){
+        return paymentBookRepository.findBookingDetailsByBookingId(bookingId)
+                .map(dto -> {
+                    String rangoFechasEnEspanol = dto.getRangoFechas()
+                            .replace("January", "ENERO")
+                            .replace("February", "FEBRERO")
+                            .replace("March", "MARZO")
+                            .replace("April", "ABRIL ")
+                            .replace("May", "MAYO")
+                            .replace("June", "JUNIO")
+                            .replace("July", "JULIO")
+                            .replace("August", "AGOSTO")
+                            .replace("September", "SEPTIEMBRE")
+                            .replace("October", "OCTUBRE")
+                            .replace("November", "NOVIEMBRE")
+                            .replace("December", "DICIEMBRE");
+
+                    dto.setRangoFechas(rangoFechasEnEspanol);
+                    return dto;
+                });
+    }
+
+    @Override
+    public Mono<UserClientEntity> getUserclientFullday(Integer userId) {
+        return fullDayRepository.findByUserclientid(userId)
+                .map(user -> {
+                    if (user.getRole() == null) {
+                        user.setRole(1);
+                    }
+                    return user;
+                });
+    }
+
+
 }

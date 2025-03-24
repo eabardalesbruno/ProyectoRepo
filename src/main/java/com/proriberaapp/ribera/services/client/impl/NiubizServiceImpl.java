@@ -135,6 +135,8 @@ public class NiubizServiceImpl implements NiubizService {
             urlWeb += urlClientFrontEnd+"/promotor/dashboard/reservas";
         } else if (type == 3) {
             urlWeb += urlClientFrontEnd+"/bookings/reservados";
+        } else if (type == 4) {
+            urlWeb += urlAdminFrontEnd+"/manager/booking-fullday-manager";
         }
 
         NiubizAutorizationBodyEntity body = new NiubizAutorizationBodyEntity();
@@ -314,7 +316,8 @@ public class NiubizServiceImpl implements NiubizService {
                     fullDay.setBookingstateid(3);
                     return Mono.zip(fullDayRepository.save(fullDay),
                             userClientRepository.findByUserClientId(fullDay.getUserClientId()));
-                }).flatMap(tuple -> {
+                })
+                .flatMap(tuple -> {
                     FullDayEntity updatedFullDay = tuple.getT1();
                     UserClientEntity userClient = tuple.getT2();
                     BigDecimal totalCost = BigDecimal.valueOf(amount);
@@ -375,19 +378,25 @@ public class NiubizServiceImpl implements NiubizService {
                             .flatMap(paymentBookR -> {
                                 invoice.setPaymentBookId(paymentBookR.getPaymentBookId());
                                 return invoiceService.save(invoice)
-                                        .then(sendSuccessEmail(userClient.getEmail(), paymentBookR.getPaymentBookId()));
-                            })
-                            .thenReturn(new TransactionNecessaryResponse(true))
-                            .onErrorResume(e -> fullDayRepository.findByFulldayid(fullDayId)
-                                    .flatMap(fullDay -> {
-                                        fullDay.setBookingstateid(3);
-                                        return fullDayRepository.save(fullDay);
-                                    })
-                                    .flatMap(fullDay -> userClientRepository.findById(userClient.getUserClientId())
-                                            .flatMap(userClientUpdated -> sendErrorEmail(userClientUpdated.getEmail(), e.getMessage()))
-                                            .then(Mono.error(e))));
-                });
+                                        .then(fullDayRepository.findByFulldayid(fullDayId)
+                                                .flatMap(fullDay -> {
+                                                    fullDay.setBookingstateid(2);
+                                                    return fullDayRepository.save(fullDay);
+                                                })
+                                        );
+                            });
+                })
+                .thenReturn((Object) new TransactionNecessaryResponse(true))
+                .onErrorResume(e -> fullDayRepository.findByFulldayid(fullDayId)
+                        .flatMap(fullDay -> {
+                            fullDay.setBookingstateid(3);
+                            return fullDayRepository.save(fullDay);
+                        })
+                        .then(Mono.error(e))
+                );
     }
+
+
 
 
     private Mono<Void> sendSuccessEmail(String email, int paymentBookId) {
