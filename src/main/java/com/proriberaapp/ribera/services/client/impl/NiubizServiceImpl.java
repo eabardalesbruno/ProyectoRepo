@@ -11,7 +11,10 @@ import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
+import com.proriberaapp.ribera.Domain.invoice.ProductSunatDomain;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.FullDayRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.Invoice.ProductSunatRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.EmailService;
@@ -80,6 +83,12 @@ public class NiubizServiceImpl implements NiubizService {
     @Autowired
     RefusePaymentService refusePaymentService;
 
+    @Autowired
+    FullDayRepository fullDayRepository;
+
+    @Autowired
+    ProductSunatRepository productSunatRepository;
+
     @Override
     public Mono<String> getSecurityToken() {
         //aW50ZWdyYWNpb25lc0BuaXViaXouY29tLnBlOl83ejNAOGZG
@@ -126,6 +135,8 @@ public class NiubizServiceImpl implements NiubizService {
             urlWeb += urlClientFrontEnd+"/promotor/dashboard/reservas";
         } else if (type == 3) {
             urlWeb += urlClientFrontEnd+"/bookings/reservados";
+        } else if (type == 4) {
+            urlWeb += urlAdminFrontEnd+"/manager/booking-fullday-manager";
         }
 
         NiubizAutorizationBodyEntity body = new NiubizAutorizationBodyEntity();
@@ -227,8 +238,19 @@ public class NiubizServiceImpl implements NiubizService {
                             type,
                             percentageDiscount);
                     //invoice.setOperationCode(authorizationResponse.getId());
+
+                    String roomDescription = bookingAndRoomNameDto.getRoomDescription();
+                    String normalizedRoomDescription = normalizeText(roomDescription);
+                    Mono<String> codSunatMono = this.productSunatRepository.findAll()
+                            .filter(product -> normalizeText(product.getDescription()).equals(normalizedRoomDescription))
+                            .map(ProductSunatDomain::getCodSunat)
+                            .defaultIfEmpty("631210")
+                            .next();
+
+                    return codSunatMono.flatMap(codSunat -> {
                     InvoiceItemDomain item = new InvoiceItemDomain(
                             bookingAndRoomNameDto.getRoomName(),
+                            codSunat,
                             bookingAndRoomNameDto.getRoomDescription(),
                             1,
                             totalCost);
@@ -279,8 +301,103 @@ public class NiubizServiceImpl implements NiubizService {
                                     .flatMap(booking -> userClientRepository.findById(userClient.getUserClientId())
                                             .flatMap(userCliente -> sendErrorEmail(userCliente.getEmail(), e.getMessage()))
                                             .then(Mono.error(e))));
+                    });
                 });
     }
+
+
+
+    @Override
+    public Mono<Object> savePayNiubizFullDay(Integer fullDayId, String invoiceType, String invoiceDocumentNumber,
+                                             Double totalDiscount, Double percentageDiscount,
+                                             Double totalCostWithOutDiscount, Double amount, String transactionId) {
+        return fullDayRepository.findByFulldayid(fullDayId)
+                .flatMap(fullDay -> {
+                    fullDay.setBookingstateid(3);
+                    return Mono.zip(fullDayRepository.save(fullDay),
+                            userClientRepository.findByUserClientId(fullDay.getUserClientId()));
+                })
+                .flatMap(tuple -> {
+                    FullDayEntity updatedFullDay = tuple.getT1();
+                    UserClientEntity userClient = tuple.getT2();
+                    BigDecimal totalCost = BigDecimal.valueOf(amount);
+
+                    InvoiceType type = InvoiceType.getInvoiceTypeByName(invoiceType.toUpperCase());
+                    InvoiceClientDomain invoiceClientDomain = new InvoiceClientDomain(
+                            userClient.getFirstName(),
+                            invoiceDocumentNumber,
+                            userClient.getAddress(),
+                            userClient.getCellNumber(),
+                            userClient.getEmail(),
+                            updatedFullDay.getUserClientId());
+
+                    InvoiceDomain invoice = new InvoiceDomain(
+                            invoiceClientDomain,
+                            updatedFullDay.getFulldayid(),
+                            18.0,
+                            InvoiceCurrency.PEN,
+                            type,
+                            percentageDiscount);
+
+                    InvoiceItemDomain item = new InvoiceItemDomain(
+                            "FullDay Service",
+                            "631210",
+                            "Pago de servicio FullDay",
+                            1,
+                            totalCost);
+
+                    invoice.addItemWithIncludedIgv(item);
+
+                    PaymentBookEntity paymentBook = PaymentBookEntity.builder()
+                            .fullDayId(updatedFullDay.getFulldayid())
+                            .userClientId(updatedFullDay.getUserClientId())
+                            .refuseReasonId(1)
+                            .paymentMethodId(6)
+                            .paymentStateId(2)
+                            .paymentTypeId(3)
+                            .paymentSubTypeId(6)
+                            .currencyTypeId(1)
+                            .amount(totalCost)
+                            .description("Pago exitoso")
+                            .paymentDate(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Lima"))))
+                            .operationCode(transactionId)
+                            .note("Nota de pago")
+                            .totalCost(totalCost)
+                            .invoiceDocumentNumber(invoiceDocumentNumber)
+                            .invoiceType(invoiceType)
+                            .imageVoucher("Pago con Tarjeta")
+                            .totalPoints(0)
+                            .paymentComplete(true)
+                            .pendingpay(1)
+                            .totalDiscount(totalDiscount)
+                            .percentageDiscount(percentageDiscount)
+                            .totalCostWithOutDiscount(totalCostWithOutDiscount)
+                            .build();
+
+                    return paymentBookRepository.save(paymentBook)
+                            .flatMap(paymentBookR -> {
+                                invoice.setPaymentBookId(paymentBookR.getPaymentBookId());
+                                return invoiceService.save(invoice)
+                                        .then(fullDayRepository.findByFulldayid(fullDayId)
+                                                .flatMap(fullDay -> {
+                                                    fullDay.setBookingstateid(2);
+                                                    return fullDayRepository.save(fullDay);
+                                                })
+                                        );
+                            });
+                })
+                .thenReturn((Object) new TransactionNecessaryResponse(true))
+                .onErrorResume(e -> fullDayRepository.findByFulldayid(fullDayId)
+                        .flatMap(fullDay -> {
+                            fullDay.setBookingstateid(3);
+                            return fullDayRepository.save(fullDay);
+                        })
+                        .then(Mono.error(e))
+                );
+    }
+
+
+
 
     private Mono<Void> sendSuccessEmail(String email, int paymentBookId) {
         System.out.println("Enviando correo de pago exitoso" + paymentBookId);
@@ -312,6 +429,11 @@ public class NiubizServiceImpl implements NiubizService {
     private Mono<Void> sendErrorEmail(String email, String errorMessage) {
         String emailBody = generateErrorEmailBody(errorMessage);
         return emailService.sendEmail(email, "Error en el Pago", emailBody);
+    }
+
+    private String normalizeText(String text) {
+        if (text == null) return "";
+        return text.trim().replaceAll("\\s+", " ");
     }
 
     private String generateErrorEmailBody(String errorMessage) {

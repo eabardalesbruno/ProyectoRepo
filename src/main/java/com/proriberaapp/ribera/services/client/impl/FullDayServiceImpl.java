@@ -1,5 +1,8 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Domain.dto.FoodDetailVisualCountDto;
+import com.proriberaapp.ribera.Domain.dto.PaymentDetailFulldayDTO;
+import com.proriberaapp.ribera.Domain.dto.VisualCountDetailsDTO;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.CommissionService;
@@ -35,8 +38,12 @@ public class FullDayServiceImpl implements FullDayService {
 
     private final FullDayTypeFoodRepository fullDayTypeFoodRepository;
 
+    private final UserClientRepository userRepository;
+
+    private final PaymentBookRepository paymentBookRepository;
+
     @Override
-    public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type,
+    public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type, Timestamp bookingdate,
                                                List<FullDayDetailEntity> details, List<FullDayFoodEntity> foods) {
         FullDayEntity fullDay = FullDayEntity.builder()
                 .receptionistId(receptionistId)
@@ -45,6 +52,8 @@ public class FullDayServiceImpl implements FullDayService {
                 .type(type)
                 .purchaseDate(Timestamp.from(Instant.now()))
                 .totalPrice(BigDecimal.ZERO)
+                .bookingstateid(3)
+                .bookingDate(bookingdate)
                 .build();
 
         return fullDayRepository.save(fullDay)
@@ -101,28 +110,84 @@ public class FullDayServiceImpl implements FullDayService {
                 .then();
     }
 
+    @Override
+    public Flux<FullDayEntity> getReservationsByAssociatedId(Integer id, String filterType, Integer bookingStateId) {
+        switch (filterType) {
+            case "receptionist":
+                return fullDayRepository.findByReceptionistIdAndBookingStateId(id, bookingStateId);
+            case "promoter":
+                return fullDayRepository.findByUserPromoterIdAndBookingStateId(id, bookingStateId);
+            case "client":
+                return fullDayRepository.findByUserClientIdAndBookingStateId(id, bookingStateId);
+            default:
+                return Flux.empty();
+        }
+    }
+
+    @Override
+    public Mono<FullDayEntity> findById(Integer id) {
+        return fullDayRepository.findById(id);
+    }
+
+    @Override
+    public Flux<FullDayEntity> getReservationsAll() {
+        return fullDayRepository.findAll();
+    }
+
+    @Override
+    public Flux<PaymentDetailFulldayDTO> getPaymentDetailFullday() {
+        return fullDayRepository.findByAllPayment();
+    }
+
 
     private Mono<FullDayDetailEntity> calcularPrecios(FullDayDetailEntity detail, String type) {
         return getBasePrice(detail.getTypePerson())
                 .flatMap(basePrice -> {
-                    Mono<BigDecimal> foodPriceMono = Flux.fromIterable(detail.getFulldayTypefoodid())
-                            .flatMap(id -> getFoodPriceById(id))
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-                    return foodPriceMono.flatMap(foodPrice -> {
-                        BigDecimal discount = BigDecimal.ZERO;
+                    BigDecimal discount;
+                    if (type.equalsIgnoreCase("Full Day Todo Completo")) {
+                        discount = basePrice.multiply(BigDecimal.valueOf(0.50));
+                    } else {
+                        discount = BigDecimal.ZERO;
+                    }
+                    if (detail.getFulldayTypefoodid() == null || detail.getFulldayTypefoodid().isEmpty()) {
+                        BigDecimal foodPrice = BigDecimal.ZERO;
                         if (type.equalsIgnoreCase("Full Day Todo Completo")) {
-                            discount = basePrice.multiply(BigDecimal.valueOf(0.50));
+                            switch (detail.getTypePerson().toUpperCase()) {
+                                case "ADULTO":
+                                    foodPrice = BigDecimal.valueOf(50);
+                                    break;
+                                case "ADULTO_MAYOR":
+                                    foodPrice = BigDecimal.valueOf(35);
+                                    break;
+                                case "NINO":
+                                    foodPrice = BigDecimal.valueOf(35);
+                                    break;
+                                case "INFANTE":
+                                    foodPrice = BigDecimal.ZERO;
+                                    break;
+                                default:
+                                    foodPrice = BigDecimal.ZERO;
+                            }
                         }
-
                         BigDecimal finalPrice = basePrice.subtract(discount).add(foodPrice)
                                 .multiply(BigDecimal.valueOf(detail.getQuantity()));
-
                         detail.setBasePrice(basePrice);
                         detail.setFoodPrice(foodPrice);
                         detail.setDiscountApplied(discount);
                         detail.setFinalPrice(finalPrice);
 
+                        return Mono.just(detail);
+                    }
+                    Mono<BigDecimal> foodPriceMono = Flux.fromIterable(detail.getFulldayTypefoodid())
+                            .flatMap(this::getFoodPriceById)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    return foodPriceMono.flatMap(foodPrice -> {
+                        BigDecimal finalPrice = basePrice.subtract(discount).add(foodPrice)
+                                .multiply(BigDecimal.valueOf(detail.getQuantity()));
+                        detail.setBasePrice(basePrice);
+                        detail.setFoodPrice(foodPrice);
+                        detail.setDiscountApplied(discount);
+                        detail.setFinalPrice(finalPrice);
                         return Mono.just(detail);
                     });
                 });
@@ -151,6 +216,52 @@ public class FullDayServiceImpl implements FullDayService {
                     }
                 });
     }
+
+   /* private Mono<Boolean> verificarSocioYValidarInvitados(Integer userClientId, List<FullDayDetailEntity> details) {
+        return userRepository.findById(userClientId)
+                .flatMap(user -> {
+                    if (!user.isUserInclub()) {
+                        return Mono.just(true);
+                    }
+
+                    return obtenerLimiteInvitadosPorMembresia(user.getMembresia())
+                            .map(limite -> {
+                                long cantidadInvitados = details.stream()
+                                        .filter(detail -> !detail.getIsTitular())
+                                        .mapToLong(FullDayDetailEntity::getQuantity)
+                                        .sum();
+                                return cantidadInvitados <= limite;
+                            });
+                })
+                .defaultIfEmpty(true);
+    }
+
+    private Mono<Integer> obtenerLimiteInvitadosPorMembresia(String membresia) {
+        int limite;
+        switch (membresia.toUpperCase()) {
+            case "MINI":
+            case "EXPERIENCE":
+            case "LIGHT":
+            case "STANDARD":
+            case "VITALICIA":
+                limite = 4;
+                break;
+            case "VITALICIA PREMIUM":
+                limite = 8;
+                break;
+            case "VITALICIA ULTRA PREMIUM":
+                limite = 16;
+                break;
+            default:
+                limite = 0;
+        }
+        return Mono.just(limite);
+    }
+
+    */
+
+
+
 
     private Mono<FullDayEntity> calculateAndSaveCommission(FullDayEntity fullDay, List<FullDayDetailEntity> details) {
         BigDecimal commissionAmount = BigDecimal.ZERO;
@@ -218,4 +329,45 @@ public class FullDayServiceImpl implements FullDayService {
         }
         return Timestamp.valueOf(disbursementDate.atStartOfDay());
     }
+
+@Override
+    public Flux<FoodDetailVisualCountDto> getPaymentDetails(Integer bookingId) {
+        return paymentBookRepository.findPaymentDetailsByBookingId(bookingId);
+    }
+
+    @Override
+    public Mono<VisualCountDetailsDTO> getVisualCountDetails(Integer bookingId){
+        return paymentBookRepository.findBookingDetailsByBookingId(bookingId)
+                .map(dto -> {
+                    String rangoFechasEnEspanol = dto.getRangoFechas()
+                            .replace("January", "ENERO")
+                            .replace("February", "FEBRERO")
+                            .replace("March", "MARZO")
+                            .replace("April", "ABRIL ")
+                            .replace("May", "MAYO")
+                            .replace("June", "JUNIO")
+                            .replace("July", "JULIO")
+                            .replace("August", "AGOSTO")
+                            .replace("September", "SEPTIEMBRE")
+                            .replace("October", "OCTUBRE")
+                            .replace("November", "NOVIEMBRE")
+                            .replace("December", "DICIEMBRE");
+
+                    dto.setRangoFechas(rangoFechasEnEspanol);
+                    return dto;
+                });
+    }
+
+    @Override
+    public Mono<UserClientEntity> getUserclientFullday(Integer userId) {
+        return fullDayRepository.findByUserclientid(userId)
+                .map(user -> {
+                    if (user.getRole() == null) {
+                        user.setRole(1);
+                    }
+                    return user;
+                });
+    }
+
+
 }

@@ -32,9 +32,9 @@ public class InvoiceItemDomain {
     private double percentajeDiscount;
     private BigDecimal discount;
 
-    public InvoiceItemDomain(String name, String description, int quantity, BigDecimal priceUnit) {
+    public InvoiceItemDomain(String name,String codProductSunat, String description, int quantity, BigDecimal priceUnit) {
         this.name = name;
-        this.codProductSunat = "631210";
+        this.codProductSunat = codProductSunat;
         this.description = description;
         this.percentajeDiscount = 0;
         if (quantity <= 0) {

@@ -6,11 +6,9 @@ import com.proriberaapp.ribera.Domain.dto.QuotationDto;
 import com.proriberaapp.ribera.Domain.entities.QuotationDayEntity;
 import com.proriberaapp.ribera.Domain.entities.QuotationEntity;
 import com.proriberaapp.ribera.Domain.entities.QuotationRoomOfferEntity;
+import com.proriberaapp.ribera.Domain.entities.QuotationYearEntity;
 import com.proriberaapp.ribera.Infraestructure.exception.QuoteAndOfferIsAlreadyRegisteredException;
-import com.proriberaapp.ribera.Infraestructure.repository.QuotationDayRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.QuotationRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.QuotationRoomOfferRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.QuotationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,79 +28,80 @@ public class QuotationServiceImpl implements QuotationService {
         private final QuotationDayRepository quotationDayRepository;
 
         @Override
-        public Flux<QuotationEntity> findAllQuotations() {
-                return quotationRepository.findAll();
+        public Flux<QuotationEntity> findAllQuotations(Integer condition) {
+          return quotationRepository.getAllQuotationByDays(condition);
         }
 
         @Override
         public Mono<QuotationEntity> findQuotationById(Integer quotationId) {
-                return quotationRepository.findById(quotationId);
+          return quotationRepository.findById(quotationId);
         }
 
         @Override
         public Mono<QuotationEntity> saveQuotation(QuotationDto quotationDto) {
                 QuotationEntity quotationEntity = QuotationEntity.builder()
-                                .quotationDescription(quotationDto.getQuotationDescription())
-                                .infantCost(quotationDto.getInfantCost())
-                                .kidCost(quotationDto.getKidCost())
-                                .adultCost(quotationDto.getAdultCost())
-                                .adultMayorCost(quotationDto.getAdultMayorCost())
-                                .adultExtraCost(quotationDto.getAdultExtraCost())
-                                .build();
-                List<Integer> daysSelected = quotationDto.getDays().stream().filter(d -> d.isSelected())
-                                .map(d -> d.getId()).toList();
-                return quotationRepository.getQuotationFindOfferAndDays(quotationDto.getRoomOfferIds(),
-                                daysSelected)
-                                .collectList()
-                                .flatMap(quotations -> {
-                                        if (quotations.size() > 0) {
-                                                QuotationOfferDayDto quotationOfferDayDto = quotations.get(0);
-                                                return Mono.error(new QuoteAndOfferIsAlreadyRegisteredException(
-                                                                quotationOfferDayDto
-                                                                                .getOffername(),
-                                                                quotationOfferDayDto.getQuotation_description(),
-                                                                quotationOfferDayDto.getDayname()));
-                                        }
-                                        return quotationRepository.save(quotationEntity)
-                                                        .flatMap(savedQuotation -> {
-                                                                List<QuotationDayEntity> days = quotationDto.getDays()
-                                                                                .stream()
-                                                                                .filter(d -> d.isSelected())
-                                                                                .map(d -> QuotationDayEntity.builder()
-                                                                                                .idQuotation(savedQuotation
-                                                                                                                .getQuotationId())
-                                                                                                .idDay(d.getId())
-                                                                                                .build())
-                                                                                .collect(Collectors.toList());
-                                                                List<QuotationRoomOfferEntity> quotationRoomOffers = quotationDto
-                                                                                .getRoomOfferIds().stream()
-                                                                                .map(roomOfferId -> QuotationRoomOfferEntity
-                                                                                                .builder()
-                                                                                                .quotationId(savedQuotation
-                                                                                                                .getQuotationId())
-                                                                                                .roomOfferId(roomOfferId)
-                                                                                                .build())
-                                                                                .collect(Collectors.toList());
-                                                                /*
-                                                                 * return quotationRoomOfferRepository.saveAll(
-                                                                 * quotationRoomOffers)
-                                                                 * .flatMap(d -> quotationDayRepository
-                                                                 * .saveAll(days))
-                                                                 * .then(Mono.just(savedQuotation));
-                                                                 */
-                                                                return Flux.zip(quotationRoomOfferRepository.saveAll(
-                                                                                quotationRoomOffers).collectList(),
-                                                                                quotationDayRepository
-                                                                                                .saveAll(days).collectList())
-                                                                                .then(Mono.just(savedQuotation));
-                                                                /*
-                                                                 * return Flux.zip(quotationRoomOfferRepository.saveAll(
-                                                                 * quotationRoomOffers),
-                                                                 * quotationDayRepository.saveAll(days))
-                                                                 * .then(Mono.just(savedQuotation));
-                                                                 */
-                                                        });
-                                });
+                    .quotationDescription(quotationDto.getQuotationDescription())
+                    .infantCost(quotationDto.getInfantCost())
+                    .kidCost(quotationDto.getKidCost())
+                    .adultCost(quotationDto.getAdultCost())
+                    .adultMayorCost(quotationDto.getAdultMayorCost())
+                    .adultExtraCost(quotationDto.getAdultExtraCost())
+                    .kidReward(quotationDto.getKidReward())
+                    .adultReward(quotationDto.getAdultReward())
+                    .adultMayorReward(quotationDto.getAdultMayorReward())
+                    .adultExtraReward(quotationDto.getAdultExtraReward())
+                    .build();
+                List<Integer> daysSelected = quotationDto.getDays().stream()
+                    .filter(d -> d.isSelected())
+                    .map(d -> d.getId()).toList();
+                return quotationRepository.getQuotationFindOfferAndDays(quotationDto.getYearId(), quotationDto.getRoomOfferIds(), daysSelected)
+                    .collectList()
+                    .flatMap(quotations -> {
+                        if (quotations.size() > 0) {
+                            QuotationOfferDayDto quotationOfferDayDto = quotations.get(0);
+                            return Mono.error(new QuoteAndOfferIsAlreadyRegisteredException(
+                                            quotationOfferDayDto.getOffername(),
+                                            quotationOfferDayDto.getQuotation_description(),
+                                            quotationOfferDayDto.getDayname()));
+                        }
+                        return quotationRepository.save(quotationEntity)
+                            .flatMap(savedQuotation -> {
+                                List<QuotationDayEntity> days = quotationDto.getDays()
+                                    .stream()
+                                    .filter(d -> d.isSelected())
+                                    .map(d -> QuotationDayEntity.builder()
+                                        .idQuotation(savedQuotation.getQuotationId())
+                                        .idDay(d.getId())
+                                        .idYear(quotationDto.getYearId())
+                                        .build())
+                                    .collect(Collectors.toList());
+                                List<QuotationRoomOfferEntity> quotationRoomOffers = quotationDto
+                                    .getRoomOfferIds().stream()
+                                    .map(roomOfferId -> QuotationRoomOfferEntity
+                                        .builder()
+                                        .quotationId(savedQuotation.getQuotationId())
+                                        .roomOfferId(roomOfferId)
+                                        .build())
+                                    .collect(Collectors.toList());
+                                /*
+                                 * return quotationRoomOfferRepository.saveAll(
+                                 * quotationRoomOffers)
+                                 * .flatMap(d -> quotationDayRepository
+                                 * .saveAll(days))
+                                 * .then(Mono.just(savedQuotation));
+                                 */
+                                return Flux.zip(quotationRoomOfferRepository.saveAll(quotationRoomOffers)
+                                    .collectList(),
+                                    quotationDayRepository.saveAll(days).collectList())
+                                    .then(Mono.just(savedQuotation));
+                                /*
+                                 * return Flux.zip(quotationRoomOfferRepository.saveAll(
+                                 * quotationRoomOffers),
+                                 * quotationDayRepository.saveAll(days))
+                                 * .then(Mono.just(savedQuotation));
+                                 */
+                            });
+                    });
 
         }
 
@@ -161,6 +160,7 @@ public class QuotationServiceImpl implements QuotationService {
                                                                                                                                         .idQuotation(savedQuotation
                                                                                                                                                         .getQuotationId())
                                                                                                                                         .idDay(d.getId())
+                                                                                                                                        .idYear(quotationDto.getYearId())
                                                                                                                                         .build())
                                                                                                                         .collect(Collectors
                                                                                                                                         .toList());

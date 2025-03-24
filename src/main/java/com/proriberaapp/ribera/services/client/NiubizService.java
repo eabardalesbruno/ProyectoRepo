@@ -9,5 +9,6 @@ public interface NiubizService {
     Mono<Object> getTokenSession(String token, Object body);
     Mono<String> tofinalize(NiubizAutorizationEntity niubizEntity, String token, Long purchaseNumber, Double amount, Integer type);
     Mono<Object> savePayNiubiz(Integer bookingId, String invoiceType, String invoiceDocumentNumber, Double totalDiscount, Double percentageDiscount, Double totalCostWithOutDiscount, Double amount, String transactionId);
+    Mono<Object> savePayNiubizFullDay(Integer fullDayId, String invoiceType, String invoiceDocumentNumber, Double totalDiscount, Double percentageDiscount, Double totalCostWithOutDiscount, Double amount, String transactionId);
 
 }

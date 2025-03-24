@@ -7,7 +7,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface QuotationService {
-    Flux<QuotationEntity> findAllQuotations();
+    Flux<QuotationEntity> findAllQuotations(Integer condition);
 
     Flux<quotationDayDto> getQuotationDaySelected(Integer quotationId);
 

@@ -37,4 +37,10 @@ public class PaymentBookUserDTO {
     @Column("bookingid")
     private Integer bookingid;
 
+    @Column("fulldayid")
+    private Integer fulldayid;
+
+    @Column("type")
+    private String type;
+
 }

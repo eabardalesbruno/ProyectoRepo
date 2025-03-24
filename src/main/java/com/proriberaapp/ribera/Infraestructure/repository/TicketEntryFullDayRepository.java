@@ -17,7 +17,7 @@ public interface TicketEntryFullDayRepository extends R2dbcRepository<TicketEntr
     @Query("SELECT enableddays FROM ticketentryfullday LIMIT 1")
     Flux<String> obtenerEnabledDays();
 
-
     Mono<TicketEntryFullDayEntity> findByTicketEntryFullDayId(Integer ticketEntryFullDayId);
 
+    Mono<TicketEntryFullDayEntity>  findTopBy();
 }

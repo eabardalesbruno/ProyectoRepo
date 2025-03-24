@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Domain.dto.CompanionsDto;
 import com.proriberaapp.ribera.Domain.entities.CompanionsEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.CompanionsRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.FullDayRepository;
 import com.proriberaapp.ribera.services.client.CompanionsService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +38,7 @@ public class CompanionServiceImpl implements CompanionsService {
     @Value("${url.api.ruc.token}")
     private String tokenApiDni;
     private final EmailService emailService;
+    private final FullDayRepository fullDayRepository;
 
 
     @Override
@@ -233,6 +236,109 @@ public class CompanionServiceImpl implements CompanionsService {
                     }
                 });
     }
+
+    @Override
+    public Flux<CompanionsEntity> getCompanionsByFulldayId(Integer fulldayId) {
+        return companionsRepository.findByFullDayId(fulldayId);
+    }
+
+    @Override
+    public Mono<CompanionsEntity> addCompanionFullday(CompanionsEntity companionsEntity) {
+        return companionsRepository.save(companionsEntity);
+    }
+
+    @Override
+    public Mono<Void> validateTotalCompanionsFullday(Integer fulldayId, Flux<CompanionsEntity> companionsEntity) {
+        return fullDayRepository.findById(fulldayId)
+                .flatMap(fullDay -> {
+                    return companionsEntity.count()
+                            .flatMap(count -> {
+                                if (count > 1) {
+                                    return Mono.error(new IllegalArgumentException(
+                                            "El total de acompañantes no coincide con el total de personas en el FullDay"));
+                                }
+                                return Mono.empty();
+                            });
+                });
+    }
+
+    @Override
+    public Flux<CompanionsEntity> updateMultipleCompanionsFullday(Integer fulldayId, List<CompanionsEntity> companions) {
+        return null;
+    }
+
+    public Mono<List<CompanionsEntity>> getCompanionsListForFullDay(Integer fulldayid) {
+        return companionsRepository.findByFullDayId(fulldayid)
+                .collectList();
+    }
+
+    @Override
+    public Flux<CompanionsEntity> calculateAgeAndSaveFullDay(List<CompanionsEntity> companionsEntities) {
+        if (companionsEntities == null || companionsEntities.isEmpty()) {
+            return Flux.error(new IllegalArgumentException("La lista de acompañantes no puede estar vacía."));
+        }
+        long titularCount = companionsEntities.stream()
+                .filter(companion -> companion.isTitular())
+                .count();
+        if (titularCount != 1) {
+            return Flux.error(new IllegalArgumentException("Debe haber exactamente un titular en la lista."));
+        }
+        int fulldayId = companionsEntities.get(0).getFulldayid();
+        boolean allSameFullDayId = companionsEntities.stream()
+                .allMatch(companion -> companion.getFulldayid().equals(fulldayId));
+
+        if (!allSameFullDayId) {
+            return Flux.error(new IllegalArgumentException("Todos los acompañantes deben tener el mismo fulldayid."));
+        }
+        List<CompanionsEntity> updatedCompanions = companionsEntities.stream()
+                .map(companion -> {
+                    if (companion.getBirthdate() != null) {
+                        LocalDate birthDate = companion.getBirthdate().toInstant()
+                                .atZone(ZoneId.systemDefault()).toLocalDate();
+                        int years = Period.between(birthDate, LocalDate.now()).getYears();
+                        companion.setYears(years);
+                    }
+                    return companion;
+                })
+                .collect(Collectors.toList());
+        CompanionsEntity titular = updatedCompanions.stream()
+                .filter(CompanionsEntity::isTitular)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("El titular debe tener todos los campos completos."));
+
+        if (titular.getFirstname() == null || titular.getLastname() == null ) {
+            return Flux.error(new IllegalArgumentException("El titular debe tener nombre, apellido y fecha de nacimiento."));
+        }
+        return Flux.fromIterable(updatedCompanions)
+                .flatMap(this::addCompanionFullday)
+                .collectList()
+                .flatMapMany(savedCompanions -> {
+                    if (titular != null) {
+                        return getCompanionsListForFullDay(titular.getFulldayid())
+                                .filter(companionsList -> companionsList.size() > 1)
+                                .flatMapMany(companionsList -> {
+                                    int yearsValue = titular.getYears() != null ? titular.getYears() : 0;
+
+                                    String emailBody = generatebody(
+                                            titular.getFirstname(),
+                                            titular.getLastname(),
+                                            String.valueOf(titular.getTypeDocumentId()),
+                                            yearsValue,
+                                            titular.getDocumentNumber(),
+                                            titular.getCellphone(),
+                                            titular.getEmail(),
+                                            companionsList
+                                    );
+
+                                    return sendSuccessEmail(titular.getEmail(), emailBody)
+                                            .thenMany(Flux.fromIterable(savedCompanions));
+                                })
+                                .switchIfEmpty(Flux.fromIterable(savedCompanions));
+                    }
+                    return Flux.fromIterable(savedCompanions);
+                });
+    }
+
 
     @Override
     public Flux<CompanionsEntity> updateMultipleCompanions(Integer bookingId, List<CompanionsEntity> companions) {

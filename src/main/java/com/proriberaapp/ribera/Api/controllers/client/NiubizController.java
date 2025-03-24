@@ -63,9 +63,26 @@ public class NiubizController {
                 });
     }
 
+
+    @PostMapping("/endFulldayAdmin")
+    public Mono<ResponseEntity<Void>> endFulldayAdmin(@ModelAttribute NiubizAutorizationEntity niubizEntity, @RequestParam String token, @RequestParam Long purchaseNumber, @RequestParam Double amount) {
+        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 4)
+                .flatMap(redirect -> {
+                    return Mono.just(ResponseEntity
+                            .status(HttpStatus.TEMPORARY_REDIRECT)
+                            .header(HttpHeaders.LOCATION, redirect)
+                            .build());
+                });
+    }
+
     @PostMapping("/savePaymentNiubiz")
     Mono<Object> savePayNiubiz(@RequestParam Integer bookingId, @RequestParam String invoiceType, @RequestParam String invoiceDocumentNumber, @RequestParam Double totalDiscount, @RequestParam Double percentageDiscount, @RequestParam Double totalCostWithOutDiscount, @RequestParam Double amount, @RequestParam String transactionId) {
         return niubizService.savePayNiubiz(bookingId, invoiceType, invoiceDocumentNumber, totalDiscount, percentageDiscount, totalCostWithOutDiscount, amount, transactionId);
+    }
+
+    @PostMapping("/savePaymentNiubizFullDay")
+    public Mono<Object> savePayNiubizFullDay(@RequestParam Integer fullDayId, @RequestParam String invoiceType, @RequestParam String invoiceDocumentNumber, @RequestParam Double totalDiscount, @RequestParam Double percentageDiscount, @RequestParam Double totalCostWithOutDiscount, @RequestParam Double amount, @RequestParam String transactionId) {
+        return niubizService.savePayNiubizFullDay(fullDayId, invoiceType, invoiceDocumentNumber, totalDiscount, percentageDiscount, totalCostWithOutDiscount, amount, transactionId);
     }
 
 }

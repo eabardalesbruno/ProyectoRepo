@@ -161,8 +161,8 @@ public class RoomServiceImpl implements RoomService {
     public Mono<ReservationReportDto> findDetailById(Integer bookingid) {
         return bookingRepository.findByBookingId(bookingid).publishOn(Schedulers.boundedElastic()).flatMap(bookingEntity -> {
             ReservationReportDto reservationDto = new ReservationReportDto();
-            reservationDto.setDayBookingInit(bookingEntity.getCheckIn() != null ? bookingEntity.getCheckIn().toLocalDateTime().format(DateTimeFormatter.ofPattern("EE, dd MMM")) : "");
-            reservationDto.setDayBookingEnd(bookingEntity.getCheckout() != null ? bookingEntity.getCheckout().toLocalDateTime().format(DateTimeFormatter.ofPattern("EE, dd MMM")) : "");
+            reservationDto.setDayBookingInit(bookingEntity.getDayBookingInit() != null ? bookingEntity.getDayBookingInit().toLocalDateTime().format(DateTimeFormatter.ofPattern("EE, dd MMM")) : "");
+            reservationDto.setDayBookingEnd(bookingEntity.getDayBookingEnd() != null ? bookingEntity.getDayBookingEnd().toLocalDateTime().format(DateTimeFormatter.ofPattern("EE, dd MMM")) : "");
             reservationDto.setNumberAdults((bookingEntity.getNumberAdults()+bookingEntity.getNumberAdultsMayor()+bookingEntity.getNumberAdultsExtra())+" Adultos");
             reservationDto.setNumberChildren(bookingEntity.getNumberChildren()+" Niños");
             reservationDto.setNumberBabies(bookingEntity.getNumberBabies()+" Bebés");
