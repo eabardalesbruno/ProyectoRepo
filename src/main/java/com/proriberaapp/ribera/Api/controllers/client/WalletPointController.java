@@ -31,7 +31,7 @@ public class WalletPointController {
         Integer userId = jtp.getIdFromToken(token);
         return walletPointService.getWalletByUserId(userId)
                 .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 
     @PutMapping
