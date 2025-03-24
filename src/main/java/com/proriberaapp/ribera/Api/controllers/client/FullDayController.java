@@ -177,8 +177,6 @@ public class FullDayController {
     @GetMapping("/userclient/{userId}")
     public Mono<UserClientEntity> getUserclientFullday(@PathVariable Integer userId) {
         System.out.println("userId: " + userId);
-        return fullDayService.getUserclientFullday(userId)
-                .doOnSuccess(user -> System.out.println("Respuesta enviada: " + user))
-                .doOnError(error -> System.err.println("Error al obtener usuario: " + error.getMessage()));
+        return fullDayService.getUserclientFullday(userId);
     }
 }
