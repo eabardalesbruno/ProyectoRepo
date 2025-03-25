@@ -16,6 +16,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.FullDayRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.ProductSunatRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.RewardPurchaseRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.NiubizService;
@@ -29,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jose4j.base64url.internal.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -88,6 +90,8 @@ public class NiubizServiceImpl implements NiubizService {
 
     @Autowired
     ProductSunatRepository productSunatRepository;
+
+    RewardPurchaseRepository rewardPurchaseRepository;
 
     @Override
     public Mono<String> getSecurityToken() {
@@ -397,6 +401,137 @@ public class NiubizServiceImpl implements NiubizService {
     }
 
 
+
+    @Override
+    public Mono<String> purchaseRewards(String securityToken,
+                                        String transactionToken,
+                                        Long userId,
+                                        int rewards) {
+
+        double amount = rewards * 1.0;
+
+        String purchaseNumber = String.valueOf(System.currentTimeMillis() % 1000000000);
+
+        NiubizAutorizationBodyEntity body = new NiubizAutorizationBodyEntity();
+        body.setChannel("web");
+        body.setCaptureType("manual");
+        body.setCountable(true);
+
+        NiubizAuthorizationOrderEntity order = new NiubizAuthorizationOrderEntity();
+        order.setTokenId(transactionToken);
+        order.setPurchaseNumber(purchaseNumber);
+        order.setAmount(amount);
+        order.setCurrency("PEN");
+        body.setOrder(order);
+
+        NiubizAuthorizationDataMapEntity dataMap = new NiubizAuthorizationDataMapEntity();
+        dataMap.setUrlAddress(urlClientFrontEnd);
+        dataMap.setServiceLocationCityName("Lima");
+        dataMap.setServiceLocationCountrySubdivisionCode("LIM");
+        dataMap.setServiceLocationCountryCode("PER");
+        dataMap.setServiceLocationPostalCode("15046");
+        body.setDataMap(dataMap);
+
+        return nibuizClient.post()
+                .uri("/api.authorization/v3/authorization/ecommerce/{merchantId}", merchantId)
+                .header(HttpHeaders.AUTHORIZATION, securityToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(body)
+                .exchangeToMono(response -> {
+                    if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
+                        return response.bodyToMono(Object.class)
+                                .flatMap(objError -> {
+                                    JsonNode jsonNode = MAPPER.convertValue(objError, JsonNode.class);
+
+                                    String transactionId = getSafeString(jsonNode.at("/data/TRANSACTION_ID"));
+                                    String transactionDate = getSafeString(jsonNode.at("/data/TRANSACTION_DATE"));
+                                    String status = getSafeString(jsonNode.at("/data/STATUS"));
+                                    String actionDescription = getSafeString(jsonNode.at("/data/ACTION_DESCRIPTION"));
+
+                                    String msgEncoded = Base64.encodeBase64String(
+                                        actionDescription.getBytes(StandardCharsets.UTF_8)
+                                    );
+
+                                    String finalUrlWeb = urlClientFrontEnd+"rewards-result?" +
+                                            "transactionId=" + transactionId +
+                                            "&dateTransaction=" + transactionDate +
+                                            "&message=" + msgEncoded +
+                                            "&status=" + status +
+                                            "&amount=" + amount +
+                                            "&purchaseNumber=" + purchaseNumber +
+                                            "&action=fail";
+
+                                    return Mono.just(finalUrlWeb);
+                                });
+
+                    } else {
+                        // Exito
+                        return response.bodyToMono(Object.class)
+                                .flatMap(objOk -> {
+                                    JsonNode jsonNode = MAPPER.convertValue(objOk, JsonNode.class);
+
+                                    String transactionId = getSafeString(jsonNode.at("/dataMap/TRANSACTION_ID"));
+                                    String transactionDate = getSafeString(jsonNode.at("/dataMap/TRANSACTION_DATE"));
+                                    String amountStr = getSafeString(jsonNode.at("/dataMap/AMOUNT"));
+                                    String status = getSafeString(jsonNode.at("/dataMap/STATUS"));
+                                    String brand = getSafeString(jsonNode.at("/dataMap/BRAND"));
+                                    String card = getSafeString(jsonNode.at("/dataMap/CARD"));
+
+                                    String currency = getSafeString(jsonNode.at("/order/currency"));
+
+                                    String cardEncoded = Base64.encodeBase64String(
+                                        card.getBytes(StandardCharsets.UTF_8)
+                                    );
+
+                                    String finalUrlWeb = urlClientFrontEnd+"rewards-result?" +
+                                            "transactionId=" + transactionId +
+                                            "&dateTransaction=" + transactionDate +
+                                            "&status=" + status +
+                                            "&currency=" + currency +
+                                            "&amount=" + amountStr +
+                                            "&card=" + cardEncoded +
+                                            "&brand=" + brand +
+                                            "&purchaseNumber=" + purchaseNumber +
+                                            "&action=success";
+
+                                    return Mono.just(finalUrlWeb);
+                                });
+                    }
+                });
+    }
+
+    /**
+     * Guardar en BD la compra de rewards (similar a savePayNiubiz).
+     */
+    @Override
+    public Mono<RewardPurchase> saveRewardPurchase(Long userId,
+                                                   int quantity,
+                                                   String transactionId,
+                                                   String purchaseNumber,
+                                                   double amount,
+                                                   String status) {
+        RewardPurchase rp = new RewardPurchase();
+        rp.setUserId(userId);
+        rp.setQuantity(quantity);
+        rp.setTotalAmount(amount);
+        rp.setTransactionId(transactionId);
+        rp.setPurchaseNumber(purchaseNumber);
+        rp.setStatus(status);
+        rp.setCreatedAt(LocalDateTime.now());
+
+        // Guardar y, si corresponde, actualizar la cantidad de rewards en la tabla "users"
+        return rewardPurchaseRepository.save(rp)
+                .flatMap(saved -> {
+                    // Lógica para sumar Rewards al usuario, si lo deseas
+                    // Por ej: userService.addRewardsToUser(userId, quantity);
+                    return Mono.just(saved);
+                });
+    }
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private String getSafeString(JsonNode node) {
+        return (node.isMissingNode() || node.isNull()) ? "" : node.asText("");
+    }
 
 
     private Mono<Void> sendSuccessEmail(String email, int paymentBookId) {
