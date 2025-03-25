@@ -56,7 +56,7 @@ public interface FullDayRepository extends R2dbcRepository<FullDayEntity,Integer
            u.documenttypeid, u.documentnumber, u.email, u.userclientid, u.role 
     from userclient u 
     where u.userclientid = :userId
-""")
+    """)
     Mono<UserClientEntity> findByUserclientid(@Param("userId") Integer userId);
 
 }

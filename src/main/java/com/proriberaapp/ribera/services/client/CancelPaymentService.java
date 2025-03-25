@@ -14,5 +14,7 @@ public interface CancelPaymentService {
     Mono<Void> saveCancelPayment(CancelPaymentEntity cancelPayment);
     Mono<Void> deleteCancelPayment(Integer id);
     Mono<Void> updatePendingPayAndSendConfirmation(Integer paymentBookId);
+    Mono<Void> cancelFullDay(Integer fullDayId);
+
 
 }
