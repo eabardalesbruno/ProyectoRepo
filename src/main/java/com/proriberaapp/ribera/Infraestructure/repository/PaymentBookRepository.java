@@ -332,4 +332,24 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
         WHERE bookingid = :bookingId
     """)
         Mono<VisualCountDetailsDTO> findBookingDetailsByBookingId(Integer bookingId);
+
+        @Query("""
+        SELECT
+          u.email AS userEmail,
+       u.firstname || ' ' || u.lastname AS titularName,
+       p.fulldayid AS reservationCode,
+       TO_CHAR(f.bookingdate , 'DD/MM/YYYY') AS checkInDateEntry,
+       TO_CHAR(f.bookingdate, 'DD/MM/YYYY') AS checkInDateSalida,
+       f.type,
+       COALESCE(SUM(CASE WHEN d.typeperson IN ('ADULTO', 'ADULTO_MAYOR') THEN d.quantity ELSE 0 END), 0) AS adults,
+       COALESCE(SUM(CASE WHEN d.typeperson IN ('NINO', 'INFANTE') THEN d.quantity ELSE 0 END), 0) AS children
+       FROM paymentbook p
+       JOIN fullday f ON p.fulldayid = f.fulldayid
+       JOIN userclient u ON f.userclientid = u.userclientid
+       LEFT JOIN fulldaydetail d ON f.fulldayid = d.fulldayid
+       WHERE p.paymentbookid = :paymentBookId
+       GROUP BY u.email, u.firstname , u.lastname , p.fulldayid , f.bookingdate , f.type;
+               """)
+        Mono<DetailEmailFulldayDto> getPaymentDetails(@Param("paymentBookId") Integer paymentBookId);
+
 }

@@ -52,18 +52,7 @@ public class RefusePaymentController {
         }
         return refusePaymentService.updatePendingPayAndSendConfirmation(
                 paymentBookId)
-                .then(Mono.just(new CustomResponse("El pago ha sido aprobado exitosamente", request))); /*
-                                                                                                         * return
-                                                                                                         * refusePaymentService
-                                                                                                         * .
-                                                                                                         * updatePendingPayAndSendConfirmation
-                                                                                                         * (
-                                                                                                         * paymentBookId)
-                                                                                                         */
-        /*
-         * .then(Mono.just(new CustomResponse("El pago ha sido aprobado exitosamente",
-         * request)));
-         */
+                .then(Mono.just(new CustomResponse("El pago ha sido aprobado exitosamente", request)));
     }
 
     @DeleteMapping("/{id}")
