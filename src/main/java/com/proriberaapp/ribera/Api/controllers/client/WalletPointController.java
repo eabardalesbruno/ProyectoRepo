@@ -28,8 +28,8 @@ public class WalletPointController {
 
     @GetMapping
     public Mono<ResponseEntity<WalletPointResponse>> getWalletPoints(@RequestHeader("Authorization") String token) {
-        Integer userId = jtp.getIdFromToken(token);
-        return walletPointService.getWalletByUserId(userId)
+        String username = jtp.getUsernameFromToken(token);
+        return walletPointService.getWalletByUserId(username)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }

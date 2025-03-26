@@ -10,7 +10,7 @@ public interface WalletPointService {
 
     Mono<WalletPointResponse> createWalletPoint(WalletPointRequest walletPointRequest);
 
-    Mono<WalletPointResponse> getWalletByUserId(Integer userId);
+    Mono<WalletPointResponse> getWalletByUserId(String username);
 
     Mono<WalletPointResponse> updateWalletPoints(Integer userId, WalletPointRequest walletPointRequest);
 
