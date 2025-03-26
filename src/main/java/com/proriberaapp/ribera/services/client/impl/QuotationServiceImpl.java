@@ -134,6 +134,10 @@ public class QuotationServiceImpl implements QuotationService {
                                                                                 quotationDto.getAdultMayorCost());
                                                                 existingQuotation.setAdultExtraCost(
                                                                                 quotationDto.getAdultExtraCost());
+                                                                existingQuotation.setKidReward(quotationDto.getKidReward());
+                                                                existingQuotation.setAdultReward(quotationDto.getAdultReward());
+                                                                existingQuotation.setAdultMayorReward(quotationDto.getAdultMayorReward());
+                                                                existingQuotation.setAdultExtraReward(quotationDto.getAdultExtraReward());
                                                                 return quotationRepository.save(existingQuotation)
                                                                                 .flatMap(savedQuotation -> quotationRoomOfferRepository
                                                                                                 .findAllByQuotationId(
