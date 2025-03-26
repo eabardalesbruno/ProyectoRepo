@@ -474,7 +474,7 @@ public class NiubizServiceImpl implements NiubizService {
                                         actionDescription.getBytes(StandardCharsets.UTF_8)
                                     );
 
-                                    String finalUrlWeb = urlClientFrontEnd+"rewards-result?" +
+                                    String finalUrlWeb = urlClientFrontEnd+"/rewards-result?" +
                                             "transactionId=" + transactionId +
                                             "&dateTransaction=" + transactionDate +
                                             "&message=" + msgEncoded +
@@ -505,7 +505,7 @@ public class NiubizServiceImpl implements NiubizService {
                                         card.getBytes(StandardCharsets.UTF_8)
                                     );
 
-                                    String finalUrlWeb = urlClientFrontEnd+"rewards-result?" +
+                                    String finalUrlWeb = urlClientFrontEnd+"/rewards-result?" +
                                             "transactionId=" + transactionId +
                                             "&dateTransaction=" + transactionDate +
                                             "&status=" + status +
