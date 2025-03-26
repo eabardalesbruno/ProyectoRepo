@@ -4,8 +4,6 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.request.WalletPointReq
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.WalletPointResponse;
 import reactor.core.publisher.Mono;
 
-import java.nio.channels.FileChannel;
-
 public interface WalletPointService {
 
     Mono<WalletPointResponse> createWalletPoint(WalletPointRequest walletPointRequest);
@@ -15,4 +13,7 @@ public interface WalletPointService {
     Mono<WalletPointResponse> updateWalletPoints(Integer userId, WalletPointRequest walletPointRequest);
 
     Mono<WalletPointResponse>  buyPoints(Integer userId, WalletPointRequest walletPointRequest);
+
+    //Mono<WalletPointResponse>  convertPoints(WalletPointRequest walletPointRequest);
+    Mono<Void>  convertPoints(Integer userId,WalletPointRequest walletPointRequest);
 }
