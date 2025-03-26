@@ -5,10 +5,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.CancelPaymentService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.RefusePaymentService;
-import com.proriberaapp.ribera.utils.emails.AnulatedUserTemplateEmail;
-import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
-import com.proriberaapp.ribera.utils.emails.RejectedPaymentTemplateEmail;
-import com.proriberaapp.ribera.utils.emails.bookingRejectUserEmailDto;
+import com.proriberaapp.ribera.utils.emails.*;
 
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -22,17 +19,21 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
     private final UserClientRepository userClientRepository;
     private final BookingRepository bookingRepository;
     private final EmailService emailService;
+    private final FullDayRepository fullDayRepository;
+    private final FullDayDetailRepository fullDayDetailRepository;
 
     public CancelPaymentServiceImpl(CancelPaymentRepository cancelPaymentRepository,
-            PaymentBookRepository paymentBookRepository,
-            UserClientRepository userClientRepository,
-            BookingRepository bookingRepository,
-            EmailService emailService) {
+                                    PaymentBookRepository paymentBookRepository,
+                                    UserClientRepository userClientRepository,
+                                    BookingRepository bookingRepository,
+                                    EmailService emailService, FullDayRepository fullDayRepository, FullDayDetailRepository fullDayDetailRepository) {
         this.cancelPaymentRepository = cancelPaymentRepository;
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
         this.bookingRepository = bookingRepository;
         this.emailService = emailService;
+        this.fullDayRepository = fullDayRepository;
+        this.fullDayDetailRepository = fullDayDetailRepository;
     }
 
     @Override
@@ -239,6 +240,33 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
                     }
                     return Mono.empty();
                 });
+    }
+
+    @Override
+    public Mono<Void> cancelFullDay(Integer fullDayId) {
+        return fullDayRepository.findByFulldayid(fullDayId)
+                .flatMap(fullDay -> {
+                    fullDay.setBookingstateid(4);
+                    return fullDayRepository.save(fullDay)
+                            .then(userClientRepository.findById(fullDay.getUserClientId())
+                                    .flatMap(userClient -> {
+                                        String recipientName = userClient.getFirstName();
+                                        String recipientEmail = userClient.getEmail();
+                                        String type = fullDay.getType();
+                                        String body = EmailTemplateFullday.getRejectionTemplate(recipientName, type);
+                                        return emailService.sendEmail(recipientEmail, "Anulación de Reserva", body);
+                                    })
+                            );
+                })
+                .then(fullDayDetailRepository.deleteByFulldayid(fullDayId))
+                .then(Mono.defer(() -> {
+                    CancelPaymentEntity cancelPayment = new CancelPaymentEntity();
+                    cancelPayment.setPaymentBookId(fullDayId);
+                    cancelPayment.setCancelReasonId(1);
+                    cancelPayment.setDetail("cancelado");
+                    return cancelPaymentRepository.save(cancelPayment);
+                }))
+                .then();
     }
 
     private String generatePaymentConfirmationEmailBody(UserClientEntity userClient) {

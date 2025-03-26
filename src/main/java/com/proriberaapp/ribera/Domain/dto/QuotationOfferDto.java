@@ -10,4 +10,8 @@ public class QuotationOfferDto {
     Float infant_cost;
     Float adult_mayor_cost;
     Float adult_extra_cost;
+    Float adult_reward; 
+    Float kid_reward; 
+    Float adult_mayor_reward; 
+    Float adult_extra_reward; 
 }

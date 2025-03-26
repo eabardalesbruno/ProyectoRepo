@@ -13,15 +13,16 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 @Table("wallet_point_history")
-public class WalletPointHistoryEntity {
+public class WalletPointHistoryEntity extends Auditable{
     @Id
     private Integer id;
 
-    @Column("userid")
+    @Column("user_id")
     private Integer userId;
 
+    @Column("points")
     private Double points;
 
-    @Column("transaction_date")
-    private LocalDateTime transactionDate;
+    @Column("wallet_point_id")
+    private Integer walletPointId;
 }

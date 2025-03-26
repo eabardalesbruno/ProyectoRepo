@@ -1,9 +1,7 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
-import com.proriberaapp.ribera.Domain.dto.PaymentBookUserDTO;
-import com.proriberaapp.ribera.Domain.dto.PaymentBookWithChannelDto;
-import com.proriberaapp.ribera.Domain.dto.PaymentDetailDTO;
+import com.proriberaapp.ribera.Domain.dto.*;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
@@ -250,5 +248,108 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
             where pb.bookingid = :bookingId
         """)
         Mono<PaymentDetailDTO> getPaymentDetail(Integer bookingId);
+
+        @Query("""
+                SELECT fd.fulldaydetailid , fd.typeperson, fd.quantity ,fd.finalprice , f.type
+                FROM fulldaydetail fd
+                JOIN fullday f ON fd.fulldayid = f.fulldayid
+                WHERE f.fulldayid = :fulldayId
+                """)
+        Flux<FullDayDetailDTO> findByFullDayId(@Param("fulldayId") Integer fulldayId);
+
+        @Query("""
+           
+                WITH CompanionsCount AS (
+               SELECT
+                   bookingid,
+                   COALESCE(SUM(CASE WHEN category IN ('Adulto', 'Titular') THEN 1 ELSE 0 END), 0) AS num_adultos,
+                   COALESCE(SUM(CASE WHEN category = 'Adulto Mayor' THEN 1 ELSE 0 END), 0) AS num_adultos_mayores,
+                   COALESCE(SUM(CASE WHEN category = 'Adulto Extra' THEN 1 ELSE 0 END), 0) AS num_adultos_extras,
+                   COALESCE(SUM(CASE WHEN category = 'Niño' THEN 1 ELSE 0 END), 0) AS num_ninos,
+                   COALESCE(SUM(CASE WHEN category = 'Infante' THEN 1 ELSE 0 END), 0) AS num_infantes
+               FROM companions
+               WHERE bookingid = :bookingId
+               GROUP BY bookingid
+           )
+           
+           SELECT
+               bf.bookingid,
+               ffffg.idfeedingtype,
+               CASE
+                   WHEN ffffg.idfamilygroup = 1 THEN 'Niño'
+                   WHEN ffffg.idfamilygroup = 2 THEN 'Adulto'
+                   WHEN ffffg.idfamilygroup = 3 THEN 'Adulto Mayor'
+                   WHEN ffffg.idfamilygroup = 4 THEN 'Adulto Extra'
+               END AS categoria,
+               CASE\s
+                   WHEN ffffg.idfeedingtype = 1 THEN 'Desayuno'
+                   WHEN ffffg.idfeedingtype = 2 THEN 'Almuerzo'
+                   WHEN ffffg.idfeedingtype = 3 THEN 'Cena'
+               END AS tipo_comida,
+               ffffg.value AS precio_unitario,
+               COALESCE(
+                   CASE
+                       WHEN ffffg.idfamilygroup = 1 THEN cc.num_ninos
+                       WHEN ffffg.idfamilygroup = 2 THEN cc.num_adultos
+                       WHEN ffffg.idfamilygroup = 3 THEN cc.num_adultos_mayores
+                       WHEN ffffg.idfamilygroup = 4 THEN cc.num_adultos_extras
+                   END, 0
+               ) AS cantidad_personas,
+               COALESCE(
+                   CASE
+                       WHEN ffffg.idfamilygroup = 1 THEN cc.num_ninos
+                       WHEN ffffg.idfamilygroup = 2 THEN cc.num_adultos
+                       WHEN ffffg.idfamilygroup = 3 THEN cc.num_adultos_mayores
+                       WHEN ffffg.idfamilygroup = 4 THEN cc.num_adultos_extras
+                   END, 0
+               ) * ffffg.value AS costo_total
+           FROM booking_feeding bf
+           INNER JOIN feeding f ON bf.feedingid = f.id
+           INNER JOIN feeding_type_feeding_family_group ffffg ON f.id = ffffg.idfeeding
+           LEFT JOIN CompanionsCount cc ON bf.bookingid = cc.bookingid
+           WHERE bf.bookingid = :bookingId
+             AND (COALESCE(
+                   CASE
+                       WHEN ffffg.idfamilygroup = 1 THEN cc.num_ninos
+                       WHEN ffffg.idfamilygroup = 2 THEN cc.num_adultos
+                       WHEN ffffg.idfamilygroup = 3 THEN cc.num_adultos_mayores
+                       WHEN ffffg.idfamilygroup = 4 THEN cc.num_adultos_extras
+                   END, 0) * ffffg.value) > 0
+           ORDER BY categoria, tipo_comida;
+           """)
+        Flux<FoodDetailVisualCountDto> findPaymentDetailsByBookingId(Integer bookingId);
+
+        @Query("""
+        SELECT 
+            bookingid,
+            CONCAT('SOLO ALOJAMIENTO - ',numberadults, ' Adultos + ', numberchildren, ' Niños') AS cantidad_personas,
+            CONCAT(
+                'INGRESO ', TO_CHAR(daybookinginit , 'DD'), ' ', TO_CHAR(daybookinginit, 'TMMonth'),
+                ' - SALIDA ', TO_CHAR(daybookingend, 'DD'), ' ', TO_CHAR(daybookingend, 'TMMonth')
+            ) AS rango_fechas,
+            'INCLUYE DESAYUNO' AS incluye_desayuno
+        FROM booking
+        WHERE bookingid = :bookingId
+    """)
+        Mono<VisualCountDetailsDTO> findBookingDetailsByBookingId(Integer bookingId);
+
+        @Query("""
+        SELECT
+          u.email AS userEmail,
+       u.firstname || ' ' || u.lastname AS titularName,
+       p.fulldayid AS reservationCode,
+       TO_CHAR(f.bookingdate , 'DD/MM/YYYY') AS checkInDateEntry,
+       TO_CHAR(f.bookingdate, 'DD/MM/YYYY') AS checkInDateSalida,
+       f.type,
+       COALESCE(SUM(CASE WHEN d.typeperson IN ('ADULTO', 'ADULTO_MAYOR') THEN d.quantity ELSE 0 END), 0) AS adults,
+       COALESCE(SUM(CASE WHEN d.typeperson IN ('NINO', 'INFANTE') THEN d.quantity ELSE 0 END), 0) AS children
+       FROM paymentbook p
+       JOIN fullday f ON p.fulldayid = f.fulldayid
+       JOIN userclient u ON f.userclientid = u.userclientid
+       LEFT JOIN fulldaydetail d ON f.fulldayid = d.fulldayid
+       WHERE p.paymentbookid = :paymentBookId
+       GROUP BY u.email, u.firstname , u.lastname , p.fulldayid , f.bookingdate , f.type;
+               """)
+        Mono<DetailEmailFulldayDto> getPaymentDetails(@Param("paymentBookId") Integer paymentBookId);
 
 }

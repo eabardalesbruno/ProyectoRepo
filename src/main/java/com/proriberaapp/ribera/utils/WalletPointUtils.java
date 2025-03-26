@@ -18,11 +18,11 @@ public class WalletPointUtils {
     }
 
     public Mono<Double> calculatePoints(WalletPointRequest request) {
-        if (request.getPoints() == null) {
+        if (request.getRewardPoints() == null) {
             return Mono.just(0.0);
         }
         return getFactorForPointType(request.getPointTypeId())
-                .map(factor -> request.getPoints() * factor);
+                .map(factor -> request.getRewardPoints() * factor);
     }
 
     public Mono<Double> getFactorForPointType(Integer pointTypeId) {
@@ -34,7 +34,6 @@ public class WalletPointUtils {
         return WalletPointHistoryEntity.builder()
                 .userId(userId)
                 .points(points)
-                .transactionDate(LocalDateTime.now())
                 .build();
     }
 }

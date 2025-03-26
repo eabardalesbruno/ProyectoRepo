@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.Map;
 
 @RestController
@@ -52,22 +53,20 @@ public class RefusePaymentController {
         }
         return refusePaymentService.updatePendingPayAndSendConfirmation(
                 paymentBookId)
-                .then(Mono.just(new CustomResponse("El pago ha sido aprobado exitosamente", request))); /*
-                                                                                                         * return
-                                                                                                         * refusePaymentService
-                                                                                                         * .
-                                                                                                         * updatePendingPayAndSendConfirmation
-                                                                                                         * (
-                                                                                                         * paymentBookId)
-                                                                                                         */
-        /*
-         * .then(Mono.just(new CustomResponse("El pago ha sido aprobado exitosamente",
-         * request)));
-         */
+                .then(Mono.just(new CustomResponse("El pago ha sido aprobado exitosamente", request)));
     }
 
     @DeleteMapping("/{id}")
     public Mono<Void> deleteRefusePayment(@PathVariable Integer id) {
         return refusePaymentService.deleteRefusePayment(id);
     }
+
+    @PostMapping("/refuse")
+    public Mono<ResponseEntity<Map<String, String>>> refusePayment(@RequestParam Integer paymentBookId, @RequestParam Integer refuseReasonId, @RequestParam String refuseReason) {
+        return refusePaymentService.refusePaymentFullday(paymentBookId, refuseReasonId, refuseReason)
+                .then(Mono.just(ResponseEntity.ok(Collections.singletonMap("detail", refuseReason))))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Collections.singletonMap("detail", "Error al procesar el rechazo."))));
+    }
+
 }

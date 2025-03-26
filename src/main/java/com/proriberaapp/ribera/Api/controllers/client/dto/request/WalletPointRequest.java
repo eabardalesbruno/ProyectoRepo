@@ -9,12 +9,9 @@ public class WalletPointRequest {
     private Integer userId;
 
     @NotNull(message = "El campo 'points' es requerido")
-    private Double points;
-
-    @NotBlank(message = "Tipo de punto es requerido")
+    private Double rewardPoints;
     private String pointType;
     private Integer pointTypeId;
+    private Integer familyId;
 
-    @NotBlank(message = "Debe seleccionar una membresia")
-    private Integer membershipId;
 }

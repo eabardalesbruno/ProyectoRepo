@@ -10,6 +10,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -75,5 +78,21 @@ public class TicketEntryFullDayServiceImpl implements TicketEntryFullDayService 
     @Override
     public Flux<String> getEnabledDaysAll() {
         return ticketEntryFullDayRepository.obtenerEnabledDays();
+    }
+
+    @Override
+    public Mono<List<Integer>> getEnabledDays() {
+        return ticketEntryFullDayRepository.findTopBy()
+                .flatMap(ticket -> {
+                    if (ticket.getEnabledDays() == null || ticket.getEnabledDays().isEmpty()) {
+                        return Mono.empty();
+                    }
+                    String cleanedString = ticket.getEnabledDays().replaceAll("[\\[\\]]", "");
+                    List<Integer> enabledDaysList = Arrays.stream(cleanedString.split(","))
+                            .map(String::trim)
+                            .map(Integer::parseInt)
+                            .collect(Collectors.toList());
+                    return Mono.just(enabledDaysList);
+                });
     }
 }
