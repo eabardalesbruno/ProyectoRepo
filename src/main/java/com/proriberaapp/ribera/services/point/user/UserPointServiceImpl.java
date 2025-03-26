@@ -22,7 +22,7 @@ public class UserPointServiceImpl implements UserPointService {
     private final WebClient webClient;
     private final UserClientService userClientService;
     private final JwtProvider jtp;
-    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJFUDUyMDMyMTAwMDAiLCJyb2xlcyI6IlJPTEVfQURNSU4sUk9MRV9VU0VSIiwiaWF0IjoxNzQzMDA5NjMzLCJleHAiOjE3NDMwMjc2MzN9._T6hahGSRdXUjoyGX6mWsfhnwRpFMIU1UDjhmNfZdYg";
+    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJFUDUyMDMyMTAwMDAiLCJyb2xlcyI6IlJPTEVfQURNSU4sUk9MRV9VU0VSIiwiaWF0IjoxNzQzMDI4OTMyLCJleHAiOjE3NDMwNDY5MzJ9.rG3QVZqCo5tP6fJp3hec1U_oo_ckG5_3nRZxzh9Z2vE";
     private PasswordEncoder passwordEncoder;
     @Value("${backoffice.api.url}")
     private String urlBackOffice;
