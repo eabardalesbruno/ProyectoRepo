@@ -59,4 +59,9 @@ public class CancelPaymentController {
     public Mono<Void> deleteCancelPayment(@PathVariable Integer id) {
         return cancelPaymentService.deleteCancelPayment(id);
     }
+
+    @PostMapping("/full-day/{fullDayId}")
+    public Mono<Void> cancelFullDay(@PathVariable Integer fullDayId) {
+        return cancelPaymentService.cancelFullDay(fullDayId);
+    }
 }

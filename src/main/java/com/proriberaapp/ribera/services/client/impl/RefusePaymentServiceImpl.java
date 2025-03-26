@@ -1,8 +1,8 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto;
+import com.proriberaapp.ribera.Domain.dto.DetailEmailFulldayDto;
 import com.proriberaapp.ribera.Domain.dto.FullDayDetailDTO;
-import com.proriberaapp.ribera.Domain.dto.PaymentBookUserDTO;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
@@ -20,23 +20,14 @@ import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.RefusePaymentService;
 import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
 import com.proriberaapp.ribera.utils.TransformDate;
-import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
-import com.proriberaapp.ribera.utils.emails.BookingEmailDto;
-import com.proriberaapp.ribera.utils.emails.ConfirmPaymentByBankTransferAndCardTemplateEmail;
-import com.proriberaapp.ribera.utils.emails.ConfirmReserveBookingTemplateEmail;
-import com.proriberaapp.ribera.utils.emails.RejectedPaymentTemplateEmail;
+import com.proriberaapp.ribera.utils.emails.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -343,6 +334,23 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                     } else {
                                         return this.invoiceService.save(invoiceDomain)
                                                 .then(paymentBookRepository.confirmPayment(paymentBookId))
+                                                .then(
+                                                        fetchPaymentDetails(paymentBookId)
+                                                                .flatMap(paymentDetails -> {
+                                                                    String recipientName = paymentDetails.getName();
+                                                                    String typeEmail = paymentDetails.getTypefullday();
+                                                                    int reservationCode = paymentDetails.getFulldayid();
+                                                                    String checkInDate = paymentDetails.getCheckinEntry();
+                                                                    int adults = paymentDetails.getAdults();
+                                                                    int children = paymentDetails.getChildren();
+
+                                                                    String emailBody = EmailTemplateFullday.getAcceptanceTemplate(recipientName,
+                                                                            typeEmail, reservationCode, checkInDate, adults, children
+                                                                    );
+
+                                                                    return this.emailService.sendEmail(paymentBook.getUseremail(), "Confirmación de Pago Aceptado", emailBody);
+                                                                })
+                                                )
                                                 .then();
                                     }
                                 });
@@ -410,28 +418,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
         return "Full day - Todo Incluido - Adulto";
     }
 
-    private PaymentBookEntity mapToPaymentBookEntity(PaymentBookUserDTO dto) {
-        return PaymentBookEntity.builder()
-                .paymentBookId(dto.getPaymentbookid())
-                .operationCode(dto.getOperationcode())
-                .note(dto.getNote())
-                .totalCost(dto.getTotalCost())
-                .imageVoucher(dto.getImagevoucher())
-                .totalPoints(dto.getTotalpoints())
-                .paymentComplete(dto.getPaymentcomplete())
-                .pendingpay(dto.getPendingpay())
-                .userClientId(dto.getUserclientid())
-                .paymentStateId(dto.getPaymentstateid())
-                .currencyTypeId(dto.getCurrencytypeid())
-                .percentageDiscount(dto.getPercentagediscount())
-                .totalCostWithOutDiscount(dto.getTotalcostwithoutdiscount())
-                .invoiceDocumentNumber(dto.getInvoicedocumentnumber())
-                .invoiceType(dto.getInvoicetype())
-                .bookingId(dto.getBookingid())
-                .build();
-    }
-
-        private Mono<String> generatePaymentConfirmationEmailBody(Integer paymentBookId) {
+    private Mono<String> generatePaymentConfirmationEmailBody(Integer paymentBookId) {
 
                 // Obtén los datos de `getPaymentDetails`
                 return getPaymentDetails(paymentBookId)
@@ -726,4 +713,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
          * }
          */
 
+    public Mono<DetailEmailFulldayDto> fetchPaymentDetails(Integer paymentBookId) {
+        return paymentBookRepository.getPaymentDetails(paymentBookId);
+    }
 }

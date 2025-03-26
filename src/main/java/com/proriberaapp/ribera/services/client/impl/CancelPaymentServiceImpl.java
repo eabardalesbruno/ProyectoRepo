@@ -22,17 +22,21 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
     private final UserClientRepository userClientRepository;
     private final BookingRepository bookingRepository;
     private final EmailService emailService;
+    private final FullDayRepository fullDayRepository;
+    private final FullDayDetailRepository fullDayDetailRepository;
 
     public CancelPaymentServiceImpl(CancelPaymentRepository cancelPaymentRepository,
-            PaymentBookRepository paymentBookRepository,
-            UserClientRepository userClientRepository,
-            BookingRepository bookingRepository,
-            EmailService emailService) {
+                                    PaymentBookRepository paymentBookRepository,
+                                    UserClientRepository userClientRepository,
+                                    BookingRepository bookingRepository,
+                                    EmailService emailService, FullDayRepository fullDayRepository, FullDayDetailRepository fullDayDetailRepository) {
         this.cancelPaymentRepository = cancelPaymentRepository;
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
         this.bookingRepository = bookingRepository;
         this.emailService = emailService;
+        this.fullDayRepository = fullDayRepository;
+        this.fullDayDetailRepository = fullDayDetailRepository;
     }
 
     @Override
@@ -239,6 +243,24 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
                     }
                     return Mono.empty();
                 });
+    }
+
+    @Override
+    public Mono<Void> cancelFullDay(Integer fullDayId) {
+        return fullDayRepository.findByFulldayid(fullDayId)
+                .flatMap(fullDay -> {
+                    fullDay.setBookingstateid(4);
+                    return fullDayRepository.save(fullDay);
+                })
+                .then(fullDayDetailRepository.deleteByFulldayid(fullDayId))
+                .then(Mono.defer(() -> {
+                    CancelPaymentEntity cancelPayment = new CancelPaymentEntity();
+                    cancelPayment.setPaymentBookId(fullDayId);
+                    cancelPayment.setCancelReasonId(1);
+                    cancelPayment.setDetail("cancelado");
+                    return cancelPaymentRepository.save(cancelPayment);
+                }))
+                .then();
     }
 
     private String generatePaymentConfirmationEmailBody(UserClientEntity userClient) {

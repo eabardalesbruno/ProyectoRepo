@@ -2,10 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.FullDayRequest;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
-import com.proriberaapp.ribera.Domain.dto.CompanionsDto;
-import com.proriberaapp.ribera.Domain.dto.FoodDetailVisualCountDto;
-import com.proriberaapp.ribera.Domain.dto.PaymentDetailFulldayDTO;
-import com.proriberaapp.ribera.Domain.dto.VisualCountDetailsDTO;
+import com.proriberaapp.ribera.Domain.dto.*;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.services.client.CompanionsService;
@@ -178,5 +175,14 @@ public class FullDayController {
     public Mono<UserClientEntity> getUserclientFullday(@PathVariable Integer userId) {
         System.out.println("userId: " + userId);
         return fullDayService.getUserclientFullday(userId);
+    }
+    @GetMapping("/payment-details/{bookingId}")
+    public Flux<FoodDetailVisualCountDto> getPaymentDetails(@PathVariable Integer bookingId) {
+        return fullDayService.getPaymentDetails(bookingId);
+    }
+
+    @GetMapping("/visual-count-details/{bookingId}")
+    public Mono<VisualCountDetailsDTO> getVisualCountDetails(@PathVariable Integer bookingId) {
+        return fullDayService.getVisualCountDetails(bookingId);
     }
 }

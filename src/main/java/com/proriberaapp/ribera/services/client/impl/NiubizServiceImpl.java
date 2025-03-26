@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.TransactionNecessaryResponse;
 import com.proriberaapp.ribera.Domain.dto.BookingAndRoomNameDto;
+import com.proriberaapp.ribera.Domain.dto.DetailEmailFulldayDto;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
@@ -25,6 +26,7 @@ import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.BookingEmailDto;
 import com.proriberaapp.ribera.utils.emails.ConfirmPaymentByBankTransferAndCardTemplateEmail;
+import com.proriberaapp.ribera.utils.emails.EmailTemplateFullday;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jose4j.base64url.internal.apache.commons.codec.binary.Base64;
@@ -387,17 +389,37 @@ public class NiubizServiceImpl implements NiubizService {
                                                     fullDay.setBookingstateid(2);
                                                     return fullDayRepository.save(fullDay);
                                                 })
-                                        );
+                                        )
+                                        .then(fetchPaymentDetails(paymentBookR.getPaymentBookId()))
+                                        .flatMap(paymentDetails -> {
+                                            String recipientName = paymentDetails.getName();
+                                            String typeEmail = paymentDetails.getTypefullday();
+                                            int reservationCode = paymentDetails.getFulldayid();
+                                            String checkInDate = paymentDetails.getCheckinEntry();
+                                            int adults = paymentDetails.getAdults();
+                                            int children = paymentDetails.getChildren();
+
+                                            String emailBody = EmailTemplateFullday.getAcceptanceTemplate(
+                                                    recipientName, typeEmail, reservationCode, checkInDate, adults, children
+                                            );
+                                            return emailService.sendEmail(
+                                                    userClient.getEmail(),
+                                                    "Confirmación de Pago Aceptado",
+                                                    emailBody
+                                            );
+                                        });
+                            })
+                            .thenReturn(new TransactionNecessaryResponse(true))
+                            .onErrorResume(e -> {
+                                return fullDayRepository.findByFulldayid(fullDayId)
+                                        .flatMap(fullDay -> {
+                                            fullDay.setBookingstateid(3);
+                                            return fullDayRepository.save(fullDay);
+                                        })
+                                        .then(sendErrorEmail(userClient.getEmail(), e.getMessage()))
+                                        .then(Mono.error(e));
                             });
-                })
-                .thenReturn((Object) new TransactionNecessaryResponse(true))
-                .onErrorResume(e -> fullDayRepository.findByFulldayid(fullDayId)
-                        .flatMap(fullDay -> {
-                            fullDay.setBookingstateid(3);
-                            return fullDayRepository.save(fullDay);
-                        })
-                        .then(Mono.error(e))
-                );
+                });
     }
 
 
@@ -683,4 +705,7 @@ public class NiubizServiceImpl implements NiubizService {
         return body;
     }
 
+    public Mono<DetailEmailFulldayDto> fetchPaymentDetails(Integer paymentBookId) {
+        return paymentBookRepository.getPaymentDetails(paymentBookId);
+    }
 }
