@@ -115,31 +115,29 @@ public class QuotationServiceImpl implements QuotationService {
     public Mono<QuotationEntity> updateQuotation(QuotationDto quotationDto) {
         List<Integer> daysSelected = quotationDto.getDays().stream().filter(d -> d.isSelected())
                 .map(d -> d.getId()).toList();
-
         return quotationRepository.getQuotationFindOfferAndDays(quotationDto.getRoomOfferIds(),
-                        daysSelected,
-                        quotationDto.getQuotationId())
+                    daysSelected,
+                    quotationDto.getQuotationId())
                 .collectList()
                 .flatMap(quotations -> {
                     if (quotations.size() > 0) {
                         QuotationOfferDayDto quotationOfferDayDto = quotations.get(0);
                         return Mono.error(new QuoteAndOfferIsAlreadyRegisteredException(
-                                quotationOfferDayDto
-                                        .getOffername(),
+                                quotationOfferDayDto.getOffername(),
                                 quotationOfferDayDto.getQuotation_description(),
                                 quotationOfferDayDto.getDayname()));
                     }
                     return quotationRepository.findById(quotationDto.getQuotationId())
                             .flatMap(existingQuotation -> {
-                                existingQuotation.setQuotationDescription(
-                                        quotationDto.getQuotationDescription());
+                                existingQuotation.setQuotationDescription(quotationDto.getQuotationDescription());
                                 existingQuotation.setKidCost(quotationDto.getKidCost());
-                                existingQuotation.setAdultCost(
-                                        quotationDto.getAdultCost());
-                                existingQuotation.setAdultMayorCost(
-                                        quotationDto.getAdultMayorCost());
-                                existingQuotation.setAdultExtraCost(
-                                        quotationDto.getAdultExtraCost());
+                                existingQuotation.setAdultCost(quotationDto.getAdultCost());
+                                existingQuotation.setAdultMayorCost(quotationDto.getAdultMayorCost());
+                                existingQuotation.setAdultExtraCost(quotationDto.getAdultExtraCost());
+                                existingQuotation.setKidReward(quotationDto.getKidReward());
+                                existingQuotation.setAdultReward(quotationDto.getAdultReward());
+                                existingQuotation.setAdultMayorReward(quotationDto.getAdultMayorReward());
+                                existingQuotation.setAdultExtraReward(quotationDto.getAdultExtraReward());
                                 return quotationRepository.save(existingQuotation)
                                         .flatMap(savedQuotation -> quotationRoomOfferRepository
                                                 .findAllByQuotationId(
