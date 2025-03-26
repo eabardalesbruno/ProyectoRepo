@@ -64,18 +64,103 @@ public class EmailTemplateFullday {
                 "</html>";
     }
 
-    public static String getRejectionTemplate(String recipientName, String reservationCode, String reason) {
-        return "<html>" +
+    public static String getRejectionTemplate(String recipientName, String type) {
+        return "<!DOCTYPE html>" +
+                "<html lang=\"es\">" +
+                "<head>" +
+                "    <meta charset=\"UTF-8\">" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                "    <title>Email de Reserva</title>" +
+                "    <style>" +
+                "        body {font-family: Arial, sans-serif;background-color: #f5f5f5;margin: 0; padding: 0;}" +
+                "        .container {max-width: 650px; margin: 30px auto; background-color: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);overflow: hidden;}" +
+                "        .header img {width: 100%;display: block; height: 100px; object-fit: fill;}" +
+                "        .content {padding: 20px; font-size: 14px; color: #333; line-height: 1.5;}" +
+                "        .content p {margin: 10px 0;}" +
+                "        .bold {font-weight: bold;}" +
+                "        .footer-container {max-width: 650px;margin: 10px auto; background: #f5f5f5;}" +
+                "        .footer { background-color: white;padding: 20px; font-size: 14px; color: #333; text-align: left; border-radius: 10px;box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);}" +
+                "        .footer p {margin: 5px 0;}" +
+                "        .footer a {color: #007bff;text-decoration: none;}" +
+                "        .footer a:hover {text-decoration: underline;}" +
+                "    </style>" +
+                "</head>" +
                 "<body>" +
-                "<h2>Estimado(a) " + recipientName + ",</h2>" +
-                "<p>Lamentamos informarle que su reserva ha sido <strong>RECHAZADA</strong>.</p>" +
-                "<p><strong>Código de reserva:</strong> " + reservationCode + "</p>" +
-                "<p><strong>Motivo:</strong> " + reason + "</p>" +
-                "<p>Si tiene alguna consulta, no dude en contactarnos.</p>" +
-                "<p>Atentamente,</p>" +
-                "<p><strong>Equipo de Atención</strong></p>" +
+                "" +
+                "<div class=\"container\">" +
+                "    <div class=\"header\">" +
+                "        <img src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Hotel Ribera del Río\">" +
+                "    </div>" +
+                "    <div class=\"content\">" +
+                "        <p>Hola, <span class=\"bold\">"+recipientName+"</span>:</p>" +
+                "        <p>Le informamos que su reserva para la habitación <span class=\"bold\">"+type+"</span>. " +
+                "            fue anulada.</p>" +
+                " " +
+                "    </div>" +
+                "</div>" +
+                "<div class=\"footer-container\">" +
+                "    <div class=\"footer\">" +
+                "        <p><span class=\"bold\">¿Necesitas ayuda?</span></p>" +
+                "        <p>Envía tus comentarios e información de errores a " +
+                "            <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">informesyreservas@cieneguilladelrio.com</a>" +
+                "        </p>" +
+                "    </div>" +
+                "</div>" +
                 "</body>" +
                 "</html>";
     }
 
+    public static String getRefuseTemplate(String recipientName, String type, String refuseReason) {
+        return "<!DOCTYPE html>" +
+                "<html lang=\"es\">" +
+                "<head>" +
+                "    <meta charset=\"UTF-8\">" +
+                "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                "    <title>Email de Rechazo</title>" +
+                "    <style>" +
+                "        body { font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 0;}" +
+                "        .container { max-width: 650px; margin: 30px auto; background-color: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); overflow: hidden;}" +
+                "        .header img {width: 100%;display: block; height: 100px; object-fit: fill;}" +
+                "        .content { padding: 20px; font-size: 14px; color: #333; line-height: 1.5;}" +
+                "        .content p {margin: 10px 0;}" +
+                "        .bold {font-weight: bold;}" +
+                "        .button-container {text-align: center;margin: 20px 0;}" +
+                "        .button {display: inline-block; background-color: #0c5725; color: white; padding: 12px 25px; text-decoration: none; font-weight: bold; border-radius: 5px; font-size: 14px;}" +
+                "        .footer-container { max-width: 650px; margin: 10px auto; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); border-radius: 10px;}" +
+                "        .footer {background-color: white ;padding: 20px; font-size: 14px; color: #333; text-align: left; border-radius: 10px;}" +
+                "        .footer p { margin: 5px 0;}" +
+                "        .footer a { color: #007bff; text-decoration: none;}" +
+                "        .footer a:hover {text-decoration: underline;}" +
+                "    </style>" +
+                "</head>" +
+                "<body>" +
+
+                "<div class=\"container\">" +
+                "    <div class=\"header\">" +
+                "        <img src=\"https://s3.us-east-2.amazonaws.com/backoffice.documents/email/panoramica_resort.png\" alt=\"Hotel Ribera del Río\">" +
+                "    </div>" +
+                "    <div class=\"content\">" +
+                "        <p>Hola, <span class=\"bold\">"+recipientName+"</span>:</p>" +
+                "        <p>Verificamos tu pago para la reserva de <span class=\"bold\">"+type+"</span>. " +
+                "        Lo sentimos, pero no hemos podido completar tu pago en este momento.</p>" +
+                "        <p class=\"bold\">Motivo de rechazo: "+refuseReason+".</p>" +
+                "        <p>Por favor, inténtelo de nuevo. Gracias.</p>" +
+                "        <p>Recuerde que puede realizar su nueva reserva haciendo clic en el botón o usando este enlace: " +
+                "        <a href=\"https://cieneguillariberadelrio.com/bookings/disponibles\" style=\"color: #007bff; text-decoration: none;\">www.cieneguillariberadelrio.com/bookings/disponibles</a></p>" +
+                "        <div class=\"button-container\">" +
+                "            <a href=\"https://cieneguillariberadelrio.com/bookings/disponibles\" class=\"button\">Quiero reservar nuevamente</a>" +
+                "        </div>" +
+                "    </div>" +
+                "</div>" +
+                "<div class=\"footer-container\">" +
+                "    <div class=\"footer\">" +
+                "        <p><span class=\"bold\">¿Necesitas ayuda?</span></p>" +
+                "        <p>Envía tus comentarios e información de errores a" +
+                "            <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">informesyreservas@cieneguilladelrio.com</a>" +
+                "        </p>" +
+                "    </div>" +
+                "</div>" +
+                "</body>" +
+                "</html>";
+    }
 }

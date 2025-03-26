@@ -5,10 +5,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.CancelPaymentService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.RefusePaymentService;
-import com.proriberaapp.ribera.utils.emails.AnulatedUserTemplateEmail;
-import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
-import com.proriberaapp.ribera.utils.emails.RejectedPaymentTemplateEmail;
-import com.proriberaapp.ribera.utils.emails.bookingRejectUserEmailDto;
+import com.proriberaapp.ribera.utils.emails.*;
 
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -250,7 +247,16 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
         return fullDayRepository.findByFulldayid(fullDayId)
                 .flatMap(fullDay -> {
                     fullDay.setBookingstateid(4);
-                    return fullDayRepository.save(fullDay);
+                    return fullDayRepository.save(fullDay)
+                            .then(userClientRepository.findById(fullDay.getUserClientId())
+                                    .flatMap(userClient -> {
+                                        String recipientName = userClient.getFirstName();
+                                        String recipientEmail = userClient.getEmail();
+                                        String type = fullDay.getType();
+                                        String body = EmailTemplateFullday.getRejectionTemplate(recipientName, type);
+                                        return emailService.sendEmail(recipientEmail, "Anulación de Reserva", body);
+                                    })
+                            );
                 })
                 .then(fullDayDetailRepository.deleteByFulldayid(fullDayId))
                 .then(Mono.defer(() -> {

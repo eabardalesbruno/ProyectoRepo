@@ -23,4 +23,6 @@ public interface RefusePaymentService {
 
     Mono<Map<String, Object>> getPaymentDetails(Integer paymentBookId);
 
+    Mono<Void> refusePaymentFullday(Integer paymentBookId, Integer refuseReasonId, String refuseReason);
+
 }

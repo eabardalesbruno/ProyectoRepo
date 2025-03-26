@@ -173,7 +173,6 @@ public class FullDayController {
 
     @GetMapping("/userclient/{userId}")
     public Mono<UserClientEntity> getUserclientFullday(@PathVariable Integer userId) {
-        System.out.println("userId: " + userId);
         return fullDayService.getUserclientFullday(userId);
     }
     @GetMapping("/payment-details/{bookingId}")
