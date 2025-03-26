@@ -9,6 +9,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
+import com.proriberaapp.ribera.utils.constants.DiscountTypeCode;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -51,7 +52,7 @@ public interface UserClientService {
 
     Mono<Void> sendEventContactInfo(EventContactInfo eventContactInfo);
 
-    Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId, Integer bookingId);
+    Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId, Integer bookingId, DiscountTypeCode discountType);
 
     Mono<CompanyDataDto> loadDataRuc(String ruc);
 

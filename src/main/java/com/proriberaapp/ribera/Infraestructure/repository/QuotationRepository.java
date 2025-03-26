@@ -61,4 +61,14 @@ public interface QuotationRepository extends ReactiveCrudRepository<QuotationEnt
                     """)
     Flux<QuotationOfferDayDto> getQuotationFindOfferAndDays(Integer yearId, List<Integer> roomOfferId, List<Integer> dayId);
 
+    @Query("""
+        SELECT q.quotation_id, q.kid_reward, q.adult_reward, q.adult_mayor_reward, q.adult_extra_reward, qd.idday
+        FROM quotation q
+        JOIN quotation_roomoffer qr ON qr.quotation_id = q.quotation_id
+        JOIN quotation_day qd ON qd.idquotation = q.quotation_id
+        WHERE qr.room_offer_id = :roomOfferId
+        AND qd.idday IN (:dayIds)
+    """)
+    Flux<QuotationEntity> findQuotationByRoomOfferAndDays(Integer roomOfferId, List<Integer> dayIds);
+
 }

@@ -66,6 +66,9 @@ public class BookingEntity {
     @Column("checkin")
     private Timestamp checkIn;
     private Timestamp checkout;
+
+    @Column("total_rewards")
+    private Integer totalRewards;
     @Column("createdat")
     private Timestamp createdAt;
 
@@ -109,5 +112,4 @@ public class BookingEntity {
 
         return duration.toMinutes() >= 60;
     }
-
 }

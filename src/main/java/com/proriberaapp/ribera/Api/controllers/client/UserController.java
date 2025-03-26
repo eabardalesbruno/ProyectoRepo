@@ -317,7 +317,7 @@ public class UserController {
             @PathVariable Integer bookingId, @PathVariable DiscountTypeCode discountType) {
         Integer idUserClient = jwtProvider.getIdFromToken(token);
         System.out.println(discountType);
-        return this.userClientService.getPercentageDiscount(idUserClient, bookingId);
+        return this.userClientService.getPercentageDiscount(idUserClient, bookingId, discountType);
     }
 
     @GetMapping("/promotor/{userPromotorId}")
