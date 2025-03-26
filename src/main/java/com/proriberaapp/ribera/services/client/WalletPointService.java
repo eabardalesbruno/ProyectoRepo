@@ -13,4 +13,6 @@ public interface WalletPointService {
     Mono<WalletPointResponse> getWalletByUserId(Integer userId);
 
     Mono<WalletPointResponse> updateWalletPoints(Integer userId, WalletPointRequest walletPointRequest);
+
+    Mono<WalletPointResponse>  buyPoints(Integer userId, WalletPointRequest walletPointRequest);
 }

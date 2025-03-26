@@ -31,7 +31,7 @@ public class WalletPointController {
         Integer userId = jtp.getIdFromToken(token);
         return walletPointService.getWalletByUserId(userId)
                 .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
 
     @PutMapping
@@ -39,6 +39,14 @@ public class WalletPointController {
             @RequestBody WalletPointRequest request, @RequestHeader("Authorization") String token) {
         Integer userId = jtp.getIdFromToken(token);
         return walletPointService.updateWalletPoints(userId, request)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+    }
+
+    @PostMapping("/buy")
+    public Mono<ResponseEntity<WalletPointResponse>> buyPoints(@RequestBody WalletPointRequest request, @RequestHeader("Authorization") String token) {
+        Integer userId = jtp.getIdFromToken(token);
+        return walletPointService.buyPoints(userId, request)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
