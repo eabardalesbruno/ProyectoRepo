@@ -90,6 +90,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
         private final ProductSunatRepository productSunatRepository;
         @Autowired
         private BookingFeedingRepository bookingFeedingRepository;
+        private final FullDayRepository fullDayRepository;
 
         public RefusePaymentServiceImpl(RefusePaymentRepository refusePaymentRepository,
                                         PaymentBookRepository paymentBookRepository,
@@ -101,7 +102,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                         InvoiceItemRepository invoiceItemRepository,
                                         InvoiceServiceI invoiceService,
                                         RoomOfferRepository roomOfferRepository,
-                                        RoomRepository roomRepository, CommissionService commissionService, ProductSunatRepository productSunatRepository) {
+                                        RoomRepository roomRepository, CommissionService commissionService, ProductSunatRepository productSunatRepository, FullDayRepository fullDayRepository) {
                 this.refusePaymentRepository = refusePaymentRepository;
                 this.paymentBookRepository = paymentBookRepository;
                 this.userClientRepository = userClientRepository;
@@ -112,6 +113,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                 this.roomRepository = roomRepository;
             this.commissionService = commissionService;
             this.productSunatRepository = productSunatRepository;
+            this.fullDayRepository = fullDayRepository;
         }
 
         @Override
@@ -675,6 +677,40 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                                         });
                                 });
         }
+
+    @Override
+    public Mono<Void> refusePaymentFullday(Integer paymentBookId, Integer refuseReasonId, String refuseReason) {
+        return paymentBookRepository.findById(paymentBookId)
+                .flatMap(paymentBook -> {
+                    paymentBook.setPaymentStateId(3);
+                    paymentBook.setPendingpay(0);
+
+                    return paymentBookRepository.save(paymentBook)
+                            .then(Mono.defer(() -> {
+                                RefusePaymentEntity refusePayment = new RefusePaymentEntity();
+                                refusePayment.setPaymentBookId(paymentBookId);
+                                refusePayment.setRefuseReasonId(refuseReasonId);
+                                refusePayment.setDetail(refuseReason);
+                                return refusePaymentRepository.save(refusePayment);
+                            }))
+                            .then(fullDayRepository.findById(paymentBook.getFullDayId())
+                                    .flatMap(fullDay -> {
+                                        fullDay.setBookingstateid(3);
+                                        return fullDayRepository.save(fullDay)
+                                                .then(userClientRepository.findById(fullDay.getUserClientId())
+                                                        .flatMap(userClient -> {
+                                                            String recipientName = userClient.getFirstName();
+                                                            String email = userClient.getEmail();
+                                                            String type = fullDay.getType();
+
+                                                            String body = EmailTemplateFullday.getRefuseTemplate(recipientName, type, refuseReason);
+                                                            return emailService.sendEmail(email, "Pago Rechazado para la Reserva", body);
+                                                        })
+                                                );
+                                    })
+                            );
+                }).then();
+    }
 
         // Métodos de cálculo personalizados
         private int calculateDuration(int... values) {
