@@ -73,7 +73,7 @@ public class WalletPointServiceImpl implements WalletPointService {
                 .then();
     }
     @Override
-    public Mono<WalletPointResponse> getWalletByUserId(String username) {
+    public Mono<WalletPointResponse> getWalletByUsername(String username) {
         return userPointService.getUserPoints(username, 2)
                 .doOnNext(userPointDataResponse -> log.info("UserPointDataResponse: {}", userPointDataResponse))
                 .flatMap(userPointDataResponse ->
@@ -89,6 +89,13 @@ public class WalletPointServiceImpl implements WalletPointService {
                 )
                 .doOnError(e -> log.error("Error fetching wallet for user: {}", username, e))
                 .onErrorResume(e -> Mono.error(new RequestException("Error fetching wallet: " + e.getMessage())));
+    }
+
+    @Override
+    public Mono<WalletPointResponse> getWalletByUserId(Integer userId) {
+        return walletPointRepository.findByUserId(userId)
+                .switchIfEmpty(Mono.error(new RequestException("Wallet not found for user: " + userId)))
+                .map(walletPointMapper::toDto);
     }
 
     @Override

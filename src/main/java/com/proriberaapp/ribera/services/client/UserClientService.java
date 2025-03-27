@@ -66,4 +66,5 @@ public interface UserClientService {
 
     Mono<Void> updateAndValidatePassword(Integer userId,String currentPassword, String newPassword, String confirmPassword);
 
+    Mono<UserNameAndDiscountDto> getDiscountRewards(Integer rewardsPoints, Integer bookingId, Integer idUserClient);
 }
