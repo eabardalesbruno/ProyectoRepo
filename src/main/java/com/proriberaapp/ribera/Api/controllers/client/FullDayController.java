@@ -102,11 +102,11 @@ public class FullDayController {
     }
 
     @PostMapping("/typeFoodSave")
-    public Mono<FullDayTypeFoodEntity> createFullDayTypeFood(@RequestPart("file") Mono<FilePart> file, @RequestParam("foodName") String foodName,
+    public Flux<FullDayTypeFoodEntity> createFullDayTypeFood(@RequestPart("file") Mono<FilePart> file, @RequestParam("foodName") String foodName,
                                                              @RequestParam("type") String type, @RequestParam("price") BigDecimal price, @RequestParam("entry") String entry,
                                                              @RequestParam("background") String background, @RequestParam("drink") String drink, @RequestParam("dessert") String dessert,
                                                              @RequestParam("quantity") Integer quantity, @RequestParam("currencyTypeId") Integer currencyTypeId, @RequestParam("folderNumber") Integer folderNumber) {
-        FullDayTypeFoodEntity fullDayTypeFoodEntity = FullDayTypeFoodEntity.builder()
+        FullDayTypeFoodEntity foodEntity = FullDayTypeFoodEntity.builder()
                 .FoodName(foodName)
                 .type(type)
                 .price(price)
@@ -117,8 +117,24 @@ public class FullDayController {
                 .quantity(quantity)
                 .currencyTypeId(currencyTypeId)
                 .build();
+        Mono<FullDayTypeFoodEntity> saveOriginal = fullDayTypeFoodService.saveFullDayTypeFood(foodEntity, file, folderNumber);
 
-        return fullDayTypeFoodService.saveFullDayTypeFood(fullDayTypeFoodEntity, file, folderNumber);
+        if (type.equalsIgnoreCase("NIÑO")) {
+            FullDayTypeFoodEntity adultoMayorEntity = FullDayTypeFoodEntity.builder()
+                    .FoodName(foodName)
+                    .type("ADULTO_MAYOR")
+                    .price(price)
+                    .Entry(entry)
+                    .Background(background)
+                    .Drink(drink)
+                    .Dessert(dessert)
+                    .quantity(quantity)
+                    .currencyTypeId(currencyTypeId)
+                    .build();
+            Mono<FullDayTypeFoodEntity> saveAdultoMayor = fullDayTypeFoodService.saveFullDayTypeFood(adultoMayorEntity, file, folderNumber);
+            return Flux.merge(saveOriginal, saveAdultoMayor);
+        }
+        return saveOriginal.flux();
     }
 
     @PutMapping("/typeFoodUp/{fullDayTypeFoodId}")
