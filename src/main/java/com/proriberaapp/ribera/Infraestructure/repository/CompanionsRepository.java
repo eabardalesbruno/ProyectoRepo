@@ -31,4 +31,5 @@ public interface CompanionsRepository extends R2dbcRepository<CompanionsEntity, 
     @Query("SELECT * FROM companions WHERE fulldayid = :fulldayid")
     Flux<CompanionsEntity> findByFullDayId(Integer fulldayid);
 
+    Mono<Void> deleteByFulldayid(Integer fulldayid);
 }

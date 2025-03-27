@@ -21,12 +21,13 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
     private final EmailService emailService;
     private final FullDayRepository fullDayRepository;
     private final FullDayDetailRepository fullDayDetailRepository;
+    private final CompanionsRepository companionsRepository;
 
     public CancelPaymentServiceImpl(CancelPaymentRepository cancelPaymentRepository,
                                     PaymentBookRepository paymentBookRepository,
                                     UserClientRepository userClientRepository,
                                     BookingRepository bookingRepository,
-                                    EmailService emailService, FullDayRepository fullDayRepository, FullDayDetailRepository fullDayDetailRepository) {
+                                    EmailService emailService, FullDayRepository fullDayRepository, FullDayDetailRepository fullDayDetailRepository, CompanionsRepository companionsRepository) {
         this.cancelPaymentRepository = cancelPaymentRepository;
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
@@ -34,6 +35,7 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
         this.emailService = emailService;
         this.fullDayRepository = fullDayRepository;
         this.fullDayDetailRepository = fullDayDetailRepository;
+        this.companionsRepository = companionsRepository;
     }
 
     @Override
@@ -259,6 +261,7 @@ public class CancelPaymentServiceImpl implements CancelPaymentService {
                             );
                 })
                 .then(fullDayDetailRepository.deleteByFulldayid(fullDayId))
+                .then(companionsRepository.deleteByFulldayid(fullDayId))
                 .then(Mono.defer(() -> {
                     CancelPaymentEntity cancelPayment = new CancelPaymentEntity();
                     cancelPayment.setPaymentBookId(fullDayId);
