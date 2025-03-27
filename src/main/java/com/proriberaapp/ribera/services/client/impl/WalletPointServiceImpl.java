@@ -9,6 +9,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.PointConversionRateRep
 import com.proriberaapp.ribera.Infraestructure.repository.WalletPointHistoryRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletPointRepository;
 import com.proriberaapp.ribera.services.client.WalletPointService;
+import com.proriberaapp.ribera.services.point.user.UserPointService;
 import com.proriberaapp.ribera.utils.WalletPointUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ public class WalletPointServiceImpl implements WalletPointService {
     private final WalletPointMapper walletPointMapper;
     private final TransactionalOperator transactionalOperator;
     private final WalletPointHistoryRepository walletPointHistoryRepository;
+    private final UserPointService userPointService;
     private final WalletPointUtils walletPointUtils;
     private final PointConversionRateRepository conversionRateRepository;
 
@@ -71,11 +73,21 @@ public class WalletPointServiceImpl implements WalletPointService {
                 .then();
     }
     @Override
-    public Mono<WalletPointResponse> getWalletByUserId(Integer userId) {
-        return walletPointRepository.findByUserId(userId)
-                .map(walletPointMapper::toDto)
-                .switchIfEmpty(Mono.error(new RequestException("Wallet not found for user: " + userId)))
-                .doOnError(e -> log.error("Error fetching wallet for user: {}", userId))
+    public Mono<WalletPointResponse> getWalletByUserId(String username) {
+        return userPointService.getUserPoints(username, 2)
+                .doOnNext(userPointDataResponse -> log.info("UserPointDataResponse: {}", userPointDataResponse))
+                .flatMap(userPointDataResponse ->
+                        walletPointRepository.findByUsername(username)
+                                .map(walletPointEntity -> {
+                                    WalletPointResponse walletPointResponse = walletPointMapper.toDto(walletPointEntity);
+                                    walletPointResponse.setUserInclubId(userPointDataResponse.getIdUser());
+                                    walletPointResponse.setIdFamily(userPointDataResponse.getIdFamily());
+                                    walletPointResponse.setLiberatedPoints(userPointDataResponse.getLiberatedPoints());
+                                    return walletPointResponse;
+                                })
+                                .switchIfEmpty(Mono.error(new RequestException("Wallet not found for user: " + username)))
+                )
+                .doOnError(e -> log.error("Error fetching wallet for user: {}", username, e))
                 .onErrorResume(e -> Mono.error(new RequestException("Error fetching wallet: " + e.getMessage())));
     }
 
@@ -99,6 +111,8 @@ public class WalletPointServiceImpl implements WalletPointService {
                             ));
                 }).then();
     }
+
+
 
 
 }

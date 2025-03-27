@@ -6,5 +6,9 @@ import lombok.Data;
 public class WalletPointResponse {
     private Long id;
     private Integer userId;
+    private Integer userInclubId;
     private Integer points;
+    private Integer liberatedPoints;
+    private Integer idFamily;
+
 }
