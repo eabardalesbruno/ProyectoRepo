@@ -15,7 +15,6 @@ import com.proriberaapp.ribera.services.client.impl.WalletServiceImpl;
 import com.proriberaapp.ribera.utils.constants.DiscountTypeCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +22,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static com.proriberaapp.ribera.utils.GeneralMethods.generatePassword;
-
-import org.springframework.web.reactive.function.client.WebClient;
 
 @RestController
 @RequestMapping("/api/v1/users")
