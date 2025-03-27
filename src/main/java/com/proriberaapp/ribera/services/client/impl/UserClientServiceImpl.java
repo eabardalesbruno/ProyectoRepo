@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Domain.dto.DiscountDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalUsersDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ContactInfo;
@@ -12,9 +13,11 @@ import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
+import com.proriberaapp.ribera.Domain.entities.WalletPointEntity;
 import com.proriberaapp.ribera.Infraestructure.exception.PasswordNotMatchesException;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserPromoterRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.WalletPointRepository;
 import com.proriberaapp.ribera.services.client.*;
 import com.proriberaapp.ribera.utils.ContactInfoUtil;
 import com.proriberaapp.ribera.utils.DiscountUtil;
@@ -25,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -33,6 +37,10 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
+
+import static com.proriberaapp.ribera.utils.constants.DiscountTypeCode.DISCOUNT_MEMBER;
+import static com.proriberaapp.ribera.utils.constants.DiscountTypeCode.POINTS_REWARD;
 
 @Slf4j
 @Service
@@ -42,6 +50,7 @@ public class UserClientServiceImpl implements UserClientService {
     private final UserClientRepository userClientRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtUtil;
+    private final WalletPointRepository walletPointRepository;
     @Autowired
     private UserApiClient userApiClient;
     @Autowired
@@ -537,7 +546,7 @@ public class UserClientServiceImpl implements UserClientService {
     public Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId, Integer bookingId, DiscountTypeCode discountType) {
         return Mono.zip(
                 this.bookingService.findById(bookingId),
-                this.getDiscount(userId, discountType),
+                this.getDiscount(userId, bookingId, discountType),
                 this.bookingService.getTotalFeedingAmount(bookingId).switchIfEmpty(Mono.just(0F))
         ).flatMap(data -> {
             BookingEntity booking = data.getT1();
@@ -549,10 +558,27 @@ public class UserClientServiceImpl implements UserClientService {
         });
     }
 
-    private Mono<UserNameAndDiscountDto> getDiscount(Integer userId, DiscountTypeCode discountType) {
+    private Mono<UserNameAndDiscountDto> getDiscount(Integer userId, Integer bookingId, DiscountTypeCode discountType) {
         return switch (discountType) {
-            case DISCOUNT_MEMBER -> this.verifiedDiscountService.verifiedPercentajeDiscount(userId);
-            case POINTS_REWARD -> DiscountUtil.calculateRewardsDiscount(userId);
+            case DISCOUNT_MEMBER -> this.verifiedDiscountService.verifiedPercentajeDiscount(userId, bookingId);
+            case POINTS_REWARD ->Mono.zip( walletPointRepository.findByUserId(userId),
+                            this.bookingService.findById(bookingId)
+                            )
+                            .flatMap(data-> {
+                                WalletPointEntity walletPoint = data.getT1();
+                                BookingEntity booking = data.getT2();
+                                return Mono.just(UserNameAndDiscountDto.builder()
+                                                .percentage(70)
+                                                .discounts(List.of(DiscountDto.builder()
+                                                                .amount(booking.getCostFinal().floatValue() * 0.7f)
+                                                                .applyToReservation(true)
+                                                                .name("PUNTOS REWARDS")
+                                                                .percentage(70f)
+                                                        .build()))
+                                        .build()
+                                );
+                            })
+            ;
             case DISCOUNT_COUPON -> DiscountUtil.calculateCouponDiscount(userId);
             default -> Mono.error(new IllegalArgumentException("Tipo de descuento no válido"));
         };
@@ -685,6 +711,16 @@ public class UserClientServiceImpl implements UserClientService {
                     return Mono.empty();
                 })
                 .then();
+    }
+
+    @Override
+    public Mono<UserNameAndDiscountDto> getDiscountRewards(Integer rewardsPoints, Integer bookingId, Integer userId) {
+        return null;/*bookingService.findById(bookingId)
+                .flatMap(bookingEntity -> return walletPointService.getWalletByUserId(userId)
+                .flatMap(wallet->{
+
+                }))
+                ;*/
     }
 
 }

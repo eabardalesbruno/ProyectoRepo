@@ -10,8 +10,8 @@ public class WalletPointRequest {
 
     @NotNull(message = "El campo 'points' es requerido")
     private Double rewardPoints;
-
     private String pointType;
     private Integer pointTypeId;
+    private Integer familyId;
 
 }

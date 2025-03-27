@@ -5,21 +5,17 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.response.WalletPointRe
 import com.proriberaapp.ribera.Api.controllers.exception.RequestException;
 import com.proriberaapp.ribera.Domain.entities.WalletPointHistoryEntity;
 import com.proriberaapp.ribera.Domain.mapper.WalletPointMapper;
+import com.proriberaapp.ribera.Infraestructure.repository.PointConversionRateRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletPointHistoryRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletPointRepository;
-import com.proriberaapp.ribera.services.client.PointsTypeService;
 import com.proriberaapp.ribera.services.client.WalletPointService;
+import com.proriberaapp.ribera.services.point.user.UserPointService;
 import com.proriberaapp.ribera.utils.WalletPointUtils;
-import io.r2dbc.spi.ConnectionFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
-
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +25,9 @@ public class WalletPointServiceImpl implements WalletPointService {
     private final WalletPointMapper walletPointMapper;
     private final TransactionalOperator transactionalOperator;
     private final WalletPointHistoryRepository walletPointHistoryRepository;
+    private final UserPointService userPointService;
     private final WalletPointUtils walletPointUtils;
+    private final PointConversionRateRepository conversionRateRepository;
 
     @Override
     public Mono<WalletPointResponse> createWalletPoint(WalletPointRequest walletPointRequest) {
@@ -75,11 +73,53 @@ public class WalletPointServiceImpl implements WalletPointService {
                 .then();
     }
     @Override
-    public Mono<WalletPointResponse> getWalletByUserId(Integer userId) {
-        return walletPointRepository.findByUserId(userId)
-                .map(walletPointMapper::toDto)
-                .switchIfEmpty(Mono.error(new RequestException("Wallet not found for user: " + userId)))
-                .doOnError(e -> log.error("Error fetching wallet for user: {}", userId))
+    public Mono<WalletPointResponse> getWalletByUsername(String username) {
+        return userPointService.getUserPoints(username, 2)
+                .doOnNext(userPointDataResponse -> log.info("UserPointDataResponse: {}", userPointDataResponse))
+                .flatMap(userPointDataResponse ->
+                        walletPointRepository.findByUsername(username)
+                                .map(walletPointEntity -> {
+                                    WalletPointResponse walletPointResponse = walletPointMapper.toDto(walletPointEntity);
+                                    walletPointResponse.setUserInclubId(userPointDataResponse.getIdUser());
+                                    walletPointResponse.setIdFamily(userPointDataResponse.getIdFamily());
+                                    walletPointResponse.setLiberatedPoints(userPointDataResponse.getLiberatedPoints());
+                                    return walletPointResponse;
+                                })
+                                .switchIfEmpty(Mono.error(new RequestException("Wallet not found for user: " + username)))
+                )
+                .doOnError(e -> log.error("Error fetching wallet for user: {}", username, e))
                 .onErrorResume(e -> Mono.error(new RequestException("Error fetching wallet: " + e.getMessage())));
     }
+
+    @Override
+    public Mono<WalletPointResponse> getWalletByUserId(Integer userId) {
+        return walletPointRepository.findByUserId(userId)
+                .switchIfEmpty(Mono.error(new RequestException("Wallet not found for user: " + userId)))
+                .map(walletPointMapper::toDto);
+    }
+
+    @Override
+    public Mono<Void> convertPoints(Integer userId, WalletPointRequest walletPointRequest) {
+        return conversionRateRepository.findByFamilyId(walletPointRequest.getFamilyId())
+                .switchIfEmpty(Mono.error(new RuntimeException("No conversion rate found")))
+                .flatMap(rate -> {
+                    Double convertedPoints = walletPointRequest.getRewardPoints() * rate.getConversionRate();
+                    return walletPointRepository.findByUserId(userId)
+                            .flatMap(wallet -> {
+                                wallet.setPoints(wallet.getPoints() - walletPointRequest.getRewardPoints());
+                                return walletPointRepository.save(wallet);
+                            })
+                            .then(walletPointHistoryRepository.save(
+                                    WalletPointHistoryEntity.builder()
+                                            .userId(userId)
+                                            .points(convertedPoints)
+                                            .walletPointId(walletPointRequest.getFamilyId()) // idFamily
+                                            .build()
+                            ));
+                }).then();
+    }
+
+
+
+
 }

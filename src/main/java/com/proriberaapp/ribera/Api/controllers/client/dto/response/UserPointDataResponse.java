@@ -4,9 +4,9 @@ import lombok.Data;
 
 @Data
 public class UserPointDataResponse {
-    private Long id;
-    private Long idUser;
+    private Integer id;
+    private Integer idUser;
     private int liberatedPoints;
     private int rewards;
-    private Long idFamily;
+    private Integer idFamily;
 }

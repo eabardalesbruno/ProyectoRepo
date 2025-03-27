@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.UserDiscountRequest;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.UpdatePasswordDto;
@@ -316,7 +317,6 @@ public class UserController {
     public Mono<UserNameAndDiscountDto> getDiscount(@RequestHeader("Authorization") String token,
             @PathVariable Integer bookingId, @PathVariable DiscountTypeCode discountType) {
         Integer idUserClient = jwtProvider.getIdFromToken(token);
-        System.out.println(discountType);
         return this.userClientService.getPercentageDiscount(idUserClient, bookingId, discountType);
     }
 
