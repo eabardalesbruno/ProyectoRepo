@@ -17,7 +17,10 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,7 +63,8 @@ public class FullDayServiceImpl implements FullDayService {
                 .flatMap(savedEntity -> Flux.fromIterable(details)
                         .flatMap(detail -> {
                             detail.setFulldayid(savedEntity.getFulldayid());
-                            return calcularPrecios(detail, type);
+                            return calcularPrecios(detail, type, foods)
+                                    .flatMap(fullDayDetailRepository::save);
                         })
                         .flatMap(fullDayDetailRepository::save)
                         .collectList()
@@ -94,20 +98,27 @@ public class FullDayServiceImpl implements FullDayService {
         if (savedDetails.isEmpty() || foods.isEmpty()) {
             return Mono.empty();
         }
+        return Flux.fromIterable(savedDetails)
+                .flatMap(detail -> Flux.fromIterable(detail.getFulldayTypefoodid())
+                        .flatMap(foodId -> {
+                            Optional<FullDayFoodEntity> matchingFood = foods.stream()
+                                    .filter(food -> food.getFulldayTypefoodid().equals(foodId))
+                                    .findFirst();
 
-        return Flux.fromIterable(foods)
-                .flatMap(food -> {
-                    FullDayDetailEntity targetDetail = savedDetails.stream()
-                            .filter(detail -> detail.getQuantity() > 0)
-                            .findFirst()
-                            .orElseThrow(() -> new IllegalStateException("No se encuentra detalle correspondiente"));
+                            if (matchingFood.isPresent()) {
+                                FullDayFoodEntity food = matchingFood.get();
 
-                    targetDetail.getFulldayTypefoodid().add(food.getFulldayTypefoodid());
-                    targetDetail.setQuantity(targetDetail.getQuantity() - 1);
-                    food.setFulldaydetailid(targetDetail.getFulldaydetailid());
-                    return fullDayFoodRepository.save(food);
-                })
-                .then();
+                                FullDayFoodEntity newFoodEntry = new FullDayFoodEntity();
+                                newFoodEntry.setFulldaydetailid(detail.getFulldaydetailid());
+                                newFoodEntry.setFulldayTypefoodid(foodId);
+                                newFoodEntry.setQuantity(food.getQuantity());
+
+                                return fullDayFoodRepository.save(newFoodEntry);
+                            } else {
+                                return Mono.error(new IllegalStateException("No se encontró una comida válida para asignar."));
+                            }
+                        })
+                ).then();
     }
 
     @Override
@@ -124,73 +135,67 @@ public class FullDayServiceImpl implements FullDayService {
         }
     }
 
-    @Override
-    public Mono<FullDayEntity> findById(Integer id) {
-        return fullDayRepository.findById(id);
-    }
-
-    @Override
-    public Flux<FullDayEntity> getReservationsAll() {
-        return fullDayRepository.findAll();
-    }
-
-    @Override
-    public Flux<PaymentDetailFulldayDTO> getPaymentDetailFullday() {
-        return fullDayRepository.findByAllPayment();
-    }
-
-
-    private Mono<FullDayDetailEntity> calcularPrecios(FullDayDetailEntity detail, String type) {
+    private Mono<FullDayDetailEntity> calcularPrecios(FullDayDetailEntity detail, String type, List<FullDayFoodEntity> foods) {
         return getBasePrice(detail.getTypePerson())
                 .flatMap(basePrice -> {
-                    BigDecimal discount;
-                    if (type.equalsIgnoreCase("Full Day Todo Completo")) {
-                        discount = basePrice.multiply(BigDecimal.valueOf(0.50));
-                    } else {
-                        discount = BigDecimal.ZERO;
-                    }
+                    BigDecimal discountPerUnit = type.equalsIgnoreCase("Full Day Todo Completo")
+                            ? basePrice.multiply(BigDecimal.valueOf(0.50))
+                            : BigDecimal.ZERO;
+
+                    BigDecimal totalDiscount = discountPerUnit.multiply(BigDecimal.valueOf(detail.getQuantity()));
                     if (detail.getFulldayTypefoodid() == null || detail.getFulldayTypefoodid().isEmpty()) {
                         BigDecimal foodPrice = BigDecimal.ZERO;
                         if (type.equalsIgnoreCase("Full Day Todo Completo")) {
-                            switch (detail.getTypePerson().toUpperCase()) {
-                                case "ADULTO":
-                                    foodPrice = BigDecimal.valueOf(50);
-                                    break;
-                                case "ADULTO_MAYOR":
-                                    foodPrice = BigDecimal.valueOf(35);
-                                    break;
-                                case "NINO":
-                                    foodPrice = BigDecimal.valueOf(35);
-                                    break;
-                                case "INFANTE":
-                                    foodPrice = BigDecimal.ZERO;
-                                    break;
-                                default:
-                                    foodPrice = BigDecimal.ZERO;
-                            }
+                            foodPrice = getDefaultFoodPrice(detail.getTypePerson()).multiply(BigDecimal.valueOf(detail.getQuantity()));
                         }
-                        BigDecimal finalPrice = basePrice.subtract(discount).add(foodPrice)
-                                .multiply(BigDecimal.valueOf(detail.getQuantity()));
+                        BigDecimal finalPrice = basePrice.multiply(BigDecimal.valueOf(detail.getQuantity()))
+                                .subtract(totalDiscount)
+                                .add(foodPrice);
+
                         detail.setBasePrice(basePrice);
                         detail.setFoodPrice(foodPrice);
-                        detail.setDiscountApplied(discount);
+                        detail.setDiscountApplied(totalDiscount);
                         detail.setFinalPrice(finalPrice);
 
                         return Mono.just(detail);
                     }
-                    Mono<BigDecimal> foodPriceMono = Flux.fromIterable(detail.getFulldayTypefoodid())
-                            .flatMap(this::getFoodPriceById)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
-                    return foodPriceMono.flatMap(foodPrice -> {
-                        BigDecimal finalPrice = basePrice.subtract(discount).add(foodPrice)
-                                .multiply(BigDecimal.valueOf(detail.getQuantity()));
-                        detail.setBasePrice(basePrice);
-                        detail.setFoodPrice(foodPrice);
-                        detail.setDiscountApplied(discount);
-                        detail.setFinalPrice(finalPrice);
-                        return Mono.just(detail);
-                    });
+                    return Flux.fromIterable(detail.getFulldayTypefoodid())
+                            .flatMap(foodId -> getFoodPriceById(foodId)
+                                    .map(price -> new AbstractMap.SimpleEntry<>(foodId, price)))
+                            .collectMap(Map.Entry::getKey, Map.Entry::getValue)
+                            .flatMap(foodPriceMap -> {
+                                BigDecimal totalFoodPrice = BigDecimal.ZERO;
+
+                                for (FullDayFoodEntity food : foods) {
+                                    if (foodPriceMap.containsKey(food.getFulldayTypefoodid())) {
+                                        BigDecimal pricePerUnit = foodPriceMap.get(food.getFulldayTypefoodid());
+                                        totalFoodPrice = totalFoodPrice.add(pricePerUnit.multiply(BigDecimal.valueOf(food.getQuantity())));
+                                    }
+                                }
+                                BigDecimal finalPrice = totalDiscount.add(totalFoodPrice);
+
+                                detail.setBasePrice(basePrice);
+                                detail.setFoodPrice(totalFoodPrice);
+                                detail.setDiscountApplied(totalDiscount);
+                                detail.setFinalPrice(finalPrice);
+
+                                return Mono.just(detail);
+                            });
                 });
+    }
+
+    private BigDecimal getDefaultFoodPrice(String typePerson) {
+        switch (typePerson.toUpperCase()) {
+            case "ADULTO":
+                return BigDecimal.valueOf(50);
+            case "ADULTO_MAYOR":
+            case "NINO":
+                return BigDecimal.valueOf(35);
+            case "INFANTE":
+                return BigDecimal.ZERO;
+            default:
+                return BigDecimal.ZERO;
+        }
     }
 
     private Mono<BigDecimal> getFoodPriceById(Integer fulldayTypefoodid) {
@@ -261,8 +266,6 @@ public class FullDayServiceImpl implements FullDayService {
     */
 
 
-
-
     private Mono<FullDayEntity> calculateAndSaveCommission(FullDayEntity fullDay, List<FullDayDetailEntity> details) {
         BigDecimal commissionAmount = BigDecimal.ZERO;
 
@@ -289,6 +292,7 @@ public class FullDayServiceImpl implements FullDayService {
         commission.setAdminFee(BigDecimal.ZERO);
         commission.setServiceFee(BigDecimal.ZERO);
         commission.setStatus("Pendiente");
+        commission.setFullDayId(fullDay.getFulldayid());
 
         commission.setDayBookingInit(fullDay.getPurchaseDate());
         commission.setCreatedAt(createdAt);
@@ -367,6 +371,21 @@ public class FullDayServiceImpl implements FullDayService {
                     }
                     return user;
                 });
+    }
+
+    @Override
+    public Mono<FullDayEntity> findById(Integer id) {
+        return fullDayRepository.findById(id);
+    }
+
+    @Override
+    public Flux<FullDayEntity> getReservationsAll() {
+        return fullDayRepository.findAll();
+    }
+
+    @Override
+    public Flux<PaymentDetailFulldayDTO> getPaymentDetailFullday() {
+        return fullDayRepository.findByAllPayment();
     }
 
 
