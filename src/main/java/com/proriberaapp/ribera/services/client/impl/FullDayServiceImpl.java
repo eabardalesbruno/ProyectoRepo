@@ -143,10 +143,14 @@ public class FullDayServiceImpl implements FullDayService {
                             : BigDecimal.ZERO;
 
                     BigDecimal totalDiscount = discountPerUnit.multiply(BigDecimal.valueOf(detail.getQuantity()));
-
                     if (detail.getFulldayTypefoodid() == null || detail.getFulldayTypefoodid().isEmpty()) {
-                        BigDecimal foodPrice = getDefaultFoodPrice(detail.getTypePerson()).multiply(BigDecimal.valueOf(detail.getQuantity()));
-                        BigDecimal finalPrice = basePrice.multiply(BigDecimal.valueOf(detail.getQuantity())).subtract(totalDiscount).add(foodPrice);
+                        BigDecimal foodPrice = BigDecimal.ZERO;
+                        if (type.equalsIgnoreCase("Full Day Todo Completo")) {
+                            foodPrice = getDefaultFoodPrice(detail.getTypePerson()).multiply(BigDecimal.valueOf(detail.getQuantity()));
+                        }
+                        BigDecimal finalPrice = basePrice.multiply(BigDecimal.valueOf(detail.getQuantity()))
+                                .subtract(totalDiscount)
+                                .add(foodPrice);
 
                         detail.setBasePrice(basePrice);
                         detail.setFoodPrice(foodPrice);
@@ -155,7 +159,6 @@ public class FullDayServiceImpl implements FullDayService {
 
                         return Mono.just(detail);
                     }
-
                     return Flux.fromIterable(detail.getFulldayTypefoodid())
                             .flatMap(foodId -> getFoodPriceById(foodId)
                                     .map(price -> new AbstractMap.SimpleEntry<>(foodId, price)))
