@@ -2,6 +2,9 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import java.util.List;
 
+import com.proriberaapp.ribera.Domain.entities.BookingEntity;
+import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,6 +32,9 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
 
     @Autowired
     private DiscountRepository discountRepository;
+
+    @Autowired
+    private BookingRepository bookingRepository;
 
     @Autowired
     private UserClientRepository userClientRepository;
@@ -76,9 +82,12 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
     }
 
     @Override
-    public Mono<UserNameAndDiscountDto> verifiedPercentajeDiscount(int userId) {
-        return this.userClientRepository.findById(userId)
-                .flatMap(userData -> {
+    public Mono<UserNameAndDiscountDto> verifiedPercentajeDiscount(int userId, Integer bookingId) {
+        return Mono.zip(this.userClientRepository.findById(userId),
+                        this.bookingRepository.findByBookingId(bookingId))
+                .flatMap(data -> {
+                    UserClientEntity userData = data.getT1();
+                    BookingEntity booking= data.getT2();
                     return this.loadMembershipsInsortInclub(
                             userData.getUsername())
                             .flatMap(memberships -> {
@@ -94,7 +103,7 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                                                     .percentage(listPercentage.stream().map(p -> p.getPercentage()).reduce(0.0f,
                                                             Float::sum))
                                                     .discounts(listPercentage.stream()
-                                                            .map(p -> new DiscountDto(p.getId(), p.getName(), p.getPercentage(),
+                                                            .map(p -> new DiscountDto(p.getId(),  p.getName(),p.getPercentage()*booking.getCostFinal().floatValue()/100,  p.getPercentage(),
                                                                     p.isApplyToReservation(), p.isApplyToFood()))
                                                             .toList())
                                                     .build());
