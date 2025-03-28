@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.FullDayRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.MembershipDto;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.*;
 import com.proriberaapp.ribera.Domain.entities.*;
@@ -8,6 +9,7 @@ import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.services.client.CompanionsService;
 import com.proriberaapp.ribera.services.client.FullDayService;
 import com.proriberaapp.ribera.services.client.FullDayTypeFoodService;
+import com.proriberaapp.ribera.services.client.MembershipsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
@@ -33,6 +35,7 @@ public class FullDayController {
     private final FullDayTypeFoodService fullDayTypeFoodService;
     private final CompanionsService companionsService;
     private final JwtProvider jtp;
+    private final MembershipsService membershipService;
 
     //FULLDAY CONTROLLER
     @PostMapping("/register")
@@ -245,5 +248,25 @@ public class FullDayController {
     @GetMapping("/visual-count-details/{bookingId}")
     public Mono<VisualCountDetailsDTO> getVisualCountDetails(@PathVariable Integer bookingId) {
         return fullDayService.getVisualCountDetails(bookingId);
+    }
+
+    //Membresias Inclub
+    @GetMapping("/insort-inclub/{username}")
+    public Mono<ResponseEntity<List<MembershipDto>>> getMemberships(@PathVariable String username) {
+        return membershipService.loadMembershipsInsortInclub(username)
+                .map(memberships -> ResponseEntity.ok(memberships))
+                .defaultIfEmpty(ResponseEntity.noContent().build());
+    }
+
+    @GetMapping("/insort-inclub/{username}/{userId}")
+    public Mono<ResponseEntity<List<MembershipDto>>> getMembershipsv1(@PathVariable String username,@PathVariable int userId) {
+        return membershipService.loadMembershipsInsortInclubv1(username, userId)
+                .map(memberships -> ResponseEntity.ok(memberships))
+                .defaultIfEmpty(ResponseEntity.noContent().build());
+    }
+
+    @GetMapping("/memberships/{id}")
+    public Mono<MembershipDto> getMemberById(@PathVariable Integer id) {
+        return membershipService.getPromotionalGuestById(id);
     }
 }
