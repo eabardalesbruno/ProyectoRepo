@@ -1,10 +1,13 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.MembershipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,6 +23,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.MembershipsService;
 import com.proriberaapp.ribera.services.client.VerifiedDiscountService;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -29,6 +33,8 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
     private String URL_MEMBERSHIPS;
     @Value("${inclub.api.url.user}")
     private String URL_DATA_USER;
+    @Value("${inclub.api.url.promotialGuest}")
+    private String URL_PROMOTIONALGUESTS;
 
     @Autowired
     private DiscountRepository discountRepository;
@@ -38,6 +44,9 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
 
     @Autowired
     private UserClientRepository userClientRepository;
+
+    @Autowired
+    private  MembershipRepository membershipRepository;
 
     @Override
     public Mono<List<MembershipDto>> loadMembershipsActives(String username) {
@@ -53,20 +62,60 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
         return this.loadDataUserRiber(username)
                 .flatMap(user -> {
                     String uri = URL_MEMBERSHIPS.concat("/").concat(String.valueOf(user.getData().getId()));
-                    return Mono.just(uri);
-                }).flatMap(uri -> {
                     WebClient webClient = WebClient.create(uri);
                     return webClient.get()
                             .retrieve()
                             .bodyToMono(ResponseDataMembershipDto.class)
-                            .flatMap(response -> {
-                                List<MembershipDto> data = response.getData().stream().toList();
-                                return data.size() > 0 ? Mono.just(data) : Mono.empty();
-                            }).onErrorResume(e -> {
-                                return Mono.just(List.of());
+                            .map(ResponseDataMembershipDto::getData);
+                })
+                .flatMapMany(Flux::fromIterable)
+                .flatMap(membership -> getPromotionalGuestById(membership.getId())
+                        .map(promotionalGuest -> {
+                            membership.setData(promotionalGuest.getData());
+                            return membership;
+                        })
+                        .defaultIfEmpty(membership))
+                .collectList();
+    }
+
+    @Override
+    public Mono<List<MembershipDto>> loadMembershipsInsortInclubv1(String username, int userId) {
+        return this.loadDataUserRiber(username)
+                .flatMap(user -> {
+                    String uri = URL_MEMBERSHIPS.concat("/").concat(String.valueOf(user.getData().getId()));
+                    WebClient webClient = WebClient.create(uri);
+                    return webClient.get()
+                            .retrieve()
+                            .bodyToMono(ResponseDataMembershipDto.class)
+                            .map(ResponseDataMembershipDto::getData);
+                })
+                .flatMapMany(Flux::fromIterable)
+                .flatMap(membership -> getPromotionalGuestById(membership.getId())
+                        .map(promotionalGuest -> {
+                            membership.setData(promotionalGuest.getData());
+                            return membership;
+                        })
+                        .defaultIfEmpty(membership))
+                .collectList()
+                .flatMap(apiMemberships -> {
+                    return membershipRepository.findAllByUserclientId(userId)
+                            .collectList()
+                            .flatMap(dbMemberships -> {
+                                Timestamp now = new Timestamp(System.currentTimeMillis());
+                                List<MembershipDto> newMemberships = apiMemberships.stream()
+                                        .filter(apiMembership -> dbMemberships.stream()
+                                                .noneMatch(dbMembership -> dbMembership.getId() == apiMembership.getId()))
+                                        .map(apiMembership -> {
+                                            apiMembership.setUserclientId(userId);
+                                            apiMembership.setDatacreate(now);
+                                            return apiMembership;
+                                        })
+                                        .collect(Collectors.toList());
+                                return membershipRepository.saveAll(newMemberships)
+                                        .collectList()
+                                        .then(membershipRepository.findAllByUserclientId(userId).collectList());
                             });
                 });
-
     }
 
     private Mono<ResponseInclubLoginDto> loadDataUserRiber(String username) {
@@ -121,4 +170,16 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
 
     }
 
+    @Override
+    public Mono<MembershipDto> getPromotionalGuestById(Integer id) {
+        String uri = URL_PROMOTIONALGUESTS.concat("/").concat(String.valueOf(id));
+        WebClient webClient = WebClient.create(uri);
+        return webClient.get()
+                .uri(uri)
+                .retrieve()
+                .bodyToMono(MembershipDto.class)
+                .onErrorResume(e -> {
+                    return Mono.empty();
+                });
+    }
 }
