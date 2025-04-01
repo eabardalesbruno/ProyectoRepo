@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
+import com.proriberaapp.ribera.Api.controllers.exception.TokenInvalidException;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.UpdatePasswordDto;
@@ -211,12 +212,12 @@ public class UserController {
                                 if ("1".equals(request.googleAuth())
                                         && (request.password() == null || request.password().isEmpty())) {
                                     return userClientService.loginWithGoogle(request.email())
-                                            .map(token -> new ResponseEntity<>(new LoginResponse(token, ""),
+                                            .map(token -> new ResponseEntity<>(new LoginResponse(token, "",""),
                                                     HttpStatus.OK));
                                 } else {
                                     return userClientService.login(request.email(), finalPassword)
                                             .map(token -> new ResponseEntity<>(
-                                                    new LoginResponse(token, savedUser.getUserClientId().toString()),
+                                                    new LoginResponse(token, "", savedUser.getUserClientId().toString()),
                                                     HttpStatus.OK));
                                 }
                             });
@@ -227,14 +228,14 @@ public class UserController {
     @PostMapping("/login")
     public Mono<ResponseEntity<LoginResponse>> loginUser(@RequestBody LoginRequest request) {
         return userClientService.login(request.email(), request.password())
-                .map(token -> new ResponseEntity<>(new LoginResponse(token, "tokenizado"), HttpStatus.OK))
+                .map(token -> new ResponseEntity<>(new LoginResponse(token, "","tokenizado"), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
 
     @PostMapping("/login-inclub")
-    public Mono<ResponseEntity<LoginResponse>> loginUserInclub(@RequestBody LoginRequestDTO request) {
+    public Mono<ResponseEntity<LoginResponse>> loginUserInclub(@RequestBody LoginRequestDTO request) throws TokenInvalidException {
         return this.loginInclubService.login(request.getUsername(), request.getPassword())
-                .map(token -> new ResponseEntity<>(new LoginResponse(token.getValue(), "tokenizado"), HttpStatus.OK))
+                .map(token -> new ResponseEntity<>(new LoginResponse(token.getValue(), token.getTokenBackOffice(), "tokenizado"), HttpStatus.OK))
                 .defaultIfEmpty(new ResponseEntity<>(HttpStatus.UNAUTHORIZED));
     }
 
@@ -282,10 +283,10 @@ public class UserController {
                 .map(tokenResult -> {
                     String message = tokenResult.getToken().isEmpty() ? "sin token" : "tokenizado";
                     HttpStatus status = tokenResult.getToken().isEmpty() ? HttpStatus.BAD_REQUEST : HttpStatus.OK;
-                    return new ResponseEntity<>(new LoginResponse(tokenResult.getToken(), message), status);
+                    return new ResponseEntity<>(new LoginResponse(tokenResult.getToken(), "", message), status);
                 })
                 .onErrorResume(e -> Mono
-                        .just(new ResponseEntity<>(new LoginResponse("", "sin token"), HttpStatus.BAD_REQUEST)));
+                        .just(new ResponseEntity<>(new LoginResponse("", "","sin token"), HttpStatus.BAD_REQUEST)));
     }
 
     @GetMapping("/{id}")

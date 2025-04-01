@@ -22,7 +22,7 @@ public class UserPointServiceImpl implements UserPointService {
     private final WebClient webClient;
     private final UserClientService userClientService;
     private final JwtProvider jtp;
-    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJFUDUyMDMyMTAwMDAiLCJyb2xlcyI6IlJPTEVfQURNSU4sUk9MRV9VU0VSIiwiaWF0IjoxNzQzMTAyMjQxLCJleHAiOjE3NDMxMjAyNDF9.pr-J5iuUcyN08YZuj17asi7yUhpMOdetlZCnZ0QqudU";
+    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJFUDUyMDMyMTAwMDAiLCJyb2xlcyI6IlJPTEVfQURNSU4sUk9MRV9VU0VSIiwiaWF0IjoxNzQzMTg5MjYzLCJleHAiOjE3NDMyMDcyNjN9.XB0nrrgP87oxZPeL013q-Mco5V_n9VTgUaR3UrGs4Co";
     private PasswordEncoder passwordEncoder;
     @Value("${backoffice.api.url}")
     private String urlBackOffice;
@@ -36,26 +36,15 @@ public class UserPointServiceImpl implements UserPointService {
         this.webClient = webClientBuilder.baseUrl(urlBackOffice).build();
     }
 
-    private Mono<String> authenticate(String username, String password) {
-        System.out.println(username + " " + password);
-        return webClient.post()
-                .uri(urlBackOffice + "/auth/login")
-                .bodyValue(Map.of("username", username, "password", password))
-                .retrieve()
-                .bodyToMono(AuthResponse.class)
-                .map(AuthResponse::getToken)
-                .doOnNext(token -> this.authToken = token);
-    }
-
     @Override
-    public Mono<UserPointDataResponse> getUserPoints(String username, Integer idMembershipFamily) {
+    public Mono<UserPointDataResponse> getUserPoints(String username, Integer idMembershipFamily, String tokenBackOffice) {
         return webClient.get()
                 .uri(urlBackofficeUser + "/" + username)
                 .retrieve()
                 .bodyToMono(ResponseInclubLoginDto.class)
                 .flatMap(user -> webClient.get()
                         .uri(urlBackOffice + "/user-points-released/12853/2", user.getData().getId(), idMembershipFamily)
-                        .header("Authorization", "Bearer " + authToken)
+                        .header("Authorization", "Bearer " + tokenBackOffice)
                         .retrieve()
                         .bodyToMono(UserPointsResponse.class)
                         .map(UserPointsResponse::getData)
