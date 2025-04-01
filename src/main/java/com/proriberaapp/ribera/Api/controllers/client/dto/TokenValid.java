@@ -7,13 +7,13 @@ import lombok.Getter;
 
 @Getter
 public class TokenValid {
-    private String value;
+    private final String value;
+    private final String tokenBackOffice;
 
-    public TokenValid(String value) {
-        JwtProvider jwtProvider = new JwtProvider();
-        if (!jwtProvider.validateToken(value))
-            new TokenInvalidException();
+    public TokenValid(String value, String tokenBackOffice) {
+
         this.value = value;
+        this.tokenBackOffice = tokenBackOffice;
     }
 
 }

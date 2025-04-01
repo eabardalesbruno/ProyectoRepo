@@ -73,8 +73,8 @@ public class WalletPointServiceImpl implements WalletPointService {
                 .then();
     }
     @Override
-    public Mono<WalletPointResponse> getWalletByUsername(String username) {
-        return userPointService.getUserPoints(username, 2)
+    public Mono<WalletPointResponse> getWalletByUsername(String username, String tokenBackOffice) {
+        return userPointService.getUserPoints(username, 2, tokenBackOffice)
                 .doOnNext(userPointDataResponse -> log.info("UserPointDataResponse: {}", userPointDataResponse))
                 .flatMap(userPointDataResponse ->
                         walletPointRepository.findByUsername(username)

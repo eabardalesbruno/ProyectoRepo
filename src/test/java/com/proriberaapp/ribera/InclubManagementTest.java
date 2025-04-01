@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera;
 
+import com.proriberaapp.ribera.Api.controllers.exception.TokenInvalidException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties.Jwt;
@@ -27,19 +28,19 @@ public class InclubManagementTest {
     private JwtProvider jwtProvider;
 
     @Test
-    void testLogin() {
+    void testLogin() throws TokenInvalidException {
         StepVerifier.create(loginInclubService.login("EV48427283", "password321 23"))
                 .verifyComplete();
     }
 
     @Test
-    void testLoginSuccess() {
+    void testLoginSuccess() throws TokenInvalidException {
         StepVerifier.create(loginInclubService.login("EV48427283", "password321#"))
                 .expectNextMatches(responseLogin -> !responseLogin.getValue().isBlank()).verifyComplete();
     }
 
     @Test
-    void testLoginFail() {
+    void testLoginFail() throws TokenInvalidException {
         StepVerifier.create(loginInclubService.login("EV48427283", "password321 23"))
                 .expectError(CredentialsInvalidException.class).verify();
     }
@@ -59,7 +60,7 @@ public class InclubManagementTest {
     }
 
     @Test
-    void testLoginFailWithPassword() {
+    void testLoginFailWithPassword() throws TokenInvalidException {
         StepVerifier.create(loginInclubService.login("EV48427283", "password321 23"))
                 .expectError(CredentialsInvalidException.class).verify();
     }

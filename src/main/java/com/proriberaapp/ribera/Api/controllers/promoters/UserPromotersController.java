@@ -65,10 +65,10 @@ public class UserPromotersController {
                 .flatMap(savedUser -> {
                     if ("1".equals(registerRequest.googleAuth()) && (registerRequest.password() == null || registerRequest.password().isEmpty())) {
                         return userPromoterService.loginWithGoogle(registerRequest.email())
-                                .map(token -> new ResponseEntity<>(new LoginResponse(token, ""), HttpStatus.OK));
+                                .map(token -> new ResponseEntity<>(new LoginResponse(token, "", ""), HttpStatus.OK));
                     } else {
                         return userPromoterService.login(loginRequest)
-                                .map(token -> new ResponseEntity<>(new LoginResponse(token.token(), savedUser.getUserPromoterId().toString()), HttpStatus.OK));
+                                .map(token -> new ResponseEntity<>(new LoginResponse(token.token(),"",  savedUser.getUserPromoterId().toString()), HttpStatus.OK));
                     }
                 });
                 }))
@@ -81,9 +81,9 @@ public class UserPromotersController {
                 .map(tokenResult -> {
                     String message = tokenResult.getToken().isEmpty() ? "sin token" : "tokenizado";
                     HttpStatus status = tokenResult.getToken().isEmpty() ? HttpStatus.BAD_REQUEST : HttpStatus.OK;
-                    return new ResponseEntity<>(new LoginResponse(tokenResult.getToken(), message), status);
+                    return new ResponseEntity<>(new LoginResponse(tokenResult.getToken(),"", message), status);
                 })
-                .onErrorResume(e -> Mono.just(new ResponseEntity<>(new LoginResponse("", "sin token"), HttpStatus.BAD_REQUEST)));
+                .onErrorResume(e -> Mono.just(new ResponseEntity<>(new LoginResponse("", "","sin token"), HttpStatus.BAD_REQUEST)));
     }
 
     @PostMapping("/login")
