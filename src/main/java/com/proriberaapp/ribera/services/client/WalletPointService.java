@@ -2,13 +2,14 @@ package com.proriberaapp.ribera.services.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.WalletPointRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.WalletPointResponse;
+import com.proriberaapp.ribera.Domain.enums.Role;
 import reactor.core.publisher.Mono;
 
 public interface WalletPointService {
 
     Mono<WalletPointResponse> createWalletPoint(WalletPointRequest walletPointRequest);
 
-    Mono<WalletPointResponse> getWalletByUsername(String username, String tokenBackOffice);
+    Mono<WalletPointResponse> getWalletByIdentifier(String username, Role role, String tokenBackOffice);
 
     Mono<WalletPointResponse> getWalletByUserId(Integer userId);
 

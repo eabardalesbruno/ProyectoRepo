@@ -3,12 +3,15 @@ package com.proriberaapp.ribera.Api.controllers.client;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.WalletPointRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.WalletPointResponse;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
+import com.proriberaapp.ribera.Domain.enums.Role;
 import com.proriberaapp.ribera.services.client.WalletPointService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/wallet-points")
@@ -29,10 +32,15 @@ public class WalletPointController {
     @GetMapping
     public Mono<ResponseEntity<WalletPointResponse>> getWalletPoints(
             @RequestHeader("Authorization") String token,
-            @RequestHeader("key-inclub-ribera") String tokenBackOffice
+            @RequestHeader(value = "key-inclub-ribera", defaultValue = "") String tokenBackOffice,
+            @RequestParam Role role
             ) {
-        String username = jtp.getUsernameFromToken(token);
-        return walletPointService.getWalletByUsername(username, tokenBackOffice)
+
+        String identifier = Objects.isNull(jtp.getUsernameFromToken(token))
+                ? String.valueOf(jtp.getIdFromToken(token))
+                : jtp.getUsernameFromToken(token);
+
+        return walletPointService.getWalletByIdentifier(identifier, role, tokenBackOffice)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }

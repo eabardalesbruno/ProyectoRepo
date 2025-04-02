@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.MembershipDto;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.SubscriptionFamilyResponse;
 import reactor.core.publisher.Mono;
 
 public interface MembershipsService {
@@ -12,6 +13,7 @@ public interface MembershipsService {
     Mono<List<MembershipDto>> loadAllMemberships(int userId);
 
     Mono<List<MembershipDto>> loadMembershipsInsortInclub(String username);
-    
 
+
+    Mono<List<SubscriptionFamilyResponse>> loadAllFamilies(String username, String tokenBackOffice);
 }

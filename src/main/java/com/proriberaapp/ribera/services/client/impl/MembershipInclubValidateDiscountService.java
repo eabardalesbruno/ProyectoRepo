@@ -2,11 +2,15 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import java.util.List;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.BoResponse;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.SubscriptionFamilyResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -23,6 +27,7 @@ import com.proriberaapp.ribera.services.client.VerifiedDiscountService;
 import reactor.core.publisher.Mono;
 
 @Service
+@RequiredArgsConstructor
 public class MembershipInclubValidateDiscountService implements VerifiedDiscountService, MembershipsService {
 
     @Value("${inclub.api.url.subscriptions}")
@@ -30,14 +35,16 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
     @Value("${inclub.api.url.user}")
     private String URL_DATA_USER;
 
-    @Autowired
-    private DiscountRepository discountRepository;
+    @Value("${backoffice.api.url}")
+    private String urlBackOffice;
+    @Value("${inclub.api.url.user}")
+    private String urlBackofficeUser;
 
-    @Autowired
-    private BookingRepository bookingRepository;
+    private final DiscountRepository discountRepository;
+    private final BookingRepository bookingRepository;
+    private final UserClientRepository userClientRepository;
+    private final WebClient webClient;
 
-    @Autowired
-    private UserClientRepository userClientRepository;
 
     @Override
     public Mono<List<MembershipDto>> loadMembershipsActives(String username) {
@@ -61,12 +68,35 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                             .bodyToMono(ResponseDataMembershipDto.class)
                             .flatMap(response -> {
                                 List<MembershipDto> data = response.getData().stream().toList();
-                                return data.size() > 0 ? Mono.just(data) : Mono.empty();
-                            }).onErrorResume(e -> {
-                                return Mono.just(List.of());
-                            });
+                                return !data.isEmpty() ? Mono.just(data) : Mono.empty();
+                            }).onErrorResume(e -> Mono.just(List.of()));
                 });
 
+    }
+
+    @Override
+    public Mono<List<SubscriptionFamilyResponse>> loadAllFamilies(String username, String tokenBackOffice) {
+        return webClient.get()
+                .uri(urlBackofficeUser + "/" + username)
+                .retrieve()
+                .bodyToMono(ResponseInclubLoginDto.class)
+                .flatMap(user -> {
+                    System.out.println(user);
+                    String uri = urlBackOffice
+                            .concat("/user-points-released/user/").concat(String.valueOf(user.getData().getId()))
+                            .concat("/families/points");
+                    return Mono.just(uri);
+                }).flatMap(uri -> webClient
+                        .get()
+                        .uri(uri)
+                        .header("Authorization", "Bearer " + tokenBackOffice)
+                        .retrieve()
+                        .bodyToMono(new ParameterizedTypeReference<BoResponse<List<SubscriptionFamilyResponse>>>() {
+                        })
+                        .flatMap(response -> {
+                            List<SubscriptionFamilyResponse> data = response.getData();
+                            return !data.isEmpty() ? Mono.just(data) : Mono.empty();
+                        }).onErrorResume(e -> Mono.just(List.of())));
     }
 
     private Mono<ResponseInclubLoginDto> loadDataUserRiber(String username) {
