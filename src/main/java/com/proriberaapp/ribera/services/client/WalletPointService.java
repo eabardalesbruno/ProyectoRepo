@@ -8,6 +8,8 @@ public interface WalletPointService {
 
     Mono<WalletPointResponse> createWalletPoint(WalletPointRequest walletPointRequest);
 
+    Mono<WalletPointResponse> getWalletByUsername(String username, String tokenBackOffice);
+
     Mono<WalletPointResponse> getWalletByUserId(Integer userId);
 
     Mono<WalletPointResponse> updateWalletPoints(Integer userId, WalletPointRequest walletPointRequest);

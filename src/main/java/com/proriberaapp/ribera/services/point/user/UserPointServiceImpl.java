@@ -1,8 +1,10 @@
 package com.proriberaapp.ribera.services.point.user;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseInclubLoginDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.AuthResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserPointDataResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserPointsResponse;
+import com.proriberaapp.ribera.Api.controllers.exception.RequestException;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.services.client.UserClientService;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +22,13 @@ public class UserPointServiceImpl implements UserPointService {
     private final WebClient webClient;
     private final UserClientService userClientService;
     private final JwtProvider jtp;
-    private String authToken;
+    private String authToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJFUDUyMDMyMTAwMDAiLCJyb2xlcyI6IlJPTEVfQURNSU4sUk9MRV9VU0VSIiwiaWF0IjoxNzQzMTg5MjYzLCJleHAiOjE3NDMyMDcyNjN9.XB0nrrgP87oxZPeL013q-Mco5V_n9VTgUaR3UrGs4Co";
     private PasswordEncoder passwordEncoder;
-    @Value("${inclub.api.url}")
+    @Value("${backoffice.api.url}")
     private String urlBackOffice;
 
+    @Value("${inclub.api.url.user}")
+    private String urlBackofficeUser;
 
     public UserPointServiceImpl(WebClient.Builder webClientBuilder, UserClientService userClientService, JwtProvider jtp) {
         this.jtp = jtp;
@@ -32,25 +36,21 @@ public class UserPointServiceImpl implements UserPointService {
         this.webClient = webClientBuilder.baseUrl(urlBackOffice).build();
     }
 
-    private Mono<String> authenticate(String username, String password) {
-        return webClient.post()
-                .uri(urlBackOffice + "/auth/login")
-                .bodyValue(Map.of("username", username, "password", password))
+    @Override
+    public Mono<UserPointDataResponse> getUserPoints(String username, Integer idMembershipFamily, String tokenBackOffice) {
+        return webClient.get()
+                .uri(urlBackofficeUser + "/" + username)
                 .retrieve()
-                .bodyToMono(AuthResponse.class)
-                .map(AuthResponse::getToken)
-                .doOnNext(token -> this.authToken = token);
-    }
-
-    public Mono<UserPointDataResponse> getUserPoints(Integer idUser, Long idMembershipFamily) {
-        return  userClientService.findById(idUser)
-                .flatMap(user -> authenticate(user.getUsername(), user.getPassword())
-                .flatMap(token -> webClient.get()
-                        .uri("/user-points-released/{idUser}/{idMembershipFamily}", idUser, idMembershipFamily)
-                        .header("Authorization", "Bearer " + token)
+                .bodyToMono(ResponseInclubLoginDto.class)
+                .flatMap(user -> webClient.get()
+                        .uri(urlBackOffice + "/user-points-released/12853/2", user.getData().getId(), idMembershipFamily)
+                        .header("Authorization", "Bearer " + tokenBackOffice)
                         .retrieve()
                         .bodyToMono(UserPointsResponse.class)
-                        .map(UserPointsResponse::getData)));
+                        .map(UserPointsResponse::getData)
+                )
+                .switchIfEmpty(Mono.error(new RequestException("User points not found for user: " + username)));
     }
+
 
 }
