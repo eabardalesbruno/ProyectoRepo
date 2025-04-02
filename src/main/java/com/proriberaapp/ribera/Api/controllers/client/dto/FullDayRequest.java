@@ -20,4 +20,6 @@ public class FullDayRequest {
     private List<FullDayDetailEntity> details;
     private List<FullDayFoodEntity> foods;
     private List<MembershipDetail> membershipDetails;
+    private Integer memberId;
+    private Integer memberquantity;
 }

@@ -55,7 +55,7 @@ public class FullDayController {
                     Integer userPromoterId = (Integer) userInfo[1];
                     Integer receptionistId = (Integer) userInfo[2];
 
-                    return fullDayService.registerFullDay(receptionistId, userPromoterId, userClientId, request.getType(), request.getBookingDate(), request.getDetails(), request.getFoods(), request.getMembershipDetails() );
+                    return fullDayService.registerFullDay(receptionistId, userPromoterId, userClientId, request.getType(), request.getBookingDate(), request.getDetails(), request.getFoods(), request.getMembershipDetails(), request.getMemberId(), request.getMemberquantity() );
                 })
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.badRequest().build());

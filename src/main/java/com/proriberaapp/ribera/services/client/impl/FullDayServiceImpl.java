@@ -47,7 +47,7 @@ public class FullDayServiceImpl implements FullDayService {
     public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId,
             String type, Timestamp bookingdate,
             List<FullDayDetailEntity> details, List<FullDayFoodEntity> foods,
-            List<MembershipDetail> membershipDetails) {
+            List<MembershipDetail> membershipDetails, Integer memberId, Integer memberquantity) {
         FullDayEntity fullDay = FullDayEntity.builder()
                 .receptionistId(receptionistId)
                 .userPromoterId(userPromoterId)
@@ -89,6 +89,10 @@ public class FullDayServiceImpl implements FullDayService {
                                         .flatMap(existingFullDay -> calculateAndSaveCommission(existingFullDay, details));
                             }
                             return Mono.just(updatedEntity);
+                        })
+                        .flatMap(updatedEntity -> {
+                            return actualizarDataMembership(memberId, memberquantity)
+                                    .thenReturn(updatedEntity);
                         }));
     }
 
@@ -137,39 +141,8 @@ public class FullDayServiceImpl implements FullDayService {
 
     private Mono<FullDayDetailEntity> calcularPrecios(FullDayDetailEntity detail, String type,
                                                       List<FullDayFoodEntity> foods, List<MembershipDetail> membershipDetails) {
-
-        return actualizarDataMembership(membershipDetails)
-                .then(Mono.defer(() -> calcularPreciosInterno(detail, type, foods, membershipDetails)));
+        return Mono.defer(() -> calcularPreciosInterno(detail, type, foods, membershipDetails));
     }
-
-    private Mono<Void> actualizarDataMembership(List<MembershipDetail> membershipDetails) {
-        return Flux.fromIterable(membershipDetails)
-                .flatMap(membershipDetail -> {
-                    System.out.println("Buscando Membership con ID: " + membershipDetail.getMembershipId());
-
-                    return membershipRepository.findById(membershipDetail.getMembershipId())
-                            .switchIfEmpty(
-                                    membershipRepository.findById(membershipDetail.getMembershipId())
-                                            .flatMap(membershipDto -> {
-                                                System.out.println("Encontrado: " + membershipDto);
-                                                System.out.println("Valor actual de data: " + membershipDto.getData());
-
-                                                int nuevoData = Math.max(0, membershipDto.getData() - membershipDetail.getMembershipQuantity());
-                                                System.out.println("Nuevo valor de data después de la resta: " + nuevoData);
-
-                                                membershipDto.setData(nuevoData);
-
-                                                return membershipRepository.save(membershipDto)
-                                                        .doOnSuccess(saved -> System.out.println("Actualización exitosa para ID: " + saved.getId() + ", nuevo data: " + saved.getData()));
-                                            })
-                            )
-                            .switchIfEmpty(Mono.fromRunnable(() -> System.out.println("No se encontró Membership con ID: " + membershipDetail.getMembershipId())));
-                })
-                .then(Mono.fromRunnable(() -> System.out.println("Finalizó la actualización de datos en Membership.")));
-    }
-
-
-
 
     private Mono<FullDayDetailEntity> calcularPreciosInterno(FullDayDetailEntity detail, String type,
                                                              List<FullDayFoodEntity> foods, List<MembershipDetail> membershipDetails) {
@@ -392,6 +365,10 @@ public class FullDayServiceImpl implements FullDayService {
             disbursementDate = LocalDate.of(createdDate.plusMonths(1).getYear(), createdDate.plusMonths(1).getMonth(), 5);
         }
         return Timestamp.valueOf(disbursementDate.atStartOfDay());
+    }
+
+    private Mono<Void> actualizarDataMembership(Integer memberId, Integer memberquantity) {
+        return membershipRepository.actualizarData(memberId, memberquantity).then();
     }
 
     @Override
