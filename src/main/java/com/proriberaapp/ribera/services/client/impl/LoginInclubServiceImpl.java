@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserDto;
+import com.proriberaapp.ribera.Domain.enums.StatesUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -67,6 +68,11 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                                                 .flatMap(wallet -> {
                                                     // Asociamos la wallet al usuario
                                                     user.setWalletId(wallet.getWalletId());
+                                                    if (responseInclubLoginDto.getData().getIdState() == 1) {
+                                                        user.setStatus(StatesUser.ACTIVE);
+                                                    } else {
+                                                        user.setStatus(StatesUser.INACTIVE);
+                                                    }
                                                     return userClientRepository.save(user) // Guardamos el usuario con la wallet
                                                         .flatMap(userClientEntity -> {
                                                             TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user)); // Generar token
@@ -75,8 +81,16 @@ public class LoginInclubServiceImpl implements LoginInclubService {
 
                                                 });
                                     } else {
-                                        TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user)); // Generar token
-                                        return Mono.just(tokenValid); // Devolvemos el token
+                                        if (responseInclubLoginDto.getData().getIdState() == 1) {
+                                            user.setStatus(StatesUser.ACTIVE);
+                                        } else {
+                                            user.setStatus(StatesUser.INACTIVE);
+                                        }
+                                        return userClientRepository.save(user) // Guardamos el usuario con la wallet
+                                            .flatMap(userClientEntity -> {
+                                                TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user)); // Generar token
+                                                return Mono.just(tokenValid); // Devolvemos el token
+                                            });
                                     }
                                 }).switchIfEmpty(Mono.defer(() -> {
                                     long currentTimeMillis = System.currentTimeMillis();
@@ -101,6 +115,7 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                                             .lastName(responseInclubLoginDto.getData().getLastName())
                                             .password(passwordEncoder.encode(password))
                                             .isUserInclub(true)
+                                            .status(responseInclubLoginDto.getData().getIdState() == 1 ? StatesUser.ACTIVE : StatesUser.INACTIVE)
                                             .build();
                                     return this.userClientRepository.save(userClientEntity)
                                         .flatMap(userClient -> {
