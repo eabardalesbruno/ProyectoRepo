@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client.dto;
 
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
+import com.proriberaapp.ribera.Domain.enums.StatesUser;
 import lombok.Data;
 import reactor.core.publisher.Mono;
 
@@ -21,6 +22,7 @@ public class UserDataDTO {
     private Integer walletId;
     private boolean isuserinclub;
     private Timestamp createdat;
+    private StatesUser status;
 
     public Mono<UserDataDTO> convertTo(UserClientEntity user) {
          UserDataDTO userDTO = new UserDataDTO();
@@ -38,6 +40,7 @@ public class UserDataDTO {
         userDTO.setWalletId(user.getWalletId());
         userDTO.setIsuserinclub(user.isUserInclub());
         userDTO.setCreatedat(user.getCreatedat());
+        userDTO.setStatus(user.getStatus());
         return Mono.just(userDTO);
     }
 }
