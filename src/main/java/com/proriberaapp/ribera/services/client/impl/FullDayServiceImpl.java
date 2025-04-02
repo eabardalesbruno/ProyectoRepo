@@ -41,6 +41,8 @@ public class FullDayServiceImpl implements FullDayService {
 
     private final PaymentBookRepository paymentBookRepository;
 
+    private final MembershipRepository membershipRepository;
+
     @Override
     public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId,
             String type, Timestamp bookingdate,
@@ -134,8 +136,43 @@ public class FullDayServiceImpl implements FullDayService {
     }
 
     private Mono<FullDayDetailEntity> calcularPrecios(FullDayDetailEntity detail, String type,
-            List<FullDayFoodEntity> foods,
-            List<MembershipDetail> membershipDetails) {
+                                                      List<FullDayFoodEntity> foods, List<MembershipDetail> membershipDetails) {
+
+        return actualizarDataMembership(membershipDetails)
+                .then(Mono.defer(() -> calcularPreciosInterno(detail, type, foods, membershipDetails)));
+    }
+
+    private Mono<Void> actualizarDataMembership(List<MembershipDetail> membershipDetails) {
+        return Flux.fromIterable(membershipDetails)
+                .flatMap(membershipDetail -> {
+                    System.out.println("Buscando Membership con ID: " + membershipDetail.getMembershipId());
+
+                    return membershipRepository.findById(membershipDetail.getMembershipId())
+                            .switchIfEmpty(
+                                    membershipRepository.findById(membershipDetail.getMembershipId())
+                                            .flatMap(membershipDto -> {
+                                                System.out.println("Encontrado: " + membershipDto);
+                                                System.out.println("Valor actual de data: " + membershipDto.getData());
+
+                                                int nuevoData = Math.max(0, membershipDto.getData() - membershipDetail.getMembershipQuantity());
+                                                System.out.println("Nuevo valor de data después de la resta: " + nuevoData);
+
+                                                membershipDto.setData(nuevoData);
+
+                                                return membershipRepository.save(membershipDto)
+                                                        .doOnSuccess(saved -> System.out.println("Actualización exitosa para ID: " + saved.getId() + ", nuevo data: " + saved.getData()));
+                                            })
+                            )
+                            .switchIfEmpty(Mono.fromRunnable(() -> System.out.println("No se encontró Membership con ID: " + membershipDetail.getMembershipId())));
+                })
+                .then(Mono.fromRunnable(() -> System.out.println("Finalizó la actualización de datos en Membership.")));
+    }
+
+
+
+
+    private Mono<FullDayDetailEntity> calcularPreciosInterno(FullDayDetailEntity detail, String type,
+                                                             List<FullDayFoodEntity> foods, List<MembershipDetail> membershipDetails) {
 
         int remainingQuantity = detail.getQuantity();
         String typePerson = detail.getTypePerson().toUpperCase();
@@ -152,6 +189,7 @@ public class FullDayServiceImpl implements FullDayService {
             membershipCounts.computeIfPresent("ADULTO_MAYOR", (k, v) -> v + membership.getAdultMayor());
             membershipCounts.computeIfPresent("INFANTE", (k, v) -> v + membership.getInfants());
         }
+
         final int normalTicketId = 1;
         final int firstAdultId = 2;
         final int membershipDiscountId = 3;
@@ -229,8 +267,7 @@ public class FullDayServiceImpl implements FullDayService {
 
                                             if (selectedMembershipId == 4) {
                                                 int membershipReduction = membershipCounts.getOrDefault(typePerson, 0);
-                                                adjustedQuantity = Math.max(0,
-                                                        food.getQuantity() - membershipReduction);
+                                                adjustedQuantity = Math.max(0, food.getQuantity() - membershipReduction);
                                             }
 
                                             return foodPriceMap.get(food.getFulldayTypefoodid())
@@ -249,6 +286,7 @@ public class FullDayServiceImpl implements FullDayService {
                             });
                 });
     }
+
 
     private BigDecimal getDefaultFoodPrice(String typePerson) {
         switch (typePerson.toUpperCase()) {

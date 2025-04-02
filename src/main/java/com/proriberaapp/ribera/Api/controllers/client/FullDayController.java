@@ -11,6 +11,7 @@ import com.proriberaapp.ribera.services.client.FullDayService;
 import com.proriberaapp.ribera.services.client.FullDayTypeFoodService;
 import com.proriberaapp.ribera.services.client.MembershipsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
@@ -259,8 +260,13 @@ public class FullDayController {
     }
 
     @GetMapping("/insort-inclub/{username}/{userId}")
-    public Mono<ResponseEntity<List<MembershipDto>>> getMembershipsv1(@PathVariable String username,@PathVariable int userId) {
-        return membershipService.loadMembershipsInsortInclubv1(username, userId)
+    public Mono<ResponseEntity<List<MembershipDto>>> getMembershipsv1(
+            @PathVariable String username,
+            @PathVariable int userId,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader) {
+        String token = authHeader.replace("Bearer ", "").trim();
+
+        return membershipService.loadMembershipsInsortInclubv1(username, userId, token)
                 .map(memberships -> ResponseEntity.ok(memberships))
                 .defaultIfEmpty(ResponseEntity.noContent().build());
     }

@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -13,6 +14,7 @@ import java.sql.Timestamp;
 @Builder
 @Table("membership")
 public class MembershipDto {
+    @Id
     @Column("membershipid")
     private Integer membershipId;
     @Column("userclientid")
