@@ -27,9 +27,12 @@ public class WalletPointController {
     }
 
     @GetMapping
-    public Mono<ResponseEntity<WalletPointResponse>> getWalletPoints(@RequestHeader("Authorization") String token) {
+    public Mono<ResponseEntity<WalletPointResponse>> getWalletPoints(
+            @RequestHeader("Authorization") String token,
+            @RequestHeader("key-inclub-ribera") String tokenBackOffice
+            ) {
         String username = jtp.getUsernameFromToken(token);
-        return walletPointService.getWalletByUsername(username)
+        return walletPointService.getWalletByUsername(username, tokenBackOffice)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
