@@ -15,7 +15,7 @@ public interface MembershipsService {
 
     Mono<MembershipDto> getPromotionalGuestById(Integer id);
 
-    Mono<List<MembershipDto>> loadMembershipsInsortInclubv1(String username, int userId);
+    Mono<List<MembershipDto>> loadMembershipsInsortInclubv1(String username, int userId, String token);
     
 
 }

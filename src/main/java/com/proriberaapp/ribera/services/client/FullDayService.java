@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface FullDayService {
 
-    Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type, Timestamp bookingdate, List<FullDayDetailEntity> details, List<FullDayFoodEntity> foods, List<MembershipDetail> membershipDetails);
+    Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId, String type, Timestamp bookingdate, List<FullDayDetailEntity> details, List<FullDayFoodEntity> foods, List<MembershipDetail> membershipDetails, Integer memberId, Integer memberquantity);
 
     Mono<Void> saveFood(List<FullDayDetailEntity> savedDetails, List<FullDayFoodEntity> foods);
 

@@ -10,6 +10,9 @@ import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.MembershipRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -79,13 +82,26 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
     }
 
     @Override
-    public Mono<List<MembershipDto>> loadMembershipsInsortInclubv1(String username, int userId) {
+    public Mono<List<MembershipDto>> loadMembershipsInsortInclubv1(String username, int userId, String token) {
         return this.loadDataUserRiber(username)
                 .flatMap(user -> {
-                    String uri = URL_MEMBERSHIPS.concat("/").concat(String.valueOf(user.getData().getId()));
-                    WebClient webClient = WebClient.create(uri);
+                    String uri = URL_MEMBERSHIPS + "/" + user.getData().getId();
+
+                    System.out.println("Llamando a la URL: " + uri);
+                    System.out.println("Token enviado: Bearer " + token);
+
+                    WebClient webClient = WebClient.builder()
+                            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                            .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                            .build();
+
                     return webClient.get()
+                            .uri(uri)
                             .retrieve()
+                            .onStatus(HttpStatusCode::is4xxClientError, response -> {
+                                System.out.println("Error en la llamada a la API: " + response.statusCode());
+                                return response.createException();
+                            })
                             .bodyToMono(ResponseDataMembershipDto.class)
                             .map(ResponseDataMembershipDto::getData);
                 })
@@ -97,25 +113,23 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                         })
                         .defaultIfEmpty(membership))
                 .collectList()
-                .flatMap(apiMemberships -> {
-                    return membershipRepository.findAllByUserclientId(userId)
-                            .collectList()
-                            .flatMap(dbMemberships -> {
-                                Timestamp now = new Timestamp(System.currentTimeMillis());
-                                List<MembershipDto> newMemberships = apiMemberships.stream()
-                                        .filter(apiMembership -> dbMemberships.stream()
-                                                .noneMatch(dbMembership -> dbMembership.getId() == apiMembership.getId()))
-                                        .map(apiMembership -> {
-                                            apiMembership.setUserclientId(userId);
-                                            apiMembership.setDatacreate(now);
-                                            return apiMembership;
-                                        })
-                                        .collect(Collectors.toList());
-                                return membershipRepository.saveAll(newMemberships)
-                                        .collectList()
-                                        .then(membershipRepository.findAllByUserclientId(userId).collectList());
-                            });
-                });
+                .flatMap(apiMemberships -> membershipRepository.findAllByUserclientId(userId)
+                        .collectList()
+                        .flatMap(dbMemberships -> {
+                            Timestamp now = new Timestamp(System.currentTimeMillis());
+                            List<MembershipDto> newMemberships = apiMemberships.stream()
+                                    .filter(apiMembership -> dbMemberships.stream()
+                                            .noneMatch(dbMembership -> dbMembership.getId() == apiMembership.getId()))
+                                    .map(apiMembership -> {
+                                        apiMembership.setUserclientId(userId);
+                                        apiMembership.setDatacreate(now);
+                                        return apiMembership;
+                                    })
+                                    .collect(Collectors.toList());
+                            return membershipRepository.saveAll(newMemberships)
+                                    .collectList()
+                                    .then(membershipRepository.findAllByUserclientId(userId).collectList());
+                        }));
     }
 
     private Mono<ResponseInclubLoginDto> loadDataUserRiber(String username) {

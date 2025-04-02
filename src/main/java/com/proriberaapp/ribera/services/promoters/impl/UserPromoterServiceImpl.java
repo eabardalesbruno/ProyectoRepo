@@ -31,6 +31,7 @@ public class UserPromoterServiceImpl implements UserPromoterService {
     @Autowired
     private EmailService emailService;
     private final WalletServiceImpl walletService;
+    private final ExternalAuthService externalAuthService;
 
     @Override
     public Mono<TokenDto> login(LoginRequest loginRequest) {
@@ -52,9 +53,14 @@ public class UserPromoterServiceImpl implements UserPromoterService {
                         return Mono.just(user);
                     }
                 })
-                .map(user -> new TokenDto(jwtProvider.generateTokenPromoter(user)))
-                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "error generating token")));
+                .flatMap(user -> {
+                    String internalToken = jwtProvider.generateTokenPromoter(user);
+                    return externalAuthService.getExternalToken()
+                            .map(externalToken -> new TokenDto(internalToken, externalToken));
+                })
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "error generating tokens")));
     }
+
 
     public Mono<UserPromoterEntity> register(UserPromoterEntity userPromoter, String randomPassword) {
         long currentTimeMillis = System.currentTimeMillis();

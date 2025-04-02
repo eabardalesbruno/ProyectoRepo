@@ -41,11 +41,13 @@ public class FullDayServiceImpl implements FullDayService {
 
     private final PaymentBookRepository paymentBookRepository;
 
+    private final MembershipRepository membershipRepository;
+
     @Override
     public Mono<FullDayEntity> registerFullDay(Integer receptionistId, Integer userPromoterId, Integer userClientId,
             String type, Timestamp bookingdate,
             List<FullDayDetailEntity> details, List<FullDayFoodEntity> foods,
-            List<MembershipDetail> membershipDetails) {
+            List<MembershipDetail> membershipDetails, Integer memberId, Integer memberquantity) {
         FullDayEntity fullDay = FullDayEntity.builder()
                 .receptionistId(receptionistId)
                 .userPromoterId(userPromoterId)
@@ -87,6 +89,10 @@ public class FullDayServiceImpl implements FullDayService {
                                         .flatMap(existingFullDay -> calculateAndSaveCommission(existingFullDay, details));
                             }
                             return Mono.just(updatedEntity);
+                        })
+                        .flatMap(updatedEntity -> {
+                            return actualizarDataMembership(memberId, memberquantity)
+                                    .thenReturn(updatedEntity);
                         }));
     }
 
@@ -134,8 +140,12 @@ public class FullDayServiceImpl implements FullDayService {
     }
 
     private Mono<FullDayDetailEntity> calcularPrecios(FullDayDetailEntity detail, String type,
-            List<FullDayFoodEntity> foods,
-            List<MembershipDetail> membershipDetails) {
+                                                      List<FullDayFoodEntity> foods, List<MembershipDetail> membershipDetails) {
+        return Mono.defer(() -> calcularPreciosInterno(detail, type, foods, membershipDetails));
+    }
+
+    private Mono<FullDayDetailEntity> calcularPreciosInterno(FullDayDetailEntity detail, String type,
+                                                             List<FullDayFoodEntity> foods, List<MembershipDetail> membershipDetails) {
 
         int remainingQuantity = detail.getQuantity();
         String typePerson = detail.getTypePerson().toUpperCase();
@@ -152,6 +162,7 @@ public class FullDayServiceImpl implements FullDayService {
             membershipCounts.computeIfPresent("ADULTO_MAYOR", (k, v) -> v + membership.getAdultMayor());
             membershipCounts.computeIfPresent("INFANTE", (k, v) -> v + membership.getInfants());
         }
+
         final int normalTicketId = 1;
         final int firstAdultId = 2;
         final int membershipDiscountId = 3;
@@ -229,8 +240,7 @@ public class FullDayServiceImpl implements FullDayService {
 
                                             if (selectedMembershipId == 4) {
                                                 int membershipReduction = membershipCounts.getOrDefault(typePerson, 0);
-                                                adjustedQuantity = Math.max(0,
-                                                        food.getQuantity() - membershipReduction);
+                                                adjustedQuantity = Math.max(0, food.getQuantity() - membershipReduction);
                                             }
 
                                             return foodPriceMap.get(food.getFulldayTypefoodid())
@@ -249,6 +259,7 @@ public class FullDayServiceImpl implements FullDayService {
                             });
                 });
     }
+
 
     private BigDecimal getDefaultFoodPrice(String typePerson) {
         switch (typePerson.toUpperCase()) {
@@ -354,6 +365,10 @@ public class FullDayServiceImpl implements FullDayService {
             disbursementDate = LocalDate.of(createdDate.plusMonths(1).getYear(), createdDate.plusMonths(1).getMonth(), 5);
         }
         return Timestamp.valueOf(disbursementDate.atStartOfDay());
+    }
+
+    private Mono<Void> actualizarDataMembership(Integer memberId, Integer memberquantity) {
+        return membershipRepository.actualizarData(memberId, memberquantity).then();
     }
 
     @Override
