@@ -14,6 +14,11 @@ public interface MembershipsService {
 
     Mono<List<MembershipDto>> loadMembershipsInsortInclub(String username);
 
+    Mono<MembershipDto> getPromotionalGuestById(Integer id);
+
+    Mono<List<MembershipDto>> loadMembershipsInsortInclubv1(String username, int userId, String token);
+
+
 
     Mono<List<SubscriptionFamilyResponse>> loadAllFamilies(String username, String tokenBackOffice);
 }

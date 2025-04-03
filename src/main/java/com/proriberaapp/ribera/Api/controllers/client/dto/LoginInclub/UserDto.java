@@ -14,4 +14,5 @@ public class UserDto {
     private String telephone;
     private String nroDocument;
     private String address;
+    private int idState;
 }
