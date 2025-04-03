@@ -77,9 +77,9 @@ public class WalletPointServiceImpl implements WalletPointService {
                 .then();
     }
     @Override
-    public Mono<WalletPointResponse> getWalletByIdentifier(String identifier, Role role, String tokenBackOffice) {
+    public Mono<WalletPointResponse> getWalletByIdentifier(String identifier, Role role, Integer idFamily, String tokenBackOffice) {
         return switch (role) {
-            case ROLE_PARTNER -> userPointService.getUserPoints(identifier, 2, tokenBackOffice)
+            case ROLE_PARTNER -> userPointService.getUserPoints(identifier, idFamily, tokenBackOffice)
                     .doOnNext(userPointDataResponse -> log.info("UserPointDataResponse: {}", userPointDataResponse))
                     .flatMap(userPointDataResponse ->
                             walletPointRepository.findByUsername(identifier)
@@ -142,8 +142,6 @@ public class WalletPointServiceImpl implements WalletPointService {
                             ));
                 }).then();
     }
-
-
 
 
 }
