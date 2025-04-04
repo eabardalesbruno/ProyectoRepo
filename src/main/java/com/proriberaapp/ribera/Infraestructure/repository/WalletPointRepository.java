@@ -13,5 +13,8 @@ public interface WalletPointRepository extends ReactiveCrudRepository<WalletPoin
     @Query("SELECT * FROM wallet_point wp LEFT JOIN userclient u ON u.userclientid  = wp.userId WHERE u.username = :username")
     Mono<WalletPointEntity> findByUsername(String username);
 
+    @Query("SELECT * FROM wallet_point wp LEFT JOIN userclient u ON u.userclientid  = wp.userId WHERE u.email = :email")
+    Mono<WalletPointEntity> findByEmail(String email);
+
 }
 
