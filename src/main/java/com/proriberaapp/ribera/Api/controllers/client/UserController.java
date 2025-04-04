@@ -317,6 +317,14 @@ public class UserController {
         return this.userClientService.getPercentageDiscount(idUserClient, bookingId, discountType);
     }
 
+    @GetMapping("/find/discount")
+    public Mono<UserNameAndDiscountDto> getDiscountClient(
+            @RequestParam Integer idUserClient,
+            @RequestParam Integer bookingId,
+            @RequestParam DiscountTypeCode discountType) {
+        return this.userClientService.getPercentageDiscount(idUserClient, bookingId, discountType);
+    }
+
     @GetMapping("/promotor/{userPromotorId}")
     public Flux<UserClientEntity> getUsersByPromotorId(@PathVariable Integer userPromotorId) {
         return userClientService.findByUserPromotorId(userPromotorId);
