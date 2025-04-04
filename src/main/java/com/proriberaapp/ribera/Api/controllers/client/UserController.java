@@ -317,7 +317,7 @@ public class UserController {
         return this.userClientService.getPercentageDiscount(idUserClient, bookingId, discountType);
     }
 
-    @GetMapping("/find/discount")
+    @GetMapping("/find/discountclient")
     public Mono<UserNameAndDiscountDto> getDiscountClient(
             @RequestParam Integer idUserClient,
             @RequestParam Integer bookingId,
