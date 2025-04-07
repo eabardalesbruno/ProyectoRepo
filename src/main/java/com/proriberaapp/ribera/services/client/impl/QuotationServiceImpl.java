@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -243,32 +244,56 @@ public class QuotationServiceImpl implements QuotationService {
 
     @Override
     public Mono<BigDecimal> calculateTotalRewards(BookingSaveRequest bookingSaveRequest) {
-        // Obtener fechas de reserva
         LocalDate startDate = bookingSaveRequest.getDayBookingInit();
         LocalDate endDate = bookingSaveRequest.getDayBookingEnd();
 
-        // Obtener los días de la semana entre el rango de fechas (Lunes = 1, ..., Domingo = 7)
-        List<Integer> daysOfWeek = startDate.datesUntil(endDate.plusDays(1))
+        List<LocalDate> bookingDates = startDate.datesUntil(endDate.plusDays(1))
+                .toList();
+
+        List<Integer> daysOfWeek = bookingDates.stream()
                 .map(date -> date.getDayOfWeek().getValue())
-                .distinct() // Evita días repetidos en la lista
                 .collect(Collectors.toList());
 
-        // Consultar cotizaciones filtrando por la oferta de habitación y los días de la semana
         return quotationRepository.findQuotationByRoomOfferAndDays(bookingSaveRequest.getRoomOfferId(), daysOfWeek)
                 .collectList()
-                .map(quotations -> quotations.stream()
-                        .map(this::calculateRewardsForQuotation)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add) // Sumar todas las recompensas
-                );
+                .map(quotations -> {
+                    BigDecimal totalRewards = BigDecimal.ZERO;
+
+                    for (LocalDate date : bookingDates) {
+                        int dayOfWeek = date.getDayOfWeek().getValue();
+
+                        Optional<QuotationEntity> quotationOpt = quotations.stream()
+                                .filter(q -> q.getIdday() == dayOfWeek)
+                                .findFirst();
+
+                        if (quotationOpt.isPresent()) {
+                            QuotationEntity quotation = quotationOpt.get();
+                            BigDecimal rewardForThisDay = calculateRewardsForQuotation(
+                                    quotation,
+                                    bookingSaveRequest
+                            );
+                            totalRewards = totalRewards.add(rewardForThisDay);
+                        }
+                    }
+
+                    return totalRewards;
+                });
     }
 
-    private BigDecimal calculateRewardsForQuotation(QuotationEntity quotation) {
+    private BigDecimal calculateRewardsForQuotation(QuotationEntity quotation, BookingSaveRequest booking) {
         return getSafeValue(quotation.getKidReward())
-                .add(getSafeValue(quotation.getAdultReward()))
-                .add(getSafeValue(quotation.getAdultMayorReward()))
-                .add(getSafeValue(quotation.getAdultExtraReward()));
+                .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberChild())))
+                .add(getSafeValue(quotation.getAdultReward())
+                        .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdult()))))
+                .add(getSafeValue(quotation.getAdultMayorReward())
+                        .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdultMayor()))))
+                .add(getSafeValue(quotation.getAdultExtraReward())
+                        .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdultExtra()))));
     }
 
+    private int getSafeInt(Integer value) {
+        return value != null ? value : 0;
+    }
     private BigDecimal getSafeValue(BigInteger value) {
         return value != null ? new BigDecimal(value) : BigDecimal.ZERO;
     }
