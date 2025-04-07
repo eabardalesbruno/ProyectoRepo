@@ -53,4 +53,7 @@ public class QuotationEntity {
     @Column("adult_extra_reward")
     private BigInteger adultExtraReward;
 
+    @Column("idday")
+    private Integer idday;
+
 }
