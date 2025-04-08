@@ -13,8 +13,9 @@ public interface NiubizService {
     Mono<Object> savePayNiubizFullDay(Integer fullDayId, String invoiceType, String invoiceDocumentNumber, Double totalDiscount, Double percentageDiscount, Double totalCostWithOutDiscount, Double amount, String transactionId);
     Mono<String> purchaseRewards(String securityToken,
                                  String transactionToken,
-                                 Long userId,
-                                 int rewards);
+                                 Integer userId,
+                                 int rewards,
+                                 Integer bookingId, String purchaseNumber);
 
     Mono<RewardPurchase> saveRewardPurchase(Long userId,
                                             int quantity,

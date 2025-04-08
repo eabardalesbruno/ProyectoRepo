@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.WalletPointRequest;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.TransactionNecessaryResponse;
 import com.proriberaapp.ribera.Domain.dto.BookingAndRoomNameDto;
 import com.proriberaapp.ribera.Domain.dto.DetailEmailFulldayDto;
@@ -22,6 +23,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.NiubizService;
 import com.proriberaapp.ribera.services.client.RefusePaymentService;
+import com.proriberaapp.ribera.services.client.WalletPointService;
 import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.BookingEmailDto;
@@ -44,7 +46,6 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -94,6 +95,7 @@ public class NiubizServiceImpl implements NiubizService {
     ProductSunatRepository productSunatRepository;
 
     RewardPurchaseRepository rewardPurchaseRepository;
+    private final WalletPointService walletPointService;
 
     @Override
     public Mono<String> getSecurityToken() {
@@ -427,12 +429,12 @@ public class NiubizServiceImpl implements NiubizService {
     @Override
     public Mono<String> purchaseRewards(String securityToken,
                                         String transactionToken,
-                                        Long userId,
-                                        int rewards) {
+                                        Integer userId,
+                                        int rewards,
+                                        Integer bookingId, String purchaseNumber) {
 
         double amount = rewards * 1.0;
 
-        String purchaseNumber = String.valueOf(System.currentTimeMillis() % 1000000000);
 
         NiubizAutorizationBodyEntity body = new NiubizAutorizationBodyEntity();
         body.setChannel("web");
@@ -464,6 +466,7 @@ public class NiubizServiceImpl implements NiubizService {
                         return response.bodyToMono(Object.class)
                                 .flatMap(objError -> {
                                     JsonNode jsonNode = MAPPER.convertValue(objError, JsonNode.class);
+                                    log.error("Error en transacción con Niubiz: {}", jsonNode.toPrettyString());
 
                                     String transactionId = getSafeString(jsonNode.at("/data/TRANSACTION_ID"));
                                     String transactionDate = getSafeString(jsonNode.at("/data/TRANSACTION_DATE"));
@@ -473,8 +476,7 @@ public class NiubizServiceImpl implements NiubizService {
                                     String msgEncoded = Base64.encodeBase64String(
                                         actionDescription.getBytes(StandardCharsets.UTF_8)
                                     );
-
-                                    String finalUrlWeb = urlClientFrontEnd+"/rewards-result?" +
+                                    String finalUrlWeb = urlClientFrontEnd+"/payment-method/"+bookingId+"?" +
                                             "transactionId=" + transactionId +
                                             "&dateTransaction=" + transactionDate +
                                             "&message=" + msgEncoded +
@@ -505,7 +507,7 @@ public class NiubizServiceImpl implements NiubizService {
                                         card.getBytes(StandardCharsets.UTF_8)
                                     );
 
-                                    String finalUrlWeb = urlClientFrontEnd+"/rewards-result?" +
+                                    String finalUrlWeb = urlClientFrontEnd+"/payment-method/"+bookingId+"?" +
                                             "transactionId=" + transactionId +
                                             "&dateTransaction=" + transactionDate +
                                             "&status=" + status +
@@ -515,8 +517,12 @@ public class NiubizServiceImpl implements NiubizService {
                                             "&brand=" + brand +
                                             "&purchaseNumber=" + purchaseNumber +
                                             "&action=success";
-
-                                    return Mono.just(finalUrlWeb);
+                                    return walletPointService.updateWalletPoints(userId,
+                                                    WalletPointRequest.builder()
+                                                            .userId(userId)
+                                                            .rewardPoints((double) rewards)
+                                                            .build())
+                                            .thenReturn(finalUrlWeb);
                                 });
                     }
                 });
