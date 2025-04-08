@@ -88,13 +88,16 @@ public class NiubizController {
     }
 
 
-    @PostMapping("/purchaseRewards")
-    public Mono<ResponseEntity<Void>> purchaseRewards(@RequestParam("securityToken") String securityToken,
-                                                      @RequestParam("transactionToken") String transactionToken,
-                                                      @RequestParam("userId") Long userId,
-                                                      @RequestParam("rewards") int rewards) {
+    @PostMapping("/purchase-rewards")
+    public Mono<ResponseEntity<Void>> purchaseRewards(
+            @ModelAttribute NiubizAutorizationEntity niubizEntity,
+            @RequestParam("token") String securityToken,
+                                                      @RequestParam("userId") Integer userId,
+                                                      @RequestParam("rewards") int rewards,
+                                                      @RequestParam("bookingId") Integer bookingId,
+                                                      @RequestParam("purchaseNumber") String purchaseNumber) {
 
-        return niubizService.purchaseRewards(securityToken, transactionToken, userId, rewards)
+        return niubizService.purchaseRewards(securityToken, niubizEntity.getTransactionToken(), userId, rewards, bookingId, purchaseNumber)
                 .map(urlToRedirect -> ResponseEntity
                         .status(HttpStatus.TEMPORARY_REDIRECT) // 307
                         .header(HttpHeaders.LOCATION, urlToRedirect)
