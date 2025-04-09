@@ -16,10 +16,10 @@ public class QuotationDto {
     private BigDecimal adultCost;
     private BigDecimal adultMayorCost;
     private BigDecimal adultExtraCost;
-    private BigInteger kidReward;
-    private BigInteger adultReward;
-    private BigInteger adultMayorReward;
-    private BigInteger adultExtraReward;
+    private BigDecimal kidReward;
+    private BigDecimal adultReward;
+    private BigDecimal adultMayorReward;
+    private BigDecimal adultExtraReward;
     private List<Integer> roomOfferIds;
     private List<quotationDayDto> days;
 

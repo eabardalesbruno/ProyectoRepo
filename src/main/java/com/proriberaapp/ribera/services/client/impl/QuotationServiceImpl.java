@@ -269,7 +269,7 @@ public class QuotationServiceImpl implements QuotationService {
                 .add(getSafeValue(quotation.getAdultExtraReward()));
     }
 
-    private BigDecimal getSafeValue(BigInteger value) {
-        return value != null ? new BigDecimal(value) : BigDecimal.ZERO;
+    private BigDecimal getSafeValue(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
     }
 }
