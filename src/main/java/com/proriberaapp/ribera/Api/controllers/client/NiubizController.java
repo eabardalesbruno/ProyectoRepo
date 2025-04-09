@@ -2,16 +2,13 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Domain.entities.NiubizAutorizationEntity;
 import com.proriberaapp.ribera.Domain.entities.RewardPurchase;
-import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.services.client.NiubizService;
-import com.proriberaapp.ribera.services.client.RoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -32,8 +29,8 @@ public class NiubizController {
     }
 
     @PostMapping("/tofinalize")
-    public Mono<ResponseEntity<Void>> tofinalize(@ModelAttribute NiubizAutorizationEntity niubizEntity, @RequestParam String token, @RequestParam Long purchaseNumber, @RequestParam Double amount) {
-        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 1)
+    public Mono<ResponseEntity<Void>> tofinalize(@ModelAttribute NiubizAutorizationEntity niubizEntity, @RequestParam String token, @RequestParam Long purchaseNumber, @RequestParam Double amount, @RequestParam Integer userId) {
+        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 1, userId)
                 .flatMap(redirect -> {
                     return Mono.just(ResponseEntity
                             .status(HttpStatus.TEMPORARY_REDIRECT)
@@ -43,8 +40,8 @@ public class NiubizController {
     }
 
     @PostMapping("/endpromote")
-    public Mono<ResponseEntity<Void>> endpromote(@ModelAttribute NiubizAutorizationEntity niubizEntity, @RequestParam String token, @RequestParam Long purchaseNumber, @RequestParam Double amount) {
-        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 2)
+    public Mono<ResponseEntity<Void>> endpromote(@ModelAttribute NiubizAutorizationEntity niubizEntity, @RequestParam String token, @RequestParam Long purchaseNumber, @RequestParam Double amount, @RequestParam Integer userId) {
+        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 2, userId)
                 .flatMap(redirect -> {
                     return Mono.just(ResponseEntity
                             .status(HttpStatus.TEMPORARY_REDIRECT)
@@ -54,8 +51,8 @@ public class NiubizController {
     }
 
     @PostMapping("/endclient")
-    public Mono<ResponseEntity<Void>> endclient(@ModelAttribute NiubizAutorizationEntity niubizEntity, @RequestParam String token, @RequestParam Long purchaseNumber, @RequestParam Double amount) {
-        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 3)
+    public Mono<ResponseEntity<Void>> endclient(@ModelAttribute NiubizAutorizationEntity niubizEntity, @RequestParam String token, @RequestParam Long purchaseNumber, @RequestParam Double amount, @RequestParam Integer userId) {
+        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 3, userId)
                 .flatMap(redirect -> {
                     return Mono.just(ResponseEntity
                             .status(HttpStatus.TEMPORARY_REDIRECT)
@@ -67,7 +64,7 @@ public class NiubizController {
 
     @PostMapping("/endFulldayAdmin")
     public Mono<ResponseEntity<Void>> endFulldayAdmin(@ModelAttribute NiubizAutorizationEntity niubizEntity, @RequestParam String token, @RequestParam Long purchaseNumber, @RequestParam Double amount) {
-        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 4)
+        return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 4, null)
                 .flatMap(redirect -> {
                     return Mono.just(ResponseEntity
                             .status(HttpStatus.TEMPORARY_REDIRECT)
@@ -92,10 +89,10 @@ public class NiubizController {
     public Mono<ResponseEntity<Void>> purchaseRewards(
             @ModelAttribute NiubizAutorizationEntity niubizEntity,
             @RequestParam("token") String securityToken,
-                                                      @RequestParam("userId") Integer userId,
-                                                      @RequestParam("rewards") int rewards,
-                                                      @RequestParam("bookingId") Integer bookingId,
-                                                      @RequestParam("purchaseNumber") String purchaseNumber) {
+            @RequestParam("userId") Integer userId,
+            @RequestParam("rewards") int rewards,
+            @RequestParam(name = "bookingId", defaultValue = "-1") Integer bookingId,
+            @RequestParam("purchaseNumber") String purchaseNumber) {
 
         return niubizService.purchaseRewards(securityToken, niubizEntity.getTransactionToken(), userId, rewards, bookingId, purchaseNumber)
                 .map(urlToRedirect -> ResponseEntity
