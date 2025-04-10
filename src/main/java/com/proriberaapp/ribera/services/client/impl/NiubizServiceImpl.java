@@ -3,25 +3,22 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.UserRewardRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.WalletPointRequest;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.TransactionNecessaryResponse;
 import com.proriberaapp.ribera.Domain.dto.BookingAndRoomNameDto;
 import com.proriberaapp.ribera.Domain.dto.DetailEmailFulldayDto;
 import com.proriberaapp.ribera.Domain.entities.*;
+import com.proriberaapp.ribera.Domain.enums.RewardType;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
 import com.proriberaapp.ribera.Domain.invoice.ProductSunatDomain;
-import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.FullDayRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.ProductSunatRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.RewardPurchaseRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
-import com.proriberaapp.ribera.services.client.EmailService;
-import com.proriberaapp.ribera.services.client.NiubizService;
-import com.proriberaapp.ribera.services.client.RefusePaymentService;
+import com.proriberaapp.ribera.services.client.*;
 import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.BookingEmailDto;
@@ -44,7 +41,6 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -94,12 +90,15 @@ public class NiubizServiceImpl implements NiubizService {
     ProductSunatRepository productSunatRepository;
 
     RewardPurchaseRepository rewardPurchaseRepository;
+    private final WalletPointService walletPointService;
+    private final UserRewardService userRewardService;
+    private final UserClientService userClientService;
 
     @Override
     public Mono<String> getSecurityToken() {
         //aW50ZWdyYWNpb25lc0BuaXViaXouY29tLnBlOl83ejNAOGZG
         String credentials = user + ":" + password;
-        String basic = "Basic "+Base64.encodeBase64String(credentials.getBytes());
+        String basic = "Basic " + Base64.encodeBase64String(credentials.getBytes());
         return nibuizClient.get()
                 .uri(uriBuilder -> uriBuilder.path("/api.security/v1/security")
                         .build())
@@ -117,7 +116,7 @@ public class NiubizServiceImpl implements NiubizService {
     @Override
     public Mono<Object> getTokenSession(String token, Object body) {
         return nibuizClient.post()
-                .uri(uriBuilder -> uriBuilder.path("/api.ecommerce/v2/ecommerce/token/session/"+merchantId)
+                .uri(uriBuilder -> uriBuilder.path("/api.ecommerce/v2/ecommerce/token/session/" + merchantId)
                         .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", token)
@@ -133,16 +132,16 @@ public class NiubizServiceImpl implements NiubizService {
     }
 
     @Override
-    public Mono<String> tofinalize(NiubizAutorizationEntity niubizEntity, String token, Long purchaseNumber, Double amount, Integer type) {
+    public Mono<String> tofinalize(NiubizAutorizationEntity niubizEntity, String token, Long purchaseNumber, Double amount, Integer type, Integer userId) {
         String urlWeb = "";
         if (type == 1) {
-            urlWeb += urlAdminFrontEnd+"/manager/bookings-manager";
+            urlWeb += urlAdminFrontEnd + "/manager/bookings-manager";
         } else if (type == 2) {
-            urlWeb += urlClientFrontEnd+"/promotor/dashboard/reservas";
+            urlWeb += urlClientFrontEnd + "/promotor/dashboard/reservas";
         } else if (type == 3) {
-            urlWeb += urlClientFrontEnd+"/bookings/reservados";
+            urlWeb += urlClientFrontEnd + "/bookings/reservados";
         } else if (type == 4) {
-            urlWeb += urlAdminFrontEnd+"/manager/booking-fullday-manager";
+            urlWeb += urlAdminFrontEnd + "/manager/booking-fullday-manager";
         }
 
         NiubizAutorizationBodyEntity body = new NiubizAutorizationBodyEntity();
@@ -164,7 +163,7 @@ public class NiubizServiceImpl implements NiubizService {
         body.setDataMap(datamap);
         String finalUrlWeb = urlWeb;
         return nibuizClient.post()
-                .uri(uriBuilder -> uriBuilder.path("/api.authorization/v3/authorization/ecommerce/"+merchantId)
+                .uri(uriBuilder -> uriBuilder.path("/api.authorization/v3/authorization/ecommerce/" + merchantId)
                         .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", token)
@@ -189,7 +188,7 @@ public class NiubizServiceImpl implements NiubizService {
                             } catch (JsonProcessingException e) {
                                 message = "";
                             }
-                            return Mono.just(finalUrlWeb +"?transactionId="+transactionId+"&dateTransaction="+dateTransaction+"&message="+message+"&status="+status);
+                            return Mono.just(finalUrlWeb + "?transactionId=" + transactionId + "&dateTransaction=" + dateTransaction + "&message=" + message + "&status=" + status);
                         });
                     }
                     return response.bodyToMono(Object.class).flatMap(object -> {
@@ -210,7 +209,32 @@ public class NiubizServiceImpl implements NiubizService {
                         } catch (JsonProcessingException e) {
                             transactionId = "-1";
                         }
-                        return Mono.just(finalUrlWeb+"?transactionId="+transactionId+"&dateTransaction="+dateTransaction+"&amountTransaction="+amountTransaction+"&cardTransaction="+cardTransaction+"&brand="+brand+"&currency="+currency+"&status="+status);
+                        String urlRedirect = String.format(
+                                "%s?transactionId=%s&dateTransaction=%s&amountTransaction=%s" +
+                                        "&cardTransaction=%s&brand=%s&currency=%s&status=%s",
+                                finalUrlWeb,
+                                transactionId,
+                                dateTransaction,
+                                amountTransaction,
+                                cardTransaction,
+                                brand,
+                                currency,
+                                status
+                        );
+                        if (userId == null) {
+                            return Mono.just(urlRedirect);
+                        }
+
+                        int rewardPoints = (int) Math.round(amount * 0.05);
+                        UserRewardRequest rewardReq = UserRewardRequest.builder()
+                                .userId(userId)
+                                .points(rewardPoints)
+                                .expirationDate(LocalDateTime.now().plusYears(1))
+                                .type(RewardType.BOOKING)
+                                .build();
+
+                        return userRewardService.create(rewardReq)
+                                .then(Mono.just(urlRedirect));
                     });
                 });
     }
@@ -254,63 +278,62 @@ public class NiubizServiceImpl implements NiubizService {
                             .next();
 
                     return codSunatMono.flatMap(codSunat -> {
-                    InvoiceItemDomain item = new InvoiceItemDomain(
-                            bookingAndRoomNameDto.getRoomName(),
-                            codSunat,
-                            bookingAndRoomNameDto.getRoomDescription(),
-                            1,
-                            totalCost);
-                    invoice.addItemWithIncludedIgv(item);
-                    PaymentBookEntity paymentBook = PaymentBookEntity
-                            .builder()
-                            .bookingId(updatedBooking
-                                    .getBookingId())
-                            .userClientId(updatedBooking
-                                    .getUserClientId())
-                            .refuseReasonId(1)
-                            .paymentMethodId(6)//1
-                            .paymentStateId(2)
-                            .paymentTypeId(3)
-                            .paymentSubTypeId(6)
-                            .currencyTypeId(1)
-                            .amount(totalCost)
-                            .description("Pago exitoso")
-                            .paymentDate(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Lima"))))
-                            .operationCode(transactionId)
-                            .note("Nota de pago")
-                            .totalCost(totalCost)
-                            .invoiceDocumentNumber(invoiceDocumentNumber)
-                            .invoiceType(invoiceType)
-                            .imageVoucher("Pago con Tarjeta")
-                            .totalPoints(0)
-                            .paymentComplete(true)
-                            .pendingpay(1)
-                            .totalDiscount(totalDiscount)
-                            .percentageDiscount(percentageDiscount)
-                            .totalCostWithOutDiscount(totalCostWithOutDiscount)
-                            .build();
-                    return paymentBookRepository.save(paymentBook)
-                            .flatMap(paymentBookR -> {
-                                invoice.setPaymentBookId(paymentBookR.getPaymentBookId());
-                                return this.invoiceService
-                                        .save(invoice)
-                                        .then(sendSuccessEmail(
-                                                userClient.getEmail(),
-                                                paymentBookR.getPaymentBookId()));
-                            }).thenReturn(new TransactionNecessaryResponse(true))
-                            .onErrorResume(e -> bookingRepository
-                                    .findByBookingId(bookingId)
-                                    .flatMap(booking -> {
-                                        booking.setBookingStateId(3);
-                                        return bookingRepository.save(booking);
-                                    })
-                                    .flatMap(booking -> userClientRepository.findById(userClient.getUserClientId())
-                                            .flatMap(userCliente -> sendErrorEmail(userCliente.getEmail(), e.getMessage()))
-                                            .then(Mono.error(e))));
+                        InvoiceItemDomain item = new InvoiceItemDomain(
+                                bookingAndRoomNameDto.getRoomName(),
+                                codSunat,
+                                bookingAndRoomNameDto.getRoomDescription(),
+                                1,
+                                totalCost);
+                        invoice.addItemWithIncludedIgv(item);
+                        PaymentBookEntity paymentBook = PaymentBookEntity
+                                .builder()
+                                .bookingId(updatedBooking
+                                        .getBookingId())
+                                .userClientId(updatedBooking
+                                        .getUserClientId())
+                                .refuseReasonId(1)
+                                .paymentMethodId(6)//1
+                                .paymentStateId(2)
+                                .paymentTypeId(3)
+                                .paymentSubTypeId(6)
+                                .currencyTypeId(1)
+                                .amount(totalCost)
+                                .description("Pago exitoso")
+                                .paymentDate(Timestamp.valueOf(LocalDateTime.now(ZoneId.of("America/Lima"))))
+                                .operationCode(transactionId)
+                                .note("Nota de pago")
+                                .totalCost(totalCost)
+                                .invoiceDocumentNumber(invoiceDocumentNumber)
+                                .invoiceType(invoiceType)
+                                .imageVoucher("Pago con Tarjeta")
+                                .totalPoints(0)
+                                .paymentComplete(true)
+                                .pendingpay(1)
+                                .totalDiscount(totalDiscount)
+                                .percentageDiscount(percentageDiscount)
+                                .totalCostWithOutDiscount(totalCostWithOutDiscount)
+                                .build();
+                        return paymentBookRepository.save(paymentBook)
+                                .flatMap(paymentBookR -> {
+                                    invoice.setPaymentBookId(paymentBookR.getPaymentBookId());
+                                    return this.invoiceService
+                                            .save(invoice)
+                                            .then(sendSuccessEmail(
+                                                    userClient.getEmail(),
+                                                    paymentBookR.getPaymentBookId()));
+                                }).thenReturn(new TransactionNecessaryResponse(true))
+                                .onErrorResume(e -> bookingRepository
+                                        .findByBookingId(bookingId)
+                                        .flatMap(booking -> {
+                                            booking.setBookingStateId(3);
+                                            return bookingRepository.save(booking);
+                                        })
+                                        .flatMap(booking -> userClientRepository.findById(userClient.getUserClientId())
+                                                .flatMap(userCliente -> sendErrorEmail(userCliente.getEmail(), e.getMessage()))
+                                                .then(Mono.error(e))));
                     });
                 });
     }
-
 
 
     @Override
@@ -423,16 +446,15 @@ public class NiubizServiceImpl implements NiubizService {
     }
 
 
-
     @Override
     public Mono<String> purchaseRewards(String securityToken,
                                         String transactionToken,
-                                        Long userId,
-                                        int rewards) {
+                                        Integer userId,
+                                        int rewards,
+                                        Integer bookingId, String purchaseNumber) {
 
         double amount = rewards * 1.0;
 
-        String purchaseNumber = String.valueOf(System.currentTimeMillis() % 1000000000);
 
         NiubizAutorizationBodyEntity body = new NiubizAutorizationBodyEntity();
         body.setChannel("web");
@@ -454,6 +476,10 @@ public class NiubizServiceImpl implements NiubizService {
         dataMap.setServiceLocationPostalCode("15046");
         body.setDataMap(dataMap);
 
+        final String finalBookingUrl = (bookingId == -1)
+                ? urlClientFrontEnd + "/exchange-zone"
+                : urlClientFrontEnd + "/payment-method/" + bookingId;
+        System.out.println(finalBookingUrl);
         return nibuizClient.post()
                 .uri("/api.authorization/v3/authorization/ecommerce/{merchantId}", merchantId)
                 .header(HttpHeaders.AUTHORIZATION, securityToken)
@@ -464,6 +490,7 @@ public class NiubizServiceImpl implements NiubizService {
                         return response.bodyToMono(Object.class)
                                 .flatMap(objError -> {
                                     JsonNode jsonNode = MAPPER.convertValue(objError, JsonNode.class);
+                                    log.error("Error en transacción con Niubiz: {}", jsonNode.toPrettyString());
 
                                     String transactionId = getSafeString(jsonNode.at("/data/TRANSACTION_ID"));
                                     String transactionDate = getSafeString(jsonNode.at("/data/TRANSACTION_DATE"));
@@ -471,10 +498,10 @@ public class NiubizServiceImpl implements NiubizService {
                                     String actionDescription = getSafeString(jsonNode.at("/data/ACTION_DESCRIPTION"));
 
                                     String msgEncoded = Base64.encodeBase64String(
-                                        actionDescription.getBytes(StandardCharsets.UTF_8)
+                                            actionDescription.getBytes(StandardCharsets.UTF_8)
                                     );
 
-                                    String finalUrlWeb = urlClientFrontEnd+"/rewards-result?" +
+                                    String finalUrlWeb = finalBookingUrl+ "?" +
                                             "transactionId=" + transactionId +
                                             "&dateTransaction=" + transactionDate +
                                             "&message=" + msgEncoded +
@@ -502,10 +529,10 @@ public class NiubizServiceImpl implements NiubizService {
                                     String currency = getSafeString(jsonNode.at("/order/currency"));
 
                                     String cardEncoded = Base64.encodeBase64String(
-                                        card.getBytes(StandardCharsets.UTF_8)
+                                            card.getBytes(StandardCharsets.UTF_8)
                                     );
 
-                                    String finalUrlWeb = urlClientFrontEnd+"/rewards-result?" +
+                                    String finalUrlWeb = finalBookingUrl+ "?" +
                                             "transactionId=" + transactionId +
                                             "&dateTransaction=" + transactionDate +
                                             "&status=" + status +
@@ -515,8 +542,12 @@ public class NiubizServiceImpl implements NiubizService {
                                             "&brand=" + brand +
                                             "&purchaseNumber=" + purchaseNumber +
                                             "&action=success";
-
-                                    return Mono.just(finalUrlWeb);
+                                    return walletPointService.updateWalletPoints(userId,
+                                                    WalletPointRequest.builder()
+                                                            .userId(userId)
+                                                            .rewardPoints((double) rewards)
+                                                            .build())
+                                            .thenReturn(finalUrlWeb);
                                 });
                     }
                 });
@@ -551,6 +582,7 @@ public class NiubizServiceImpl implements NiubizService {
     }
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+
     private String getSafeString(JsonNode node) {
         return (node.isMissingNode() || node.isNull()) ? "" : node.asText("");
     }
