@@ -71,13 +71,14 @@ public class WalletPointController {
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 
-    //endpoint para convertir puntos rewards
     @PostMapping("/convert-points")
     public Mono<Void> convertPoints(@RequestBody WalletPointRequest request,
                                     @RequestHeader("Authorization") String token) {
 
+        String username = jtp.getUsernameFromToken(token);
         Integer userId = jtp.getIdFromToken(token);
-        return walletPointService.convertPoints(userId, request);
+        System.out.println(userId);
+        return walletPointService.convertPoints(userId, username, request);
     }
 }
 
