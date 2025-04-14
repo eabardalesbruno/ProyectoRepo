@@ -53,6 +53,16 @@ public class WalletPointController {
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
+
+    @GetMapping("/user/{id}")
+    public Mono<ResponseEntity<WalletPointResponse>> getWalletPointByUserId(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Integer id) {
+        return walletPointService.getWalletByUserId(id)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
+    }
+
     @PutMapping
     public Mono<ResponseEntity<WalletPointResponse>> updateWalletPoints(
             @RequestBody WalletPointRequest request, @RequestHeader("Authorization") String token) {

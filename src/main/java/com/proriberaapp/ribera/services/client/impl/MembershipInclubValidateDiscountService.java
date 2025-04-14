@@ -12,6 +12,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.ExternalAuthService;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.BoResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.SubscriptionFamilyResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
+import com.proriberaapp.ribera.Domain.entities.DiscountEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.BookingRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.MembershipRepository;
@@ -99,6 +100,7 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                         .defaultIfEmpty(membership))
                 .collectList();
     }
+
 
     @Override
     public Mono<List<MembershipDto>> loadMembershipsInsortInclubv1(String username, int userId, String token) {
@@ -206,19 +208,17 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                                     return Mono.just(UserNameAndDiscountDto.empty());
                                 }
                                 return this.discountRepository
-                                        .getDiscountWithItemsAndCurrentYear(userId,
-                                                memberships.stream().filter(d->d.getIdFamilyPackage()==2).map(d -> d.getIdPackage()).toList())
-                                        .collectList().flatMap(listPercentage -> {
-                                            return Mono.just(UserNameAndDiscountDto.builder()
-                                                    .username(userData.getUsername())
-                                                    .percentage(listPercentage.stream().map(p -> p.getPercentage()).reduce(0.0f,
-                                                            Float::sum))
-                                                    .discounts(listPercentage.stream()
-                                                            .map(p -> new DiscountDto(p.getId(),  p.getName(),p.getPercentage()*booking.getCostFinal().floatValue()/100,  p.getPercentage(),
-                                                                    p.isApplyToReservation(), p.isApplyToFood()))
-                                                            .toList())
-                                                    .build());
-                                        });
+                                        .getDiscountWithItemsAndCurrentYear(
+                                                memberships.stream().filter(d->d.getIdFamilyPackage()==2).map(MembershipDto::getIdPackage).toList())
+                                        .collectList().flatMap(listPercentage -> Mono.just(UserNameAndDiscountDto.builder()
+                                                .username(userData.getUsername())
+                                                .percentage(listPercentage.stream().map(DiscountEntity::getPercentage).reduce(0.0f,
+                                                        Float::sum))
+                                                .discounts(listPercentage.stream()
+                                                        .map(p -> new DiscountDto(p.getId(),  p.getName(),p.getPercentage()*booking.getCostFinal().floatValue()/100,  p.getPercentage(),
+                                                                p.isApplyToReservation(), p.isApplyToFood()))
+                                                        .toList())
+                                                .build()));
                             });
 
 

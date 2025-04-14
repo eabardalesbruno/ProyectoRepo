@@ -60,7 +60,7 @@ public interface DiscountRepository extends R2dbcRepository<DiscountEntity, Inte
                                and d.status=1
                            GROUP BY d.percentage,d.name,d.id
                   """)
-    Flux<DiscountEntity> getDiscountWithItemsAndCurrentYear(int idUser, List<Integer> idPackage);
+    Flux<DiscountEntity> getDiscountWithItemsAndCurrentYear(List<Integer> idPackage);
 
     @Query("""
             INSERT INTO discount_payment_book (idclient,idpaymentbook, iddiscount, createdat)

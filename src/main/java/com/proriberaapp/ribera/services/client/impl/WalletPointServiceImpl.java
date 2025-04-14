@@ -138,7 +138,13 @@ public class WalletPointServiceImpl implements WalletPointService {
     @Override
     public Mono<WalletPointResponse> getWalletByUserId(Integer userId) {
         return walletPointRepository.findByUserId(userId)
-                .switchIfEmpty(Mono.error(new RequestException("Wallet not found for user: " + userId)))
+                .switchIfEmpty(Mono.defer(() -> {
+                    WalletPointEntity newWalletPoint = WalletPointEntity.builder()
+                            .userId(userId)
+                            .points(0.0)
+                            .build();
+                    return walletPointRepository.save(newWalletPoint);
+                }))
                 .map(walletPointMapper::toDto);
     }
 
