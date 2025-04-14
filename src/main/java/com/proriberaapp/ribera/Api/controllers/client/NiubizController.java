@@ -101,18 +101,4 @@ public class NiubizController {
                         .build()
                 );
     }
-
-
-    @PostMapping("/saveRewardPurchase")
-    public Mono<ResponseEntity<RewardPurchase>> saveRewardPurchase(@RequestParam("userId") Long userId,
-                                                                   @RequestParam("quantity") int quantity,
-                                                                   @RequestParam("transactionId") String transactionId,
-                                                                   @RequestParam("purchaseNumber") String purchaseNumber,
-                                                                   @RequestParam("amount") double amount,
-                                                                   @RequestParam("status") String status) {
-
-        return niubizService.saveRewardPurchase(userId, quantity, transactionId, purchaseNumber, amount, status)
-                .map(saved -> ResponseEntity.ok(saved));
-    }
-
 }

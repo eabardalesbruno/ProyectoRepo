@@ -21,6 +21,9 @@ public class MembershipDto {
     private Integer userclientId;
     @Column("id")
     private int id;
+
+    @Column("familyPackageName")
+    private String familyPackageName;
     @Column("nameSuscription")
     private String nameSuscription;
     @Column("status")
