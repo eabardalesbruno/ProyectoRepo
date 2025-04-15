@@ -1,6 +1,11 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ExternalAuthService;
+import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseInclubLoginDto;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.RewardPointBORequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.WalletPointRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.BoResponse;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserPointDataResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.WalletPointResponse;
 import com.proriberaapp.ribera.Api.controllers.exception.RequestException;
 import com.proriberaapp.ribera.Domain.entities.WalletPointEntity;
@@ -16,8 +21,15 @@ import com.proriberaapp.ribera.services.point.user.UserPointService;
 import com.proriberaapp.ribera.utils.WalletPointUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.reactive.TransactionalOperator;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -33,6 +45,14 @@ public class WalletPointServiceImpl implements WalletPointService {
     private final PointConversionRateRepository conversionRateRepository;
     private final UserClientService userClientService;
 
+    @Value("${backoffice.api.url}")
+    private String urlBackOffice;
+
+    @Value("${inclub.api.url.user}")
+    private String urlLoginUserInclub;
+
+    private final WebClient webClient;
+    private final ExternalAuthService externalAuthService;
     @Override
     public Mono<WalletPointResponse> createWalletPoint(WalletPointRequest walletPointRequest) {
         return walletPointUtils.calculatePoints(walletPointRequest)
@@ -83,13 +103,14 @@ public class WalletPointServiceImpl implements WalletPointService {
                     .doOnNext(userPointDataResponse -> log.info("UserPointDataResponse: {}", userPointDataResponse))
                     .flatMap(userPointDataResponse ->
                             walletPointRepository.findByUsername(identifier)
-                                    .switchIfEmpty(Mono.defer(() -> {
-                                        WalletPointEntity newWalletPoint = WalletPointEntity.builder()
-                                                .userId(Integer.valueOf(identifier))
-                                                .points(0.0)
-                                                .build();
-                                        return walletPointRepository.save(newWalletPoint);
-                                    }))
+                                    .switchIfEmpty(Mono.defer(() -> userClientService.findByUsername(identifier)
+                                            .flatMap(user -> {
+                                                WalletPointEntity newWalletPoint = WalletPointEntity.builder()
+                                                        .userId(user.getUserClientId())
+                                                        .points(0.0)
+                                                        .build();
+                                                return walletPointRepository.save(newWalletPoint);
+                                            })))
                                     .map(walletPointEntity -> {
                                         WalletPointResponse walletPointResponse = walletPointMapper.toDto(walletPointEntity);
                                         walletPointResponse.setUserInclubId(userPointDataResponse.getIdUser());
@@ -118,29 +139,86 @@ public class WalletPointServiceImpl implements WalletPointService {
     @Override
     public Mono<WalletPointResponse> getWalletByUserId(Integer userId) {
         return walletPointRepository.findByUserId(userId)
-                .switchIfEmpty(Mono.error(new RequestException("Wallet not found for user: " + userId)))
+                .switchIfEmpty(Mono.defer(() -> {
+                    WalletPointEntity newWalletPoint = WalletPointEntity.builder()
+                            .userId(userId)
+                            .points(0.0)
+                            .build();
+                    return walletPointRepository.save(newWalletPoint);
+                }))
                 .map(walletPointMapper::toDto);
     }
 
     @Override
-    public Mono<Void> convertPoints(Integer userId, WalletPointRequest walletPointRequest) {
-        return conversionRateRepository.findByFamilyId(walletPointRequest.getFamilyId())
+    @Transactional
+    public Mono<Void> convertPoints(Integer originalUserId, String username, WalletPointRequest walletPointRequest) {
+        /*return conversionRateRepository.findByFamilyId(walletPointRequest.getFamilyId())
                 .switchIfEmpty(Mono.error(new RuntimeException("No conversion rate found")))
                 .flatMap(rate -> {
-                    Double convertedPoints = walletPointRequest.getRewardPoints() * rate.getConversionRate();
-                    return walletPointRepository.findByUserId(userId)
-                            .flatMap(wallet -> {
-                                wallet.setPoints(wallet.getPoints() - walletPointRequest.getRewardPoints());
-                                return walletPointRepository.save(wallet);
+                    Double convertedPoints = walletPointRequest.getRewardPoints() * rate.getConversionRate();*/
+
+                    return externalAuthService.getExternalToken()
+                            .zipWith(
+                                    webClient.get()
+                                            .uri(urlLoginUserInclub + "/" + username)
+                                            .retrieve()
+                                            .bodyToMono(ResponseInclubLoginDto.class)
+                            )
+                            .flatMap(tuple -> {
+                                String tokenBackOffice = tuple.getT1();
+                                ResponseInclubLoginDto responseInclub = tuple.getT2();
+                                Double convertedPoints = walletPointRequest.getRewardPoints() * 1;
+
+                                Integer userIdFromInclub = responseInclub.getData().getId();
+
+                                RewardPointBORequest boRequest = RewardPointBORequest.builder()
+                                        .idUser(userIdFromInclub)
+                                        .pointsToConvert(convertedPoints)
+                                        .idFamily(walletPointRequest.getFamilyId())
+                                        .build();
+
+                                return webClient.post()
+                                        .uri(urlBackOffice + "/user-points-released/points-released-to-rewards")
+                                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenBackOffice)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .bodyValue(boRequest)
+                                        .retrieve()
+                                        .onStatus(HttpStatusCode::isError, clientResponse ->
+                                                clientResponse.bodyToMono(String.class)
+                                                        .flatMap(errorBody -> {
+                                                            System.out.println("Error response: " + errorBody);
+                                                            return Mono.error(new RuntimeException("Error in conversion: " + errorBody));
+                                                        })
+                                        )
+                                        .bodyToMono(BoResponse.class)
+                                        .flatMap(response -> {
+                                            int status = response.getStatus();
+                                            Object body = response.getData();
+
+                                            System.out.println("Response status: " + status);
+                                            System.out.println("Response body: " + body);
+
+                                            if (status == 200) {
+                                                return Mono.just(true);
+                                            } else {
+                                                return Mono.error(new RuntimeException("Error in conversion: " + body));
+                                            }
+                                        })
+                                        .then(walletPointRepository.findByUserId(originalUserId)) // este se mantiene como el dueño del wallet
+                                        .flatMap(wallet -> {
+                                            wallet.setPoints(wallet.getPoints() + walletPointRequest.getRewardPoints());
+                                            return walletPointRepository.save(wallet);
+                                        })
+                                        .flatMap(walletPoint -> walletPointHistoryRepository.save(
+                                                WalletPointHistoryEntity.builder()
+                                                        .userId(originalUserId)
+                                                        .points(convertedPoints)
+                                                        .walletPointId(walletPoint.getId())
+                                                        .build()
+                                        ));
                             })
-                            .then(walletPointHistoryRepository.save(
-                                    WalletPointHistoryEntity.builder()
-                                            .userId(userId)
-                                            .points(convertedPoints)
-                                            .walletPointId(walletPointRequest.getFamilyId()) // idFamily
-                                            .build()
-                            ));
-                }).then();
+                //})
+                .then();
     }
 
 

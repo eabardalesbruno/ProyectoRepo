@@ -5,8 +5,6 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.response.WalletPointRe
 import com.proriberaapp.ribera.Domain.enums.Role;
 import reactor.core.publisher.Mono;
 
-import java.nio.channels.FileChannel;
-
 public interface WalletPointService {
 
     Mono<WalletPointResponse> createWalletPoint(WalletPointRequest walletPointRequest);
@@ -20,5 +18,5 @@ public interface WalletPointService {
     Mono<WalletPointResponse>  buyPoints(Integer userId, WalletPointRequest walletPointRequest);
 
     //Mono<WalletPointResponse>  convertPoints(WalletPointRequest walletPointRequest);
-    Mono<Void>  convertPoints(Integer userId,WalletPointRequest walletPointRequest);
+    Mono<Void>  convertPoints(Integer userId, String username, WalletPointRequest walletPointRequest);
 }

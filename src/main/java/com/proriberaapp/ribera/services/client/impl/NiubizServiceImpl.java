@@ -225,7 +225,7 @@ public class NiubizServiceImpl implements NiubizService {
                             return Mono.just(urlRedirect);
                         }
 
-                        int rewardPoints = (int) Math.round(amount * 0.05);
+                        int rewardPoints = (int) Math.round(amount * 0.1);
                         UserRewardRequest rewardReq = UserRewardRequest.builder()
                                 .userId(userId)
                                 .points(rewardPoints)
@@ -479,7 +479,6 @@ public class NiubizServiceImpl implements NiubizService {
         final String finalBookingUrl = (bookingId == -1)
                 ? urlClientFrontEnd + "/exchange-zone"
                 : urlClientFrontEnd + "/payment-method/" + bookingId;
-        System.out.println(finalBookingUrl);
         return nibuizClient.post()
                 .uri("/api.authorization/v3/authorization/ecommerce/{merchantId}", merchantId)
                 .header(HttpHeaders.AUTHORIZATION, securityToken)
@@ -545,7 +544,7 @@ public class NiubizServiceImpl implements NiubizService {
                                     return walletPointService.updateWalletPoints(userId,
                                                     WalletPointRequest.builder()
                                                             .userId(userId)
-                                                            .rewardPoints((double) rewards)
+                                                            .rewardPoints((double) (rewards))
                                                             .build())
                                             .thenReturn(finalUrlWeb);
                                 });

@@ -53,6 +53,16 @@ public class WalletPointController {
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
     }
+
+    @GetMapping("/user/{id}")
+    public Mono<ResponseEntity<WalletPointResponse>> getWalletPointByUserId(
+            @RequestHeader("Authorization") String token,
+            @PathVariable Integer id) {
+        return walletPointService.getWalletByUserId(id)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
+    }
+
     @PutMapping
     public Mono<ResponseEntity<WalletPointResponse>> updateWalletPoints(
             @RequestBody WalletPointRequest request, @RequestHeader("Authorization") String token) {
@@ -71,13 +81,14 @@ public class WalletPointController {
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
     }
 
-    //endpoint para convertir puntos rewards
     @PostMapping("/convert-points")
     public Mono<Void> convertPoints(@RequestBody WalletPointRequest request,
                                     @RequestHeader("Authorization") String token) {
 
+        String username = jtp.getUsernameFromToken(token);
         Integer userId = jtp.getIdFromToken(token);
-        return walletPointService.convertPoints(userId, request);
+        System.out.println(userId);
+        return walletPointService.convertPoints(userId, username, request);
     }
 }
 
