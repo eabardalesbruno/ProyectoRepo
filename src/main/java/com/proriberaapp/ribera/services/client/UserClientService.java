@@ -64,7 +64,7 @@ public interface UserClientService {
 
     Mono<Void> changePassword(String code, String password);
 
-    Mono<Void> updateAndValidatePassword(Integer userId,String currentPassword, String newPassword, String confirmPassword);
+    Mono<Void> updateAndValidatePassword(Integer userId, String currentPassword, String newPassword, String confirmPassword);
 
-    Mono<UserNameAndDiscountDto> getDiscountRewards(Integer rewardsPoints, Integer bookingId, Integer idUserClient);
+    Mono<UserClientEntity> findByUsername(String username);
 }

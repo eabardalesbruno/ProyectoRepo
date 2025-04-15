@@ -225,7 +225,7 @@ public class NiubizServiceImpl implements NiubizService {
                             return Mono.just(urlRedirect);
                         }
 
-                        int rewardPoints = (int) Math.round(amount * 0.05);
+                        int rewardPoints = (int) Math.round(amount * 0.1);
                         UserRewardRequest rewardReq = UserRewardRequest.builder()
                                 .userId(userId)
                                 .points(rewardPoints)
