@@ -103,13 +103,14 @@ public class WalletPointServiceImpl implements WalletPointService {
                     .doOnNext(userPointDataResponse -> log.info("UserPointDataResponse: {}", userPointDataResponse))
                     .flatMap(userPointDataResponse ->
                             walletPointRepository.findByUsername(identifier)
-                                    .switchIfEmpty(Mono.defer(() -> {
-                                        WalletPointEntity newWalletPoint = WalletPointEntity.builder()
-                                                .userId(Integer.valueOf(identifier))
-                                                .points(0.0)
-                                                .build();
-                                        return walletPointRepository.save(newWalletPoint);
-                                    }))
+                                    .switchIfEmpty(Mono.defer(() -> userClientService.findByUsername(identifier)
+                                            .flatMap(user -> {
+                                                WalletPointEntity newWalletPoint = WalletPointEntity.builder()
+                                                        .userId(user.getUserClientId())
+                                                        .points(0.0)
+                                                        .build();
+                                                return walletPointRepository.save(newWalletPoint);
+                                            })))
                                     .map(walletPointEntity -> {
                                         WalletPointResponse walletPointResponse = walletPointMapper.toDto(walletPointEntity);
                                         walletPointResponse.setUserInclubId(userPointDataResponse.getIdUser());

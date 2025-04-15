@@ -24,6 +24,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -78,39 +79,33 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                         boolean isFirstState) {
                 int totalCapacityWithOutInfant = kidCapacity + adultCapacity + adultMayorCapacity + adultExtraCapacity;
                 Flux<FeedingItemsGrouped> feedingsGrouped = Flux.defer(() -> {
-                        if (feedingsSelected.size() > 0) {
+                        if (!feedingsSelected.isEmpty()) {
                                 return this.feedingRepository.groupingByFamilyGroup(feedingsSelected);
                         }
                         return Flux.empty();
                 });
                 Flux<FeedingEntity> feedings = Flux.defer(() -> {
-                        if (feedingsSelected.size() > 0) {
+                        if (!feedingsSelected.isEmpty()) {
                                 return this.feedingRepository.findAllById(feedingsSelected);
                         }
                         return Flux.empty();
                 });
-                Mono<List<QuotationOfferDto>> quotationOfferDto = Mono.defer(() -> {
-                        return this.roomOfferRepository
-                                        .getQuotationByRangeDateAndRoomOfferId(offerTimeInit, offerTimeEnd)
-                                        .collectList();
-                });
-                Mono<List<PointGroupWithOffertRowDto>> listPointGroup = Mono.defer(() -> {
-                        return this.pointsTypeConversionFactorDayRepository
-                                        .getTotalPointWithRangeDateSelected(offerTimeInit, offerTimeEnd).collectList();
-                });
-                Mono<List<ViewRoomOfferReturn>> viewReturn = Mono.defer(() -> {
-                        return roomOfferRepository.findFilteredV2(
-                                        isFirstState,
-                                        roomTypeId,
-                                        categoryName, offerTimeInit, offerTimeEnd,
-                                        kidCapacity, adultCapacity, adultMayorCapacity, adultExtraCapacity,
-                                        infantCapacity)
-                                        .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
-                                                        roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
-                                                        .hasElements()
-                                                        .map(hasConflicts -> !hasConflicts))
-                                        .collectList();
-                });
+                Mono<List<QuotationOfferDto>> quotationOfferDto = Mono.defer(() -> this.roomOfferRepository
+                                .getQuotationByRangeDateAndRoomOfferId(offerTimeInit, offerTimeEnd)
+                                .collectList());
+                Mono<List<PointGroupWithOffertRowDto>> listPointGroup = Mono.defer(() -> this.pointsTypeConversionFactorDayRepository
+                                .getTotalPointWithRangeDateSelected(offerTimeInit, offerTimeEnd).collectList());
+                Mono<List<ViewRoomOfferReturn>> viewReturn = Mono.defer(() -> roomOfferRepository.findFilteredV2(
+                                isFirstState,
+                                roomTypeId,
+                                categoryName, offerTimeInit, offerTimeEnd,
+                                kidCapacity, adultCapacity, adultMayorCapacity, adultExtraCapacity,
+                                infantCapacity)
+                                .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
+                                                roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
+                                                .hasElements()
+                                                .map(hasConflicts -> !hasConflicts))
+                                .collectList());
 return Mono.zip(viewReturn, quotationOfferDto, feedings
                                 .collectList(),
                                 feedingsGrouped.collectList(),
@@ -233,7 +228,7 @@ return Mono.zip(viewReturn, quotationOfferDto, feedings
                                                                                         viewRoomOfferReturn
                                                                                                         .getNumberofnights()))
                                                                         .add(totalCostFeeding);
-                                                        viewRoomOfferReturn.setCosttotal(totalCostPerson);
+                                                        viewRoomOfferReturn.setCosttotal(totalCostPerson.setScale(2, RoundingMode.HALF_UP));
                                                         viewRoomOfferReturn.setOriginalcosttotal(totalCostPerson);
                                                         viewRoomOfferReturn.setListFeeding(feedingList);
                                                         viewRoomOfferReturn.setAmountFeeding(totalCostFeeding);

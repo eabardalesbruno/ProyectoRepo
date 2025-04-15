@@ -25,6 +25,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -295,7 +296,6 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Mono<BookingEntity> save(Integer userClientId, BookingSaveRequest bookingSaveRequest, Boolean isPromotor,
                                     Boolean isReceptionist) {
-        System.out.println(bookingSaveRequest);
         if (bookingSaveRequest.getDayBookingInit().isBefore(LocalDate.now())) {
             return Mono.error(new CustomException(HttpStatus.BAD_REQUEST,
                     "La fecha de inicio no puede ser anterior al día actual"));
@@ -330,13 +330,13 @@ public class BookingServiceImpl implements BookingService {
                 .map(Long::intValue)
                 .collect(Collectors.toList());
         Flux<FeedingItemsGrouped> feedingsGrouped = Flux.defer(() -> {
-            if (feedingIDsAsIntegers.size() > 0) {
+            if (!feedingIDsAsIntegers.isEmpty()) {
                 return this.feedingRepository.groupingByFamilyGroup(feedingIDsAsIntegers);
             }
             return Flux.empty();
         });
         Flux<FeedingEntity> feedings = Flux.defer(() -> {
-            if (feedingIDsAsIntegers.size() > 0) {
+            if (!feedingIDsAsIntegers.isEmpty()) {
                 return this.feedingRepository.findAllById(feedingIDsAsIntegers);
             }
             return Flux.empty();
@@ -385,7 +385,7 @@ public class BookingServiceImpl implements BookingService {
                                                         .getNumberBaby(),
                                                 bookingSaveRequest
                                                         .getNumberChild(),
-                                                numberOfDays - 1);
+                                                numberOfDays - 1).setScale(2, RoundingMode.HALF_UP);
 
                                 return quotationService.calculateTotalRewards(bookingSaveRequest)
                                         .map(BigDecimal::intValue)
@@ -639,7 +639,7 @@ public class BookingServiceImpl implements BookingService {
                 .flatMapMany(listViews -> {
                     List<Integer> ids = listViews.stream().map(ViewBookingReturn::getBookingId)
                             .collect(Collectors.toList());
-                    if (ids.size() == 0) {
+                    if (ids.isEmpty()) {
                         return Flux.empty();
                     }
                     return Mono.zip(Mono.just(listViews), this.getBedsType(ids),

@@ -714,13 +714,7 @@ public class UserClientServiceImpl implements UserClientService {
     }
 
     @Override
-    public Mono<UserNameAndDiscountDto> getDiscountRewards(Integer rewardsPoints, Integer bookingId, Integer userId) {
-        return null;/*bookingService.findById(bookingId)
-                .flatMap(bookingEntity -> return walletPointService.getWalletByUserId(userId)
-                .flatMap(wallet->{
-
-                }))
-                ;*/
+    public Mono<UserClientEntity> findByUsername(String username) {
+        return userClientRepository.findByUsername(username);
     }
-
 }
