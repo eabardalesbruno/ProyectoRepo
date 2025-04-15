@@ -80,7 +80,6 @@ public class WalletPointServiceImpl implements WalletPointService {
                         .thenReturn(updatedWallet))
                 .map(walletPointMapper::toDto)
                 .doOnNext(response -> log.info("Successfully updated wallet points for user: {}", userId))
-                .doOnError(e -> log.error("Error updating wallet points", e))
                 .onErrorResume(e -> Mono.error(new RequestException("Error updating wallet points: " + e.getMessage())))
                 .as(transactionalOperator::transactional);
     }
