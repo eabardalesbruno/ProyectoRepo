@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ExternalAuthService;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.PointsRedemptionHistoryRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.BoResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.SubscriptionFamilyResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
@@ -269,6 +270,37 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                     return Mono.empty();
                 });
     }
+
+    public Mono<Object> getPointsRedemptionHistoryByUser(int idUser, int page, int size) {
+        String url = "http://localhost:7020/api/v1/user-points-released/points-redemption-history/user/"
+                + idUser + "?page=" + page + "&size=" + size;
+
+        return WebClient.create()
+                .get()
+                .uri(url)
+                .retrieve()
+                .bodyToMono(Object.class)
+                // En caso de error, podrías manejarlo con onErrorResume u otro operador
+                .onErrorResume(e -> {
+                    return Mono.error(new RuntimeException("Error al invocar GET en Microservicio 7020", e));
+                });
+    }
+
+
+    public Mono<Object> createPointsRedemptionHistory(PointsRedemptionHistoryRequest request) {
+        String url = "http://localhost:7020/api/v1/user-points-released/points-redemption-history";
+
+        return WebClient.create()
+                .post()
+                .uri(url)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(Object.class)
+                .onErrorResume(e -> {
+                    return Mono.error(new RuntimeException("Error al invocar POST en Microservicio 7020", e));
+                });
+    }
+
 
     //Se ejecuta para limpiar la data antigua con la nueva por cada vez que el socio se invoque
     @Scheduled(cron = "0 0 0 1 * ?")
