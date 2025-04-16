@@ -19,7 +19,7 @@ public class DiscountUtil {
                 applyMemberDiscount(discount, totalAccommodation, totalAmountFeeding);
                 break;
             case POINTS_REWARD:
-                applyPointsRewardDiscount(discount, totalAccommodation);
+                applyPointsRewardDiscount(discount, totalAccommodation, totalAmountFeeding);
                 break;
             case DISCOUNT_COUPON:
                 applyCouponDiscount(discount, totalAccommodation);
@@ -50,16 +50,14 @@ public class DiscountUtil {
                 totalAmountFeeding - totalFoodWithDiscount);
     }
 
-    private static void applyPointsRewardDiscount(UserNameAndDiscountDto discount, float totalAccommodation) {
-        float totalPointsDiscount = discount.getDiscounts().stream()
-                .map(DiscountDto::getPercentage)
+    private static void applyPointsRewardDiscount(UserNameAndDiscountDto discount, float totalAccommodation, float totalAmountFeeding) {
+        float totalDiscountAmount = discount.getDiscounts().stream()
+                .map(DiscountDto::getAmount)
                 .reduce(0F, Float::sum);
 
-        float discountAmount = totalAccommodation * totalPointsDiscount / 100;
-
-        discount.setTotalDiscountAccommodation(discountAmount);
-        discount.setTotalPercentageDiscountAccommodation(totalPointsDiscount);
-        discount.setTotalAmount(totalAccommodation - discountAmount);
+        discount.setTotalDiscountAccommodation(totalDiscountAmount);
+        discount.setTotalPercentageDiscountAccommodation(discount.getPercentage());
+        discount.setTotalAmount(totalAccommodation + totalAmountFeeding - totalDiscountAmount);
     }
 
     private static void applyCouponDiscount(UserNameAndDiscountDto discount, float totalAccommodation) {

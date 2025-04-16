@@ -37,6 +37,7 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.proriberaapp.ribera.utils.constants.DiscountTypeCode.DISCOUNT_MEMBER;
@@ -562,21 +563,49 @@ public class UserClientServiceImpl implements UserClientService {
         return switch (discountType) {
             case DISCOUNT_MEMBER -> this.verifiedDiscountService.verifiedPercentajeDiscount(userId, bookingId);
             case POINTS_REWARD ->Mono.zip( walletPointRepository.findByUserId(userId),
-                            this.bookingService.findById(bookingId)
+                            this.bookingService.findById(bookingId),
+                            this.bookingService.getTotalFeedingAmount(bookingId).switchIfEmpty(Mono.just(0F))
                             )
                             .flatMap(data-> {
                                 WalletPointEntity walletPoint = data.getT1();
                                 BookingEntity booking = data.getT2();
-                                return Mono.just(UserNameAndDiscountDto.builder()
-                                                .percentage(70)
-                                                .discounts(List.of(DiscountDto.builder()
-                                                                .amount(booking.getCostFinal().floatValue() * 0.7f)
-                                                                .applyToReservation(true)
-                                                                .name("PUNTOS REWARDS")
-                                                                .percentage(70f)
-                                                        .build()))
-                                        .build()
+                                float totalAmountFeeding = data.getT3();
+                                float costFinal = booking.getCostFinal().floatValue();
+                                float discount1 = (costFinal - totalAmountFeeding) * 0.7f;
+
+                                List<DiscountDto> discounts = new ArrayList<>();
+                                discounts.add(
+                                        DiscountDto.builder()
+                                                .amount(discount1)
+                                                .applyToReservation(true)
+                                                .name("PUNTOS REWARDS")
+                                                .percentage(70f)
+                                                .build()
                                 );
+
+                                float discount2 = 0f;
+                                if (totalAmountFeeding > 0) {
+                                    discount2 = totalAmountFeeding * 0.2f;
+                                    discounts.add(
+                                            DiscountDto.builder()
+                                                    .amount(discount2)
+                                                    .applyToReservation(true)
+                                                    .name("DESCUENTO ALIMENTACION")
+                                                    .percentage(20f)
+                                                    .build()
+                                    );
+                                }
+
+                                float totalDiscount = discount1 + discount2;
+                                float overallPercentage = (totalDiscount / costFinal) * 100f;
+
+                                return Mono.just(
+                                        UserNameAndDiscountDto.builder()
+                                                .percentage(overallPercentage) // porcentaje global del descuento
+                                                .discounts(discounts)
+                                                .build()
+                                );
+
                             })
             ;
             case DISCOUNT_COUPON -> DiscountUtil.calculateCouponDiscount(userId);

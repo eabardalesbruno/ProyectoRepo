@@ -207,7 +207,7 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                                     return Mono.just(UserNameAndDiscountDto.empty());
                                 }
                                 List<Integer> packageIds = memberships.stream()
-                                        .filter(d -> d.getIdFamilyPackage() == 2)
+                                        .filter(d -> List.of(2, 29, 43).contains(d.getIdFamilyPackage()))
                                         .map(MembershipDto::getIdPackage)
                                         .toList();
 
