@@ -202,28 +202,41 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                 .flatMap(data -> {
                     UserClientEntity userData = data.getT1();
                     BookingEntity booking= data.getT2();
-                    return this.loadMembershipsInsortInclub(
-                                    userData.getUsername())
+                    return this.loadMembershipsInsortInclub(userData.getUsername())
                             .flatMap(memberships -> {
-                                if(memberships.size()==0){
+                                if (memberships.isEmpty()) {
                                     return Mono.just(UserNameAndDiscountDto.empty());
                                 }
-                                return this.discountRepository
-                                        .getDiscountWithItemsAndCurrentYear(
-                                                memberships.stream().filter(d->d.getIdFamilyPackage()==2).map(MembershipDto::getIdPackage).toList())
-                                        .collectList().flatMap(listPercentage -> Mono.just(UserNameAndDiscountDto.builder()
-                                                .username(userData.getUsername())
-                                                .percentage(listPercentage.stream().map(DiscountEntity::getPercentage).reduce(0.0f,
-                                                        Float::sum))
-                                                .discounts(listPercentage.stream()
-                                                        .map(p -> new DiscountDto(p.getId(),  p.getName(),p.getPercentage()*booking.getCostFinal().floatValue()/100,  p.getPercentage(),
-                                                                p.isApplyToReservation(), p.isApplyToFood()))
-                                                        .toList())
-                                                .build()));
+                                List<Integer> packageIds = memberships.stream()
+                                        .filter(d -> d.getIdFamilyPackage() == 2)
+                                        .map(MembershipDto::getIdPackage)
+                                        .toList();
+
+                                if (packageIds.isEmpty()) {
+                                    return Mono.just(UserNameAndDiscountDto.empty());
+                                }
+
+                                return this.discountRepository.getDiscountWithItemsAndCurrentYear(packageIds)
+                                        .collectList()
+                                        .flatMap(listPercentage -> {
+                                            float totalPercentage = listPercentage.stream()
+                                                    .map(DiscountEntity::getPercentage)
+                                                    .reduce(0.0f, Float::sum);
+                                            List<DiscountDto> discounts = listPercentage.stream()
+                                                    .map(p -> new DiscountDto(p.getId(), p.getName(),
+                                                            p.getPercentage() * booking.getCostFinal().floatValue() / 100,
+                                                            p.getPercentage(), p.isApplyToReservation(), p.isApplyToFood()))
+                                                    .toList();
+                                            return Mono.just(UserNameAndDiscountDto.builder()
+                                                    .username(userData.getUsername())
+                                                    .percentage(totalPercentage)
+                                                    .discounts(discounts)
+                                                    .build());
+                                        });
                             });
 
-
-                });
+                }
+        );
     }
 
     @Override
