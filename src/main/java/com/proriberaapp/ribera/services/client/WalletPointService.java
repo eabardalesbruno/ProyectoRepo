@@ -17,6 +17,5 @@ public interface WalletPointService {
 
     Mono<WalletPointResponse>  buyPoints(Integer userId, WalletPointRequest walletPointRequest);
 
-    //Mono<WalletPointResponse>  convertPoints(WalletPointRequest walletPointRequest);
     Mono<Void>  convertPoints(Integer userId, String username, WalletPointRequest walletPointRequest);
 }
