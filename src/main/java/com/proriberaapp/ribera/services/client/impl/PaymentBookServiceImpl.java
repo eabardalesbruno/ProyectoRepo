@@ -848,7 +848,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                 codSunat,
                                 roomOrType,
                                 1,
-                                BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount()) // priceUnit
+                                BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount()), // priceUnit
+                                ""
                         );
 
                         invoiceDomain.addItemWithIncludedIgv(invoiceItem);

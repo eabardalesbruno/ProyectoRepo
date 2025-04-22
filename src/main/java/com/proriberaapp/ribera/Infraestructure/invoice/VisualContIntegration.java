@@ -184,8 +184,16 @@ public class VisualContIntegration extends InvoiceBaseProcess implements SunatIn
             itemJson.put("subtotal", item.getSubtotal().doubleValue());
             itemJson.put("total", item.getTotal().doubleValue());
             itemJson.put("icbper", 0);
+            itemJson.put("memo", item.getDescriptionDiscount());
             items.put(itemJson);
         }
+        JSONArray notes = new JSONArray();
+        for(String note: invoice.getInvoice_notes()){
+            JSONObject noteJson = new JSONObject();
+            noteJson.put("nota", note);
+            notes.put(noteJson);
+        }
+        invoiceMap.put("invoice_notes", notes);
         invoiceMap.put("invoice_lines", items);
         invoiceMap.put("invoice_guides", new JSONArray());
         invoiceJson.put("invoice", invoiceMap);

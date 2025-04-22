@@ -42,15 +42,15 @@ public class QuotationEntity {
     private BigDecimal adultExtraCost;
 
     @Column("kid_reward")
-    private BigInteger kidReward;
+    private BigDecimal kidReward;
 
     @Column("adult_reward")
-    private BigInteger adultReward;
+    private BigDecimal adultReward;
 
     @Column("adult_mayor_reward")
-    private BigInteger adultMayorReward;
+    private BigDecimal adultMayorReward;
 
     @Column("adult_extra_reward")
-    private BigInteger adultExtraReward;
+    private BigDecimal adultExtraReward;
 
 }

@@ -305,7 +305,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                                 codSunat,
                                                 roomOrType,
                                                 1,
-                                                BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount())
+                                                BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount()),""
                                         ));
                                     } else {
                                         for (FullDayDetailDTO detail : fullDayDetails) {
@@ -316,7 +316,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                                     sunatCode,
                                                     itemDescription,
                                                     detail.getQuantity(),
-                                                    detail.getFinalPrice()
+                                                    detail.getFinalPrice(), ""
                                             ));
                                         }
                                     }

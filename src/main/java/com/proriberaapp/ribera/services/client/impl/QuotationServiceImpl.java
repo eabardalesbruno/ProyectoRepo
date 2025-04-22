@@ -295,7 +295,8 @@ public class QuotationServiceImpl implements QuotationService {
     private int getSafeInt(Integer value) {
         return value != null ? value : 0;
     }
-    private BigDecimal getSafeValue(BigInteger value) {
-        return value != null ? new BigDecimal(value) : BigDecimal.ZERO;
+
+    private BigDecimal getSafeValue(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
     }
 }
