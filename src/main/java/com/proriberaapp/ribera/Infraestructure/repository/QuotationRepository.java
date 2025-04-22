@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.QuotationOfferDayDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.quotationDayDto;
+import com.proriberaapp.ribera.Domain.entities.QuotationDetailEntity;
 import com.proriberaapp.ribera.Domain.entities.QuotationEntity;
 
 import reactor.core.publisher.Flux;
@@ -69,6 +70,6 @@ public interface QuotationRepository extends ReactiveCrudRepository<QuotationEnt
         WHERE qr.room_offer_id = :roomOfferId
         AND qd.idday IN (:dayIds)
     """)
-    Flux<QuotationEntity> findQuotationByRoomOfferAndDays(Integer roomOfferId, List<Integer> dayIds);
+    Flux<QuotationDetailEntity> findQuotationByRoomOfferAndDays(Integer roomOfferId, List<Integer> dayIds);
 
 }

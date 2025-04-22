@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.QuotationOfferDayDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.quotationDayDto;
 import com.proriberaapp.ribera.Domain.dto.QuotationDto;
 import com.proriberaapp.ribera.Domain.entities.QuotationDayEntity;
+import com.proriberaapp.ribera.Domain.entities.QuotationDetailEntity;
 import com.proriberaapp.ribera.Domain.entities.QuotationEntity;
 import com.proriberaapp.ribera.Domain.entities.QuotationRoomOfferEntity;
 import com.proriberaapp.ribera.Infraestructure.exception.QuoteAndOfferIsAlreadyRegisteredException;
@@ -262,12 +263,12 @@ public class QuotationServiceImpl implements QuotationService {
                     for (LocalDate date : bookingDates) {
                         int dayOfWeek = date.getDayOfWeek().getValue();
 
-                        Optional<QuotationEntity> quotationOpt = quotations.stream()
+                        Optional<QuotationDetailEntity> quotationOpt = quotations.stream()
                                 .filter(q -> q.getIdday() == dayOfWeek)
                                 .findFirst();
 
                         if (quotationOpt.isPresent()) {
-                            QuotationEntity quotation = quotationOpt.get();
+                            QuotationDetailEntity quotation = quotationOpt.get();
                             BigDecimal rewardForThisDay = calculateRewardsForQuotation(
                                     quotation,
                                     bookingSaveRequest
@@ -280,7 +281,7 @@ public class QuotationServiceImpl implements QuotationService {
                 });
     }
 
-    private BigDecimal calculateRewardsForQuotation(QuotationEntity quotation, BookingSaveRequest booking) {
+    private BigDecimal calculateRewardsForQuotation(QuotationDetailEntity quotation, BookingSaveRequest booking) {
         return getSafeValue(quotation.getKidReward())
                 .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberChild())))
                 .add(getSafeValue(quotation.getAdultReward())

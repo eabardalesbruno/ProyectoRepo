@@ -4,21 +4,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import com.proriberaapp.ribera.Api.controllers.client.dto.quotationDayDto;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.List;
 
 @Getter
 @Setter
 @Builder
 @Table("quotation")
-public class QuotationEntity {
+public class QuotationDetailEntity {
     @Id
     @Column("quotation_id")
     private Integer quotationId;
@@ -42,15 +38,17 @@ public class QuotationEntity {
     private BigDecimal adultExtraCost;
 
     @Column("kid_reward")
-    private BigDecimal kidReward;
+    private BigInteger kidReward;
 
     @Column("adult_reward")
-    private BigDecimal adultReward;
+    private BigInteger adultReward;
 
     @Column("adult_mayor_reward")
-    private BigDecimal adultMayorReward;
+    private BigInteger adultMayorReward;
 
     @Column("adult_extra_reward")
-    private BigDecimal adultExtraReward;
+    private BigInteger adultExtraReward;
 
+    @Column("idday")
+    private Integer idday;
 }

@@ -87,7 +87,6 @@ public class WalletPointController {
 
         String username = jtp.getUsernameFromToken(token);
         Integer userId = jtp.getIdFromToken(token);
-        System.out.println(userId);
         return walletPointService.convertPoints(userId, username, request);
     }
 }
