@@ -3,11 +3,14 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.proriberaapp.ribera.Api.controllers.client.dto.DetailBookInvoiceDto;
+import com.proriberaapp.ribera.Api.controllers.client.dto.ItemPersonQuantityDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.UserRewardRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.WalletPointRequest;
 import com.proriberaapp.ribera.Api.controllers.payme.dto.TransactionNecessaryResponse;
 import com.proriberaapp.ribera.Domain.dto.BookingAndRoomNameDto;
 import com.proriberaapp.ribera.Domain.dto.DetailEmailFulldayDto;
+import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.RewardType;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
@@ -20,6 +23,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.ProductSunatRepository;
 import com.proriberaapp.ribera.services.client.*;
 import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
+import com.proriberaapp.ribera.utils.constants.DiscountTypeCode;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.BookingEmailDto;
 import com.proriberaapp.ribera.utils.emails.ConfirmPaymentByBankTransferAndCardTemplateEmail;
@@ -35,12 +39,17 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -93,6 +102,8 @@ public class NiubizServiceImpl implements NiubizService {
     private final WalletPointService walletPointService;
     private final UserRewardService userRewardService;
     private final UserClientService userClientService;
+    private final BookingFeedingRepository bookingFeedingRepository;
+    private final FamilyGroupRepository familyGroupRepository;
 
     @Override
     public Mono<String> getSecurityToken() {
@@ -246,11 +257,14 @@ public class NiubizServiceImpl implements NiubizService {
                     booking.setBookingStateId(3);
                     return Mono.zip(bookingRepository.save(booking),
                             this.bookingRepository.getRoomNameAndDescriptionfindByBookingId(booking.getBookingId()),
-                            userClientRepository.findByUserClientId(booking.getUserClientId()));
-                }).flatMap(tuple -> {
+                            userClientRepository.findByUserClientId(booking.getUserClientId()),
+                            bookingRepository.getDetailBookInvoice(bookingId));
+                })
+                .publishOn(Schedulers.boundedElastic()).flatMap(tuple -> {
                     BookingEntity updatedBooking = tuple.getT1();
                     BookingAndRoomNameDto bookingAndRoomNameDto = tuple.getT2();
                     UserClientEntity userClient = tuple.getT3();
+                    DetailBookInvoiceDto detailBookInvoice = tuple.getT4();
                     BigDecimal totalCost = new BigDecimal(amount);// monto.divide(BigDecimal.valueOf(100000));
                     InvoiceType type = InvoiceType.getInvoiceTypeByName(invoiceType.toUpperCase());
                     InvoiceClientDomain invoiceClientDomain = new InvoiceClientDomain(
@@ -263,14 +277,41 @@ public class NiubizServiceImpl implements NiubizService {
                     InvoiceDomain invoice = new InvoiceDomain(
                             invoiceClientDomain,
                             updatedBooking.getBookingId(),
-                            18.0,
+                            10.0,
                             InvoiceCurrency.PEN,
                             type,
                             percentageDiscount);
                     //invoice.setOperationCode(authorizationResponse.getId());
+                    List<String> invoice_notes = new ArrayList<>();
+                    invoice_notes.add("ALOJAMIENTO: "+ (updatedBooking.getNumberAdults() + updatedBooking.getNumberAdultsMayor() + updatedBooking.getNumberAdultsExtra())+" ADULTOS + " + (updatedBooking.getNumberChildren() + updatedBooking.getNumberBabies())+" NIÑOS");
+                    invoice_notes.add(detailBookInvoice.getCheckin()+" "+detailBookInvoice.getCheckout());
+                    invoice_notes.add("INCLUYE DESAYUNO");
+                    invoice.setInvoice_notes(invoice_notes);
 
                     String roomDescription = bookingAndRoomNameDto.getRoomDescription();
                     String normalizedRoomDescription = normalizeText(roomDescription);
+                    BookingFeedingEntity bookingFeeding = bookingFeedingRepository.findByBookingId(bookingId).block();
+                    List<Integer> typesPerson = new ArrayList<>();
+                    List<ItemPersonQuantityDto> qitem = new ArrayList<>();
+                    if (bookingFeeding != null && bookingFeeding.getBookingFeedingId() != null) {
+                        if ((updatedBooking.getNumberChildren() + updatedBooking.getNumberBabies()) > 0) {
+                            typesPerson.add(1);
+                            qitem.add(new ItemPersonQuantityDto(1, updatedBooking.getNumberChildren() + updatedBooking.getNumberBabies()));
+                        }
+                        if (updatedBooking.getNumberAdults() > 0) {
+                            typesPerson.add(2);
+                            qitem.add(new ItemPersonQuantityDto(2, updatedBooking.getNumberAdults()));
+                        }
+                        if (updatedBooking.getNumberAdultsMayor() > 0) {
+                            typesPerson.add(3);
+                            qitem.add(new ItemPersonQuantityDto(3, updatedBooking.getNumberAdultsMayor()));
+                        }
+                        if (updatedBooking.getNumberAdultsExtra() > 0) {
+                            typesPerson.add(4);
+                            qitem.add(new ItemPersonQuantityDto(4, updatedBooking.getNumberAdultsExtra()));
+                        }
+                    }
+
                     Mono<String> codSunatMono = this.productSunatRepository.findAll()
                             .filter(product -> normalizeText(product.getDescription()).equals(normalizedRoomDescription))
                             .map(ProductSunatDomain::getCodSunat)
@@ -278,13 +319,10 @@ public class NiubizServiceImpl implements NiubizService {
                             .next();
 
                     return codSunatMono.flatMap(codSunat -> {
-                        InvoiceItemDomain item = new InvoiceItemDomain(
-                                bookingAndRoomNameDto.getRoomName(),
-                                codSunat,
-                                bookingAndRoomNameDto.getRoomDescription(),
-                                1,
-                                totalCost);
-                        invoice.addItemWithIncludedIgv(item);
+                        /*if (userClient.isUserInclub()) {
+                            UserNameAndDiscountDto userNameAndDiscount = userClientService.getPercentageDiscount(userClient.getUserClientId(), bookingId, DiscountTypeCode.DISCOUNT_MEMBER).block();
+                            invoice.setPercentajeDiscount(userNameAndDiscount.getTotalPercentageDiscountAccommodation());
+                        }*/
                         PaymentBookEntity paymentBook = PaymentBookEntity
                                 .builder()
                                 .bookingId(updatedBooking
@@ -313,28 +351,101 @@ public class NiubizServiceImpl implements NiubizService {
                                 .percentageDiscount(percentageDiscount)
                                 .totalCostWithOutDiscount(totalCostWithOutDiscount)
                                 .build();
-                        return paymentBookRepository.save(paymentBook)
-                                .flatMap(paymentBookR -> {
-                                    invoice.setPaymentBookId(paymentBookR.getPaymentBookId());
-                                    return this.invoiceService
-                                            .save(invoice)
-                                            .then(sendSuccessEmail(
+                        if (typesPerson.size() > 0) {
+                            return getInvoiceItems(typesPerson, qitem)
+                                .flatMap(invoiceItems -> {
+                                    List<InvoiceItemDomain> invoiceItemDomains = new ArrayList<>();
+                                    AtomicReference<Double> total = new AtomicReference<>(totalCost.doubleValue());
+                                    invoiceItems.forEach(item -> {
+                                        total.set(total.get() - (item.getPriceUnit().doubleValue() * item.getQuantity()));
+                                        invoiceItemDomains.add(item);
+                                    });
+                                    BigDecimal newTotal = new BigDecimal(String.valueOf(total)).setScale(2, RoundingMode.HALF_UP);
+                                    InvoiceItemDomain item = new InvoiceItemDomain(
+                                            bookingAndRoomNameDto.getRoomName(),
+                                            codSunat,
+                                            bookingAndRoomNameDto.getRoomDescription(),
+                                            1,
+                                            newTotal, "");
+                                    invoice.addItemWithIncludedIgv(item);
+                                    invoice.addItemsWithIncludedIgv(invoiceItemDomains);
+                                    return paymentBookRepository.save(paymentBook)
+                                        .flatMap(paymentBookR -> {
+                                            invoice.setPaymentBookId(paymentBookR.getPaymentBookId());
+                                            return this.invoiceService
+                                                .save(invoice)
+                                                .then(sendSuccessEmail(
                                                     userClient.getEmail(),
                                                     paymentBookR.getPaymentBookId()));
-                                }).thenReturn(new TransactionNecessaryResponse(true))
-                                .onErrorResume(e -> bookingRepository
-                                        .findByBookingId(bookingId)
-                                        .flatMap(booking -> {
-                                            booking.setBookingStateId(3);
-                                            return bookingRepository.save(booking);
-                                        })
-                                        .flatMap(booking -> userClientRepository.findById(userClient.getUserClientId())
-                                                .flatMap(userCliente -> sendErrorEmail(userCliente.getEmail(), e.getMessage()))
-                                                .then(Mono.error(e))));
+                                        });
+                                })
+                                .thenReturn(new TransactionNecessaryResponse(true))
+                                .onErrorResume(e -> bookingRepository.findByBookingId(bookingId)
+                                    .flatMap(booking -> {
+                                        booking.setBookingStateId(3);
+                                        return bookingRepository.save(booking);
+                                    })
+                                    .flatMap(booking -> userClientRepository.findById(userClient.getUserClientId())
+                                        .flatMap(userCliente -> sendErrorEmail(userCliente.getEmail(), e.getMessage()))
+                                        .then(Mono.error(e))));
+                        } else {
+                            InvoiceItemDomain item = new InvoiceItemDomain(
+                                    bookingAndRoomNameDto.getRoomName(),
+                                    codSunat,
+                                    bookingAndRoomNameDto.getRoomDescription(),
+                                    1,
+                                    totalCost, "");
+                            invoice.addItemWithIncludedIgv(item);
+                            return paymentBookRepository.save(paymentBook)
+                                    .flatMap(paymentBookR -> {
+                                        invoice.setPaymentBookId(paymentBookR.getPaymentBookId());
+                                        return this.invoiceService
+                                                .save(invoice)
+                                                .then(sendSuccessEmail(
+                                                        userClient.getEmail(),
+                                                        paymentBookR.getPaymentBookId()));
+                                    }).thenReturn(new TransactionNecessaryResponse(true))
+                                    .onErrorResume(e -> bookingRepository
+                                            .findByBookingId(bookingId)
+                                            .flatMap(booking -> {
+                                                booking.setBookingStateId(3);
+                                                return bookingRepository.save(booking);
+                                            })
+                                            .flatMap(booking -> userClientRepository.findById(userClient.getUserClientId())
+                                                    .flatMap(userCliente -> sendErrorEmail(userCliente.getEmail(), e.getMessage()))
+                                                    .then(Mono.error(e))));
+                        }
                     });
                 });
     }
 
+    public Mono<List<InvoiceItemDomain>> getInvoiceItems(List<Integer> typesPerson, List<ItemPersonQuantityDto> qitem) {
+        return familyGroupRepository.getDetailFood(typesPerson)
+            .flatMap(detail -> {
+                String normalized = normalizeText(detail.getFeeding()).toUpperCase();
+                return productSunatRepository.findAll()
+                    .filter(product -> normalized.equals(normalizeText(product.getDescription().toUpperCase())))
+                    .map(ProductSunatDomain::getCodSunat)
+                    .next()
+                    .defaultIfEmpty("631210")
+                    .map(codItemSunat -> {
+                        Integer quantity = qitem.stream()
+                                .filter(item -> item.getFamilyGroupId().equals(detail.getFamilygroupid()))
+                                .map(ItemPersonQuantityDto::getQuantity)
+                                .findFirst()
+                                .orElse(0);
+                        return new InvoiceItemDomain(
+                                detail.getFeeding(),
+                                codItemSunat,
+                                detail.getFeeding(),
+                                quantity,
+                                detail.getCost(),
+                                ""
+                        );
+                    });
+            })
+            .collectList();
+    }
 
     @Override
     public Mono<Object> savePayNiubizFullDay(Integer fullDayId, String invoiceType, String invoiceDocumentNumber,
@@ -363,7 +474,7 @@ public class NiubizServiceImpl implements NiubizService {
                     InvoiceDomain invoice = new InvoiceDomain(
                             invoiceClientDomain,
                             updatedFullDay.getFulldayid(),
-                            18.0,
+                            10.0,
                             InvoiceCurrency.PEN,
                             type,
                             percentageDiscount);
@@ -373,7 +484,7 @@ public class NiubizServiceImpl implements NiubizService {
                             "631210",
                             "Pago de servicio FullDay",
                             1,
-                            totalCost);
+                            totalCost, "");
 
                     invoice.addItemWithIncludedIgv(item);
 
