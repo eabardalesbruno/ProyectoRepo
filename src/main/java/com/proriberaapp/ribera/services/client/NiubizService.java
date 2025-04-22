@@ -4,6 +4,8 @@ import com.proriberaapp.ribera.Domain.entities.NiubizAutorizationEntity;
 import com.proriberaapp.ribera.Domain.entities.RewardPurchase;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface NiubizService {
 
     Mono<String> getSecurityToken();

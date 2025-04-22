@@ -625,7 +625,7 @@ public class PayMeService {
                                                                                 codSunat,
                                                                                 bookingAndRoomNameDto.getRoomDescription(),
                                                                                 1,
-                                                                                totalCost);
+                                                                                totalCost, "");
                                                                 invoice.addItemWithIncludedIgv(
                                                                                 item);
                                                                 PaymentBookEntity paymentBook = PaymentBookEntity
