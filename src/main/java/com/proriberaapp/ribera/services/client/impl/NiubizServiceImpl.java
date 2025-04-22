@@ -296,7 +296,8 @@ public class NiubizServiceImpl implements NiubizService {
                     if (bookingFeeding != null && bookingFeeding.getBookingFeedingId() != null) {
                         if ((updatedBooking.getNumberChildren() + updatedBooking.getNumberBabies()) > 0) {
                             typesPerson.add(1);
-                            qitem.add(new ItemPersonQuantityDto(1, updatedBooking.getNumberChildren() + updatedBooking.getNumberBabies()));
+                            //qitem.add(new ItemPersonQuantityDto(1, updatedBooking.getNumberChildren() + updatedBooking.getNumberBabies()));
+                            qitem.add(new ItemPersonQuantityDto(1, updatedBooking.getNumberChildren()));
                         }
                         if (updatedBooking.getNumberAdults() > 0) {
                             typesPerson.add(2);
