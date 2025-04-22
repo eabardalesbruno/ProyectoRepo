@@ -283,7 +283,7 @@ public class NiubizServiceImpl implements NiubizService {
                             percentageDiscount);
                     //invoice.setOperationCode(authorizationResponse.getId());
                     List<String> invoice_notes = new ArrayList<>();
-                    invoice_notes.add("ALOJAMIENTO: "+ (updatedBooking.getNumberAdults() + updatedBooking.getNumberAdultsMayor() + updatedBooking.getNumberAdultsExtra())+" ADULTOS + " + (updatedBooking.getNumberChildren() + updatedBooking.getNumberBabies())+" NIÑOS");
+                    invoice_notes.add("ALOJAMIENTO: "+ (updatedBooking.getNumberAdults() + updatedBooking.getNumberAdultsMayor() + updatedBooking.getNumberAdultsExtra())+" ADULTOS + " + (updatedBooking.getNumberChildren())+" NIÑOS");
                     invoice_notes.add(detailBookInvoice.getCheckin()+" "+detailBookInvoice.getCheckout());
                     invoice_notes.add("INCLUYE DESAYUNO");
                     invoice.setInvoice_notes(invoice_notes);
