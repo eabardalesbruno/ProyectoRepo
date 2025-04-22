@@ -96,7 +96,7 @@ public class NiubizController {
 
         return niubizService.purchaseRewards(securityToken, niubizEntity.getTransactionToken(), userId, rewards, bookingId, purchaseNumber)
                 .map(urlToRedirect -> ResponseEntity
-                        .status(HttpStatus.TEMPORARY_REDIRECT) // 307
+                        .status(HttpStatus.SEE_OTHER) // 303
                         .header(HttpHeaders.LOCATION, urlToRedirect)
                         .build()
                 );

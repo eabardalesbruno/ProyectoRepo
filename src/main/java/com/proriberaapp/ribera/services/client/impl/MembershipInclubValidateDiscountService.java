@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ExternalAuthService;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.PointsRedemptionHistoryRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.BoResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.SubscriptionFamilyResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
@@ -201,28 +202,41 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                 .flatMap(data -> {
                     UserClientEntity userData = data.getT1();
                     BookingEntity booking= data.getT2();
-                    return this.loadMembershipsInsortInclub(
-                                    userData.getUsername())
+                    return this.loadMembershipsInsortInclub(userData.getUsername())
                             .flatMap(memberships -> {
-                                if(memberships.size()==0){
+                                if (memberships.isEmpty()) {
                                     return Mono.just(UserNameAndDiscountDto.empty());
                                 }
-                                return this.discountRepository
-                                        .getDiscountWithItemsAndCurrentYear(
-                                                memberships.stream().filter(d->d.getIdFamilyPackage()==2).map(MembershipDto::getIdPackage).toList())
-                                        .collectList().flatMap(listPercentage -> Mono.just(UserNameAndDiscountDto.builder()
-                                                .username(userData.getUsername())
-                                                .percentage(listPercentage.stream().map(DiscountEntity::getPercentage).reduce(0.0f,
-                                                        Float::sum))
-                                                .discounts(listPercentage.stream()
-                                                        .map(p -> new DiscountDto(p.getId(),  p.getName(),p.getPercentage()*booking.getCostFinal().floatValue()/100,  p.getPercentage(),
-                                                                p.isApplyToReservation(), p.isApplyToFood()))
-                                                        .toList())
-                                                .build()));
+                                List<Integer> packageIds = memberships.stream()
+                                        .filter(d -> List.of(2, 29, 43).contains(d.getIdFamilyPackage()))
+                                        .map(MembershipDto::getIdPackage)
+                                        .toList();
+
+                                if (packageIds.isEmpty()) {
+                                    return Mono.just(UserNameAndDiscountDto.empty());
+                                }
+
+                                return this.discountRepository.getDiscountWithItemsAndCurrentYear(packageIds)
+                                        .collectList()
+                                        .flatMap(listPercentage -> {
+                                            float totalPercentage = listPercentage.stream()
+                                                    .map(DiscountEntity::getPercentage)
+                                                    .reduce(0.0f, Float::sum);
+                                            List<DiscountDto> discounts = listPercentage.stream()
+                                                    .map(p -> new DiscountDto(p.getId(), p.getName(),
+                                                            p.getPercentage() * booking.getCostFinal().floatValue() / 100,
+                                                            p.getPercentage(), p.isApplyToReservation(), p.isApplyToFood()))
+                                                    .toList();
+                                            return Mono.just(UserNameAndDiscountDto.builder()
+                                                    .username(userData.getUsername())
+                                                    .percentage(totalPercentage)
+                                                    .discounts(discounts)
+                                                    .build());
+                                        });
                             });
 
-
-                });
+                }
+        );
     }
 
     @Override
@@ -269,6 +283,37 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                     return Mono.empty();
                 });
     }
+
+    public Mono<Object> getPointsRedemptionHistoryByUser(int idUser, int page, int size) {
+        String url = "http://localhost:7020/api/v1/user-points-released/points-redemption-history/user/"
+                + idUser + "?page=" + page + "&size=" + size;
+
+        return WebClient.create()
+                .get()
+                .uri(url)
+                .retrieve()
+                .bodyToMono(Object.class)
+                // En caso de error, podrías manejarlo con onErrorResume u otro operador
+                .onErrorResume(e -> {
+                    return Mono.error(new RuntimeException("Error al invocar GET en Microservicio 7020", e));
+                });
+    }
+
+
+    public Mono<Object> createPointsRedemptionHistory(PointsRedemptionHistoryRequest request) {
+        String url = "http://localhost:7020/api/v1/user-points-released/points-redemption-history";
+
+        return WebClient.create()
+                .post()
+                .uri(url)
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(Object.class)
+                .onErrorResume(e -> {
+                    return Mono.error(new RuntimeException("Error al invocar POST en Microservicio 7020", e));
+                });
+    }
+
 
     //Se ejecuta para limpiar la data antigua con la nueva por cada vez que el socio se invoque
     @Scheduled(cron = "0 0 0 1 * ?")
