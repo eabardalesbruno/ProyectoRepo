@@ -24,7 +24,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     @Override
     public Mono<ExchangeRateResponse> getExchangeRateByCode(ExchangeRateCode exchangeRateCode) {
         return webClient.get()
-                .uri(urlAdminInclub + "/exchangerate/")
+                .uri(urlAdminInclub + "/exchangerate/getexchange")
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<BoResponse<ExchangeRateResponse>>(){})
                 .map(BoResponse::getData);

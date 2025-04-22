@@ -282,15 +282,20 @@ public class QuotationServiceImpl implements QuotationService {
     }
 
     private BigDecimal calculateRewardsForQuotation(QuotationDetailEntity quotation, BookingSaveRequest booking) {
-        return getSafeValue(quotation.getKidReward())
+        return toBigDecimal(quotation.getKidReward())
                 .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberChild())))
-                .add(getSafeValue(quotation.getAdultReward())
+                .add(toBigDecimal(quotation.getAdultReward())
                         .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdult()))))
-                .add(getSafeValue(quotation.getAdultMayorReward())
+                .add(toBigDecimal(quotation.getAdultMayorReward())
                         .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdultMayor()))))
-                .add(getSafeValue(quotation.getAdultExtraReward())
+                .add(toBigDecimal(quotation.getAdultExtraReward())
                         .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdultExtra()))));
     }
+
+    private BigDecimal toBigDecimal(BigInteger value) {
+        return value != null ? new BigDecimal(value) : BigDecimal.ZERO;
+    }
+
 
     private int getSafeInt(Integer value) {
         return value != null ? value : 0;

@@ -23,6 +23,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.ProductSunatRepository;
 import com.proriberaapp.ribera.services.client.*;
 import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
+import com.proriberaapp.ribera.utils.constants.ExchangeRateCode;
 import com.proriberaapp.ribera.utils.constants.DiscountTypeCode;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.BookingEmailDto;
@@ -104,6 +105,7 @@ public class NiubizServiceImpl implements NiubizService {
     private final UserClientService userClientService;
     private final BookingFeedingRepository bookingFeedingRepository;
     private final FamilyGroupRepository familyGroupRepository;
+    private final ExchangeRateService exchangeRateService;
 
     @Override
     public Mono<String> getSecurityToken() {
@@ -565,102 +567,106 @@ public class NiubizServiceImpl implements NiubizService {
                                         int rewards,
                                         Integer bookingId, String purchaseNumber) {
 
-        double amount = rewards * 1.0;
+        return exchangeRateService.getExchangeRateByCode(ExchangeRateCode.USD)
+                .flatMap(exchangeRate -> {
+                    double amount = rewards * exchangeRate.getSale();
 
+                    NiubizAutorizationBodyEntity body = new NiubizAutorizationBodyEntity();
+                    body.setChannel("web");
+                    body.setCaptureType("manual");
+                    body.setCountable(true);
 
-        NiubizAutorizationBodyEntity body = new NiubizAutorizationBodyEntity();
-        body.setChannel("web");
-        body.setCaptureType("manual");
-        body.setCountable(true);
+                    NiubizAuthorizationOrderEntity order = new NiubizAuthorizationOrderEntity();
+                    order.setTokenId(transactionToken);
+                    order.setPurchaseNumber(purchaseNumber);
+                    order.setAmount(amount);
+                    order.setCurrency("PEN");
+                    body.setOrder(order);
 
-        NiubizAuthorizationOrderEntity order = new NiubizAuthorizationOrderEntity();
-        order.setTokenId(transactionToken);
-        order.setPurchaseNumber(purchaseNumber);
-        order.setAmount(amount);
-        order.setCurrency("PEN");
-        body.setOrder(order);
+                    NiubizAuthorizationDataMapEntity dataMap = new NiubizAuthorizationDataMapEntity();
+                    dataMap.setUrlAddress(urlClientFrontEnd);
+                    dataMap.setServiceLocationCityName("Lima");
+                    dataMap.setServiceLocationCountrySubdivisionCode("LIM");
+                    dataMap.setServiceLocationCountryCode("PER");
+                    dataMap.setServiceLocationPostalCode("15046");
+                    body.setDataMap(dataMap);
 
-        NiubizAuthorizationDataMapEntity dataMap = new NiubizAuthorizationDataMapEntity();
-        dataMap.setUrlAddress(urlClientFrontEnd);
-        dataMap.setServiceLocationCityName("Lima");
-        dataMap.setServiceLocationCountrySubdivisionCode("LIM");
-        dataMap.setServiceLocationCountryCode("PER");
-        dataMap.setServiceLocationPostalCode("15046");
-        body.setDataMap(dataMap);
+                    final String finalBookingUrl = (bookingId == -1)
+                            ? urlClientFrontEnd + "/exchange-zone"
+                            : urlClientFrontEnd + "/payment-method/" + bookingId;
+                    return nibuizClient.post()
+                            .uri("/api.authorization/v3/authorization/ecommerce/{merchantId}", merchantId)
+                            .header(HttpHeaders.AUTHORIZATION, securityToken)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .bodyValue(body)
+                            .exchangeToMono(response -> {
+                                if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
+                                    return response.bodyToMono(Object.class)
+                                            .flatMap(objError -> {
+                                                JsonNode jsonNode = MAPPER.convertValue(objError, JsonNode.class);
+                                                log.error("Error en transacción con Niubiz: {}", jsonNode.toPrettyString());
 
-        final String finalBookingUrl = (bookingId == -1)
-                ? urlClientFrontEnd + "/exchange-zone"
-                : urlClientFrontEnd + "/payment-method/" + bookingId;
-        return nibuizClient.post()
-                .uri("/api.authorization/v3/authorization/ecommerce/{merchantId}", merchantId)
-                .header(HttpHeaders.AUTHORIZATION, securityToken)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(body)
-                .exchangeToMono(response -> {
-                    if (response.statusCode().is4xxClientError() || response.statusCode().is5xxServerError()) {
-                        return response.bodyToMono(Object.class)
-                                .flatMap(objError -> {
-                                    JsonNode jsonNode = MAPPER.convertValue(objError, JsonNode.class);
-                                    log.error("Error en transacción con Niubiz: {}", jsonNode.toPrettyString());
+                                                String transactionId = getSafeString(jsonNode.at("/data/TRANSACTION_ID"));
+                                                String transactionDate = getSafeString(jsonNode.at("/data/TRANSACTION_DATE"));
+                                                String status = getSafeString(jsonNode.at("/data/STATUS"));
+                                                String actionDescription = getSafeString(jsonNode.at("/data/ACTION_DESCRIPTION"));
 
-                                    String transactionId = getSafeString(jsonNode.at("/data/TRANSACTION_ID"));
-                                    String transactionDate = getSafeString(jsonNode.at("/data/TRANSACTION_DATE"));
-                                    String status = getSafeString(jsonNode.at("/data/STATUS"));
-                                    String actionDescription = getSafeString(jsonNode.at("/data/ACTION_DESCRIPTION"));
+                                                String msgEncoded = Base64.encodeBase64String(
+                                                        actionDescription.getBytes(StandardCharsets.UTF_8)
+                                                );
 
-                                    String msgEncoded = Base64.encodeBase64String(
-                                            actionDescription.getBytes(StandardCharsets.UTF_8)
-                                    );
+                                                String finalUrlWeb = finalBookingUrl + "?" +
+                                                        "transactionId=" + transactionId +
+                                                        "&dateTransaction=" + transactionDate +
+                                                        "&message=" + msgEncoded +
+                                                        "&status=" + status +
+                                                        "&amount=" + amount +
+                                                        "&purchaseNumber=" + purchaseNumber +
+                                                        "&action=fail";
 
-                                    String finalUrlWeb = finalBookingUrl+ "?" +
-                                            "transactionId=" + transactionId +
-                                            "&dateTransaction=" + transactionDate +
-                                            "&message=" + msgEncoded +
-                                            "&status=" + status +
-                                            "&amount=" + amount +
-                                            "&purchaseNumber=" + purchaseNumber +
-                                            "&action=fail";
+                                                return Mono.just(finalUrlWeb);
+                                            });
 
-                                    return Mono.just(finalUrlWeb);
-                                });
+                                } else {
+                                    // Exito
+                                    return response.bodyToMono(Object.class)
+                                            .flatMap(objOk -> {
+                                                JsonNode jsonNode = MAPPER.convertValue(objOk, JsonNode.class);
 
-                    } else {
-                        // Exito
-                        return response.bodyToMono(Object.class)
-                                .flatMap(objOk -> {
-                                    JsonNode jsonNode = MAPPER.convertValue(objOk, JsonNode.class);
+                                                String transactionId = getSafeString(jsonNode.at("/dataMap/TRANSACTION_ID"));
+                                                String transactionDate = getSafeString(jsonNode.at("/dataMap/TRANSACTION_DATE"));
+                                                String amountStr = getSafeString(jsonNode.at("/dataMap/AMOUNT"));
+                                                String status = getSafeString(jsonNode.at("/dataMap/STATUS"));
+                                                String brand = getSafeString(jsonNode.at("/dataMap/BRAND"));
+                                                String card = getSafeString(jsonNode.at("/dataMap/CARD"));
 
-                                    String transactionId = getSafeString(jsonNode.at("/dataMap/TRANSACTION_ID"));
-                                    String transactionDate = getSafeString(jsonNode.at("/dataMap/TRANSACTION_DATE"));
-                                    String amountStr = getSafeString(jsonNode.at("/dataMap/AMOUNT"));
-                                    String status = getSafeString(jsonNode.at("/dataMap/STATUS"));
-                                    String brand = getSafeString(jsonNode.at("/dataMap/BRAND"));
-                                    String card = getSafeString(jsonNode.at("/dataMap/CARD"));
+                                                String currency = getSafeString(jsonNode.at("/order/currency"));
 
-                                    String currency = getSafeString(jsonNode.at("/order/currency"));
+                                                String cardEncoded = Base64.encodeBase64String(
+                                                        card.getBytes(StandardCharsets.UTF_8)
+                                                );
 
-                                    String cardEncoded = Base64.encodeBase64String(
-                                            card.getBytes(StandardCharsets.UTF_8)
-                                    );
+                                                String finalUrlWeb = finalBookingUrl + "?" +
+                                                        "transactionId=" + transactionId +
+                                                        "&dateTransaction=" + transactionDate +
+                                                        "&status=" + status +
+                                                        "&currency=" + currency +
+                                                        "&amount=" + amountStr +
+                                                        "&card=" + cardEncoded +
+                                                        "&brand=" + brand +
+                                                        "&purchaseNumber=" + purchaseNumber +
+                                                        "&action=success";
 
-                                    String finalUrlWeb = finalBookingUrl+ "?" +
-                                            "transactionId=" + transactionId +
-                                            "&dateTransaction=" + transactionDate +
-                                            "&status=" + status +
-                                            "&currency=" + currency +
-                                            "&amount=" + amountStr +
-                                            "&card=" + cardEncoded +
-                                            "&brand=" + brand +
-                                            "&purchaseNumber=" + purchaseNumber +
-                                            "&action=success";
-                                    return walletPointService.updateWalletPoints(userId,
-                                                    WalletPointRequest.builder()
-                                                            .userId(userId)
-                                                            .rewardPoints((double) (rewards))
-                                                            .build())
-                                            .thenReturn(finalUrlWeb);
-                                });
-                    }
+                                                return walletPointService.updateWalletPoints(userId,
+                                                                WalletPointRequest.builder()
+                                                                        .userId(userId)
+                                                                        .rewardPoints((double) (rewards))
+                                                                        .build())
+                                                        .thenReturn(finalUrlWeb);
+
+                                            });
+                                }
+                            });
                 });
     }
 
