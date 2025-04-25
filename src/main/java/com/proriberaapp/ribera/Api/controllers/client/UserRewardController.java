@@ -1,11 +1,11 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.UserRewardRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardResponse;
 import com.proriberaapp.ribera.Domain.enums.RewardType;
 import com.proriberaapp.ribera.services.client.UserRewardService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -32,4 +32,10 @@ public class UserRewardController {
         return userRewardService.findByType(RewardType.valueOf(type));
     }
 
+    @PostMapping("/save")
+    public Mono<UserRewardResponse> save(
+            @RequestBody UserRewardRequest userRewardRequest, @RequestParam("type") String type,
+            @RequestParam("totalCost") Double totalCost) {
+        return userRewardService.create(userRewardRequest,type,totalCost);
+    }
 }

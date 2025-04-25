@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class UserRewardRequest {
     private Integer userId;
-    private Integer points;
+    private Double  points;
     private RewardType type;
     private LocalDateTime expirationDate;
 }

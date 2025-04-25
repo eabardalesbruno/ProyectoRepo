@@ -25,7 +25,7 @@ public class UserRewardEntity {
     @Column("user_id")
     private Long userId;
 
-    private Integer points;
+    private Double points;
 
     private LocalDateTime date;
 
