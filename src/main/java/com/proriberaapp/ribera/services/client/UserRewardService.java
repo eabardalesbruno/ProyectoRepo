@@ -17,5 +17,5 @@ public interface UserRewardService {
 
     Flux<UserRewardResponse> findByType(RewardType type);
 
-    Mono<UserRewardResponse> create(UserRewardRequest userRewardRequest);
+    Mono<UserRewardResponse> create(UserRewardRequest userRewardRequest,String type,Double totalCost);
 }

@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.ExchangeRateResponse;
 import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Domain.dto.BookingFeedingDto;
 import com.proriberaapp.ribera.Domain.dto.QuotationOfferDto;
@@ -10,6 +11,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.*;
 import com.proriberaapp.ribera.utils.GeneralMethods;
 import com.proriberaapp.ribera.utils.TransformDate;
+import com.proriberaapp.ribera.utils.constants.ExchangeRateCode;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.ConfirmReserveBookingTemplateEmail;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +56,7 @@ public class BookingServiceImpl implements BookingService {
     private final BedsTypeRepository bedsTypeRepository;
     private final RoomRepository roomRepository;
     private final QuotationService quotationService;
-    // private final WebClient webClient;
+    private final ExchangeRateService exchangeRateService;
     @Value("${app.upload.dir}")
     private String uploadDir;
 
@@ -74,7 +76,8 @@ public class BookingServiceImpl implements BookingService {
             PaymentBookRepository paymentBookRepository, RoomRepository roomRepository,
             BookingFeedingRepository bookingFeedingRepository,
             FeedingRepository feedingRepository,
-            QuotationService quotationService
+            QuotationService quotationService,
+            ExchangeRateService exchangeRateService
     ) {
         this.bookingRepository = bookingRepository;
         this.userClientRepository = userClientRepository;
@@ -91,6 +94,7 @@ public class BookingServiceImpl implements BookingService {
         this.bookingFeedingRepository = bookingFeedingRepository;
         this.feedingRepository = feedingRepository;
         this.quotationService = quotationService;
+        this.exchangeRateService = exchangeRateService;
     }
 
     @Override
@@ -345,10 +349,13 @@ public class BookingServiceImpl implements BookingService {
         return getRoomName(bookingSaveRequest.getRoomOfferId())
                 .flatMap(roomName -> {
                     // Obtener la oferta de habitación
-                    return roomOfferRepository.findById(bookingSaveRequest.getRoomOfferId())
-                            .flatMap(roomOfferEntity -> {
-                                // Crear la entidad de reserva con los datos
-                                // proporcionados
+                    return Mono.zip(
+                            roomOfferRepository.findById(bookingSaveRequest.getRoomOfferId()),
+                            exchangeRateService.getExchangeRateByCode(ExchangeRateCode.USD)
+                                    )
+                            .flatMap(data -> {
+                                RoomOfferEntity roomOfferEntity = data.getT1();
+                                ExchangeRateResponse exchangeRateEntity = data.getT2();
                                 BookingEntity bookingEntity = BookingEntity
                                         .createBookingEntity(userClientId,
                                                 bookingSaveRequest,
@@ -385,7 +392,9 @@ public class BookingServiceImpl implements BookingService {
                                                         .getNumberBaby(),
                                                 bookingSaveRequest
                                                         .getNumberChild(),
-                                                numberOfDays - 1).setScale(2, RoundingMode.HALF_UP);
+                                                numberOfDays - 1).setScale(2, RoundingMode.HALF_UP)
+                                        .multiply(BigDecimal.valueOf(exchangeRateEntity.getSale()))
+                                        ;
 
                                 return quotationService.calculateTotalRewards(bookingSaveRequest)
                                         .map(BigDecimal::intValue)
