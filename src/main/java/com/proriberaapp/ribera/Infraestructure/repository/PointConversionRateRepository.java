@@ -10,4 +10,8 @@ public interface PointConversionRateRepository extends ReactiveCrudRepository<Po
 
     Mono<PointConversionRateEntity> findByFamilyId(Integer familyId);
 
+    Mono<Boolean> existsByFamilyId(Integer familyId);
+
+    //aca colocar query
+    //Flux<PointConversionRateDto> findPointConversionRateAll();
 }

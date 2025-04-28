@@ -151,11 +151,10 @@ public class WalletPointServiceImpl implements WalletPointService {
     @Override
     @Transactional
     public Mono<Void> convertPoints(Integer originalUserId, String username, WalletPointRequest walletPointRequest) {
-        /*return conversionRateRepository.findByFamilyId(walletPointRequest.getFamilyId())
+        return conversionRateRepository.findByFamilyId(walletPointRequest.getFamilyId())
                 .switchIfEmpty(Mono.error(new RuntimeException("No conversion rate found")))
                 .flatMap(rate -> {
-                    Double convertedPoints = walletPointRequest.getRewardPoints() * rate.getConversionRate();*/
-
+                    Double convertedPoints = walletPointRequest.getRewardPoints() * rate.getConversionRate();
                     return externalAuthService.getExternalToken()
                             .zipWith(
                                     webClient.get()
@@ -166,7 +165,7 @@ public class WalletPointServiceImpl implements WalletPointService {
                             .flatMap(tuple -> {
                                 String tokenBackOffice = tuple.getT1();
                                 ResponseInclubLoginDto responseInclub = tuple.getT2();
-                                Double convertedPoints = walletPointRequest.getRewardPoints() * 1;
+                                //Double convertedPoints = walletPointRequest.getRewardPoints() * 1;
 
                                 Integer userIdFromInclub = responseInclub.getData().getId();
 
@@ -215,10 +214,8 @@ public class WalletPointServiceImpl implements WalletPointService {
                                                         .walletPointId(walletPoint.getId())
                                                         .build()
                                         ));
-                            })
-                //})
+                            });
+                })
                 .then();
     }
-
-
 }
