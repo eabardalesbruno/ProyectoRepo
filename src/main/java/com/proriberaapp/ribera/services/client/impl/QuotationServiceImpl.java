@@ -3,25 +3,21 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.QuotationOfferDayDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.quotationDayDto;
-import com.proriberaapp.ribera.Domain.dto.QuotationDto;
-import com.proriberaapp.ribera.Domain.entities.QuotationDayEntity;
-import com.proriberaapp.ribera.Domain.entities.QuotationDetailEntity;
-import com.proriberaapp.ribera.Domain.entities.QuotationEntity;
-import com.proriberaapp.ribera.Domain.entities.QuotationRoomOfferEntity;
+import com.proriberaapp.ribera.Domain.dto.*;
+import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.exception.QuoteAndOfferIsAlreadyRegisteredException;
-import com.proriberaapp.ribera.Infraestructure.repository.QuotationDayRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.QuotationRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.QuotationRoomOfferRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.RoomOfferRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.QuotationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,10 +30,44 @@ public class QuotationServiceImpl implements QuotationService {
     private final QuotationRoomOfferRepository quotationRoomOfferRepository;
     private final RoomOfferRepository roomOfferRepository;
     private final QuotationDayRepository quotationDayRepository;
+    private final RoomTypeRepository roomTypeRepository;
+    private final RoomRepository roomRepository;
 
     @Override
-    public Flux<QuotationEntity> findAllQuotations(Integer condition) {
-        return quotationRepository.getAllQuotationByDays(condition);
+    public Mono<QuotationObjectDto> findAllQuotations(Integer condition) {
+        return roomTypeRepository.findAllRoomTypes()
+                .flatMap(roomTypeEntity ->
+                        roomRepository.findRoomByRoomTypeId(roomTypeEntity.getRoomTypeId())
+                                .flatMap(roomNumberEntity ->
+                                        quotationRepository.getAllQuotationByRoomNumber(roomNumberEntity.getRoomNumber())
+                                                .collectList()
+                                                .map(quotationOffers -> {
+                                                    RoomDto roomDto = new RoomDto();
+                                                    roomDto.setRoomNumber(roomNumberEntity.getRoomNumber());
+                                                    roomDto.setQuotationOffers(quotationOffers);
+                                                    return roomDto;
+                                                })
+                                )
+                                .collectList()
+                                .map(roomDtos -> {
+                                    RoomTypeDto roomTypeDto = new RoomTypeDto();
+                                    roomTypeDto.setRoomTypeId(roomTypeEntity.getRoomTypeId());
+                                    roomTypeDto.setRoomType(roomTypeEntity.getRoomType());
+                                    roomTypeDto.setRoomTypeName(roomTypeEntity.getRoomTypeName());
+                                    roomTypeDto.setRoomTypeDescription(roomTypeEntity.getRoomTypeDescription());
+                                    roomTypeDto.setRoomstateid(roomTypeEntity.getRoomstateid());
+                                    roomTypeDto.setRoomState(roomTypeEntity.getRoomState());
+                                    roomTypeDto.setCategory(roomTypeEntity.getCategory());
+                                    roomTypeDto.setRoomnumbers(roomDtos);
+                                    return roomTypeDto;
+                                })
+                )
+                .collectList()
+                .map(roomTypeDtos -> {
+                    QuotationObjectDto response = new QuotationObjectDto();
+                    response.setRoomType(roomTypeDtos);
+                    return response;
+                });
     }
 
     @Override
@@ -282,13 +312,13 @@ public class QuotationServiceImpl implements QuotationService {
     }
 
     private BigDecimal calculateRewardsForQuotation(QuotationDetailEntity quotation, BookingSaveRequest booking) {
-        return toBigDecimal(quotation.getKidReward())
+        return quotation.getKidReward()
                 .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberChild())))
-                .add(toBigDecimal(quotation.getAdultReward())
+                .add(quotation.getAdultReward()
                         .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdult()))))
-                .add(toBigDecimal(quotation.getAdultMayorReward())
+                .add(quotation.getAdultMayorReward()
                         .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdultMayor()))))
-                .add(toBigDecimal(quotation.getAdultExtraReward())
+                .add(quotation.getAdultExtraReward()
                         .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdultExtra()))));
     }
 
