@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.proriberaapp.ribera.services.client.ComplaintsBookService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.proriberaapp.ribera.Infraestructure.repository.ComplaintsBookRepository;
 import com.proriberaapp.ribera.Domain.entities.ComplaintsBookEntity;
@@ -16,6 +17,12 @@ import java.time.format.DateTimeFormatter;
 public class ComplaintsBookServiceImpl implements ComplaintsBookService {
     private final ComplaintsBookRepository complaintsBookRepository;
     private final EmailService emailService;
+
+    @Value("${mail_first_claim_book}")
+    private String mailFisrtClaimBook;
+
+    @Value("${mail_second_claim_book}")
+    private String mailSecondClaimBook;
 
     @Autowired
     public ComplaintsBookServiceImpl(ComplaintsBookRepository complaintsBookRepository, EmailService emailService) {
@@ -32,22 +39,15 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 .flatMap(savedComplaint -> {
                     String subject = "Nuevo Reclamo Recibido";
                     String body = generateEmailBody(savedComplaint);
-                    String primaryRecipient = "reclamosriberadelrio@inresorts.club";
                     String userEmail = savedComplaint.getEmail();
 
                     // Enviar el correo al destinatario principal y una copia al email del usuario
-                    return emailService.sendEmail(primaryRecipient, subject, body)
+                    return emailService.sendEmailCC(userEmail, mailFisrtClaimBook, mailSecondClaimBook, subject, body)
                             .onErrorResume(e -> {
                                 // Log error and continue
                                 System.err.println("Error sending email to primary recipient: " + e.getMessage());
                                 return Mono.empty(); // Continue without stopping the flow
                             })
-                            .then(emailService.sendEmail(userEmail, subject, body)
-                                    .onErrorResume(e -> {
-                                        // Log error and continue
-                                        System.err.println("Error sending email to user: " + e.getMessage());
-                                        return Mono.empty(); // Continue without stopping the flow
-                                    }))
                             .thenReturn(savedComplaint);
                 });
     }
@@ -320,12 +320,16 @@ public class ComplaintsBookServiceImpl implements ComplaintsBookService {
                 "                  <span class=\"data-detail\">" + complaint.getLastName() + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
-                "                  <span class=\"data\">Direccion:</span>\n" +
+                "                  <span class=\"data\">Dirección:</span>\n" +
                 "                  <span class=\"data-detail\">" + complaint.getAddress() + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
                 "                  <span class=\"data\">Celular o Telefono:</span>\n" +
                 "                  <span class=\"data-detail\">" + complaint.getPhone() + "</span>\n" +
+                "                </div>\n" +
+                "                <div class=\"detail\">\n" +
+                "                  <span class=\"data\">Correo Electrónico:</span>\n" +
+                "                  <span class=\"data-detail\">" + complaint.getEmail() + "</span>\n" +
                 "                </div>\n" +
                 "                <div class=\"detail\">\n" +
                 "                  <span class=\"data\">Numero de documento de identidad:</span>\n" +
