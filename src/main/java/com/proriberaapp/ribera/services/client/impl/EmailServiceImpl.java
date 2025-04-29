@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.services.client.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -15,12 +16,16 @@ import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @Service
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
     private final EmailLogRepository emailLogRepository;
+
+    @Value("${mail_notifications_general}")
+    private String mailNotificationsGeneral;
 
     @Autowired
     public EmailServiceImpl(JavaMailSender mailSender, EmailLogRepository emailLogRepository) {
@@ -34,7 +39,7 @@ public class EmailServiceImpl implements EmailService {
             try {
                 MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-                helper.setFrom("notificacionesinclub@inclub.world");
+                helper.setFrom(mailNotificationsGeneral);
                 helper.setTo(to);
                 helper.setSubject(subject);
                 helper.setText(body, true); // true indica que el cuerpo es HTML
@@ -69,7 +74,7 @@ public class EmailServiceImpl implements EmailService {
             try {
                 MimeMessage message = mailSender.createMimeMessage();
                 MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-                helper.setFrom("notificacionesinclub@inclub.world");
+                helper.setFrom(mailNotificationsGeneral);
                 helper.setTo(toEmail);
                 helper.setSubject(subject);
                 helper.setText(body, true);
@@ -102,6 +107,43 @@ public class EmailServiceImpl implements EmailService {
                 return emailLogRepository.save(emailLog).then(Mono.error(e));
             }
         });
+    }
+
+    @Override
+    public Mono<Void> sendEmailCC(String to, String firstCopia, String secondCopia, String subject, String body) {
+        return Mono.fromRunnable(() -> {
+            try {
+                String[] cc = {firstCopia, secondCopia};
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+                helper.setFrom(mailNotificationsGeneral);
+                helper.setTo(to);
+                helper.setCc(cc);
+                helper.setSubject(subject);
+                helper.setText(body, true); // true indica que el cuerpo es HTML
+                mailSender.send(message);
+
+                EmailLogEntity emailLog = EmailLogEntity.builder()
+                        .recipient(to)
+                        .subject(subject)
+                        .body(body)
+                        .sentDate(Timestamp.valueOf(LocalDateTime.now()))
+                        .status("SENT")
+                        .build();
+
+                emailLogRepository.save(emailLog).subscribe();
+            } catch (MessagingException e) {
+                EmailLogEntity emailLog = EmailLogEntity.builder()
+                        .recipient(to)
+                        .subject(subject)
+                        .body(body)
+                        .sentDate(Timestamp.valueOf(LocalDateTime.now()))
+                        .status("FAILED")
+                        .build();
+
+                emailLogRepository.save(emailLog).subscribe();
+            }
+        }).then();
     }
 }
 /*
