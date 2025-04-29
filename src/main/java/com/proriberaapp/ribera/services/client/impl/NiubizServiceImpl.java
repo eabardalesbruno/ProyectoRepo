@@ -234,11 +234,12 @@ public class NiubizServiceImpl implements NiubizService {
                                 currency,
                                 status
                         );
-                        if (userId == null) {
-                            return Mono.just(urlRedirect);
-                        }
+                        return Mono.just(urlRedirect);
 
-                        int rewardPoints = (int) Math.round(amount * 0.1);
+                        //aca por defecto esta en 10% del monto los puntos rewards
+                        //int rewardPoints = (int) Math.round(amount * 0.1);
+                        /*
+                        double rewardPoints = Math.round(amount * 0.1 * 100.0) / 100.0;
                         UserRewardRequest rewardReq = UserRewardRequest.builder()
                                 .userId(userId)
                                 .points(rewardPoints)
@@ -248,6 +249,8 @@ public class NiubizServiceImpl implements NiubizService {
 
                         return userRewardService.create(rewardReq)
                                 .then(Mono.just(urlRedirect));
+
+                         */
                     });
                 });
     }

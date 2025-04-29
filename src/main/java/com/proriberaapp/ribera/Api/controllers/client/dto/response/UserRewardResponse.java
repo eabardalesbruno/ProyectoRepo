@@ -1,6 +1,5 @@
 package com.proriberaapp.ribera.Api.controllers.client.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.proriberaapp.ribera.Domain.enums.RewardStatus;
@@ -21,7 +20,7 @@ import java.util.Locale;
 public class UserRewardResponse {
     private Long id;
     private Long userId;
-    private Integer points;
+    private Double points;
 
     @JsonIgnore
     private LocalDateTime date;

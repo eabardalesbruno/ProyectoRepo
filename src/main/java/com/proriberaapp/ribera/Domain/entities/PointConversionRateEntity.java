@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table("point_conversion_rate")
-public class PointConversionRateEntity extends Auditable {
+public class PointConversionRateEntity{
     @Id
     private Integer id;
 
@@ -28,4 +28,7 @@ public class PointConversionRateEntity extends Auditable {
 
     @Column("updated_at")
     private LocalDateTime updatedAt;
+
+    @Column("status")
+    private Integer status;
 }
