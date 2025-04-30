@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.quotationDayDto;
 import com.proriberaapp.ribera.Domain.dto.QuotationDto;
+import com.proriberaapp.ribera.Domain.dto.QuotationObjectDto;
 import com.proriberaapp.ribera.Domain.entities.QuotationEntity;
 import com.proriberaapp.ribera.services.client.QuotationService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class QuotationController {
     private final QuotationService quotationService;
 
     @GetMapping
-    public Flux<QuotationEntity> findAllQuotation(@RequestParam("condition") Integer condition) {
+    public Mono<QuotationObjectDto> findAllQuotation(@RequestParam("condition") Integer condition) {
         return quotationService.findAllQuotations(condition);
     }
 

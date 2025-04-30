@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.services.client;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.quotationDayDto;
 import com.proriberaapp.ribera.Domain.dto.QuotationDto;
+import com.proriberaapp.ribera.Domain.dto.QuotationObjectDto;
 import com.proriberaapp.ribera.Domain.entities.QuotationEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -10,7 +11,7 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 
 public interface QuotationService {
-    Flux<QuotationEntity> findAllQuotations(Integer condition);
+    Mono<QuotationObjectDto> findAllQuotations(Integer condition);
 
     Flux<quotationDayDto> getQuotationDaySelected(Integer quotationId);
 
