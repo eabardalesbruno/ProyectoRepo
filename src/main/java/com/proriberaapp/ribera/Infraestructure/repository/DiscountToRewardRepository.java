@@ -13,4 +13,6 @@ public interface DiscountToRewardRepository extends R2dbcRepository<DiscountToRe
             WHERE dtr."name" ILIKE :name;
             """)
     Mono<DiscountToRewardEntity> findByName(String name);
+
+    Mono<Boolean> existsByName(String name);
 }

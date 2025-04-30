@@ -46,4 +46,9 @@ public class PointConversionRateController {
             @RequestBody UpdatePointConversionRateRequest updatePointConversionRateRequest) {
         return pointConversionRateService.updatePointConversionRate(updatePointConversionRateRequest);
     }
+
+    @DeleteMapping("/delete/{id}")
+    public Mono<Void> deletePointConversionRate(@PathVariable Integer id) {
+        return pointConversionRateService.deletePointConversionRate(id);
+    }
 }

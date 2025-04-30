@@ -151,8 +151,8 @@ public class PointConversionRateServiceImpl implements PointConversionRateServic
         return pointConversionRateRepository.existsByFamilyId(pointConversionRateRequest.getFamilyId())
                 .flatMap(exists -> {
                     if (exists) {
-                        return Mono.error(new RequestException("Ya existe un registro para ese Family ID: "
-                                + pointConversionRateRequest.getFamilyId()));
+                        return Mono.error(new
+                                RequestException("Ya existe un registro con la Familia/Paquete seleccionado"));
                     }
                     var pointConversionRateEntity = mapRequestToEntity(pointConversionRateRequest);
                     return pointConversionRateRepository.save(pointConversionRateEntity);
@@ -188,5 +188,13 @@ public class PointConversionRateServiceImpl implements PointConversionRateServic
                 })
                 .doOnError(e -> log.error(e.getMessage(), e))
                 .doOnSuccess(p -> log.info("End the method updatePointConversionRate"));
+    }
+
+    @Override
+    public Mono<Void> deletePointConversionRate(Integer id) {
+        log.info("Start the method deletePointConversionRate");
+        return pointConversionRateRepository.deleteById(id)
+                .doOnError(e -> log.error(e.getMessage(), e))
+                .doOnSuccess(p -> log.info("End the method deletePointConversionRate"));
     }
 }

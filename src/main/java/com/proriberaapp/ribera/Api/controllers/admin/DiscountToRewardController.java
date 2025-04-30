@@ -1,7 +1,7 @@
-package com.proriberaapp.ribera.Api.controllers.client;
+package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Domain.entities.DiscountToRewardEntity;
-import com.proriberaapp.ribera.services.client.DiscountToRewardService;
+import com.proriberaapp.ribera.services.admin.DiscountToRewardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,22 +10,22 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v1/discountToReward")
+@RequestMapping("/api/v1/maintenance/discountToReward")
 @RequiredArgsConstructor
 public class DiscountToRewardController {
-    //ESTO ES EL CRUD PARA IDENTIFICAR QUE PUNTOS REWARD CON RESPECTO A UN PORCENTAJE DETERMINADO DEL MONTO PAGADO DEL CLIENTE TIENEN
+
     private final DiscountToRewardService discountToRewardService;
+
+    @GetMapping("/all")
+    public Flux<DiscountToRewardEntity> getAllDiscounts() {
+        return discountToRewardService.getAllDiscount();
+    }
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<DiscountToRewardEntity>> getDiscountById(@PathVariable Integer id) {
         return discountToRewardService.getDiscountById(id)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/all")
-    public Flux<DiscountToRewardEntity> getAllDiscounts() {
-        return discountToRewardService.getAllDiscount();
     }
 
     @PostMapping("/create")
@@ -40,5 +40,10 @@ public class DiscountToRewardController {
         return discountToRewardService.updateDiscount(id, discountToReward)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public Mono<Void> deleteDiscount(@PathVariable Integer id) {
+        return discountToRewardService.deleteDiscount(id);
     }
 }

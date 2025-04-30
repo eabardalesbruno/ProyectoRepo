@@ -1,4 +1,4 @@
-package com.proriberaapp.ribera.services.client;
+package com.proriberaapp.ribera.services.admin;
 
 import com.proriberaapp.ribera.Domain.entities.DiscountToRewardEntity;
 import reactor.core.publisher.Flux;
@@ -15,4 +15,6 @@ public interface DiscountToRewardService {
     Mono<DiscountToRewardEntity> saveDiscount(DiscountToRewardEntity discountToReward);
 
     Mono<DiscountToRewardEntity> updateDiscount(Integer id, DiscountToRewardEntity discountToReward);
+
+    Mono<Void> deleteDiscount(Integer id);
 }
