@@ -1,8 +1,8 @@
-package com.proriberaapp.ribera.services.client.impl;
+package com.proriberaapp.ribera.services.admin.impl;
 
 import com.proriberaapp.ribera.Domain.entities.DiscountToRewardEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.DiscountToRewardRepository;
-import com.proriberaapp.ribera.services.client.DiscountToRewardService;
+import com.proriberaapp.ribera.services.admin.DiscountToRewardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,7 +45,15 @@ public class DiscountToRewardServiceImpl implements DiscountToRewardService {
     @Override
     public Mono<DiscountToRewardEntity> saveDiscount(DiscountToRewardEntity discountToReward) {
         log.info("Start the method saveDiscount");
-        return discountToRewardRepository.save(discountToReward)
+        return discountToRewardRepository.existsByName(discountToReward.getName())
+                .flatMap(exists -> {
+                    if (exists) {
+                        return Mono.error(new RuntimeException("Ya existe un registro con el nombre " +
+                                discountToReward.getName()));
+                    } else {
+                        return discountToRewardRepository.save(discountToReward);
+                    }
+                })
                 .doOnError(e -> log.error("Error in saveDiscount: " + e.getMessage()))
                 .doOnSuccess(v -> log.info("End the method saveDiscount"));
     }
@@ -65,5 +73,12 @@ public class DiscountToRewardServiceImpl implements DiscountToRewardService {
                 )
                 .doOnError(e -> log.error("Error in updateDiscount: " + e.getMessage()))
                 .doOnSuccess(v -> log.info("End the method updateDiscount"));
+    }
+
+    @Override
+    public Mono<Void> deleteDiscount(Integer id) {
+        return discountToRewardRepository.deleteById(id)
+                .doOnError(e -> log.error("Error in deleteDiscount: " + e.getMessage()))
+                .doOnSuccess(v -> log.info("End the method deleteDiscount"));
     }
 }

@@ -6,7 +6,7 @@ import com.proriberaapp.ribera.Domain.entities.UserRewardEntity;
 import com.proriberaapp.ribera.Domain.enums.RewardType;
 import com.proriberaapp.ribera.Domain.mapper.UserRewardMapper;
 import com.proriberaapp.ribera.Infraestructure.repository.UserRewardRepository;
-import com.proriberaapp.ribera.services.client.DiscountToRewardService;
+import com.proriberaapp.ribera.services.admin.DiscountToRewardService;
 import com.proriberaapp.ribera.services.client.UserRewardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

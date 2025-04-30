@@ -20,4 +20,6 @@ public interface PointConversionRateService {
 
     Mono<PointConversionRateEntity> updatePointConversionRate(
             UpdatePointConversionRateRequest updatePointConversionRateRequest);
+
+    Mono<Void> deletePointConversionRate(Integer id);
 }
