@@ -9,6 +9,8 @@ public class QuotationOffersDto {
 
     private Integer quotationId;
 
+    private Integer roomofferid;
+
     private String offername;
 
     private String quotationDescription;

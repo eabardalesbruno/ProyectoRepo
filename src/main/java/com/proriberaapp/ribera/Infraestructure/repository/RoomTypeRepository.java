@@ -29,7 +29,7 @@ public interface RoomTypeRepository extends R2dbcRepository<RoomTypeEntity, Inte
 
     @Query("""
             SELECT * FROM
-            roomtype ORDER BY roomtypeid asc
+            roomtype ORDER BY roomtypename
             """)
     Flux<RoomTypeDto> findAllRoomTypes();
 

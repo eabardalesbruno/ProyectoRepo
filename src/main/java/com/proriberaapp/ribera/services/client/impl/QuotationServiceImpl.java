@@ -39,7 +39,7 @@ public class QuotationServiceImpl implements QuotationService {
                 .flatMap(roomTypeEntity ->
                         roomRepository.findRoomByRoomTypeId(roomTypeEntity.getRoomTypeId())
                                 .flatMap(roomNumberEntity ->
-                                        quotationRepository.getAllQuotationByRoomNumber(roomNumberEntity.getRoomNumber())
+                                        quotationRepository.getAllQuotationByRoomNumber(roomNumberEntity.getRoomNumber(), condition)
                                                 .collectList()
                                                 .map(quotationOffers -> {
                                                     RoomDto roomDto = new RoomDto();
@@ -69,7 +69,6 @@ public class QuotationServiceImpl implements QuotationService {
                     return response;
                 });
     }
-
     @Override
     public Mono<QuotationEntity> findQuotationById(Integer quotationId) {
         return quotationRepository.findById(quotationId);
