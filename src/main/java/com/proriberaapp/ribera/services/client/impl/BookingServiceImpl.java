@@ -365,6 +365,7 @@ public class BookingServiceImpl implements BookingService {
 
                                 // Cálculo del costo inicial (bebés, niños, adultos,
                                 // etc.)
+                                /*
                                 BigDecimal costFinal = GeneralMethods
                                         .calculateCostTotal(
                                                 bookingSaveRequest
@@ -395,7 +396,7 @@ public class BookingServiceImpl implements BookingService {
                                                 numberOfDays - 1).setScale(2, RoundingMode.HALF_UP)
                                         .multiply(BigDecimal.valueOf(exchangeRateEntity.getSale()))
                                         ;
-
+                                */
                                 return quotationService.calculateTotalRewards(bookingSaveRequest)
                                         .map(BigDecimal::intValue)
                                         .doOnNext(bookingEntity::setTotalRewards)
@@ -418,7 +419,7 @@ public class BookingServiceImpl implements BookingService {
                                                             bookingSaveRequest
                                                                     .getNumberChild()).multiply(BigDecimal.valueOf(numberOfDays - 1));
                                             bookingEntity.setCostFinal(
-                                                    costFinal.add(extraCost));
+                                                    bookingSaveRequest.getTotalCost().add(extraCost));
 
                                             return bookingRepository
                                                     .findExistingBookings(

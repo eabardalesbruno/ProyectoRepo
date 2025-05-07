@@ -34,6 +34,8 @@ public interface UserClientService {
 
     Flux<UserClientEntity> findAll();
 
+    Flux<UserClientEntity> findAllUserByNotMember();
+
     Mono<UserClientEntity> findById(Integer id);
 
     Mono<UserDataDTO> findUserDTOById(Integer id);
