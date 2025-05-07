@@ -57,4 +57,6 @@ public class BookingSaveRequest {
 
     private boolean isPaying;
 
+    private BigDecimal totalCost;
+
 }
