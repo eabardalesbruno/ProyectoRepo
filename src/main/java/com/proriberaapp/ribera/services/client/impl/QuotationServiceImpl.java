@@ -311,6 +311,17 @@ public class QuotationServiceImpl implements QuotationService {
     }
 
     private BigDecimal calculateRewardsForQuotation(QuotationDetailEntity quotation, BookingSaveRequest booking) {
+
+        BigDecimal kidReward = quotation.getKidReward() != null ? quotation.getKidReward() : BigDecimal.ZERO;
+        BigDecimal adultReward = quotation.getAdultReward() != null ? quotation.getAdultReward() : BigDecimal.ZERO;
+        BigDecimal adultMayorReward = quotation.getAdultMayorReward() != null ? quotation.getAdultMayorReward() : BigDecimal.ZERO;
+        BigDecimal adultExtraReward = quotation.getAdultExtraReward() != null ? quotation.getAdultExtraReward() : BigDecimal.ZERO;
+
+        return kidReward.multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberChild())))
+                .add(adultReward.multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdult()))))
+                .add(adultMayorReward.multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdultMayor()))))
+                .add(adultExtraReward.multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdultExtra()))));
+        /*
         return quotation.getKidReward()
                 .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberChild())))
                 .add(quotation.getAdultReward()
@@ -319,6 +330,8 @@ public class QuotationServiceImpl implements QuotationService {
                         .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdultMayor()))))
                 .add(quotation.getAdultExtraReward()
                         .multiply(BigDecimal.valueOf(getSafeInt(booking.getNumberAdultExtra()))));
+
+         */
     }
 
     private BigDecimal toBigDecimal(BigInteger value) {
