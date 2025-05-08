@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.QuotationOfferDayDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.quotationDayDto;
+import com.proriberaapp.ribera.Domain.dto.QuotationOffersDto;
 import com.proriberaapp.ribera.Domain.entities.QuotationDetailEntity;
 import com.proriberaapp.ribera.Domain.entities.QuotationEntity;
 
@@ -15,6 +16,25 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface QuotationRepository extends ReactiveCrudRepository<QuotationEntity, Integer> {
+
+    @Query("""
+        select q.quotation_id, ro.roomofferid, ro.offername, q.quotation_description, q.infant_cost, q.kid_cost, q.adult_cost, q.adult_mayor_cost, q.adult_extra_cost, q.kid_reward, q.adult_reward, q.adult_mayor_reward, q.adult_extra_reward
+                from quotation q
+                join quotation_roomoffer qr on q.quotation_id = qr.quotation_id
+                join roomoffer ro on ro.roomofferid = qr.room_offer_id
+        		join quotation_day qd ON q.quotation_id = qd.idquotation
+                where ro.roomid in (select roomid from room where roomnumber = :roomnumber)
+        		and (
+                        (:condition = 0 AND qd.idday IN (SELECT id FROM day WHERE name IN ('Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado')))
+                        OR
+                        (:condition = 1 AND qd.idday IN (SELECT id FROM day WHERE name IN ('Viernes', 'Sabado')))
+                        OR
+                        (:condition = 2 AND qd.idday IN (SELECT id FROM day WHERE name IN ('Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves')))
+                    )
+                group by q.quotation_id, ro.roomofferid, ro.offername, q.quotation_description, q.infant_cost, q.kid_cost, q.adult_cost, q.adult_mayor_cost, q.adult_extra_cost, q.kid_reward, q.adult_reward, q.adult_mayor_reward, q.adult_extra_reward
+    """)
+    Flux<QuotationOffersDto> getAllQuotationByRoomNumber(String roomnumber, Integer condition);
+
     @Query("""
             SELECT DISTINCT q.*
             FROM quotation q

@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.Infraestructure.repository;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BedroomReturn;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
+import com.proriberaapp.ribera.Domain.dto.RoomDto;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
@@ -63,5 +64,13 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
             @Param("numberchildren") Integer numberchildren,
             @Param("numberbabies") Integer numberbabies,
             @Param("bookingid") Integer bookingid);
+
+    @Query("""
+        SELECT distinct r.roomnumber
+        FROM room r
+        JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid AND rt.roomtypeid = :roomtypeid
+        ORDER BY r.roomnumber
+    """)
+    Flux<RoomDto> findRoomByRoomTypeId(@Param("roomtypeid") Integer roomtypeid);
 
 }
