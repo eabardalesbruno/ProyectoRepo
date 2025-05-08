@@ -12,5 +12,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class WalletPointsHistoryResponse {
     private WalletPointHistoryDto[] walletPointHistoryDtos;
-    private MetadataResponse metadataResponse;
+    private MetadataResponse metadata;
 }

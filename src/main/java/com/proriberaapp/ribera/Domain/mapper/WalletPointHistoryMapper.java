@@ -11,8 +11,8 @@ import java.util.stream.Stream;
 @Mapper(componentModel = "spring")
 public interface WalletPointHistoryMapper {
 
-    //@Mapping(target = "walletPointHistoryDtos", source = "walletPointHistoryDtos")
-    //@Mapping(target = "metadata", expression = "java(toMetadataResponse(limit, offset, totalElements))")
+    @Mapping(target = "walletPointHistoryDtos", source = "walletPointHistoryDtos")
+    @Mapping(target = "metadata", expression = "java(toMetadataResponse(limit, offset, totalElements))")
     WalletPointsHistoryResponse toWalletPointsHistoryResponse(
             Stream<WalletPointHistoryDto> walletPointHistoryDtos, Integer limit, Integer offset, long totalElements);
 

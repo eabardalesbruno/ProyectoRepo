@@ -21,8 +21,8 @@ public class WalletPointHistoryServiceImpl implements WalletPointHistoryService 
     public Mono<WalletPointsHistoryResponse> findPointsHistoryByUserId(
             Integer userId, String startDate, String endDate, Integer limit, Integer offset) {
         return Mono.zip(
-                        walletPointHistoryRepository.findPointsHistoryByUserIdAndRangeDate(userId, startDate, endDate, limit,
-                                offset).collectList(),
+                walletPointHistoryRepository
+                        .findPointsHistoryByUserIdAndRangeDate(userId, startDate, endDate, limit, offset).collectList(),
                 walletPointHistoryRepository.countListPointsHistoryByUserId(userId, startDate, endDate)
                 )
                 .map(tuple2 -> walletPointHistoryMapper.toWalletPointsHistoryResponse(
@@ -31,17 +31,4 @@ public class WalletPointHistoryServiceImpl implements WalletPointHistoryService 
                 .doOnError(e -> log.error("Error retrieving wallet point history", e))
                 .doOnSuccess(value -> log.info("End of the findPointsHistoryByUserId"));
     }
-/*
-    @Override
-    public Flux<WalletPointHistoryDto> findPointsHistoryByUserId(
-            Integer userId, String startDate, String endDate, Integer limit, Integer offset) {
-        log.info("Start the method findPointsHistoryByUserId with userId: {} and star" + "tDate: {} and endDate: {} "
-                + "and limit: {} and offset: {}", userId, startDate, endDate, limit, offset);
-        return walletPointHistoryRepository.findPointsHistoryByUserIdAndRangeDate(userId, startDate, endDate, limit,
-                        offset)
-                .doOnError(e -> log.error("Error retrieving wallet point history", e))
-                .doOnComplete(() -> log.info("End the method findPointsHistoryByUserId"));
-    }
-
- */
 }

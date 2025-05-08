@@ -1,13 +1,10 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
-import com.proriberaapp.ribera.Api.controllers.client.dto.response.WalletPointResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.WalletPointsHistoryResponse;
-import com.proriberaapp.ribera.Domain.dto.WalletPointHistoryDto;
 import com.proriberaapp.ribera.services.client.WalletPointHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -22,7 +19,7 @@ public class WalletPointHistoryController {
             @PathVariable Integer userId, @RequestParam String startDate,
             @RequestParam(required = false) String endDate,
             @RequestParam Integer limit, @RequestParam Integer offset) {
-        return null;
-        //walletPointHistoryService.findPointsHistoryByUserId(userId, startDate, endDate, limit, offset);
+        return walletPointHistoryService.findPointsHistoryByUserId(userId, startDate, endDate, limit, offset)
+                .map(ResponseEntity::ok);
     }
 }
