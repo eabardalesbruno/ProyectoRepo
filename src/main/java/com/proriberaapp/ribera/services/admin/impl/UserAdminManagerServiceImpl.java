@@ -25,6 +25,7 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
     private final UserAdminRepository userAdminRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final ExternalAuthService externalAuthService;
 
     @Override
     public Mono<TokenDto> login(LoginRequest loginRequest) {
@@ -34,8 +35,12 @@ public class UserAdminManagerServiceImpl implements UserAdminManagerService {
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "user is not active")))
                 .filter(user -> passwordEncoder.matches(loginRequest.password(), user.getPassword()))
                 .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "bad credentials")))
-                .map(user -> new TokenDto(jwtProvider.generateTokenAdmin(user)))
-                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "error generating token")));
+                .flatMap(user -> {
+                    String internalToken = jwtProvider.generateTokenAdmin(user);
+                    return externalAuthService.getExternalToken()
+                            .map(externalToken -> new TokenDto(internalToken, externalToken));
+                })
+                .switchIfEmpty(Mono.error(new CustomException(HttpStatus.BAD_REQUEST, "error generating tokens")));
     }
 
     @Override

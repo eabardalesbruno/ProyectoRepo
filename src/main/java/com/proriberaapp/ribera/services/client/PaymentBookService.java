@@ -35,6 +35,9 @@ public interface PaymentBookService {
 
     Mono<Void> createInvoice(Integer paymentBookId);
 
+    Mono<PaymentBookEntity> createPaymentForFullDay(PaymentBookEntity paymentBook);
+    Mono<Void> updateFullDayStateIfRequired(Integer fullDayId);
+
 
 
 }

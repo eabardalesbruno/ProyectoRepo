@@ -6,6 +6,6 @@ import reactor.core.publisher.Mono;
 
 public interface VerifiedDiscountService {
 
-    public Mono<UserNameAndDiscountDto> verifiedPercentajeDiscount(int userId);
+    Mono<UserNameAndDiscountDto> verifiedPercentajeDiscount(int userId, Integer bookingId);
 
 }

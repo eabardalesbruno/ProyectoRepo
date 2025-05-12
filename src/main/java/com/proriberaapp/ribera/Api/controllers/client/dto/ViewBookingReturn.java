@@ -59,6 +59,9 @@ public class ViewBookingReturn {
     @Column("roomofferid")
     Integer roomOfferId;
 
+    @Column("total_rewards")
+    Integer totalRewards;
+
     @Getter
     @Setter
     @Builder

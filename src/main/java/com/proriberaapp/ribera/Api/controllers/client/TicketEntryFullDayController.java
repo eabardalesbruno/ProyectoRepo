@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/ticketentryfullday")
 @RequiredArgsConstructor
@@ -49,5 +51,10 @@ public class TicketEntryFullDayController {
     @GetMapping("/enabled-days")
     public Flux<String> getEnabledDays() {
         return ticketEntryFullDayService.getEnabledDaysAll();
+    }
+
+    @GetMapping("/enabled-days-list")
+    public Mono<List<Integer>> getEnabledDaysList() {
+        return ticketEntryFullDayService.getEnabledDays();
     }
 }

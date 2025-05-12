@@ -9,7 +9,9 @@ import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
 import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
+import com.proriberaapp.ribera.Domain.invoice.ProductSunatDomain;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
+import com.proriberaapp.ribera.Infraestructure.repository.Invoice.ProductSunatRepository;
 import com.proriberaapp.ribera.services.client.*;
 import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
@@ -281,18 +283,20 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     private final CommissionService commissionService;
 
     private final InvoiceServiceI invoiceService;
+    private final FullDayRepository fullDayRepository;
+    private final ProductSunatRepository productSunatRepository;
 
     @Autowired
     public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository,
-            UserClientRepository userClientRepository,
-            BookingService bookingService,
-            RoomOfferRepository roomOfferRepository, RoomRepository roomRepository, S3Uploader s3Uploader,
-            EmailService emailService,
-            PaymentMethodRepository paymentMethodRepository,
-            PaymentStateRepository paymentStateRepository, PaymentTypeRepository paymentTypeRepository,
-            PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository,
-            CommissionService commissionService,
-            InvoiceServiceI invoiceService) {
+                                  UserClientRepository userClientRepository,
+                                  BookingService bookingService,
+                                  RoomOfferRepository roomOfferRepository, RoomRepository roomRepository, S3Uploader s3Uploader,
+                                  EmailService emailService,
+                                  PaymentMethodRepository paymentMethodRepository,
+                                  PaymentStateRepository paymentStateRepository, PaymentTypeRepository paymentTypeRepository,
+                                  PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository,
+                                  CommissionService commissionService,
+                                  InvoiceServiceI invoiceService, FullDayRepository fullDayRepository, ProductSunatRepository productSunatRepository) {
         this.invoiceService = invoiceService;
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
@@ -308,6 +312,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         this.currencyTypeRepository = currencyTypeRepository;
 
         this.commissionService = commissionService;
+        this.fullDayRepository = fullDayRepository;
+        this.productSunatRepository = productSunatRepository;
     }
 
     @Override
@@ -332,6 +338,21 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                         userClient.getEmail(), userClient.getFirstName())))
                         .thenReturn(savedPaymentBook));
     }
+
+    @Override
+    public Mono<PaymentBookEntity> createPaymentForFullDay(PaymentBookEntity paymentBook) {
+        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
+        Timestamp timestamp = Timestamp.valueOf(localDateTime);
+        paymentBook.setPaymentDate(timestamp);
+
+        return paymentBookRepository.save(paymentBook)
+                .flatMap(savedPaymentBook ->
+                        updateFullDayStateIfRequired(savedPaymentBook.getFullDayId())
+                                .thenReturn(savedPaymentBook)
+                );
+    }
+
+
 
     @Override
     public Mono<PaymentBookEntity> updatePaymentBook(Integer id, PaymentBookEntity paymentBook) {
@@ -383,6 +404,17 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         return bookingService.updateBookingStatePay(bookingId, 3)
                 .filter(booking -> booking.getBookingStateId() == 2)
                 .flatMap(booking -> bookingService.updateBookingStatePay(bookingId, 2))
+                .then();
+    }
+
+    @Override
+    public Mono<Void> updateFullDayStateIfRequired(Integer fullDayId) {
+        return fullDayRepository.findById(fullDayId)
+                .filter(fullDay -> fullDay.getBookingstateid() == 3) // Si está en estado 3
+                .flatMap(fullDay -> {
+                    fullDay.setBookingstateid(2); // Cambiarlo a estado 2
+                    return fullDayRepository.save(fullDay);
+                })
                 .then();
     }
 
@@ -800,14 +832,36 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                             paymentBook.getPaymentbookid(), 18, invoiceCurrency,
                             type, paymentBook.getPercentagediscount());
                     invoiceDomain.setOperationCode(paymentBook.getOperationcode());
-                    invoiceDomain.addItemWithIncludedIgv(new InvoiceItemDomain(
-                            paymentBook.getRoomname(),
-                            paymentBook.getRoomname(), 1,
-                            BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount())));
-                    invoiceDomain.calculatedTotals();
-                    return this.invoiceService.save(invoiceDomain);
 
+                    String roomOrType = paymentBook.getRoomname() != null ? paymentBook.getRoomname() : paymentBook.getType();
+                    String normalizedRoomOrType = normalizeText(roomOrType);
+
+                    Mono<String> codSunatMono = this.productSunatRepository.findAll()
+                            .filter(product -> normalizeText(product.getDescription()).equals(normalizedRoomOrType))
+                            .map(ProductSunatDomain::getCodSunat)
+                            .defaultIfEmpty("631210")
+                            .next();
+
+                    return codSunatMono.flatMap(codSunat -> {
+                        InvoiceItemDomain invoiceItem = new InvoiceItemDomain(
+                                roomOrType,
+                                codSunat,
+                                roomOrType,
+                                1,
+                                BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount()), // priceUnit
+                                ""
+                        );
+
+                        invoiceDomain.addItemWithIncludedIgv(invoiceItem);
+                        invoiceDomain.calculatedTotals();
+                        return this.invoiceService.save(invoiceDomain);
+                    });
                 }).then();
+    }
+
+    private String normalizeText(String text) {
+        if (text == null) return "";
+        return text.trim().replaceAll("\\s+", " ");
     }
 
 }

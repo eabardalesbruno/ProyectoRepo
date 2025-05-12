@@ -38,6 +38,7 @@ public class InvoiceDomain {
     private BigDecimal totalDiscount;
     private double percentajeDiscount;
     private double tc = 3.2;
+    private List<String> invoice_notes;
 
     public InvoiceDomain(InvoiceClientDomain client, Integer paymentBookId, double percentajeIgv,
             InvoiceCurrency currency,
@@ -74,6 +75,15 @@ public class InvoiceDomain {
         item.setPercentajeIgv(this.taxPercentaje);
         item.calculatedTotals(true, this.percentajeDiscount);
         this.items.add(item);
+        this.calculatedTotals();
+    }
+
+    public void addItemsWithIncludedIgv(List<InvoiceItemDomain> items) {
+        items.forEach(item -> {
+            item.setPercentajeIgv(this.taxPercentaje);
+            item.calculatedTotals(true, this.percentajeDiscount);
+            this.items.add(item);
+        });
         this.calculatedTotals();
     }
 

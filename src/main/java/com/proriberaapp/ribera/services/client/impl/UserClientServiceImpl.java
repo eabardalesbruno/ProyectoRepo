@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Domain.dto.DiscountDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalUsersDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ContactInfo;
@@ -8,37 +9,39 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
-import com.proriberaapp.ribera.Domain.dto.DiscountDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.entities.UserPromoterEntity;
+import com.proriberaapp.ribera.Domain.entities.WalletPointEntity;
 import com.proriberaapp.ribera.Infraestructure.exception.PasswordNotMatchesException;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserPromoterRepository;
-import com.proriberaapp.ribera.services.client.BookingService;
-import com.proriberaapp.ribera.services.client.EmailService;
-import com.proriberaapp.ribera.services.client.PasswordResetCodeService;
-import com.proriberaapp.ribera.services.client.UserApiClient;
-import com.proriberaapp.ribera.services.client.UserClientService;
-import com.proriberaapp.ribera.services.client.VerifiedDiscountService;
+import com.proriberaapp.ribera.Infraestructure.repository.WalletPointRepository;
+import com.proriberaapp.ribera.services.client.*;
+import com.proriberaapp.ribera.utils.ContactInfoUtil;
+import com.proriberaapp.ribera.utils.DiscountUtil;
+import com.proriberaapp.ribera.utils.constants.DiscountTypeCode;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.EmailTemplateCodeRecoveryPassword;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.proriberaapp.ribera.utils.constants.DiscountTypeCode.DISCOUNT_MEMBER;
+import static com.proriberaapp.ribera.utils.constants.DiscountTypeCode.POINTS_REWARD;
 
 @Slf4j
 @Service
@@ -48,6 +51,7 @@ public class UserClientServiceImpl implements UserClientService {
     private final UserClientRepository userClientRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtUtil;
+    private final WalletPointRepository walletPointRepository;
     @Autowired
     private UserApiClient userApiClient;
     @Autowired
@@ -92,7 +96,7 @@ public class UserClientServiceImpl implements UserClientService {
      * })
      * .flatMap(userClientRepository::save);
      * }
-     * 
+     *
      */
 
     /*
@@ -142,7 +146,7 @@ public class UserClientServiceImpl implements UserClientService {
      * })
      * .flatMap(userClientRepository::save);
      * }
-     * 
+     *
      */
     /*
      * 02072024
@@ -150,7 +154,7 @@ public class UserClientServiceImpl implements UserClientService {
      * long currentTimeMillis = System.currentTimeMillis();
      * Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
      * userClient.setCreatedat(currentTimestamp);
-     * 
+     *
      * return userClientRepository.findByEmail(userClient.getEmail())
      * .flatMap(existingUser -> {
      * if ("1".equals(userClient.getGoogleAuth())) {
@@ -197,7 +201,7 @@ public class UserClientServiceImpl implements UserClientService {
      * .thenReturn(savedUser);
      * });
      * }
-     * 
+     *
      */
 
     public Mono<UserClientEntity> registerUser(UserClientEntity userClient, String randomPassword) {
@@ -390,6 +394,11 @@ public class UserClientServiceImpl implements UserClientService {
     }
 
     @Override
+    public Flux<UserClientEntity> findAllUserByNotMember() {
+        return userClientRepository.findAllUsersNotInClub();
+    }
+
+    @Override
     public Mono<UserClientEntity> findById(Integer id) {
         return userClientRepository.findById(id);
     }
@@ -438,8 +447,6 @@ public class UserClientServiceImpl implements UserClientService {
         return userClientRepository.findByEmail(email)
                 .flatMap(user -> {
                     if (passwordEncoder.matches(password, user.getPassword())) {
-                        // Se verifica si al momento de loguearse el usuario tiene una wallet creada y
-                        // si no tiene se le crea una
                         if (user.getWalletId() == null) {
                             return walletServiceImpl.createWalletUsuario(user.getUserClientId(), 1)
                                     .flatMap(wallet -> {
@@ -500,14 +507,14 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Override
     public Mono<Void> sendContactInfo(ContactInfo contactInfo) {
-        String emailBody = getContactInfo(contactInfo);
+        String emailBody = ContactInfoUtil.getContactInfo(contactInfo);
         return emailService.sendEmail("informesyreservasribera@inresorts.club", contactInfo.getSubject(), emailBody)
                 .then(emailService.sendEmail(contactInfo.getEmail(), "Confirmación de envío", emailBody));
     }
 
     @Override
     public Mono<Void> sendEventContactInfo(EventContactInfo eventContactInfo) {
-        String emailBody = getEventContactInfo(eventContactInfo);
+        String emailBody = ContactInfoUtil.getEventContactInfo(eventContactInfo);
         return emailService.sendEmail("informesyreservasribera@inresorts.club", "Eventos", emailBody)
                 .then(emailService.sendEmail(eventContactInfo.getEmail(), "Confirmación de envío", emailBody));
     }
@@ -534,6 +541,18 @@ public class UserClientServiceImpl implements UserClientService {
         return userClientRepository.findByEmail(email);
     }
 
+    public Mono<UserClientEntity> findByEmailOrDocument(String email, String document) {
+        if (email != null && document != null) {
+            return userClientRepository.findByEmailOrDocument(email, document);
+        } else if (email != null) {
+            return userClientRepository.findByEmail(email);
+        } else if (document != null) {
+            return userClientRepository.findByDocumentNumber(document);
+        } else {
+            return Mono.empty();
+        }
+    }
+
     @Override
     public Mono<UserClientEntity> updatePassword(UserClientEntity userClient, String newPassword) {
         userClient.setPassword(passwordEncoder.encode(newPassword));
@@ -541,237 +560,74 @@ public class UserClientServiceImpl implements UserClientService {
         return null;
     }
 
-    public static String getEventContactInfo(EventContactInfo eventContactInfo) {
-        return "<!DOCTYPE html>" +
-                "<html lang='es'>" +
-                "<head>" +
-                "    <meta charset='UTF-8'>" +
-                "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
-                "    <style>" +
-                "        body {" +
-                "            font-family: Arial, sans-serif;" +
-                "            background-color: #f4f4f4;" +
-                "            color: #333;" +
-                "            margin: 0;" +
-                "            padding: 20px;" +
-                "        }" +
-                "        .container {" +
-                "            background-color: #ffffff;" +
-                "            padding: 20px;" +
-                "            margin: auto;" +
-                "            max-width: 600px;" +
-                "            border-radius: 8px;" +
-                "            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" +
-                "        }" +
-                "        h2 {" +
-                "            color: #333;" +
-                "            font-size: 24px;" +
-                "            margin-bottom: 10px;" +
-                "        }" +
-                "        p {" +
-                "            font-size: 14px;" +
-                "            color: #666;" +
-                "            margin-bottom: 20px;" +
-                "        }" +
-                "        .data-group {" +
-                "            margin-bottom: 15px;" +
-                "        }" +
-                "        .data-group label {" +
-                "            font-weight: bold;" +
-                "            margin-bottom: 5px;" +
-                "            color: #555;" +
-                "        }" +
-                "        .data-group span {" +
-                "            display: block;" +
-                "            padding: 10px;" +
-                "            font-size: 14px;" +
-                "            background-color: #f9f9f9;" +
-                "            border: 1px solid #ddd;" +
-                "            border-radius: 4px;" +
-                "        }" +
-                "    </style>" +
-                "</head>" +
-                "<body>" +
-                "    <img style='width:100%' src='http://imgfz.com/i/hGIOrlW.png'>" +
-                "    <div class='container'>" +
-                "        <h2>Notificacion:</h2>" +
-                "        <h3>Se ha brindado los datos de contacto.</h3>" +
-                "        <div>" +
-                "            <div class='data-group'>" +
-                "                <label for='usuario'>Nombres</label>" +
-                "                <span id='usuario'>" + eventContactInfo.getName() + "</span>" +
-                "            </div>" +
-                "            <div class='data-group'>" +
-                "                <label for='apellido'>Apellidos</label>" +
-                "                <span id='apellido'>" + eventContactInfo.getLastName() + "</span>" +
-                "            </div>" +
-                "        </div>" +
-                "        <div>" +
-                "            <div class='data-group'>" +
-                "                <label for='phone'>Nro. Celular</label>" +
-                "                <span>+51 " + eventContactInfo.getCellphone() + "</span>" +
-                "            </div>" +
-                "            <div class='data-group'>" +
-                "                <label for='email'>Correo electronico</label>" +
-                "                <span id='email'>" + eventContactInfo.getEmail() + "</span>" +
-                "            </div>" +
-                "        </div>" +
-                "        <div>" +
-                "            <div class='data-group'>" +
-                "                <label for='entrada'>Fecha de entrada</label>" +
-                "                <span id='entrada'>" + eventContactInfo.getStartDate() + "</span>" +
-                "            </div>" +
-                "            <div class='data-group'>" +
-                "                <label for='salida'>Fecha de salida</label>" +
-                "                <span id='salida'>" + eventContactInfo.getEndDate() + "</span>" +
-                "            </div>" +
-                "        </div>" +
-                "        <div>" +
-                "            <div class='data-group'>" +
-                "                <label for='adultos'>Numero de adultos</label>" +
-                "                <span id='adultos'>" + eventContactInfo.getNumberAdults() + "</span>" +
-                "            </div>" +
-                "            <div class='data-group'>" +
-                "                <label for='niños'>Numero de infantes</label>" +
-                "                <span id='niños'>" + eventContactInfo.getNumberChildren() + "</span>" +
-                "            </div>" +
-                "        </div>" +
-                "        <div>" +
-                "            <div class='data-group'>" +
-                "                <label for='mensaje'>Mensaje</label>" +
-                "                <span>" + eventContactInfo.getMessage() + "</span>" +
-                "            </div>" +
-                "        </div>" +
-                "    </div>" +
-                "</body>" +
-                "</html>";
-    }
-
-    public static String getContactInfo(ContactInfo contactInfo) {
-        return "<!DOCTYPE html>" +
-                "<html lang='es'>" +
-                "<head>" +
-                "    <meta charset='UTF-8'>" +
-                "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
-                "    <style>" +
-                "        body {" +
-                "            font-family: Arial, sans-serif;" +
-                "            background-color: #f4f4f4;" +
-                "            color: #333;" +
-                "            margin: 0;" +
-                "            padding: 20px;" +
-                "        }" +
-                "        .container {" +
-                "            background-color: #ffffff;" +
-                "            padding: 20px;" +
-                "            margin: auto;" +
-                "            max-width: 600px;" +
-                "            border-radius: 8px;" +
-                "            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);" +
-                "        }" +
-                "        h2 {" +
-                "            color: #333;" +
-                "            font-size: 24px;" +
-                "            margin-bottom: 10px;" +
-                "        }" +
-                "        p {" +
-                "            font-size: 14px;" +
-                "            color: #666;" +
-                "            margin-bottom: 20px;" +
-                "        }" +
-                "        .data-group {" +
-                "            margin-bottom: 15px;" +
-                "        }" +
-                "        .data-group label {" +
-                "            font-weight: bold;" +
-                "            margin-bottom: 5px;" +
-                "            color: #555;" +
-                "        }" +
-                "        .data-group span {" +
-                "            display: block;" +
-                "            padding: 10px;" +
-                "            font-size: 14px;" +
-                "            background-color: #f9f9f9;" +
-                "            border: 1px solid #ddd;" +
-                "            border-radius: 4px;" +
-                "        }" +
-                "    </style>" +
-                "</head>" +
-                "<body>" +
-                "    <img style='width:100%' src='http://imgfz.com/i/hGIOrlW.png'>" +
-                "    <div class='container'>" +
-                "        <h2>Notificacion:</h2>" +
-                "        <h3>Se ha brindado los datos de contacto.</h3>" +
-                "        <div>" +
-                "            <div class='data-group'>" +
-                "                <label for='usuario'>Nombres</label>" +
-                "                <span id='usuario'>" + contactInfo.getName() + "</span>" +
-                "            </div>" +
-                "            <div class='data-group'>" +
-                "                <label for='apellido'>Apellidos</label>" +
-                "                <span id='apellido'>" + contactInfo.getLastName() + "</span>" +
-                "            </div>" +
-                "        </div>" +
-                "        <div>" +
-                "            <div class='data-group'>" +
-                "                <label for='phone'>Nro. Celular</label>" +
-                "                <span>+51 " + contactInfo.getCellphone() + "</span>" +
-                "            </div>" +
-                "            <div class='data-group'>" +
-                "                <label for='email'>Correo electronico</label>" +
-                "                <span id='email'>" + contactInfo.getEmail() + "</span>" +
-                "            </div>" +
-                "        </div>" +
-                "        <div>" +
-                "            <div class='data-group'>" +
-                "                <label for='entrada'>Numero de documento</label>" +
-                "                <span id='entrada'>" + contactInfo.getDocumentNumber() + "</span>" +
-                "            </div>" +
-                "        </div>" +
-                "        <div>" +
-                "            <div class='data-group'>" +
-                "                <label for='mensaje'>Mensaje</label>" +
-                "                <span>" + contactInfo.getMessage() + "</span>" +
-                "            </div>" +
-                "        </div>" +
-                "    </div>" +
-                "</body>" +
-                "</html>";
-    }
-
     @Override
-    public Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId, Integer bookingId) {
+    public Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId, Integer bookingId, DiscountTypeCode discountType) {
+        return Mono.zip(
+                this.bookingService.findById(bookingId),
+                this.getDiscount(userId, bookingId, discountType),
+                this.bookingService.getTotalFeedingAmount(bookingId).switchIfEmpty(Mono.just(0F))
+        ).flatMap(data -> {
+            BookingEntity booking = data.getT1();
+            UserNameAndDiscountDto discount = data.getT2();
+            float totalAmountFeeding = data.getT3();
+            float totalAccommodation = booking.getCostFinal().subtract(new BigDecimal(totalAmountFeeding)).floatValue();
 
-        return Mono
-                .zip(this.bookingService.findById(bookingId),
-                        this.verifiedDiscountService.verifiedPercentajeDiscount(userId),
-                        this.bookingService.getTotalFeedingAmount(bookingId).switchIfEmpty(Mono.just(0F)))
-                .flatMap(data -> {
-                    BookingEntity booking = data.getT1();
-                    UserNameAndDiscountDto discount = data.getT2();
-                    float totalPercentageDiscountAccommodation = discount.getDiscounts().stream()
-                            .filter(d -> d.isApplyToReservation()).map(DiscountDto::getPercentage)
-                            .reduce(0F, Float::sum);
-                    float totalPercentageDiscountFood = discount.getDiscounts().stream()
-                            .filter(d -> d.isApplyToFood()).map(DiscountDto::getPercentage)
-                            .reduce(0F, Float::sum);
-                    Float totalAmountFeeding = data.getT3();
-                    float totalAccommodation = booking.getCostFinal().subtract(new BigDecimal(totalAmountFeeding))
-                            .floatValue();
-                    float totalAccommodationWithDiscount = totalAccommodation * totalPercentageDiscountAccommodation
-                            / 100;
-                    float totalFoodWithDiscount = totalAmountFeeding * totalPercentageDiscountFood / 100;
-                    discount.setTotalDiscountAccommodation(totalAccommodationWithDiscount);
-                    discount.setTotalPercentageDiscountAccommodation(totalPercentageDiscountAccommodation);
-                    discount.setTotalDiscountFood(totalFoodWithDiscount);
-                    discount.setTotalPercentageDiscountFood(totalPercentageDiscountFood);
-                    discount.setTotalAmount(
-                            booking.getCostFinal().subtract(
-                                    new BigDecimal(totalAccommodationWithDiscount + totalFoodWithDiscount))
-                                    .floatValue());
+            return Mono.just(DiscountUtil.calculateDiscount(discount, totalAccommodation, totalAmountFeeding, discountType));
+        });
+    }
 
-                    return Mono.just(discount);
-                });
+    private Mono<UserNameAndDiscountDto> getDiscount(Integer userId, Integer bookingId, DiscountTypeCode discountType) {
+        return switch (discountType) {
+            case DISCOUNT_MEMBER -> this.verifiedDiscountService.verifiedPercentajeDiscount(userId, bookingId);
+            case POINTS_REWARD ->Mono.zip( walletPointRepository.findByUserId(userId),
+                            this.bookingService.findById(bookingId),
+                            this.bookingService.getTotalFeedingAmount(bookingId).switchIfEmpty(Mono.just(0F))
+                            )
+                            .flatMap(data-> {
+                                WalletPointEntity walletPoint = data.getT1();
+                                BookingEntity booking = data.getT2();
+                                float totalAmountFeeding = data.getT3();
+                                float costFinal = booking.getCostFinal().floatValue();
+                                float discount1 = (costFinal - totalAmountFeeding) * 0.7f;
+
+                                List<DiscountDto> discounts = new ArrayList<>();
+                                discounts.add(
+                                        DiscountDto.builder()
+                                                .amount(discount1)
+                                                .applyToReservation(true)
+                                                .name("PUNTOS REWARDS")
+                                                .percentage(70f)
+                                                .build()
+                                );
+
+                                float discount2 = 0f;
+                                if (totalAmountFeeding > 0) {
+                                    discount2 = totalAmountFeeding * 0.2f;
+                                    discounts.add(
+                                            DiscountDto.builder()
+                                                    .amount(discount2)
+                                                    .applyToReservation(true)
+                                                    .name("DESCUENTO ALIMENTACION")
+                                                    .percentage(20f)
+                                                    .build()
+                                    );
+                                }
+
+                                float totalDiscount = discount1 + discount2;
+                                float overallPercentage = (totalDiscount / costFinal) * 100f;
+
+                                return Mono.just(
+                                        UserNameAndDiscountDto.builder()
+                                                .percentage(overallPercentage) // porcentaje global del descuento
+                                                .discounts(discounts)
+                                                .build()
+                                );
+
+                            })
+            ;
+            case DISCOUNT_COUPON -> DiscountUtil.calculateCouponDiscount(userId);
+            default -> Mono.error(new IllegalArgumentException("Tipo de descuento no válido"));
+        };
     }
 
     @Override
@@ -804,7 +660,7 @@ public class UserClientServiceImpl implements UserClientService {
         });
 
         return userClientRepository.findByEmailOrDocumentNumberAndIgnoreId(userClientEntity.getEmail(),
-                userClientEntity.getDocumentNumber(), userClientEntity.getUserClientId())
+                        userClientEntity.getDocumentNumber(), userClientEntity.getUserClientId())
                 .hasElement().flatMap(existUser -> {
                     if (existUser) {
                         return Mono.error(new RuntimeException(
@@ -903,4 +759,8 @@ public class UserClientServiceImpl implements UserClientService {
                 .then();
     }
 
+    @Override
+    public Mono<UserClientEntity> findByUsername(String username) {
+        return userClientRepository.findByUsername(username);
+    }
 }

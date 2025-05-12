@@ -12,6 +12,9 @@ import reactor.core.publisher.Mono;
 public interface UserClientRepository extends R2dbcRepository<UserClientEntity, Integer> {
     Mono<UserClientEntity> findByEmail(String email);
 
+    @Query("SELECT * FROM userclient WHERE email = :email OR documentnumber = :document")
+    Mono<UserClientEntity> findByEmailOrDocument(@Param("email") String email, @Param("document") String document);
+
     Mono<UserClientEntity> findByGoogleId(String googleId);
 
     @Query(value = "SELECT * FROM userclient u WHERE u.documentnumber = :documentNumber")
@@ -93,4 +96,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
             where userclientid = :userClientId;
                 """)
     Mono<Void> updatePassword(Integer userClientId, String passwordEnconded);
+
+    @Query("SELECT * FROM userclient WHERE isuserinclub = false")
+    Flux<UserClientEntity> findAllUsersNotInClub();
 }
