@@ -13,6 +13,8 @@ import com.proriberaapp.ribera.utils.constants.DiscountTypeCode;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.nio.channels.FileChannel;
+
 public interface UserClientService {
     Mono<UserClientEntity> registerUser(UserClientEntity user, String randomPassword);
 
@@ -67,4 +69,6 @@ public interface UserClientService {
     Mono<Void> updateAndValidatePassword(Integer userId, String currentPassword, String newPassword, String confirmPassword);
 
     Mono<UserClientEntity> findByUsername(String username);
+
+    Mono<UserClientEntity> findByEmailOrDocument(String email, String document);
 }

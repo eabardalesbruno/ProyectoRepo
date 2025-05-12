@@ -536,6 +536,18 @@ public class UserClientServiceImpl implements UserClientService {
         return userClientRepository.findByEmail(email);
     }
 
+    public Mono<UserClientEntity> findByEmailOrDocument(String email, String document) {
+        if (email != null && document != null) {
+            return userClientRepository.findByEmailOrDocument(email, document);
+        } else if (email != null) {
+            return userClientRepository.findByEmail(email);
+        } else if (document != null) {
+            return userClientRepository.findByDocumentNumber(document);
+        } else {
+            return Mono.empty();
+        }
+    }
+
     @Override
     public Mono<UserClientEntity> updatePassword(UserClientEntity userClient, String newPassword) {
         userClient.setPassword(passwordEncoder.encode(newPassword));

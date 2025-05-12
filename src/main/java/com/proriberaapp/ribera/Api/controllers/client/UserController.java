@@ -246,6 +246,17 @@ public class UserController {
                 .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/validate-user")
+    public Mono<ResponseEntity<UserClientEntity>> getUserByEmailOrDocument(
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String document) {
+
+        return userClientService.findByEmailOrDocument(email, document)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+
     @PostMapping("/registerAndLogin")
     public Mono<ResponseEntity<String>> registerAndLoginUser(@RequestBody RegisterAndLoginRequest request) {
         return userRegistrationService.loginAndRegisterUser(request.username(), request.password())
