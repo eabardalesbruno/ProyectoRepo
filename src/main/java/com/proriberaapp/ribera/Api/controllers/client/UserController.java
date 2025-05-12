@@ -273,8 +273,8 @@ public class UserController {
     }
 
     @GetMapping
-    public Flux<UserClientEntity> getAllUserClients() {
-        return userClientService.findAll();
+    public Flux<UserClientEntity> getAllUserClientsNotInClub() {
+        return userClientService.findAllUserByNotMember();
     }
 
     /*

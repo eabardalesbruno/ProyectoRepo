@@ -96,4 +96,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
             where userclientid = :userClientId;
                 """)
     Mono<Void> updatePassword(Integer userClientId, String passwordEnconded);
+
+    @Query("SELECT * FROM userclient WHERE isuserinclub = false")
+    Flux<UserClientEntity> findAllUsersNotInClub();
 }

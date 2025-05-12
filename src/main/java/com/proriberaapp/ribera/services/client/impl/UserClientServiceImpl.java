@@ -394,6 +394,11 @@ public class UserClientServiceImpl implements UserClientService {
     }
 
     @Override
+    public Flux<UserClientEntity> findAllUserByNotMember() {
+        return userClientRepository.findAllUsersNotInClub();
+    }
+
+    @Override
     public Mono<UserClientEntity> findById(Integer id) {
         return userClientRepository.findById(id);
     }
