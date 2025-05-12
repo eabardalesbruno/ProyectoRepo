@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.Domain.invoice;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.math.RoundingMode;
 
@@ -31,10 +32,11 @@ public class InvoiceItemDomain {
     private BigDecimal valorUnitario;
     private double percentajeDiscount;
     private BigDecimal discount;
+    private String descriptionDiscount;
 
-    public InvoiceItemDomain(String name, String description, int quantity, BigDecimal priceUnit) {
+    public InvoiceItemDomain(String name,String codProductSunat, String description, int quantity, BigDecimal priceUnit, String descriptionDiscount) {
         this.name = name;
-        this.codProductSunat = "631210";
+        this.codProductSunat = codProductSunat;
         this.description = description;
         this.percentajeDiscount = 0;
         if (quantity <= 0) {
@@ -45,6 +47,7 @@ public class InvoiceItemDomain {
         this.unitOfMeasurement = "ZZ";
         this.percentajeIgv = 0;
         this.createdAt = Date.from(Instant.now());
+        this.descriptionDiscount = descriptionDiscount;
         /*
          * this.calculatedTotals(isIgvIncluded);
          */ }
@@ -76,12 +79,15 @@ public class InvoiceItemDomain {
         this.percentajeDiscount = percentageDiscountP;
         double discountValue = this.percentajeDiscount / 100;
         if (isIgvIncluded) {
-            this.valorUnitario = priceUnit.divide(BigDecimal.valueOf(1 + igvValue), 2, RoundingMode.HALF_UP);
-            this.discount = valorUnitario.multiply(BigDecimal.valueOf(discountValue))
-                    .setScale(2, RoundingMode.HALF_UP);
-            this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP)
-                    .subtract(discount);
-            this.igv = subtotal.multiply(BigDecimal.valueOf(igvValue)).setScale(2, RoundingMode.HALF_UP);
+            this.discount = new BigDecimal(priceUnit.doubleValue()*discountValue).setScale(2, RoundingMode.HALF_UP);
+            double discountPrice = priceUnit.doubleValue() - priceUnit.doubleValue()*discountValue;
+            this.valorUnitario = new BigDecimal((discountPrice)/(1 + igvValue)).setScale(2, RoundingMode.HALF_UP);
+            //this.valorUnitario = priceUnit.divide(BigDecimal.valueOf(1 + igvValue), 2, RoundingMode.HALF_UP);
+            //this.discount = valorUnitario.multiply(BigDecimal.valueOf(discountValue))
+            //        .setScale(2, RoundingMode.HALF_UP);
+            this.subtotal = valorUnitario.multiply(new BigDecimal(quantity)).setScale(2, RoundingMode.HALF_UP);
+            this.igv = new BigDecimal(priceUnit.doubleValue()*quantity - valorUnitario.doubleValue()*quantity).setScale(2, RoundingMode.HALF_UP);
+            //this.igv = subtotal.multiply(BigDecimal.valueOf(igvValue)).setScale(2, RoundingMode.HALF_UP);
             /*
              * this.total = priceUnit.multiply(new
              * BigDecimal(quantity)).subtract(discount).setScale(2,

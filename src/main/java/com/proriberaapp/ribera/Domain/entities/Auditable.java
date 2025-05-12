@@ -18,10 +18,10 @@ public abstract class Auditable {
     private LocalDateTime updatedAt;
 
     @CreatedBy
-    @Column
-    private String createdBy;
+    @Column("created_by")
+    private Integer createdBy;
 
     @LastModifiedBy
     @Column("updated_by")
-    private String updatedBy;
+    private Integer updatedBy;
 }

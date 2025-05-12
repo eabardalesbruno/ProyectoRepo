@@ -86,4 +86,5 @@ public interface CommissionRepository extends R2dbcRepository <CommissionEntity,
             @Param("receptionistId") Integer receptionistId
     );
 
+    Mono<Void>deleteByFullDayId(Integer fullDayId);
 }

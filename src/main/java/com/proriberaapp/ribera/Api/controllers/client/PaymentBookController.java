@@ -42,6 +42,12 @@ public class PaymentBookController {
                 .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook));
     }
 
+    @PostMapping("/full-day-pay")
+    public Mono<ResponseEntity<PaymentBookEntity>> createPaymentForFullDay(@RequestBody PaymentBookEntity paymentBook) {
+        return paymentBookService.createPaymentForFullDay(paymentBook)
+                .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook));
+    }
+
     @PutMapping("/{id}")
     public Mono<ResponseEntity<PaymentBookEntity>> updatePaymentBook(@PathVariable Integer id,
             @RequestBody PaymentBookEntity paymentBook) {

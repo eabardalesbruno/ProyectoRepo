@@ -84,4 +84,7 @@ public class CommissionEntity {
 
     @Column("receptionistid")
     private Integer receptionistId;
+
+    @Column("fulldayid")
+    private Integer fullDayId;
 }

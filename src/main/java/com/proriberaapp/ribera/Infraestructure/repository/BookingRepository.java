@@ -3,9 +3,7 @@ package com.proriberaapp.ribera.Infraestructure.repository;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingResumenPaymentDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
-import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
-import com.proriberaapp.ribera.Api.controllers.client.dto.ReportOfKitchenBdDto;
-import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
+import com.proriberaapp.ribera.Api.controllers.client.dto.*;
 import com.proriberaapp.ribera.Domain.dto.BookingAndRoomNameDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.BookingFeedingEntity;
@@ -655,5 +653,42 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
         select * from booking_feeding bf where bf.bookingid=:bookingId
       """)
   Flux<BookingFeedingEntity> getSelectBookingFeedingOfBookingId(Integer bookingId);
+
+  @Query("""
+        select
+           'INGRESO ' || TO_CHAR(b.daybookinginit, 'DD') || ' ' ||
+             CASE EXTRACT(MONTH FROM b.daybookinginit)
+               WHEN 1 THEN 'ENERO'
+               WHEN 2 THEN 'FEBRERO'
+               WHEN 3 THEN 'MARZO'
+               WHEN 4 THEN 'ABRIL'
+               WHEN 5 THEN 'MAYO'
+               WHEN 6 THEN 'JUNIO'
+               WHEN 7 THEN 'JULIO'
+               WHEN 8 THEN 'AGOSTO'
+               WHEN 9 THEN 'SEPTIEMBRE'
+               WHEN 10 THEN 'OCTUBRE'
+               WHEN 11 THEN 'NOVIEMBRE'
+               WHEN 12 THEN 'DICIEMBRE'
+             END AS checkin,
+           'SALIDA ' || TO_CHAR(b.daybookingend, 'DD') || ' ' ||
+             CASE EXTRACT(MONTH FROM b.daybookingend)
+               WHEN 1 THEN 'ENERO'
+               WHEN 2 THEN 'FEBRERO'
+               WHEN 3 THEN 'MARZO'
+               WHEN 4 THEN 'ABRIL'
+               WHEN 5 THEN 'MAYO'
+               WHEN 6 THEN 'JUNIO'
+               WHEN 7 THEN 'JULIO'
+               WHEN 8 THEN 'AGOSTO'
+               WHEN 9 THEN 'SEPTIEMBRE'
+               WHEN 10 THEN 'OCTUBRE'
+               WHEN 11 THEN 'NOVIEMBRE'
+               WHEN 12 THEN 'DICIEMBRE'
+             END AS checkout
+           from booking b
+           where b.bookingid = :bookingId
+    """)
+  Mono<DetailBookInvoiceDto> getDetailBookInvoice(Integer bookingId);
 
 }

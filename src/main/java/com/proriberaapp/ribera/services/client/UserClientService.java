@@ -9,8 +9,11 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
+import com.proriberaapp.ribera.utils.constants.DiscountTypeCode;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.nio.channels.FileChannel;
 
 public interface UserClientService {
     Mono<UserClientEntity> registerUser(UserClientEntity user, String randomPassword);
@@ -33,6 +36,8 @@ public interface UserClientService {
 
     Flux<UserClientEntity> findAll();
 
+    Flux<UserClientEntity> findAllUserByNotMember();
+
     Mono<UserClientEntity> findById(Integer id);
 
     Mono<UserDataDTO> findUserDTOById(Integer id);
@@ -51,7 +56,7 @@ public interface UserClientService {
 
     Mono<Void> sendEventContactInfo(EventContactInfo eventContactInfo);
 
-    Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId, Integer bookingId);
+    Mono<UserNameAndDiscountDto> getPercentageDiscount(Integer userId, Integer bookingId, DiscountTypeCode discountType);
 
     Mono<CompanyDataDto> loadDataRuc(String ruc);
 
@@ -63,6 +68,9 @@ public interface UserClientService {
 
     Mono<Void> changePassword(String code, String password);
 
-    Mono<Void> updateAndValidatePassword(Integer userId,String currentPassword, String newPassword, String confirmPassword);
+    Mono<Void> updateAndValidatePassword(Integer userId, String currentPassword, String newPassword, String confirmPassword);
 
+    Mono<UserClientEntity> findByUsername(String username);
+
+    Mono<UserClientEntity> findByEmailOrDocument(String email, String document);
 }

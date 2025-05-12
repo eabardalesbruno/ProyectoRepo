@@ -173,11 +173,11 @@ public class InvoiceTests {
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 0.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
                                 0);
                 invoice.addItemWithIncludedIgv(
-                                new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                                new InvoiceItemDomain("Item 1","631210", "aaa", 1, new BigDecimal(50), "DSCTO"));
                 invoice.addItemWithIncludedIgv(
-                                new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
+                                new InvoiceItemDomain("Item 2","631210", "aaa", 1, new BigDecimal(20), "DSCTO"));
                 invoice.addItemWithIncludedIgv(
-                                new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
+                                new InvoiceItemDomain("Item 3","631210", "aaa", 1, new BigDecimal(30), "DSCTO"));
                 Mono<InvoiceDomain> invoiceMono = Mono
                                 .just(invoice);
                 StepVerifier.create(invoiceMono)
@@ -201,8 +201,8 @@ public class InvoiceTests {
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
                                 0);
                 invoice.addItem(
-                                new InvoiceItemDomain("Reserva Habitación Doble", "AAA", 1, new BigDecimal("100.00")));
-                invoice.addItem(new InvoiceItemDomain("Servicio WiFi", "CCC", 5, new BigDecimal("10.00")));
+                                new InvoiceItemDomain("Reserva Habitación Doble","631210", "AAA", 1, new BigDecimal("100.00"), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Servicio WiFi","631210", "CCC", 5, new BigDecimal("10.00"), "DSCTO"));
                 System.out.println("SUBTOTAL" + invoice.getSubtotal().doubleValue());
                 System.out.println("IGV" + invoice.getTotalIgv().doubleValue());
                 System.out.println("TOTAL" + invoice.getTotalPayment().doubleValue());
@@ -230,10 +230,10 @@ public class InvoiceTests {
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
                                 0);
                 invoice.addItemWithIncludedIgv(
-                                new InvoiceItemDomain("Reserva Habitación Doble", "AAA", 1, new BigDecimal("100.00")));
+                                new InvoiceItemDomain("Reserva Habitación Doble","631210", "AAA", 1, new BigDecimal("100.00"), "DSCTO"));
 
-                invoice.addItemWithIncludedIgv(new InvoiceItemDomain("Reserva Habitación Sencilla", "BBB", 1,
-                                new BigDecimal("100.00")));
+                invoice.addItemWithIncludedIgv(new InvoiceItemDomain("Reserva Habitación Sencilla","631210", "BBB", 1,
+                                new BigDecimal("100.00"), "DSCTO"));
                 /* invoice.addItemWithIncludedIgv( */
                 /*
                  * new InvoiceItemDomain("Servicio WiFi", "CCC", 3, new BigDecimal("10.00")));
@@ -264,7 +264,7 @@ public class InvoiceTests {
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.FACTURA,
                                 0);
                 invoice.addItemWithIncludedIgv(
-                                new InvoiceItemDomain("Reserva Habitación Doble", "AAA", 1, new BigDecimal("100.00")));
+                                new InvoiceItemDomain("Reserva Habitación Doble","631210", "AAA", 1, new BigDecimal("100.00"), "DSCTO"));
                 System.out.println("SUBTOTAL" + invoice.getSubtotal().doubleValue());
                 System.out.println("IGV" + invoice.getTotalIgv().doubleValue());
                 System.out.println("TOTAL" + invoice.getTotalPayment().doubleValue());
@@ -285,9 +285,9 @@ public class InvoiceTests {
                                 "", 1);
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 18, InvoiceCurrency.PEN, InvoiceType.BOLETA,
                                 0);
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
+                invoice.addItem(new InvoiceItemDomain("Item 2","631210", "aaa", 1, new BigDecimal(20), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Item 3","631210", "aaa", 1, new BigDecimal(30), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Item 1","631210", "aaa", 1, new BigDecimal(50), "DSCTO"));
                 invoice.calculatedTotals();
                 System.out.println(invoice);
                 Mono<InvoiceDomain> invoiceMono = Mono
@@ -307,9 +307,9 @@ public class InvoiceTests {
                                 "", 1);
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 18, InvoiceCurrency.PEN, InvoiceType.BOLETA,
                                 0);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
+                invoice.addItem(new InvoiceItemDomain("Item 1","631210", "aaa", 1, new BigDecimal(50), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Item 2","631210", "aaa", 1, new BigDecimal(20), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Item 3","631210", "aaa", 1, new BigDecimal(30), "DSCTO"));
                 Mono<InvoiceDomain> invoiceMono = Mono
                                 .just(invoice);
                 StepVerifier.create(invoiceMono).expectNextMatches(invoiceM -> {
@@ -392,9 +392,9 @@ public class InvoiceTests {
                 InvoiceDomain invoiceDomain = new InvoiceDomain(client, 82, 18, InvoiceCurrency.USD,
                                 InvoiceType.BOLETA,
                                 0);
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
+                invoiceDomain.addItem(new InvoiceItemDomain("Item 1","631210", "aaa", 1, new BigDecimal(50), "DSCTO"));
+                invoiceDomain.addItem(new InvoiceItemDomain("Item 2","631210", "aaa", 1, new BigDecimal(20), "DSCTO"));
+                invoiceDomain.addItem(new InvoiceItemDomain("Item 3","631210", "aaa", 1, new BigDecimal(30), "DSCTO"));
                 invoiceDomain.setKeySupplier("wdwdwd");
                 invoiceDomain.setSupplierNote("No se acepto tu factura");
                 invoiceDomain.setStatus(InvoiceStatus.REJECTED);
@@ -433,11 +433,11 @@ public class InvoiceTests {
                                 InvoiceType.FACTURA,
                                 0);
                 invoiceDomain.addItemWithIncludedIgv(
-                                new InvoiceItemDomain("Reserva Habitación Doble", "AAA", 2, new BigDecimal("100.00")));
-                invoiceDomain.addItemWithIncludedIgv(new InvoiceItemDomain("Reserva Habitación Sencilla", "BBB", 1,
-                                new BigDecimal("80.00")));
+                                new InvoiceItemDomain("Reserva Habitación Doble","631210", "AAA", 2, new BigDecimal("100.00"), "DSCTO"));
+                invoiceDomain.addItemWithIncludedIgv(new InvoiceItemDomain("Reserva Habitación Sencilla", "631210","BBB", 1,
+                                new BigDecimal("80.00"), "DSCTO"));
                 invoiceDomain.addItemWithIncludedIgv(
-                                new InvoiceItemDomain("Servicio WiFi", "CCC", 3, new BigDecimal("10.00")));
+                                new InvoiceItemDomain("Servicio WiFi","631210", "CCC", 3, new BigDecimal("10.00"), "DSCTO"));
                 invoiceDomain.setKeySupplier("wdwdwd");
                 invoiceDomain.setSupplierNote("No se acepto tu factura");
                 invoiceDomain.setLinkPdf("http://example.com");
@@ -483,9 +483,9 @@ public class InvoiceTests {
                 InvoiceDomain invoiceDomain = new InvoiceDomain(client, 82, 18, InvoiceCurrency.USD,
                                 InvoiceType.FACTURA,
                                 0);
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 1", "aaa1", 1, new BigDecimal(50)));
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 2", "aaa2", 1, new BigDecimal(20)));
-                invoiceDomain.addItem(new InvoiceItemDomain("Item 3", "aaa3", 1, new BigDecimal(30)));
+                invoiceDomain.addItem(new InvoiceItemDomain("Item 1","631210", "aaa1", 1, new BigDecimal(50), "DSCTO"));
+                invoiceDomain.addItem(new InvoiceItemDomain("Item 2", "631210","aaa2", 1, new BigDecimal(20), "DSCTO"));
+                invoiceDomain.addItem(new InvoiceItemDomain("Item 3", "631210","aaa3", 1, new BigDecimal(30), "DSCTO"));
                 invoiceDomain.setKeySupplier("wdwdwd");
                 invoiceDomain.setSupplierNote("No se acepto tu factura");
                 invoiceDomain.setStatus(InvoiceStatus.REJECTED);

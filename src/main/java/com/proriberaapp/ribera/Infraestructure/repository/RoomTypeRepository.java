@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
+import com.proriberaapp.ribera.Domain.dto.RoomTypeDto;
 import com.proriberaapp.ribera.Domain.entities.RoomTypeEntity;
 import com.proriberaapp.ribera.Domain.entities.RoomTypeViewEntity;
 
@@ -25,5 +26,11 @@ public interface RoomTypeRepository extends R2dbcRepository<RoomTypeEntity, Inte
             order by rt.roomtypeid asc
             """)
     Flux<RoomTypeViewEntity> findAllRoomTypeView();
+
+    @Query("""
+            SELECT * FROM
+            roomtype ORDER BY roomtypename
+            """)
+    Flux<RoomTypeDto> findAllRoomTypes();
 
 }

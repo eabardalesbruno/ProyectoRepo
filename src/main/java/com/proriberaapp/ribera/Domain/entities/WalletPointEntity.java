@@ -18,5 +18,5 @@ public class WalletPointEntity extends Auditable{
     @Column("userid")
     private Integer userId;
 
-    private Integer points;
+    private Double points;
 }

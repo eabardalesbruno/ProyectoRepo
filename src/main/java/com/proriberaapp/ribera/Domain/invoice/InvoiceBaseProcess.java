@@ -10,6 +10,7 @@ public abstract class InvoiceBaseProcess {
     protected abstract String getUrl();
 
     public WebClient configureFetch() {
+        System.out.println("URL API Sunat: " + this.getUrl());
         WebClient client = WebClient.create(this.getUrl());
         client.head().header("authorization", getToken());
         client.head().header("content-type ", MediaType.APPLICATION_JSON_VALUE);

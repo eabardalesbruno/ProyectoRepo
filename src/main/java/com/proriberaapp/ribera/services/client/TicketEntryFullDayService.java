@@ -4,6 +4,8 @@ import com.proriberaapp.ribera.Domain.entities.TicketEntryFullDayEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface TicketEntryFullDayService {
 
     Flux<TicketEntryFullDayEntity> getAllEntries();
@@ -19,5 +21,7 @@ public interface TicketEntryFullDayService {
     Mono<Void> updateEnabledDaysForall(String enabledDays);
 
     Flux<String> getEnabledDaysAll();
+
+    Mono<List<Integer>> getEnabledDays();
 
 }

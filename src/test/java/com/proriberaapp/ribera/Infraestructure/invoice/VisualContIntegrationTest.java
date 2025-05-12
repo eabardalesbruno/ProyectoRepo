@@ -83,7 +83,7 @@ public class VisualContIntegrationTest {
                                 "", 1);
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.FACTURA,
                                 0);
-                invoice.addItemWithIncludedIgv(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(58)));
+                invoice.addItemWithIncludedIgv(new InvoiceItemDomain("Item 1","631210", "aaa", 1, new BigDecimal(58), "DSCTO"));
                 Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice);
                 StepVerifier.create(response)
                                 .expectNextMatches(invoiceResponse -> {
@@ -101,9 +101,9 @@ public class VisualContIntegrationTest {
                                 "", 1);
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
                                 0);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
+                invoice.addItem(new InvoiceItemDomain("Item 1","631210", "aaa", 1, new BigDecimal(50), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Item 2","631210", "aaa", 1, new BigDecimal(20), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Item 3","631210", "aaa", 1, new BigDecimal(30), "DSCTO"));
                 invoice.calculatedTotals();
                 Mono<InvoiceResponse> response = sunatInvoice.sendInvoice(invoice);
 
@@ -122,9 +122,9 @@ public class VisualContIntegrationTest {
                                 "", 1);
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
                                 0);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
+                invoice.addItem(new InvoiceItemDomain("Item 1","631210", "aaa", 1, new BigDecimal(50), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Item 2","631210", "aaa", 1, new BigDecimal(20), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Item 3","631210", "aaa", 1, new BigDecimal(30), "DSCTO"));
                 JSONObject json = sunatInvoice.formatJson(invoice);
                 StepVerifier.create(Mono.just(json))
                                 .expectNextMatches(jsonObject -> {
@@ -155,9 +155,9 @@ public class VisualContIntegrationTest {
                                 "", 1);
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
                                 0);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
+                invoice.addItem(new InvoiceItemDomain("Item 1","631210", "aaa", 1, new BigDecimal(50), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Item 2","631210", "aaa", 1, new BigDecimal(20), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Item 3","631210", "aaa", 1, new BigDecimal(30), "DSCTO"));
                 JSONObject json = sunatInvoice.formatJson(invoice);
                 StepVerifier.create(Mono.just(json))
                                 .expectNextMatches(jsonObject -> {
@@ -186,9 +186,9 @@ public class VisualContIntegrationTest {
                                 "", 1);
                 InvoiceDomain invoice = new InvoiceDomain(client, 1, 19.0, InvoiceCurrency.PEN, InvoiceType.BOLETA,
                                 0);
-                invoice.addItem(new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(50)));
-                invoice.addItem(new InvoiceItemDomain("Item 2", "aaa", 1, new BigDecimal(20)));
-                invoice.addItem(new InvoiceItemDomain("Item 3", "aaa", 1, new BigDecimal(30)));
+                invoice.addItem(new InvoiceItemDomain("Item 1","631210", "aaa", 1, new BigDecimal(50), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Item 2","631210", "aaa", 1, new BigDecimal(20), "DSCTO"));
+                invoice.addItem(new InvoiceItemDomain("Item 3","631210", "aaa", 1, new BigDecimal(30), "DSCTO"));
                 invoice.calculatedTotals();
                 JSONObject json = sunatInvoice.formatJson(invoice);
                 StepVerifier.create(Mono.just(json))
@@ -239,7 +239,7 @@ public class VisualContIntegrationTest {
                 InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN,
                                 InvoiceType.BOLETA, 0);
                 invoiceDomain.addItemWithIncludedIgv(
-                                new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(100)));
+                                new InvoiceItemDomain("Item 1","631210", "aaa", 1, new BigDecimal(100), "DSCTO"));
                 Mono<InvoiceTypeEntity> invoiceTypeEntity = this.invoiceTypeRepsitory
                                 .findByName(invoiceDomain.getType())
                                 .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid type")));
@@ -334,7 +334,7 @@ public class VisualContIntegrationTest {
                 InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN,
                                 InvoiceType.BOLETA, 0);
                 invoiceDomain.addItemWithIncludedIgv(
-                                new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(100)));
+                                new InvoiceItemDomain("Item 1", "631210","aaa", 1, new BigDecimal(100), "DSCTO"));
                 StepVerifier.create(this.invoiceService.save(invoiceDomain)).verifyComplete();
         }
 
@@ -346,7 +346,7 @@ public class VisualContIntegrationTest {
                 InvoiceDomain invoiceDomain = new InvoiceDomain(client, 1, 18.0, InvoiceCurrency.PEN,
                                 InvoiceType.BOLETA, 10);
                 invoiceDomain.addItemWithIncludedIgv(
-                                new InvoiceItemDomain("Item 1", "aaa", 1, new BigDecimal(100)));
+                                new InvoiceItemDomain("Item 1", "631210","aaa", 1, new BigDecimal(100), "DSCTO"));
 
                 StepVerifier.create(this.invoiceService.save(invoiceDomain)).verifyComplete();
         }
