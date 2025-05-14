@@ -272,9 +272,19 @@ public class UserController {
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(e.getMessage())));
     }
 
-    @GetMapping
+    @GetMapping("/not-in-club")
     public Flux<UserClientEntity> getAllUserClientsNotInClub() {
         return userClientService.findAllUserByNotMember();
+    }
+
+    @GetMapping()
+    public Flux<UserClientEntity> getAllUserClients() {
+        return userClientService.findAll();
+    }
+
+    @GetMapping("/find/{id}")
+    public Mono<UserClientEntity> findUserById(@PathVariable Integer id) {
+        return userClientService.findById(id);
     }
 
     /*
