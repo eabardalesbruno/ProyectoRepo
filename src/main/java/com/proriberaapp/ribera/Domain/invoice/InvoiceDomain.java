@@ -38,7 +38,11 @@ public class InvoiceDomain {
     private BigDecimal totalDiscount;
     private double percentajeDiscount;
     private double tc = 3.2;
-    private List<String> invoice_notes;
+    private List<String> invoice_notes = new ArrayList<>();
+
+    public List<String> getInvoice_notes() {
+        return invoice_notes != null ? invoice_notes : new ArrayList<>();
+    }
 
     public InvoiceDomain(InvoiceClientDomain client, Integer paymentBookId, double percentajeIgv,
             InvoiceCurrency currency,
