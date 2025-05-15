@@ -86,6 +86,21 @@ public class RoomOfferController {
 
     }
 
+    @GetMapping("/getDepartments")
+    public Flux<ViewRoomOfferReturn> getDepartments(
+            @RequestParam(required = false) Integer roomTypeId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate offerTimeInit,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDate offerTimeEnd,
+            @RequestParam(required = false) Integer infantCapacity,
+            @RequestParam(required = false) Integer kidCapacity,
+            @RequestParam(required = false) Integer adultCapacity,
+            @RequestParam(required = false) Integer adultMayorCapacity,
+            @RequestParam(required = false) Integer adultExtra) {
+
+        return roomOfferService.findDepartments(roomTypeId, offerTimeInit, offerTimeEnd, infantCapacity, kidCapacity,
+                adultCapacity, adultMayorCapacity, adultExtra);
+    }
+
     @PostMapping
     public Mono<RoomOfferEntity> saveRoomOffer(@RequestBody RoomOfferEntity roomOfferEntity) {
         return roomOfferService.save(roomOfferEntity);
