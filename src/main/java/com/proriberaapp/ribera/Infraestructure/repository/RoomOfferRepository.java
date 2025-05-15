@@ -150,36 +150,36 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
             Integer adultExtra);
 
     @Query(value = """
-            SELECT DISTINCT v.*, r.roomofferid,r.state, r.numberdays
-            FROM roomoffer r
-            JOIN viewroomofferreturn v ON r.roomofferid = v.roomofferid
-            WHERE r.roomofferid IN (
-                SELECT MIN(r2.roomofferid)
-                FROM roomoffer r2
-                JOIN viewroomofferreturn v2 ON r2.roomofferid = v2.roomofferid
-                WHERE
-                    (:roomTypeId IS NULL OR v2.roomtypeid = :roomTypeId)
-                    AND (:infantCapacity IS NULL OR v2.infantcapacity >= :infantCapacity)
-                    AND (:kidCapacity IS NULL OR v2.kidcapacity >= :kidCapacity)
-                    AND (:adultCapacity IS NULL OR v2.adultcapacity >= :adultCapacity)
-                    AND (:adultMayorCapacity IS NULL OR v2.adultmayorcapacity >= :adultMayorCapacity)
-                    AND (:adultExtra IS NULL OR v2.adultextra >= :adultExtra)
-                    AND (
-                        (:offerTimeInit IS NULL AND :offerTimeEnd IS NULL) OR
-                        (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NULL AND
-                            DATE(:offerTimeInit) BETWEEN DATE(r2.offertimeinit) AND DATE(r2.offertimeend)
-                        ) OR
-                        (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NOT NULL AND
-                            (
-                                DATE(r2.offertimeend) BETWEEN DATE(:offerTimeInit) AND DATE(:offerTimeEnd) OR
-                                DATE(:offerTimeInit) BETWEEN DATE(r2.offertimeinit) AND DATE(r2.offertimeend) OR
-                                DATE(:offerTimeEnd) BETWEEN DATE(r2.offertimeinit) AND DATE(r2.offertimeend)
-                            )
+            SELECT v.*, r.state, r.numberdays
+                        FROM roomoffer r
+                        JOIN viewroomofferreturn v ON r.roomofferid = v.roomofferid
+                        WHERE r.roomofferid IN (
+                            SELECT MIN(r2.roomofferid)
+                            FROM roomoffer r2
+                            JOIN viewroomofferreturn v2 ON r2.roomofferid = v2.roomofferid
+                            WHERE
+                                (:roomTypeId IS NULL OR v2.roomtypeid = :roomTypeId)
+                                AND (:infantCapacity IS NULL OR v2.infantcapacity >= :infantCapacity)
+                                AND (:kidCapacity IS NULL OR v2.kidcapacity >= :kidCapacity)
+                                AND (:adultCapacity IS NULL OR v2.adultcapacity >= :adultCapacity)
+                                AND (:adultMayorCapacity IS NULL OR v2.adultmayorcapacity >= :adultMayorCapacity)
+                                AND (:adultExtra IS NULL OR v2.adultextra >= :adultExtra)
+                                AND (
+                                    (:offerTimeInit IS NULL AND :offerTimeEnd IS NULL) OR
+                                    (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NULL AND
+                                        DATE(:offerTimeInit) BETWEEN DATE(r2.offertimeinit) AND DATE(r2.offertimeend)
+                                    ) OR
+                                    (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NOT NULL AND
+                                        (
+                                            DATE(r2.offertimeend) BETWEEN DATE(:offerTimeInit) AND DATE(:offerTimeEnd) OR
+                                            DATE(:offerTimeInit) BETWEEN DATE(r2.offertimeinit) AND DATE(r2.offertimeend) OR
+                                            DATE(:offerTimeEnd) BETWEEN DATE(r2.offertimeinit) AND DATE(r2.offertimeend)
+                                        )
+                                    )
+                                )
+                            GROUP BY v2.roomtypeid
                         )
-                    )
-                GROUP BY v2.roomtypeid
-            )
-            ORDER BY r.roomofferid ASC;
+                        ORDER BY r.roomofferid ASC;
             """)
     Flux<ViewRoomOfferReturn> findDepartments(Integer roomTypeId, LocalDate offerTimeInit, LocalDate offerTimeEnd,
                                               Integer infantCapacity, Integer kidCapacity, Integer adultCapacity,
