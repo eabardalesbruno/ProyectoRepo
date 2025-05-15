@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto;
+import com.proriberaapp.ribera.Api.controllers.client.dto.DetailBookInvoiceDto;
 import com.proriberaapp.ribera.Domain.dto.DetailEmailFulldayDto;
 import com.proriberaapp.ribera.Domain.dto.FullDayDetailDTO;
 import com.proriberaapp.ribera.Domain.entities.*;
@@ -267,6 +268,9 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                         String normalizedRoomOrType = normalizeText(roomOrType);
                         Integer fulldayId = paymentBook.getFulldayid();
 
+                        Mono<BookingEntity> bookingEntity = bookingRepository.findByBookingId(paymentBook.getBookingid());
+                        Mono<DetailBookInvoiceDto> detailBookInvoice = bookingRepository.getDetailBookInvoice(paymentBook.getBookingid());
+
                         Mono<List<FullDayDetailDTO>> fulldayDetailsMono = paymentBookRepository.findByFullDayId(fulldayId).collectList();
 
                         Mono<String> codSunatMono = this.productSunatRepository.findAll()
@@ -275,10 +279,12 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                 .defaultIfEmpty("631210")
                                 .next();
 
-                        return Mono.zip(codSunatMono, fulldayDetailsMono)
+                        return Mono.zip(codSunatMono, fulldayDetailsMono, bookingEntity, detailBookInvoice)
                                 .flatMap(tuple -> {
                                     String codSunat = tuple.getT1();
                                     List<FullDayDetailDTO> fullDayDetails = tuple.getT2();
+                                    BookingEntity booking = tuple.getT3();
+                                    DetailBookInvoiceDto detailBook = tuple.getT4();
 
                                     InvoiceClientDomain clientDomain = new InvoiceClientDomain(
                                             paymentBook.getUsername(),
@@ -322,6 +328,11 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                     }
 
                                     invoiceDomain.calculatedTotals();
+                                    List<String> invoice_notes = new ArrayList<>();
+                                    invoice_notes.add("ALOJAMIENTO: "+ (booking.getNumberAdults() + booking.getNumberAdultsMayor() + booking.getNumberAdultsExtra())+" ADULTOS + " + (booking.getNumberChildren())+" NIÑOS");
+                                    invoice_notes.add(detailBook.getCheckin()+" "+detailBook.getCheckout());
+                                    invoice_notes.add("INCLUYE DESAYUNO");
+                                    invoiceDomain.setInvoice_notes(invoice_notes);
 
                                     if (paymentBook.getRoomname() != null) {
                                         return generatePaymentConfirmationEmailBody(paymentBookId)
