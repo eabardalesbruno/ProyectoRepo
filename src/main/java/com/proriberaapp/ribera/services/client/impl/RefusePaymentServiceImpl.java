@@ -4,7 +4,6 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.DetailBookInvoiceDto;
 import com.proriberaapp.ribera.Domain.dto.DetailEmailFulldayDto;
 import com.proriberaapp.ribera.Domain.dto.FullDayDetailDTO;
-import com.proriberaapp.ribera.Domain.dto.PaymentBookUserDTO;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
@@ -39,28 +38,28 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
         /*
          * private final RefusePaymentRepository refusePaymentRepository;
          * private final PaymentBookRepository paymentBookRepository;
-         *
+         * 
          * public RefusePaymentServiceImpl(RefusePaymentRepository
          * refusePaymentRepository, PaymentBookRepository paymentBookRepository) {
          * this.refusePaymentRepository = refusePaymentRepository;
          * this.paymentBookRepository = paymentBookRepository;
          * }
-         *
+         * 
          * @Override
          * public Flux<RefusePaymentEntity> getAllRefusePayments() {
          * return refusePaymentRepository.findAll();
          * }
-         *
+         * 
          * @Override
          * public Flux<RefuseEntity> getAllRefuseReason() {
          * return refusePaymentRepository.findAllWhereRefuseReasonIdNotEqualToOne();
          * }
-         *
+         * 
          * @Override
          * public Mono<RefusePaymentEntity> getRefusePaymentById(Integer id) {
          * return refusePaymentRepository.findById(id);
          * }
-         *
+         * 
          * @Override
          * public Mono<RefusePaymentEntity> saveRefusePayment(RefusePaymentEntity
          * refusePayment) {
@@ -74,15 +73,13 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
          * .then(Mono.just(savedRefusePayment));
          * });
          * }
-         *
+         * 
          * @Override
          * public Mono<Void> deleteRefusePayment(Integer id) {
          * return refusePaymentRepository.deleteById(id);
          * }
          */
-    private static final String DEFAULT_SUNAT_CODE = "631210";
-
-    private final RefusePaymentRepository refusePaymentRepository;
+        private final RefusePaymentRepository refusePaymentRepository;
         private final PaymentBookRepository paymentBookRepository;
         private final UserClientRepository userClientRepository;
         private final RoomOfferRepository roomOfferRepository;

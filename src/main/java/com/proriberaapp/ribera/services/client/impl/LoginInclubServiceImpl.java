@@ -51,8 +51,6 @@ public class LoginInclubServiceImpl implements LoginInclubService {
         return Mono.zip(this.verifiedCredentialsInclub(userName, password),
                         authenticateBackOffice(userName, password))
                 .flatMap(data -> {
-                    System.out.println(data.getT1());
-                    System.out.println(data.getT2());
                     ResponseValidateCredential responseValidate = data.getT1();
                     String tokenBackOffice = data.getT2();
                     if (!responseValidate.isData()) {

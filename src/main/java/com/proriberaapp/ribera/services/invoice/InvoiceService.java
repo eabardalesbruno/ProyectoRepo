@@ -93,31 +93,31 @@ public class InvoiceService implements InvoiceServiceI {
                                 .collect(Collectors.toList());
                 if (invoiceDomain.getType() == InvoiceType.FACTURA.name()) {
                         invoiceDomainaMono = invoiceDomainaMono
-                                .zipWith(this.userClientService
-                                        .loadDataRuc(invoiceDomain.getClient().getIdentifier()))
-                                .map(tuple -> {
-                                        CompanyDataDto companyData = tuple.getT2();
-                                        invoiceDomain.getClient().setAddress(companyData.getDireccion());
-                                        invoiceDomain.getClient().setName(companyData.getRazonSocial());
-                                        return invoiceDomain;
-                                });
+                                        .zipWith(this.userClientService
+                                                        .loadDataRuc(invoiceDomain.getClient().getIdentifier()))
+                                        .map(tuple -> {
+                                                CompanyDataDto companyData = tuple.getT2();
+                                                invoiceDomain.getClient().setAddress(companyData.getDireccion());
+                                                invoiceDomain.getClient().setName(companyData.getRazonSocial());
+                                                return invoiceDomain;
+                                        });
                 }
                 if (invoiceDomain.getCurrency().equals(InvoiceCurrency.USD)) {
                         invoiceDomainaMono = invoiceDomainaMono
-                                .zipWith(this.loadChangeCurrency())
-                                .map(tuple -> {
-                                        ChangeCurrencyDto currencyType = tuple.getT2();
-                                        invoiceDomain.setTc(currencyType.getPrecioVenta());
-                                        return invoiceDomain;
-                                });
+                                        .zipWith(this.loadChangeCurrency())
+                                        .map(tuple -> {
+                                                ChangeCurrencyDto currencyType = tuple.getT2();
+                                                invoiceDomain.setTc(currencyType.getPrecioVenta());
+                                                return invoiceDomain;
+                                        });
                 }
 
                 Mono<InvoiceTypeEntity> invoiceTypeEntity = this.invoiceTypeRepsitory
-                        .findByName(invoiceDomain.getType())
-                        .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid type")));
+                                .findByName(invoiceDomain.getType())
+                                .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid type")));
                 Mono<CurrencyTypeEntity> currencyTypeEntity = this.currencyTypeRepository
-                        .findByCurrencyTypeName(invoiceDomain.getCurrency().getCurrency())
-                        .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid currency")));
+                                .findByCurrencyTypeName(invoiceDomain.getCurrency().getCurrency())
+                                .switchIfEmpty(Mono.error(new IllegalArgumentException("Invalid currency")));
                 Mono<InvoiceResponse> response = Mono.zip(invoiceDomainaMono, invoiceTypeEntity).flatMap(tuple -> {
                         InvoiceDomain invoice = tuple.getT1();
                         InvoiceTypeEntity invoiceType = tuple.getT2();
