@@ -29,6 +29,10 @@ public interface RoomOfferService extends BaseService<RoomOfferEntity, RoomOffer
                         Integer infantCapacity, Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
                         Integer adultExtra);
 
+        Flux<ViewRoomOfferReturn> findDepartments(Integer roomTypeId, LocalDate offerTimeInit, LocalDate offerTimeEnd,
+                                                  Integer infantCapacity, Integer kidCapacity, Integer adultCapacity,
+                                                  Integer adultMayorCapacity, Integer adultExtra);
+
         Mono<ViewRoomOfferReturn> findRoomOfferById(Integer id);
 
 }
