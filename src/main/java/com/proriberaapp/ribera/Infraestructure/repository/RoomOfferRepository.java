@@ -150,7 +150,7 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
             Integer adultExtra);
 
     @Query(value = """
-            SELECT v.*, r.state, r.numberdays
+            SELECT DISTINCT v.*, r.roomofferid,r.state, r.numberdays
             FROM roomoffer r
             JOIN viewroomofferreturn v ON r.roomofferid = v.roomofferid
             WHERE r.roomofferid IN (
@@ -177,7 +177,7 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
                             )
                         )
                     )
-                GROUP BY v2.roomtypeid  -- Agrupa por tipo de habitación
+                GROUP BY v2.roomtypeid
             )
             ORDER BY r.roomofferid ASC;
             """)
