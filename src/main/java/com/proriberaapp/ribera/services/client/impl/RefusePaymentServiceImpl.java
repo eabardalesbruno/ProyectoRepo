@@ -1,8 +1,10 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto;
+import com.proriberaapp.ribera.Api.controllers.client.dto.DetailBookInvoiceDto;
 import com.proriberaapp.ribera.Domain.dto.DetailEmailFulldayDto;
 import com.proriberaapp.ribera.Domain.dto.FullDayDetailDTO;
+import com.proriberaapp.ribera.Domain.dto.PaymentBookUserDTO;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
@@ -37,28 +39,28 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
         /*
          * private final RefusePaymentRepository refusePaymentRepository;
          * private final PaymentBookRepository paymentBookRepository;
-         * 
+         *
          * public RefusePaymentServiceImpl(RefusePaymentRepository
          * refusePaymentRepository, PaymentBookRepository paymentBookRepository) {
          * this.refusePaymentRepository = refusePaymentRepository;
          * this.paymentBookRepository = paymentBookRepository;
          * }
-         * 
+         *
          * @Override
          * public Flux<RefusePaymentEntity> getAllRefusePayments() {
          * return refusePaymentRepository.findAll();
          * }
-         * 
+         *
          * @Override
          * public Flux<RefuseEntity> getAllRefuseReason() {
          * return refusePaymentRepository.findAllWhereRefuseReasonIdNotEqualToOne();
          * }
-         * 
+         *
          * @Override
          * public Mono<RefusePaymentEntity> getRefusePaymentById(Integer id) {
          * return refusePaymentRepository.findById(id);
          * }
-         * 
+         *
          * @Override
          * public Mono<RefusePaymentEntity> saveRefusePayment(RefusePaymentEntity
          * refusePayment) {
@@ -72,13 +74,15 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
          * .then(Mono.just(savedRefusePayment));
          * });
          * }
-         * 
+         *
          * @Override
          * public Mono<Void> deleteRefusePayment(Integer id) {
          * return refusePaymentRepository.deleteById(id);
          * }
          */
-        private final RefusePaymentRepository refusePaymentRepository;
+    private static final String DEFAULT_SUNAT_CODE = "631210";
+
+    private final RefusePaymentRepository refusePaymentRepository;
         private final PaymentBookRepository paymentBookRepository;
         private final UserClientRepository userClientRepository;
         private final RoomOfferRepository roomOfferRepository;
@@ -267,6 +271,9 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                         String normalizedRoomOrType = normalizeText(roomOrType);
                         Integer fulldayId = paymentBook.getFulldayid();
 
+                        Mono<BookingEntity> bookingEntity = bookingRepository.findByBookingId(paymentBook.getBookingid());
+                        Mono<DetailBookInvoiceDto> detailBookInvoice = bookingRepository.getDetailBookInvoice(paymentBook.getBookingid());
+
                         Mono<List<FullDayDetailDTO>> fulldayDetailsMono = paymentBookRepository.findByFullDayId(fulldayId).collectList();
 
                         Mono<String> codSunatMono = this.productSunatRepository.findAll()
@@ -275,10 +282,12 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                 .defaultIfEmpty("631210")
                                 .next();
 
-                        return Mono.zip(codSunatMono, fulldayDetailsMono)
+                        return Mono.zip(codSunatMono, fulldayDetailsMono, bookingEntity, detailBookInvoice)
                                 .flatMap(tuple -> {
                                     String codSunat = tuple.getT1();
                                     List<FullDayDetailDTO> fullDayDetails = tuple.getT2();
+                                    BookingEntity booking = tuple.getT3();
+                                    DetailBookInvoiceDto detailBook = tuple.getT4();
 
                                     InvoiceClientDomain clientDomain = new InvoiceClientDomain(
                                             paymentBook.getUsername(),
@@ -322,6 +331,11 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                     }
 
                                     invoiceDomain.calculatedTotals();
+                                    List<String> invoice_notes = new ArrayList<>();
+                                    invoice_notes.add("ALOJAMIENTO: "+ (booking.getNumberAdults() + booking.getNumberAdultsMayor() + booking.getNumberAdultsExtra())+" ADULTOS + " + (booking.getNumberChildren())+" NIÑOS");
+                                    invoice_notes.add(detailBook.getCheckin()+" "+detailBook.getCheckout());
+                                    invoice_notes.add("INCLUYE DESAYUNO");
+                                    invoiceDomain.setInvoice_notes(invoice_notes);
 
                                     if (paymentBook.getRoomname() != null) {
                                         return generatePaymentConfirmationEmailBody(paymentBookId)
