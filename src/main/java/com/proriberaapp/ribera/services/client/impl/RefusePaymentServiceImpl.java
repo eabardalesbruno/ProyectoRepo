@@ -297,14 +297,17 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
 
                                     InvoiceDomain invoiceDomain = new InvoiceDomain(
                                         clientDomain,
-                                        paymentBook.getPaymentbookid(), 18, invoiceCurrency,
-                                        type, paymentBook.getPercentagediscount());
+                                        paymentBook.getPaymentbookid(),
+                                        10,
+                                        invoiceCurrency,
+                                        type,
+                                        paymentBook.getPercentagediscount());
                                     invoiceDomain.setOperationCode(paymentBook.getOperationcode());
 
-                                    List<InvoiceItemDomain> invoiceItems = new ArrayList<>();
+                                    List<InvoiceItemDomain> items = new ArrayList<>();
 
                                     if (paymentBook.getRoomname() != null) {
-                                        invoiceItems.add(new InvoiceItemDomain(
+                                        items.add(new InvoiceItemDomain(
                                             roomOrType,
                                             codSunat,
                                             roomOrType,
@@ -315,7 +318,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                         for (FullDayDetailDTO detail : fullDayDetails) {
                                             String sunatCode = getSunatCode(paymentBook.getType(), detail.getTypePerson());
                                             String itemDescription = getItemDescription(paymentBook.getType(), detail.getTypePerson());
-                                            invoiceItems.add(new InvoiceItemDomain(
+                                            items.add(new InvoiceItemDomain(
                                                 itemDescription,
                                                 sunatCode,
                                                 itemDescription,
@@ -324,7 +327,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                             ));
                                         }
                                     }
-
+                                    invoiceDomain.addItemsWithIncludedIgv(items);
                                     invoiceDomain.calculatedTotals();
                                     List<String> invoice_notes = new ArrayList<>();
                                     invoice_notes.add("ALOJAMIENTO: "+ (booking.getNumberAdults() + booking.getNumberAdultsMayor() + booking.getNumberAdultsExtra())+" ADULTOS + " + (booking.getNumberChildren())+" NIÑOS");
