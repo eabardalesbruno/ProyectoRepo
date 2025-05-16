@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.DetailBookInvoiceDto;
 import com.proriberaapp.ribera.Domain.dto.DetailEmailFulldayDto;
 import com.proriberaapp.ribera.Domain.dto.FullDayDetailDTO;
+import com.proriberaapp.ribera.Domain.dto.PaymentBookUserDTO;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
@@ -256,121 +257,120 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
 
     @Override
     public Mono<Void> updatePendingPayAndSendConfirmation(Integer paymentBookId) {
-        return this.paymentBookRepository
-                .loadUserDataAndBookingData(paymentBookId)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("El ID de pago no existe")))
-                .flatMap(paymentBook -> {
-                    if (paymentBook.getPendingpay() == 0) {
-                        paymentBook.setPaymentstateid(2);
-                        paymentBook.setPendingpay(1);
+        return paymentBookRepository.loadUserDataAndBookingData(paymentBookId)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("Payment ID does not exist")))
+            .flatMap(paymentBook -> {
+                if (paymentBook.getPendingpay() != 0) {
+                    return Mono.empty(); // Payment already processed
+                }
+                updatePaymentBookState(paymentBook);
+                Mono<BookingEntity> bookingEntityMono = bookingRepository.findByBookingId(paymentBook.getBookingid());
+                Mono<DetailBookInvoiceDto> detailInvoiceMono = bookingRepository.getDetailBookInvoice(paymentBook.getBookingid());
+                Mono<List<FullDayDetailDTO>> fullDayDetailsMono = paymentBookRepository.findByFullDayId(paymentBook.getFulldayid()).collectList();
+                String roomOrType = Optional.ofNullable(paymentBook.getRoomname()).orElse(paymentBook.getType());
+                String normalizedRoomOrType = normalizeText(roomOrType);
+                Mono<String> codSunatMono = productSunatRepository.findAll()
+                    .filter(product -> normalizeText(product.getDescription()).equals(normalizedRoomOrType))
+                    .map(ProductSunatDomain::getCodSunat)
+                    .defaultIfEmpty("631210")
+                    .next();
 
-                        String roomOrType = paymentBook.getRoomname() != null ? paymentBook.getRoomname() : paymentBook.getType();
-                        String normalizedRoomOrType = normalizeText(roomOrType);
-                        Integer fulldayId = paymentBook.getFulldayid();
-                        Mono<BookingEntity> bookingEntity = bookingRepository.findByBookingId(paymentBook.getBookingid());
-                        Mono<DetailBookInvoiceDto> detailBookInvoice = bookingRepository.getDetailBookInvoice(paymentBook.getBookingid());
-                        Mono<List<FullDayDetailDTO>> fulldayDetailsMono = paymentBookRepository.findByFullDayId(fulldayId).collectList();
+                return Mono.zip(codSunatMono, fullDayDetailsMono, bookingEntityMono, detailInvoiceMono)
+                    .flatMap(tuple -> {
+                        String codSunat = tuple.getT1();
+                        List<FullDayDetailDTO> fullDayDetails = tuple.getT2();
+                        BookingEntity booking = tuple.getT3();
+                        DetailBookInvoiceDto detailInvoice = tuple.getT4();
 
-                        Mono<String> codSunatMono = this.productSunatRepository.findAll()
-                                .filter(product -> normalizeText(product.getDescription()).equals(normalizedRoomOrType))
-                                .map(ProductSunatDomain::getCodSunat)
-                                .defaultIfEmpty("631210")
-                                .next();
+                        InvoiceDomain invoiceDomain = buildInvoiceDomain(paymentBook, codSunat, fullDayDetails);
+                        List<String> invoiceNotes = generateInvoiceNotes(booking, detailInvoice);
+                        invoiceDomain.setInvoice_notes(invoiceNotes);
 
-                        return Mono.zip(codSunatMono, fulldayDetailsMono, bookingEntity, detailBookInvoice)
-                                .flatMap(tuple -> {
-                                    String codSunat = tuple.getT1();
-                                    List<FullDayDetailDTO> fullDayDetails = tuple.getT2();
-                                    BookingEntity booking = tuple.getT3();
-                                    DetailBookInvoiceDto detailBook = tuple.getT4();
+                        return handleInvoiceFlow(paymentBook, invoiceDomain, paymentBookId);
+                    });
+            });
+    }
 
-                                    InvoiceClientDomain clientDomain = new InvoiceClientDomain(
-                                        paymentBook.getUsername(),
-                                        paymentBook.getInvoicedocumentnumber(),
-                                        paymentBook.getUseraddress(),
-                                        paymentBook.getUserphone(),
-                                        paymentBook.getUseremail(),
-                                        paymentBook.getUserclientid());
+    private void updatePaymentBookState(PaymentBookUserDTO paymentBook) {
+        paymentBook.setPaymentstateid(2);
+        paymentBook.setPendingpay(1);
+    }
 
-                                    InvoiceCurrency invoiceCurrency = InvoiceCurrency.getInvoiceCurrencyByCurrency(paymentBook.getCurrencytypename());
-                                    InvoiceType type = InvoiceType.getInvoiceTypeByName(paymentBook.getInvoicetype().toUpperCase());
+    private InvoiceDomain buildInvoiceDomain(PaymentBookUserDTO paymentBook, String codSunat, List<FullDayDetailDTO> fullDayDetails) {
+        InvoiceClientDomain client = new InvoiceClientDomain(
+            paymentBook.getUsername(),
+            paymentBook.getInvoicedocumentnumber(),
+            paymentBook.getUseraddress(),
+            paymentBook.getUserphone(),
+            paymentBook.getUseremail(),
+            paymentBook.getUserclientid()
+        );
 
-                                    InvoiceDomain invoiceDomain = new InvoiceDomain(
-                                        clientDomain,
-                                        paymentBook.getPaymentbookid(),
-                                        10,
-                                        invoiceCurrency,
-                                        type,
-                                        paymentBook.getPercentagediscount());
-                                    invoiceDomain.setOperationCode(paymentBook.getOperationcode());
+        InvoiceCurrency currency = InvoiceCurrency.getInvoiceCurrencyByCurrency(paymentBook.getCurrencytypename());
+        InvoiceType invoiceType = InvoiceType.getInvoiceTypeByName(paymentBook.getInvoicetype().toUpperCase());
+        InvoiceDomain invoice = new InvoiceDomain(client,
+            paymentBook.getPaymentbookid(),
+            10,
+            currency,
+            invoiceType,
+            paymentBook.getPercentagediscount());
+        invoice.setOperationCode(paymentBook.getOperationcode());
+        List<InvoiceItemDomain> items = new ArrayList<>();
+        if (paymentBook.getRoomname() != null) {
+            items.add(new InvoiceItemDomain(
+                paymentBook.getRoomname(),
+                codSunat,
+                paymentBook.getRoomname(),
+                1,
+                BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount()),
+                ""
+            ));
+        } else {
+            for (FullDayDetailDTO detail : fullDayDetails) {
+                String sunatCode = getSunatCode(paymentBook.getType(), detail.getTypePerson());
+                String description = getItemDescription(paymentBook.getType(), detail.getTypePerson());
+                items.add(new InvoiceItemDomain(description, sunatCode, description, detail.getQuantity(), detail.getFinalPrice(), ""));
+            }
+        }
+        invoice.addItemsWithIncludedIgv(items);
+        invoice.calculatedTotals();
+        return invoice;
+    }
 
-                                    List<InvoiceItemDomain> items = new ArrayList<>();
+    private List<String> generateInvoiceNotes(BookingEntity booking, DetailBookInvoiceDto detailInvoice) {
+        List<String> notes = new ArrayList<>();
+        int totalAdults = booking.getNumberAdults() + booking.getNumberAdultsMayor() + booking.getNumberAdultsExtra();
+        notes.add("ALOJAMIENTO: " + totalAdults + " ADULTOS + " + booking.getNumberChildren() + " NIÑOS");
+        notes.add(detailInvoice.getCheckin() + " " + detailInvoice.getCheckout());
+        notes.add("INCLUYE DESAYUNO");
+        return notes;
+    }
 
-                                    if (paymentBook.getRoomname() != null) {
-                                        items.add(new InvoiceItemDomain(
-                                            roomOrType,
-                                            codSunat,
-                                            roomOrType,
-                                            1,
-                                            BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount()),""
-                                        ));
-                                    } else {
-                                        for (FullDayDetailDTO detail : fullDayDetails) {
-                                            String sunatCode = getSunatCode(paymentBook.getType(), detail.getTypePerson());
-                                            String itemDescription = getItemDescription(paymentBook.getType(), detail.getTypePerson());
-                                            items.add(new InvoiceItemDomain(
-                                                itemDescription,
-                                                sunatCode,
-                                                itemDescription,
-                                                detail.getQuantity(),
-                                                detail.getFinalPrice(), ""
-                                            ));
-                                        }
-                                    }
-                                    invoiceDomain.addItemsWithIncludedIgv(items);
-                                    invoiceDomain.calculatedTotals();
-                                    List<String> invoice_notes = new ArrayList<>();
-                                    invoice_notes.add("ALOJAMIENTO: "+ (booking.getNumberAdults() + booking.getNumberAdultsMayor() + booking.getNumberAdultsExtra())+" ADULTOS + " + (booking.getNumberChildren())+" NIÑOS");
-                                    invoice_notes.add(detailBook.getCheckin()+" "+detailBook.getCheckout());
-                                    invoice_notes.add("INCLUYE DESAYUNO");
-                                    invoiceDomain.setInvoice_notes(invoice_notes);
+    private Mono<Void> handleInvoiceFlow(PaymentBookUserDTO paymentBook, InvoiceDomain invoiceDomain, Integer paymentBookId) {
+        if (paymentBook.getRoomname() != null) {
+            return generatePaymentConfirmationEmailBody(paymentBookId)
+                .flatMap(emailBody -> invoiceService.save(invoiceDomain)
+                    .then(Mono.zip(
+                        paymentBookRepository.confirmPayment(paymentBookId),
+                        emailService.sendEmail(paymentBook.getUseremail(), "Confirmación de Pago Aceptado", emailBody)))
+                    .then());
+        }
 
-                                    if (paymentBook.getRoomname() != null) {
-                                        return generatePaymentConfirmationEmailBody(paymentBookId)
-                                            .flatMap(emailBody -> this.invoiceService.save(invoiceDomain)
-                                                .then(Mono.zip(
-                                                    paymentBookRepository.confirmPayment(paymentBookId),
-                                                    this.emailService.sendEmail(
-                                                        paymentBook.getUseremail(),
-                                                        "Confirmación de Pago Aceptado",
-                                                        emailBody)))
-                                                .then());
-                                    } else {
-                                        return this.invoiceService.save(invoiceDomain)
-                                            .then(paymentBookRepository.confirmPayment(paymentBookId))
-                                            .then(
-                                                fetchPaymentDetails(paymentBookId)
-                                                    .flatMap(paymentDetails -> {
-                                                        String recipientName = paymentDetails.getName();
-                                                        String typeEmail = paymentDetails.getTypefullday();
-                                                        int reservationCode = paymentDetails.getFulldayid();
-                                                        String checkInDate = paymentDetails.getCheckinEntry();
-                                                        int adults = paymentDetails.getAdults();
-                                                        int children = paymentDetails.getChildren();
-
-                                                        String emailBody = EmailTemplateFullday.getAcceptanceTemplate(recipientName,
-                                                            typeEmail, reservationCode, checkInDate, adults, children
-                                                        );
-
-                                                        return this.emailService.sendEmail(paymentBook.getUseremail(), "Confirmación de Pago Aceptado", emailBody);
-                                                    })
-                                            )
-                                            .then();
-                                    }
-                                });
-                    }
-                    return Mono.empty();
-                });
+        return invoiceService.save(invoiceDomain)
+            .then(paymentBookRepository.confirmPayment(paymentBookId))
+            .then(fetchPaymentDetails(paymentBookId)
+                .flatMap(paymentDetails -> {
+                    String emailBody = EmailTemplateFullday.getAcceptanceTemplate(
+                        paymentDetails.getName(),
+                        paymentDetails.getTypefullday(),
+                        paymentDetails.getFulldayid(),
+                        paymentDetails.getCheckinEntry(),
+                        paymentDetails.getAdults(),
+                        paymentDetails.getChildren()
+                    );
+                    return emailService.sendEmail(paymentBook.getUseremail(), "Confirmación de Pago Aceptado", emailBody);
+                }))
+            .then();
     }
 
     private String normalizeText(String text) {
