@@ -267,10 +267,8 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                         String roomOrType = paymentBook.getRoomname() != null ? paymentBook.getRoomname() : paymentBook.getType();
                         String normalizedRoomOrType = normalizeText(roomOrType);
                         Integer fulldayId = paymentBook.getFulldayid();
-
                         Mono<BookingEntity> bookingEntity = bookingRepository.findByBookingId(paymentBook.getBookingid());
                         Mono<DetailBookInvoiceDto> detailBookInvoice = bookingRepository.getDetailBookInvoice(paymentBook.getBookingid());
-
                         Mono<List<FullDayDetailDTO>> fulldayDetailsMono = paymentBookRepository.findByFullDayId(fulldayId).collectList();
 
                         Mono<String> codSunatMono = this.productSunatRepository.findAll()
@@ -287,42 +285,42 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                     DetailBookInvoiceDto detailBook = tuple.getT4();
 
                                     InvoiceClientDomain clientDomain = new InvoiceClientDomain(
-                                            paymentBook.getUsername(),
-                                            paymentBook.getInvoicedocumentnumber(),
-                                            paymentBook.getUseraddress(),
-                                            paymentBook.getUserphone(),
-                                            paymentBook.getUseremail(),
-                                            paymentBook.getUserclientid());
+                                        paymentBook.getUsername(),
+                                        paymentBook.getInvoicedocumentnumber(),
+                                        paymentBook.getUseraddress(),
+                                        paymentBook.getUserphone(),
+                                        paymentBook.getUseremail(),
+                                        paymentBook.getUserclientid());
 
                                     InvoiceCurrency invoiceCurrency = InvoiceCurrency.getInvoiceCurrencyByCurrency(paymentBook.getCurrencytypename());
                                     InvoiceType type = InvoiceType.getInvoiceTypeByName(paymentBook.getInvoicetype().toUpperCase());
 
                                     InvoiceDomain invoiceDomain = new InvoiceDomain(
-                                            clientDomain,
-                                            paymentBook.getPaymentbookid(), 18, invoiceCurrency,
-                                            type, paymentBook.getPercentagediscount());
+                                        clientDomain,
+                                        paymentBook.getPaymentbookid(), 18, invoiceCurrency,
+                                        type, paymentBook.getPercentagediscount());
                                     invoiceDomain.setOperationCode(paymentBook.getOperationcode());
 
                                     List<InvoiceItemDomain> invoiceItems = new ArrayList<>();
 
                                     if (paymentBook.getRoomname() != null) {
                                         invoiceItems.add(new InvoiceItemDomain(
-                                                roomOrType,
-                                                codSunat,
-                                                roomOrType,
-                                                1,
-                                                BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount()),""
+                                            roomOrType,
+                                            codSunat,
+                                            roomOrType,
+                                            1,
+                                            BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount()),""
                                         ));
                                     } else {
                                         for (FullDayDetailDTO detail : fullDayDetails) {
                                             String sunatCode = getSunatCode(paymentBook.getType(), detail.getTypePerson());
                                             String itemDescription = getItemDescription(paymentBook.getType(), detail.getTypePerson());
                                             invoiceItems.add(new InvoiceItemDomain(
-                                                    itemDescription,
-                                                    sunatCode,
-                                                    itemDescription,
-                                                    detail.getQuantity(),
-                                                    detail.getFinalPrice(), ""
+                                                itemDescription,
+                                                sunatCode,
+                                                itemDescription,
+                                                detail.getQuantity(),
+                                                detail.getFinalPrice(), ""
                                             ));
                                         }
                                     }
@@ -336,35 +334,35 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
 
                                     if (paymentBook.getRoomname() != null) {
                                         return generatePaymentConfirmationEmailBody(paymentBookId)
-                                                .flatMap(emailBody -> this.invoiceService.save(invoiceDomain)
-                                                        .then(Mono.zip(
-                                                                paymentBookRepository.confirmPayment(paymentBookId),
-                                                                this.emailService.sendEmail(
-                                                                        paymentBook.getUseremail(),
-                                                                        "Confirmación de Pago Aceptado",
-                                                                        emailBody)))
-                                                        .then());
+                                            .flatMap(emailBody -> this.invoiceService.save(invoiceDomain)
+                                                .then(Mono.zip(
+                                                    paymentBookRepository.confirmPayment(paymentBookId),
+                                                    this.emailService.sendEmail(
+                                                        paymentBook.getUseremail(),
+                                                        "Confirmación de Pago Aceptado",
+                                                        emailBody)))
+                                                .then());
                                     } else {
                                         return this.invoiceService.save(invoiceDomain)
-                                                .then(paymentBookRepository.confirmPayment(paymentBookId))
-                                                .then(
-                                                        fetchPaymentDetails(paymentBookId)
-                                                                .flatMap(paymentDetails -> {
-                                                                    String recipientName = paymentDetails.getName();
-                                                                    String typeEmail = paymentDetails.getTypefullday();
-                                                                    int reservationCode = paymentDetails.getFulldayid();
-                                                                    String checkInDate = paymentDetails.getCheckinEntry();
-                                                                    int adults = paymentDetails.getAdults();
-                                                                    int children = paymentDetails.getChildren();
+                                            .then(paymentBookRepository.confirmPayment(paymentBookId))
+                                            .then(
+                                                fetchPaymentDetails(paymentBookId)
+                                                    .flatMap(paymentDetails -> {
+                                                        String recipientName = paymentDetails.getName();
+                                                        String typeEmail = paymentDetails.getTypefullday();
+                                                        int reservationCode = paymentDetails.getFulldayid();
+                                                        String checkInDate = paymentDetails.getCheckinEntry();
+                                                        int adults = paymentDetails.getAdults();
+                                                        int children = paymentDetails.getChildren();
 
-                                                                    String emailBody = EmailTemplateFullday.getAcceptanceTemplate(recipientName,
-                                                                            typeEmail, reservationCode, checkInDate, adults, children
-                                                                    );
+                                                        String emailBody = EmailTemplateFullday.getAcceptanceTemplate(recipientName,
+                                                            typeEmail, reservationCode, checkInDate, adults, children
+                                                        );
 
-                                                                    return this.emailService.sendEmail(paymentBook.getUseremail(), "Confirmación de Pago Aceptado", emailBody);
-                                                                })
-                                                )
-                                                .then();
+                                                        return this.emailService.sendEmail(paymentBook.getUseremail(), "Confirmación de Pago Aceptado", emailBody);
+                                                    })
+                                            )
+                                            .then();
                                     }
                                 });
                     }
