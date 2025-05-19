@@ -59,7 +59,7 @@ public class WalletPointExchangeServiceImpl implements WalletPointExchangeServic
                     String tokenBackOffice = tuple.getT1();
                     ResponseInclubLoginDto responseInclub = tuple.getT2();
                     return webClient.get()
-                            .uri(urlBackOffice + "/user-points-released/points-exchange-history/user/" + responseInclub.getData().getId()+"?page=0&size=100")
+                            .uri(urlBackOffice + "/user-points-released/points-exchange-history/user/" + responseInclub.getData().getId()+"?page=0&size=9000")
                             .header("Authorization", "Bearer " + tokenBackOffice)
                             .retrieve()
                             .bodyToMono(new ParameterizedTypeReference<BoResponse<List<ExchangeHistoryResponse>>>() {})
