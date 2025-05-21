@@ -426,4 +426,23 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                 }).switchIfEmpty(
                         Mono.error(new IllegalArgumentException("No se encontró la oferta")));
     }
+
+    @Override
+    public Mono<ViewRoomOfferReturn> findRoomOfferByIdAndQuotationId(Integer roomOfferId, Integer quotationId) {
+        return Mono.zip(this.roomOfferRepository.findViewRoomOfferReturnByRoomOfferIdAndQuotationId(roomOfferId,quotationId),
+                        servicesRepository
+                                .findAllViewComfortReturn(
+                                        roomOfferId)
+                                .collectList(),
+                        bedroomRepository.findAllViewBedroomReturn(
+                                        roomOfferId)
+                                .collectList())
+                .flatMap(tuple -> {
+                    ViewRoomOfferReturn viewRoomOfferReturn = tuple.getT1();
+                    viewRoomOfferReturn.setListAmenities(tuple.getT2());
+                    viewRoomOfferReturn.setListBedroomReturn(tuple.getT3());
+                    return Mono.just(viewRoomOfferReturn);
+                }).switchIfEmpty(
+                        Mono.error(new IllegalArgumentException("No se encontró la oferta")));
+    }
 }

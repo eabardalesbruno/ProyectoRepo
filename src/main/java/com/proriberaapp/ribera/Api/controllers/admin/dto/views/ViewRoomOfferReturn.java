@@ -90,6 +90,7 @@ public class ViewRoomOfferReturn {
     Double totalDiscount;
 
     Integer totalPointsReward;
+    Integer quotationId;
 
     public static ViewRoomOfferReturn convertTo(Readable row) {
         return ViewRoomOfferReturn.builder()
@@ -128,6 +129,7 @@ public class ViewRoomOfferReturn {
                 .costtotalexchange(row.get("costtotalexchange", BigDecimal.class))
                 .costtotalexchangestring(row.get("costtotalexchangestring", String.class))
                 .pointribera(row.get("pointribera", Integer.class))
+                .quotationId(row.get("quotationid", Integer.class))
                 .build();
     }
 

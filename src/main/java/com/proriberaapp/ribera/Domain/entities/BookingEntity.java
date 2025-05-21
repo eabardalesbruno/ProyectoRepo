@@ -71,6 +71,8 @@ public class BookingEntity {
     private Integer totalRewards;
     @Column("createdat")
     private Timestamp createdAt;
+    @Column("quotationid")
+    private Integer quotationId;
 
     public static BookingEntity createBookingEntity(Integer userClientId, BookingSaveRequest bookingSaveRequest,
             Integer numberOfDays, Boolean isPromotor, Boolean isReceptionist) {
@@ -98,6 +100,7 @@ public class BookingEntity {
                 .dayBookingEnd(Timestamp.valueOf(bookingSaveRequest.getDayBookingEnd()
                         .atTime(12, 0)))
                 .createdAt(Timestamp.valueOf(ZonedDateTime.now(limaZoneId).toLocalDateTime()))
+                .quotationId(bookingSaveRequest.getQuotationId())
                 .build();
     }
 

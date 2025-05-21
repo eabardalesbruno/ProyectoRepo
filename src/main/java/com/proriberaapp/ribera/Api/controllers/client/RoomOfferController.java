@@ -35,6 +35,12 @@ public class RoomOfferController {
         return roomOfferService.findRoomOfferById(id);
     }
 
+    @GetMapping("/detail-roomoffer-with-quotation/{roomOfferId}")
+    public Mono<ViewRoomOfferReturn> findDetailRoomOfferByIdAndQuotationId(@PathVariable Integer roomOfferId,
+                                                                           @RequestParam(required = true) Integer quotationId) {
+        return roomOfferService.findRoomOfferByIdAndQuotationId(roomOfferId,quotationId);
+    }
+
     @GetMapping("/find/all")
     public Flux<RoomOfferEntity> findAllRoomOffers() {
         return roomOfferService.findAll();

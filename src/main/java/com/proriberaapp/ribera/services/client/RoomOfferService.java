@@ -35,4 +35,5 @@ public interface RoomOfferService extends BaseService<RoomOfferEntity, RoomOffer
 
         Mono<ViewRoomOfferReturn> findRoomOfferById(Integer id);
 
+        Mono<ViewRoomOfferReturn> findRoomOfferByIdAndQuotationId(Integer roomOfferId, Integer quotationId);
 }
