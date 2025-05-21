@@ -197,6 +197,13 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
     @Query("SELECT * FROM viewroomofferreturn WHERE roomofferid = :roomOfferId")
     Mono<ViewRoomOfferReturn> findViewRoomOfferReturnByRoomOfferId(Integer roomOfferId);
 
+    @Query(value = """
+            SELECT * FROM viewroomofferreturn
+            WHERE roomofferid = :roomOfferId
+            AND quotation_id = :quotationId
+            """)
+    Mono<ViewRoomOfferReturn> findViewRoomOfferReturnByRoomOfferIdAndQuotationId(Integer roomOfferId, Integer quotationId);
+
     @Query("""
     select qr.room_offer_id,
            sum(q.adult_cost) adult_cost,

@@ -62,6 +62,9 @@ public class ViewBookingReturn {
     @Column("total_rewards")
     Integer totalRewards;
 
+    @Column("quotation_id")
+    Integer quotationId;
+
     @Getter
     @Setter
     @Builder

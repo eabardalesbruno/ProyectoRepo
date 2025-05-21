@@ -59,4 +59,5 @@ public class BookingSaveRequest {
 
     private BigDecimal totalCost;
 
+    private Integer quotationId;
 }
