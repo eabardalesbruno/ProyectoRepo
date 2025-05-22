@@ -158,6 +158,26 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    public Flux<RoomDashboardDto> findViewRoomsDetailWithParams(String daybookinginit, String daybookingend,
+                                                                Integer roomtypeid, Integer numberadults,
+                                                                Integer numberchildren, Integer numberbabies,
+                                                                Integer bookingid) {
+        return roomRepository.findFilteredRooms(daybookinginit, daybookingend, roomtypeid, bookingid)
+                .publishOn(Schedulers.boundedElastic()).flatMap(room -> {
+            RoomDashboardDto roomDashboard = new RoomDashboardDto();
+            roomDashboard.setRoomNumber(room);
+            List<RoomDetailDto> listRoomDetail = roomRepository.findAllViewRoomsDetail(daybookinginit, daybookingend,
+                    room, roomtypeid, numberadults, numberchildren, numberbabies, bookingid).collectList().block();
+            //roomDashboard.setRoomStatus(listRoomDetail.size() > 0 ? "Evaluar" : "Libre");
+            if (listRoomDetail.size() > 0) {
+                roomDashboard.setRoomStatus(listRoomDetail.get(0).getRoomStatus());
+            }
+            roomDashboard.setDetails(listRoomDetail);
+            return Flux.just(roomDashboard);
+        });
+    }
+
+    @Override
     public Mono<ReservationReportDto> findDetailById(Integer bookingid) {
         return bookingRepository.findByBookingId(bookingid).publishOn(Schedulers.boundedElastic()).flatMap(bookingEntity -> {
             ReservationReportDto reservationDto = new ReservationReportDto();

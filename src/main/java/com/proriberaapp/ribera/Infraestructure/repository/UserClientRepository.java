@@ -58,7 +58,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
                 AND (:filter IS NULL OR (UPPER(t.firstName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.lastName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.documentnumber) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.email) LIKE UPPER(CONCAT('%', :filter, '%'))))
             """)
     Mono<Long> countUserAll(Integer statusId, String fecha, String filter);
-
+    /*
     @Query("""
                 SELECT *
                 FROM (SELECT uc.*, g.genderdesc, c.countrydesc,
@@ -75,6 +75,43 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
                 AND (:fecha IS NULL OR TO_CHAR(t.createdat, 'YYYY/MM/DD') = :fecha)
                 AND (:filter IS NULL OR (UPPER(t.firstName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.lastName) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.documentnumber) LIKE UPPER(CONCAT('%', :filter, '%')) OR UPPER(t.email) LIKE UPPER(CONCAT('%', :filter, '%'))))
                 OFFSET :indice*10 LIMIT 10
+            """)
+
+     */
+    @Query(value = """
+            SELECT
+                uc.*,
+                g.genderdesc,
+                c.countrydesc,
+                l.levelname,
+                latest_status.bookingstatename as statusdesc,
+                latest_status.bookingstateid as statusid
+            FROM
+                userclient uc
+                JOIN gender g ON uc.genderid = g.genderid
+                JOIN country c ON uc.countryid = c.countryid
+                LEFT JOIN userlevel l ON l.userlevelid = uc.userLevelId
+                LEFT JOIN (
+                    SELECT DISTINCT ON (b.userclientid)
+                           b.userclientid,
+                           bs.bookingstatename,
+                           bs.bookingstateid
+                    FROM booking b
+                    JOIN bookingstate bs ON b.bookingstateid = bs.bookingstateid
+                    ORDER BY b.userclientid, b.createdat DESC
+                ) latest_status ON uc.userclientid = latest_status.userclientid
+            WHERE
+                (:statusId IS NULL OR latest_status.bookingstateid = :statusId)
+                AND (:fecha IS NULL OR TO_CHAR(uc.createdat, 'YYYY/MM/DD') = :fecha)
+                AND (:filter IS NULL OR (
+                    UPPER(uc.firstName) LIKE UPPER(CONCAT('%', :filter, '%')) OR
+                    UPPER(uc.lastName) LIKE UPPER(CONCAT('%', :filter, '%')) OR
+                    UPPER(uc.documentnumber) LIKE UPPER(CONCAT('%', :filter, '%')) OR
+                    UPPER(uc.email) LIKE UPPER(CONCAT('%', :filter, '%'))
+                ))
+            ORDER BY uc.createdat
+            OFFSET :indice*10
+            LIMIT 10
             """)
     Flux<UserClientDto> getAllClients(Integer indice, Integer statusId, String fecha, String filter);
 

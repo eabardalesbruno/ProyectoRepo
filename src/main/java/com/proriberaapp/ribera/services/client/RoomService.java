@@ -27,6 +27,11 @@ public interface RoomService extends BaseService<RoomEntity, RoomEntity> {
 
     Flux<RoomDashboardDto> findAllViewRoomsDetail(String daybookinginit, String daybookingend, Integer roomtypeid, Integer numberadults, Integer numberchildren, Integer  numberbabies, Integer bookingid);
 
+    Flux<RoomDashboardDto> findViewRoomsDetailWithParams(String daybookinginit, String daybookingend,
+                                                         Integer roomtypeid, Integer numberadults,
+                                                         Integer numberchildren, Integer  numberbabies,
+                                                         Integer bookingid);
+
     Mono<ReservationReportDto> findDetailById(Integer bookingid);
 
     Mono<PaymentDetailDTO> findPaymentDetailByBookingId(Integer bookingid);
