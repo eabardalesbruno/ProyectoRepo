@@ -62,6 +62,27 @@ public interface DiscountRepository extends R2dbcRepository<DiscountEntity, Inte
                   """)
     Flux<DiscountEntity> getDiscountWithItemsAndCurrentYear(List<Integer> idPackage);
 
+
+    @Query("""
+            SELECT
+                COALESCE(d.percentage, 0) AS percentage,
+                d.name,
+                d.id,
+                d.applytofood,
+                d.applytoreservation
+            FROM
+                discount d
+                JOIN discount_item di ON di.iddiscount = d.id
+                JOIN discount_item_inclub dic ON dic."id" = di.iddiscountinclub
+            WHERE
+                 d.status = 1
+            GROUP BY
+                d.percentage,
+                d.name,
+                d.id;
+            """)
+    Flux<DiscountEntity> getDiscountsWithoutMembershipFiltering();
+
     @Query("""
             INSERT INTO discount_payment_book (idclient,idpaymentbook, iddiscount, createdat)
             VALUES (:idClient,:idPaymentBook, :idDiscount, CURRENT_TIMESTAMP);
