@@ -34,6 +34,18 @@ public class ManagerRoomController extends BaseManagerController<RoomEntity, Roo
         return roomService.findAllViewRoomsDetail(daybookinginit, daybookingend, roomtypeid, numberadults, numberchildren, numberbabies, bookingid);
     }
 
+    @GetMapping("/find/detail-with-params")
+    public Flux<RoomDashboardDto> findViewRoomsDetailWithParams(@RequestParam(required = false) String daybookinginit,
+                                                               @RequestParam(required = false) String daybookingend,
+                                                               @RequestParam(required = false) Integer roomtypeid,
+                                                               @RequestParam(required = false) Integer numberadults,
+                                                               @RequestParam(required = false) Integer numberchildren,
+                                                               @RequestParam(required = false) Integer numberbabies,
+                                                               @RequestParam(required = false) Integer bookingid) {
+        return roomService.findViewRoomsDetailWithParams(daybookinginit, daybookingend, roomtypeid, numberadults,
+                numberchildren, numberbabies, bookingid);
+    }
+
     @GetMapping("/find/detailById")
     public Mono<ReservationReportDto> findDetailById(@RequestParam Integer bookingid) {
         return roomService.findDetailById(bookingid);

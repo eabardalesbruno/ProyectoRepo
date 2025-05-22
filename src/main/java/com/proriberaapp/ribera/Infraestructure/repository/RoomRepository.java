@@ -31,6 +31,31 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
     Flux<String> findAllViewRooms();
 
     @Query("""
+            SELECT DISTINCT r.roomnumber
+            FROM room r
+            LEFT JOIN roomoffer ro ON r.roomid = ro.roomid
+            LEFT JOIN booking b ON ro.roomofferid = b.roomofferid
+            WHERE (:roomtypeid IS NULL OR r.roomtypeid = :roomtypeid)
+            AND (:bookingid IS NULL OR b.bookingid = :bookingid)
+            AND (
+                    -- Si NO se especifican fechas, devuelve todas las habitaciones
+                    (:daybookinginit IS NULL AND :daybookingend IS NULL)
+                    OR
+                    -- Si hay fechas, devuelve solo habitaciones con reservas en ese rango
+                    (
+                        b.daybookinginit <= :daybookingend::TIMESTAMP
+                        AND b.daybookingend >= :daybookinginit::TIMESTAMP
+                    )
+            )
+            ORDER BY r.roomnumber
+            """)
+    Flux<String> findFilteredRooms(
+            @Param("daybookinginit") String daybookinginit,
+            @Param("daybookingend") String daybookingend,
+            @Param("roomtypeid") Integer roomtypeid,
+            @Param("bookingid") Integer bookingid);
+
+    @Query("""
         select r.* from booking b
         join roomoffer ro on b.roomofferid = ro.roomofferid
         join room r on ro.roomid = r.roomid
