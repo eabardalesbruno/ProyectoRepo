@@ -195,6 +195,7 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
                 });
     }
 
+/*
     @Override
     public Mono<UserNameAndDiscountDto> verifiedPercentajeDiscount(int userId, Integer bookingId) {
         return Mono.zip(this.userClientRepository.findById(userId),
@@ -237,6 +238,41 @@ public class MembershipInclubValidateDiscountService implements VerifiedDiscount
 
                 }
         );
+    }
+*/
+
+    @Override
+    public Mono<UserNameAndDiscountDto> verifiedPercentajeDiscount(int userId, Integer bookingId) {
+        return Mono.zip(this.userClientRepository.findById(userId),
+                        this.bookingRepository.findByBookingId(bookingId))
+                .flatMap(data -> {
+                            UserClientEntity userData = data.getT1();
+                            BookingEntity booking= data.getT2();
+                            return this.loadMembershipsInsortInclub(userData.getUsername())
+                                    .flatMap(memberships -> {
+                                        if (memberships.isEmpty()) {
+                                            return Mono.just(UserNameAndDiscountDto.empty());
+                                        }
+                                        return this.discountRepository.getDiscountsWithoutMembershipFiltering()
+                                                .collectList()
+                                                .flatMap(listPercentage -> {
+                                                    float totalPercentage = listPercentage.stream()
+                                                            .map(DiscountEntity::getPercentage)
+                                                            .reduce(0.0f, Float::sum);
+                                                    List<DiscountDto> discounts = listPercentage.stream()
+                                                            .map(p -> new DiscountDto(p.getId(), p.getName(),
+                                                                    p.getPercentage() * booking.getCostFinal().floatValue() / 100,
+                                                                    p.getPercentage(), p.isApplyToReservation(), p.isApplyToFood()))
+                                                            .toList();
+                                                    return Mono.just(UserNameAndDiscountDto.builder()
+                                                            .username(userData.getUsername())
+                                                            .percentage(totalPercentage)
+                                                            .discounts(discounts)
+                                                            .build());
+                                                });
+                                    });
+                        }
+                );
     }
 
     @Override
