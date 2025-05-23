@@ -170,8 +170,14 @@ public class BookingServiceImpl implements BookingService {
                                 if (!payments.isEmpty()) {
                                     return Mono.empty();
                                 } else {
-                                    return bookingRepository.deleteById(
-                                            booking.getBookingId());
+                                    return paymentBookRepository.countPaymentBookByBookingId(booking.getBookingId())
+                                        .flatMap(exists -> {
+                                            if (exists.intValue() > 0) {
+                                                return Mono.just(false);
+                                            } else {
+                                                return bookingRepository.deleteById(booking.getBookingId());
+                                            }
+                                        });
                                 }
                             });
                 })

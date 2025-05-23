@@ -79,7 +79,7 @@ public class InvoiceItemDomain {
         this.percentajeDiscount = percentageDiscountP;
         double discountValue = this.percentajeDiscount / 100;
         if (isIgvIncluded) {
-            this.discount = new BigDecimal(priceUnit.doubleValue()*discountValue).setScale(2, RoundingMode.HALF_UP);
+            this.discount = new BigDecimal(priceUnit.doubleValue() * discountValue).setScale(2, RoundingMode.HALF_DOWN);
             double discountPrice = priceUnit.doubleValue() - priceUnit.doubleValue()*discountValue;
             this.valorUnitario = new BigDecimal((discountPrice)/(1 + igvValue)).setScale(2, RoundingMode.HALF_UP);
             //this.valorUnitario = priceUnit.divide(BigDecimal.valueOf(1 + igvValue), 2, RoundingMode.HALF_UP);
