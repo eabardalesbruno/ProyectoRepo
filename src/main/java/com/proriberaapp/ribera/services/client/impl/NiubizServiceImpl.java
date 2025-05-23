@@ -261,6 +261,7 @@ public class NiubizServiceImpl implements NiubizService {
                 .flatMap(booking -> {
                     //booking.setBookingStateId(3);
                     booking.setBookingStateId(2);
+                    booking.setCostFinal(BigDecimal.valueOf(amount));
                     return Mono.zip(bookingRepository.save(booking),
                             this.bookingRepository.getRoomNameAndDescriptionfindByBookingId(booking.getBookingId()),
                             userClientRepository.findByUserClientId(booking.getUserClientId()),
