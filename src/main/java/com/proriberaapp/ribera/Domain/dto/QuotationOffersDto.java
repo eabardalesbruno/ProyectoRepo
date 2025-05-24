@@ -11,6 +11,10 @@ public class QuotationOffersDto {
 
     private Integer roomofferid;
 
+    private Integer idyear;
+
+    private String year;
+
     private String offername;
 
     private String quotationDescription;
