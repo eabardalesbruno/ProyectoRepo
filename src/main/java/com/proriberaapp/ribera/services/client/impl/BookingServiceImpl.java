@@ -419,8 +419,8 @@ public class BookingServiceImpl implements BookingService {
                                                             bookingSaveRequest
                                                                     .getNumberChild()).multiply(BigDecimal.valueOf(numberOfDays - 1));
                                             BigDecimal totalCost = bookingSaveRequest.getTotalCost() != null ? bookingSaveRequest.getTotalCost() : BigDecimal.ZERO;
-                                            bookingEntity.setCostFinal(totalCost.add(extraCost));
-
+                                            //bookingEntity.setCostFinal(totalCost.add(extraCost));
+                                            bookingEntity.setCostFinal(totalCost);
                                             return bookingRepository
                                                     .findExistingBookings(
                                                             bookingEntity.getRoomOfferId(),

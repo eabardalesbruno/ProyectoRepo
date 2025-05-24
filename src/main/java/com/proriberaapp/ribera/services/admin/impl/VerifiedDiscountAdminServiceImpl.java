@@ -109,7 +109,7 @@ public class VerifiedDiscountAdminServiceImpl implements VerifiedDiscountAdminSe
             return Mono.just(UserNameAndDiscountDto.empty());
         }
 
-        return discountRepository.getDiscountWithItemsAndCurrentYear(applicablePackageIds).collectList()
+        return discountRepository.getDiscountsWithoutMembershipFiltering().collectList()
                 .flatMap(discounts -> buildDiscountResponse(discounts, username, costTotal));
     }
 
