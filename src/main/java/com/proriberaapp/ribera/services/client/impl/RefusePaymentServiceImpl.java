@@ -28,12 +28,14 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Service
 public class RefusePaymentServiceImpl implements RefusePaymentService {
         /*
@@ -254,7 +256,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                          */
                                 });
         }
-
+    /*
     @Override
     public Mono<Void> updatePendingPayAndSendConfirmation(Integer paymentBookId) {
         return paymentBookRepository.loadUserDataAndBookingData(paymentBookId)
@@ -294,6 +296,64 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
     private void updatePaymentBookState(PaymentBookUserDTO paymentBook) {
         paymentBook.setPaymentstateid(2);
         paymentBook.setPendingpay(1);
+    }
+    */
+
+    @Override
+    public Mono<Void> updatePendingPayAndSendConfirmation(Integer paymentBookId) {
+        return paymentBookRepository.loadUserDataAndBookingData(paymentBookId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Payment ID does not exist")))
+                .flatMap(paymentBook -> {
+                    if (paymentBook.getPendingpay() != 0) {
+                        return Mono.empty(); // Pago ya procesado
+                    }
+                    // Encadenar la actualización antes de continuar
+                    return updatePaymentBookState(paymentBook)
+                            .then(Mono.defer(() -> {
+                                // El resto de las operaciones después de la actualización
+                                Mono<BookingEntity> bookingEntityMono = bookingRepository.findByBookingId(paymentBook.getBookingid());
+                                Mono<DetailBookInvoiceDto> detailInvoiceMono = bookingRepository.getDetailBookInvoice(paymentBook.getBookingid());
+                                Mono<List<FullDayDetailDTO>> fullDayDetailsMono = paymentBookRepository.findByFullDayId(paymentBook.getFulldayid()).collectList();
+                                String roomOrType = Optional.ofNullable(paymentBook.getRoomname()).orElse(paymentBook.getType());
+                                String normalizedRoomOrType = normalizeText(roomOrType);
+                                Mono<String> codSunatMono = productSunatRepository.findAll()
+                                        .filter(product -> normalizeText(product.getDescription()).equals(normalizedRoomOrType))
+                                        .map(ProductSunatDomain::getCodSunat)
+                                        .defaultIfEmpty("631210")
+                                        .next();
+
+                                return Mono.zip(codSunatMono, fullDayDetailsMono, bookingEntityMono, detailInvoiceMono)
+                                        .flatMap(tuple -> {
+                                            String codSunat = tuple.getT1();
+                                            List<FullDayDetailDTO> fullDayDetails = tuple.getT2();
+                                            BookingEntity booking = tuple.getT3();
+                                            DetailBookInvoiceDto detailInvoice = tuple.getT4();
+
+                                            InvoiceDomain invoiceDomain = buildInvoiceDomain(paymentBook, codSunat, fullDayDetails);
+                                            List<String> invoiceNotes = generateInvoiceNotes(booking, detailInvoice);
+                                            invoiceDomain.setInvoice_notes(invoiceNotes);
+
+                                            return handleInvoiceFlow(paymentBook, invoiceDomain, paymentBookId);
+                                        });
+                            }));
+                })
+                .then(); // Asegura que el flujo retorne Mono<Void>
+    }
+    /*
+    private Mono<Void> updatePaymentBookState(PaymentBookUserDTO paymentBook) {
+        log.info("Actualizando estado del paymentbook con id: {}", paymentBook.getPaymentbookid());
+        return paymentBookRepository.updateStatusAndPendingPayInPaymentBookById(paymentBook.getPaymentbookid());
+    }
+    */
+
+    private Mono<Void> updatePaymentBookState(PaymentBookUserDTO paymentBook) {
+        return paymentBookRepository.findById(paymentBook.getPaymentbookid())
+                .flatMap(entity -> {
+                    entity.setPaymentStateId(2);
+                    entity.setPendingpay(1);
+                    return paymentBookRepository.save(entity);
+                })
+                .then();
     }
 
     private InvoiceDomain buildInvoiceDomain(PaymentBookUserDTO paymentBook, String codSunat, List<FullDayDetailDTO> fullDayDetails) {
