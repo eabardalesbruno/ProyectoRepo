@@ -285,6 +285,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     private final InvoiceServiceI invoiceService;
     private final FullDayRepository fullDayRepository;
     private final ProductSunatRepository productSunatRepository;
+    private final BookingRepository bookingRepository;
 
     @Autowired
     public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository,
@@ -296,7 +297,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                   PaymentStateRepository paymentStateRepository, PaymentTypeRepository paymentTypeRepository,
                                   PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository,
                                   CommissionService commissionService,
-                                  InvoiceServiceI invoiceService, FullDayRepository fullDayRepository, ProductSunatRepository productSunatRepository) {
+                                  InvoiceServiceI invoiceService, FullDayRepository fullDayRepository, ProductSunatRepository productSunatRepository,
+                                  BookingRepository bookingRepository) {
         this.invoiceService = invoiceService;
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
@@ -314,6 +316,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         this.commissionService = commissionService;
         this.fullDayRepository = fullDayRepository;
         this.productSunatRepository = productSunatRepository;
+        this.bookingRepository= bookingRepository;
     }
 
     @Override
@@ -324,6 +327,21 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
         return paymentBookRepository.save(paymentBook);
     }
+/*
+    @Override
+    public Mono<PaymentBookEntity> createPaymentBookPay(PaymentBookEntity paymentBook) {
+        LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
+        Timestamp timestamp = Timestamp.valueOf(localDateTime);
+        paymentBook.setPaymentDate(timestamp);
+
+        return paymentBookRepository.save(paymentBook)
+                .flatMap(savedPaymentBook -> updateBookingStateIfRequired(savedPaymentBook.getBookingId())
+                        .then(userClientRepository.findById(savedPaymentBook.getUserClientId())
+                                .flatMap(userClient -> sendPaymentConfirmationEmail(savedPaymentBook,
+                                        userClient.getEmail(), userClient.getFirstName())))
+                        .thenReturn(savedPaymentBook));
+    }
+*/
 
     @Override
     public Mono<PaymentBookEntity> createPaymentBookPay(PaymentBookEntity paymentBook) {
@@ -333,6 +351,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
         return paymentBookRepository.save(paymentBook)
                 .flatMap(savedPaymentBook -> updateBookingStateIfRequired(savedPaymentBook.getBookingId())
+                        .then(bookingRepository.updateCostFinalByBookingId(paymentBook.getBookingId(), paymentBook.getTotalCost()))
                         .then(userClientRepository.findById(savedPaymentBook.getUserClientId())
                                 .flatMap(userClient -> sendPaymentConfirmationEmail(savedPaymentBook,
                                         userClient.getEmail(), userClient.getFirstName())))

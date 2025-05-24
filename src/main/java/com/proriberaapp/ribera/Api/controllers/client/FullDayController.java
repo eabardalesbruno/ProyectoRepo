@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.FullDayRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.MembershipDto;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.FullDayTypeFoodUpdateDto;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.*;
 import com.proriberaapp.ribera.Domain.entities.*;
@@ -165,6 +166,16 @@ public class FullDayController {
         fullDayTypeFoodEntity.setCurrencyTypeId(currencyTypeId);
 
         return fullDayTypeFoodService.updateFullDayTypeFood(fullDayTypeFoodId, fullDayTypeFoodEntity, file, folderNumber)
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+    }
+
+    @PatchMapping("/typeFoodPatch/{fullDayTypeFoodId}")
+    public Mono<ResponseEntity<FullDayTypeFoodEntity>> patchFullDayTypeFood(
+            @PathVariable Integer fullDayTypeFoodId,
+            @RequestBody FullDayTypeFoodUpdateDto patchDto) {
+
+        return fullDayTypeFoodService.patchFullDayTypeFood(fullDayTypeFoodId, patchDto)
                 .map(ResponseEntity::ok)
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }

@@ -205,7 +205,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
       +
       ",bo.numberchildren,bo.numberbabies,bo.numberadultsextra,bo.numberadultsmayor, "
       +
-      "r.riberapoints, r.inresortpoints, r.points, " +
+      "r.riberapoints, r.inresortpoints, bo.total_rewards as points, " +
       "calculate_nights(bo.daybookinginit,bo.daybookingend ) as nights " +
       "FROM booking bo " +
       "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
@@ -691,4 +691,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
     """)
   Mono<DetailBookInvoiceDto> getDetailBookInvoice(Integer bookingId);
 
+  @Query(value = """
+          update booking set costfinal = :newCostFinal where bookingid = :bookingId 
+          """)
+  Mono<Void> updateCostFinalByBookingId(Integer bookingId,BigDecimal newCostFinal);
 }

@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.FullDayTypeFoodUpdateDto;
 import com.proriberaapp.ribera.Domain.entities.FullDayTypeFoodEntity;
 import org.springframework.http.codec.multipart.FilePart;
 import reactor.core.publisher.Flux;
@@ -20,4 +21,6 @@ public interface FullDayTypeFoodService {
     Mono<Integer> getTotalFullDayTypeFood(String type, String name);
 
     Flux<FullDayTypeFoodEntity> getFullDayTypeFoodByType(String type, String name, int page, int size);
+
+    Mono<FullDayTypeFoodEntity> patchFullDayTypeFood(Integer fullDayTypeFoodId, FullDayTypeFoodUpdateDto patchDto);
 }

@@ -352,4 +352,8 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
                """)
         Mono<DetailEmailFulldayDto> getPaymentDetails(@Param("paymentBookId") Integer paymentBookId);
 
+        @Query(value = """
+                UPDATE paymentbook SET paymentstateid = 2, pendingpay = 1 WHERE paymentbookid = :id
+                """)
+        Mono<Void> updateStatusAndPendingPayInPaymentBookById(@Param("id") Integer paymentBookId);
 }

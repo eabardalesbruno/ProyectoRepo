@@ -21,18 +21,17 @@ public class MembershipDto {
     private Integer userclientId;
     @Column("id")
     private int id;
-
-    @Column("familyPackageName")
+    @Column("familypackagename")
     private String familyPackageName;
-    @Column("nameSuscription")
+    @Column("namesuscription")
     private String nameSuscription;
     @Column("status")
     private String status;
-    @Column("idFamilyPackage")
+    @Column("idfamilypackage")
     private int idFamilyPackage;
-    @Column("idStatus")
+    @Column("idstatus")
     private int idStatus;
-    @Column("numberQuotas")
+    @Column("numberquotas")
     private int numberQuotas;
     @Column("idPackage")
     private int idPackage;
