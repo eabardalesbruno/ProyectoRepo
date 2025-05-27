@@ -206,7 +206,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
       ",bo.numberchildren,bo.numberbabies,bo.numberadultsextra,bo.numberadultsmayor, "
       +
       "r.riberapoints, r.inresortpoints, bo.total_rewards as points, " +
-      "calculate_nights(bo.daybookinginit,bo.daybookingend ) as nights " +
+      "calculate_nights(bo.daybookinginit,bo.daybookingend ) as nights ,bo.createdat " +
       "FROM booking bo " +
       "JOIN roomoffer r ON r.roomofferid = bo.roomofferid " +
       "JOIN room rid ON rid.roomid = r.roomid " +
