@@ -174,10 +174,11 @@ public class NiubizServiceImpl implements NiubizService {
         datamap.setServiceLocationCountryCode("PER");
         datamap.setServiceLocationPostalCode("15046");
         body.setDataMap(datamap);
+
         String finalUrlWeb = urlWeb;
+
         return nibuizClient.post()
-                .uri(uriBuilder -> uriBuilder.path("/api.authorization/v3/authorization/ecommerce/" + merchantId)
-                        .build())
+                .uri(uriBuilder -> uriBuilder.path("/api.authorization/v3/authorization/ecommerce/" + merchantId).build())
                 .accept(MediaType.APPLICATION_JSON)
                 .header("Authorization", token)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -185,44 +186,84 @@ public class NiubizServiceImpl implements NiubizService {
                 .exchangeToMono(response -> {
                     HttpStatus httpStatus = (HttpStatus) response.statusCode();
                     ObjectMapper mapper = new ObjectMapper();
+
                     if (httpStatus.is4xxClientError() || httpStatus.is5xxServerError()) {
-                        //return response.createException().flatMap(Mono::error);
                         return response.bodyToMono(Object.class).flatMap(object -> {
                             String transactionId = null, dateTransaction = null, message = null, status = null;
                             try {
                                 String json = mapper.writeValueAsString(object);
                                 JsonNode jsonNode = mapper.readTree(json);
                                 JsonNode jsonData = jsonNode.get("data");
-                                transactionId = jsonData.get("TRANSACTION_ID") != null ? jsonData.get("TRANSACTION_ID").asText() : "1";
-                                dateTransaction = jsonData.get("TRANSACTION_DATE").asText();
-                                status = jsonData.get("STATUS").asText();
-                                var messageCard = jsonData.get("ACTION_DESCRIPTION").asText();
-                                message = Base64.encodeBase64String(messageCard.getBytes());
+
+                                if (jsonData != null) {
+                                    transactionId = jsonData.has("TRANSACTION_ID") && jsonData.get("TRANSACTION_ID") != null
+                                            ? jsonData.get("TRANSACTION_ID").asText()
+                                            : null;
+                                    dateTransaction = jsonData.has("TRANSACTION_DATE") && jsonData.get("TRANSACTION_DATE") != null
+                                            ? jsonData.get("TRANSACTION_DATE").asText()
+                                            : null;
+                                    status = jsonData.has("STATUS") && jsonData.get("STATUS") != null
+                                            ? jsonData.get("STATUS").asText()
+                                            : null;
+
+                                    JsonNode messageNode = jsonData.get("ACTION_DESCRIPTION");
+                                    message = (messageNode != null && !messageNode.isNull() && messageNode.asText() != null)
+                                            ? Base64.encodeBase64String(messageNode.asText().getBytes())
+                                            : null;
+                                }
                             } catch (JsonProcessingException e) {
                                 message = "";
                             }
-                            return Mono.just(finalUrlWeb + "?transactionId=" + transactionId + "&dateTransaction=" + dateTransaction + "&message=" + message + "&status=" + status);
+
+                            if ("Not Enabled".equals(status)) {
+                                return Mono.just(finalUrlWeb);
+                            }
+
+                            return Mono.just(String.format(
+                                    "%s?transactionId=%s&dateTransaction=%s&message=%s&status=%s",
+                                    finalUrlWeb, transactionId, dateTransaction, message, status
+                            ));
                         });
                     }
+
                     return response.bodyToMono(Object.class).flatMap(object -> {
-                        String currency = null, transactionId = null, dateTransaction = null, amountTransaction = null, cardTransaction = null, brand = null, status = null;
+                        String currency = null, transactionId = null, dateTransaction = null,
+                                amountTransaction = null, cardTransaction = null, brand = null, status = null;
                         try {
                             String json = mapper.writeValueAsString(object);
                             JsonNode jsonNode = mapper.readTree(json);
                             JsonNode jsonDataMap = jsonNode.get("dataMap");
-                            transactionId = jsonDataMap.get("TRANSACTION_ID") != null ? jsonDataMap.get("TRANSACTION_ID").asText() : "";
-                            dateTransaction = jsonDataMap.get("TRANSACTION_DATE").asText();
-                            amountTransaction = jsonDataMap.get("AMOUNT").asText();
-                            cardTransaction = jsonDataMap.get("CARD").asText();
-                            cardTransaction = Base64.encodeBase64String(cardTransaction.getBytes());
-                            brand = jsonDataMap.get("BRAND").asText();
-                            status = jsonDataMap.get("STATUS").asText();
+
+                            if (jsonDataMap != null) {
+                                transactionId = jsonDataMap.has("TRANSACTION_ID") && jsonDataMap.get("TRANSACTION_ID") != null
+                                        ? jsonDataMap.get("TRANSACTION_ID").asText()
+                                        : null;
+                                dateTransaction = jsonDataMap.has("TRANSACTION_DATE") && jsonDataMap.get("TRANSACTION_DATE") != null
+                                        ? jsonDataMap.get("TRANSACTION_DATE").asText()
+                                        : null;
+                                amountTransaction = jsonDataMap.has("AMOUNT") && jsonDataMap.get("AMOUNT") != null
+                                        ? jsonDataMap.get("AMOUNT").asText()
+                                        : null;
+                                cardTransaction = jsonDataMap.has("CARD") && jsonDataMap.get("CARD") != null
+                                        ? Base64.encodeBase64String(jsonDataMap.get("CARD").asText().getBytes())
+                                        : null;
+                                brand = jsonDataMap.has("BRAND") && jsonDataMap.get("BRAND") != null
+                                        ? jsonDataMap.get("BRAND").asText()
+                                        : null;
+                                status = jsonDataMap.has("STATUS") && jsonDataMap.get("STATUS") != null
+                                        ? jsonDataMap.get("STATUS").asText()
+                                        : null;
+                            }
+
                             JsonNode jsonOrder = jsonNode.get("order");
-                            currency = jsonOrder.get("currency").asText();
+                            currency = jsonOrder != null && jsonOrder.has("currency") && jsonOrder.get("currency") != null
+                                    ? jsonOrder.get("currency").asText()
+                                    : null;
                         } catch (JsonProcessingException e) {
                             transactionId = "-1";
                         }
-                        String urlRedirect = String.format(
+
+                        return Mono.just(String.format(
                                 "%s?transactionId=%s&dateTransaction=%s&amountTransaction=%s" +
                                         "&cardTransaction=%s&brand=%s&currency=%s&status=%s",
                                 finalUrlWeb,
@@ -233,9 +274,6 @@ public class NiubizServiceImpl implements NiubizService {
                                 brand,
                                 currency,
                                 status
-                        );
-                        return Mono.just(urlRedirect);
-
                         //aca por defecto esta en 10% del monto los puntos rewards
                         //int rewardPoints = (int) Math.round(amount * 0.1);
                         /*
@@ -251,6 +289,7 @@ public class NiubizServiceImpl implements NiubizService {
                                 .then(Mono.just(urlRedirect));
 
                          */
+                        ));
                     });
                 });
     }
