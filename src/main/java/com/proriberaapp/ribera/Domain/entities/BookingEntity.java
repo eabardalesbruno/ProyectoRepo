@@ -10,10 +10,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 
 @Getter
 @Setter
@@ -77,6 +74,17 @@ public class BookingEntity {
     public static BookingEntity createBookingEntity(Integer userClientId, BookingSaveRequest bookingSaveRequest,
             Integer numberOfDays, Boolean isPromotor, Boolean isReceptionist) {
         ZoneId limaZoneId = ZoneId.of("America/Lima");
+        /*
+        Instant dayBookingInitInstant = bookingSaveRequest.getDayBookingInit()
+                .atTime(15, 0)
+                .atZone(limaZoneId) // Asigna la zona horaria de Lima
+                .toInstant();      // Convierte a Instant (UTC)
+
+        Instant dayBookingEndInstant = bookingSaveRequest.getDayBookingEnd()
+                .atTime(12, 0)
+                .atZone(limaZoneId) // Asigna la zona horaria de Lima
+                .toInstant();      // Convierte a Instant (UTC)
+         */
         return BookingEntity.builder()
                 .roomOfferId(bookingSaveRequest.getRoomOfferId())
                 .bookingStateId(3)
@@ -99,7 +107,8 @@ public class BookingEntity {
                         .atTime(15, 0)))
                 .dayBookingEnd(Timestamp.valueOf(bookingSaveRequest.getDayBookingEnd()
                         .atTime(12, 0)))
-                .createdAt(Timestamp.valueOf(ZonedDateTime.now(limaZoneId).toLocalDateTime()))
+                //.createdAt(Timestamp.valueOf(ZonedDateTime.now(limaZoneId).toLocalDateTime()))
+                .createdAt(Timestamp.from(ZonedDateTime.now(limaZoneId).toInstant()))
                 .quotationId(bookingSaveRequest.getQuotationId())
                 .build();
     }
