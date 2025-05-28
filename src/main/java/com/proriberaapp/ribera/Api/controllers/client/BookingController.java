@@ -11,6 +11,7 @@ import com.proriberaapp.ribera.Domain.dto.CompanionsDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.CompanionsEntity;
 import com.proriberaapp.ribera.Domain.enums.Role;
+import com.proriberaapp.ribera.Infraestructure.repository.CompanionsRepository;
 import com.proriberaapp.ribera.services.client.BookingService;
 import com.proriberaapp.ribera.services.client.CompanionsService;
 import com.proriberaapp.ribera.services.client.impl.CompanionServiceImpl;
@@ -42,6 +43,7 @@ public class BookingController {
     private final JwtProvider jtp;
     private final BookingService bookingService;
     private final CompanionServiceImpl companionsService;
+    private final CompanionsRepository companionsRepository;
 
     @GetMapping("/find/all/state")
     public Flux<ViewBookingReturn> findAllByStateBookings(
@@ -248,7 +250,7 @@ public class BookingController {
     public Flux<CompanionsEntity> getCompanionsByBookingId(@PathVariable Integer bookingId) {
         return companionsService.getCompanionsByBookingId(bookingId);
     }
-
+    /*
     @PostMapping("/{bookingId}/companions")
     public Mono<Void> addCompanionsToBooking(@PathVariable Integer bookingId,
             @RequestBody List<Map<String, Object>> companionsData) {
@@ -307,6 +309,87 @@ public class BookingController {
                             .orElseThrow(() -> new IllegalArgumentException("Titular no encontrado"));
                     titular.setBookingId(bookingId);
                     return companionsService.calculateAgeandSave(titular).then();
+                });
+    }
+    */
+
+    @PostMapping("/{bookingId}/companions")
+    public Mono<Void> addCompanionsToBooking(@PathVariable Integer bookingId,
+                                             @RequestBody List<Map<String, Object>> companionsData) {
+        Flux<CompanionsEntity> companionsEntityFlux = Flux.fromIterable(companionsData)
+                .map(data -> {
+                    CompanionsEntity companion = new CompanionsEntity();
+                    companion.setFirstname((String) data.get("nombres"));
+                    companion.setLastname((String) data.get("apellidos"));
+                    companion.setTypeDocumentId(
+                            data.get("typeDocument") != null ? ((Number) data.get("typeDocument")).intValue() : null); // Tipo
+                    // de
+                    // documento
+                    companion.setDocumentNumber((String) data.get("document"));
+                    companion.setCellphone((String) data.get("celphone"));
+                    companion.setEmail((String) data.get("correo"));
+                    companion.setTitular(Boolean.TRUE.equals(data.get("isTitular")));
+                    companion.setCategory((String) data.get("category"));
+
+                    String birthdateStr = (String) data.get("fechaNacimiento");
+                    if (birthdateStr != null) {
+                        try {
+                            LocalDateTime birthdate = ZonedDateTime.parse(birthdateStr).toLocalDateTime();
+                            companion.setBirthdate(Timestamp.valueOf(birthdate));
+                        } catch (DateTimeParseException e) {
+                            throw new RuntimeException("Formato de fecha inválido: " + birthdateStr, e);
+                        }
+                    }
+                    companion.setGenderId(
+                            data.get("genero") != null ? ("Masculino".equals(data.get("genero")) ? 1 : 2) : null);
+                    companion.setCountryId(
+                            data.get("areaZone") != null ? ((Number) data.get("areaZone")).intValue() : null);
+
+                    return companion;
+                });
+
+        return companionsEntityFlux.collectList()
+                .flatMap(companions -> {
+                    // Primero, verifica si YA existe un titular para este bookingId en la DB.
+                    return companionsRepository.existsTitularByBookingId(bookingId)
+                            .flatMap(existsTitularInDb -> {
+                                // Si NO existe un titular en la DB
+                                if (!existsTitularInDb) {
+                                    // Entonces, verificamos si la lista actual de companions TRAE un titular
+                                    boolean hasTitularInCurrentRequest = companions.stream().anyMatch(CompanionsEntity::isTitular);
+
+                                    // Si la lista actual TAMPOCO trae un titular, lanzamos el error
+                                    if (!hasTitularInCurrentRequest) {
+                                        return Mono.error(new IllegalArgumentException("Debe haber al menos un titular en la reserva, y no se encontró uno existente ni se incluyó en esta solicitud."));
+                                    }
+                                    // Si la lista actual SÍ trae un titular y no había uno en la DB,
+                                    // continuamos con la lógica normal para guardar el titular y/o acompañantes.
+                                }
+                                // Si SÍ existe un titular en la DB, o si la petición actual lo trae (y no había uno en DB),
+                                // entonces continuamos con la lógica de guardado.
+
+                                // Aplica la lógica de procesamiento de acompañantes (la parte que quieres ejecutar)
+                                if (companions.size() > 1) {
+                                    // Si la lista tiene más de un acompañante, validamos el total y guardamos todos
+                                    return companionsService.validateTotalCompanions(bookingId, Flux.fromIterable(companions))
+                                            .thenMany(Flux.fromIterable(companions)
+                                                    .flatMap(companion -> {
+                                                        companion.setBookingId(bookingId);
+                                                        return companionsService.calculateAgeandSave(companion);
+                                                    }))
+                                            .then();
+                                } else if (companions.size() == 1) {
+                                    // Si solo hay un acompañante, lo procesamos.
+                                    // No importa si es titular o no, ya que la validación inicial de titularidad
+                                    // ya se manejó (o se asumió que se añade al existente).
+                                    CompanionsEntity singleCompanion = companions.get(0);
+                                    singleCompanion.setBookingId(bookingId);
+                                    return companionsService.calculateAgeandSave(singleCompanion).then();
+                                } else {
+                                    // Si la lista está vacía después de las validaciones, no hay nada que hacer.
+                                    return Mono.empty();
+                                }
+                            });
                 });
     }
 

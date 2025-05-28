@@ -32,4 +32,16 @@ public interface CompanionsRepository extends R2dbcRepository<CompanionsEntity, 
     Flux<CompanionsEntity> findByFullDayId(Integer fulldayid);
 
     Mono<Void> deleteByFulldayid(Integer fulldayid);
+
+    @Query(value = """
+            SELECT EXISTS (
+                SELECT 1
+                FROM companions
+                WHERE
+                    bookingid = :bookingId
+                    AND
+                    istitular = TRUE
+            )
+            """)
+    Mono<Boolean>existsTitularByBookingId(Integer bookingId);
 }
