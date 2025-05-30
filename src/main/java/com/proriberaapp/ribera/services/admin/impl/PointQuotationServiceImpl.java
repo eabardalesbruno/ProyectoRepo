@@ -146,6 +146,7 @@ public class PointQuotationServiceImpl implements PointQuotationService {
                                         dto.setOfferType(offerType);
                                         dto.setCostPerNight(point.getCostPerNight());
                                         dto.setId(point.getId());
+                                        dto.setStatus(point.getStatus());
                                         return dto;
                                 });
         }

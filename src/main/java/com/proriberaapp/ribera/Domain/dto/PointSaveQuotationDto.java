@@ -13,5 +13,5 @@ public class PointSaveQuotationDto {
     private double costPerNight;
     private List<PointDaysDto> days;
     private Integer id;
-
+    private Integer status;
 }

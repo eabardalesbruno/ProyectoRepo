@@ -22,10 +22,21 @@ public class ManagerAdminClientController {
     public Mono<UserClientEntity> updatePassword(@RequestParam Integer id, @RequestParam String newPassword) {
         return clientManagerService.updatePassword(id, newPassword);
     }
-
+    /*
     @GetMapping("/findAllClients")
     public Mono<UserClientPageDto> getAllClients(@RequestParam Integer indice, @RequestParam(required = false) Integer statusId, @RequestParam(required = false) String fecha, @RequestParam(required = false) String filter) {
         return clientManagerService.getAllClients(indice, statusId, fecha, filter);
+    }
+    */
+
+    @GetMapping("/findAllClients")
+    public Mono<UserClientPageDto> getAllClients(@RequestParam Integer indice,
+                                                 @RequestParam(required = false) Integer statusId,
+                                                 @RequestParam(required = false) Integer userLevelId,
+                                                 @RequestParam(required = false) String fechaInicio,
+                                                 @RequestParam(required = false) String fechaFin,
+                                                 @RequestParam(required = false) String filter) {
+        return clientManagerService.getAllClientsWithParams(indice, statusId,userLevelId, fechaInicio,fechaFin, filter);
     }
 
     @PostMapping("/updateClient")

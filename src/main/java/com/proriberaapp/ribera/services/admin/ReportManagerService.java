@@ -38,6 +38,8 @@ public interface ReportManagerService {
 
     Mono<TotalCalculationMonthsDTO> TotalCancellSales(Integer month, Integer year);
 
+    Mono<TotalCalculationMonthsDTO> totalReservationsSalesForMonthAndYear(Integer month, Integer year);
+
     Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month, Integer year);
 
     Mono<BigDecimal> getTotalBeforeYear();

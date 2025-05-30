@@ -97,6 +97,21 @@ public class ClientManagerServiceImpl implements ClientManagerService {
     }
 
     @Override
+    public Mono<UserClientPageDto> getAllClientsWithParams(Integer indice, Integer statusId, Integer userLevelId,
+                                                           String fechaInicio, String fechaFin, String filter) {
+        UserClientPageDto resp = new UserClientPageDto();
+        return userClientRepository.countUserAllWithParams(statusId,userLevelId, fechaInicio,fechaFin, filter)
+                .flatMap(totalClients -> {
+                    resp.setTotalClients(totalClients);
+                    return userClientRepository.getAllClientsWithParams(indice, statusId,userLevelId, fechaInicio,
+                            fechaFin, filter).collectList().map(userClientDtos -> {
+                        resp.setUsersClients(userClientDtos);
+                        return resp;
+                    });
+                });
+    }
+
+    @Override
     public Mono<Void> saveClient(UserClientDto entity) {
         return userClientRepository.findByUserClientId(entity.getUserClientId()).flatMap(userClientEntity -> {
             userClientEntity.setFirstName(entity.getFirstName());

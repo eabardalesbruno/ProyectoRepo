@@ -485,6 +485,39 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
       """)
   Mono<Long> getTotalCancellLastSales(Integer month, Integer year);
 
+  @Query(value = """
+           SELECT COUNT(*)
+           FROM (SELECT bo.bookingstateid
+              FROM booking bo
+              JOIN roomoffer r ON r.roomofferid = bo.roomofferid
+              JOIN room rid ON rid.roomid = r.roomid
+              JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid
+              JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid
+              JOIN userclient us ON us.userclientid = bo.userclientid
+              JOIN bedroom be ON be.roomid = rid.roomid
+              JOIN bedstype bt ON bt.bedtypeid = be.bedtypeid
+              WHERE (0 = :month AND TO_CHAR(bo.createdat, 'YYYY') = CAST((:year) AS VARCHAR))
+           	  OR (0 < :month AND TO_CHAR(bo.createdat, 'MM/YYYY') = LPAD(CAST((:month) AS VARCHAR), 2, '0') ||'/'|| CAST((:year) AS VARCHAR))
+           ) t WHERE t.bookingstateid = 2
+          """)
+  Mono<Long> getCountTotalReservationsForMonthAndYear(Integer month, Integer year);
+
+  @Query("""
+        SELECT COUNT(*)
+              FROM booking bo
+              JOIN roomoffer r ON r.roomofferid = bo.roomofferid
+              JOIN room rid ON rid.roomid = r.roomid
+              JOIN roomtype rt ON rt.roomtypeid = rid.roomtypeid
+              JOIN bookingstate bs ON bo.bookingstateid = bs.bookingstateid
+              JOIN userclient us ON us.userclientid = bo.userclientid
+              JOIN bedroom be ON be.roomid = rid.roomid
+              JOIN bedstype bt ON bt.bedtypeid = be.bedtypeid
+              WHERE bo.bookingstateid = 2
+              AND (TO_CHAR(bo.createdat, 'MM/YYYY') = CASE :month WHEN 1 THEN TO_CHAR(CURRENT_DATE + interval '-1 month', 'MM/YYYY')
+              								  	ELSE LPAD(CAST((:month-1) AS VARCHAR), 2, '0') ||'/'|| CAST((:year) AS VARCHAR) END)
+      """)
+  Mono<Long> getCountTotalReservationsForMonthAndYearLast(Integer month, Integer year);
+
   @Query("""
       SELECT
       t.invoice_createdat,
