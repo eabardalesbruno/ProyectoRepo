@@ -1017,6 +1017,18 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public Mono<TotalCalculationMonthsDTO> totalReservationsForMonthAndYear(Integer month, Integer year) {
+        TotalCalculationMonthsDTO resp = new TotalCalculationMonthsDTO();
+        return bookingRepository.getCountTotalReservationsForMonthAndYear(month, year).flatMap(totalMonth ->
+                bookingRepository.getCountTotalReservationsForMonthAndYearLast(month, year)
+                        .flatMap(totalLastMonth -> {
+            resp.setTotalMonth(totalMonth);
+            resp.setTotalLastMonth(totalLastMonth);
+            return Mono.just(resp);
+        }));
+    }
+
+    @Override
     public Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month,
                                                                           Integer year) {
         return bookingRepository.findBookingsWithResumeByStateId(stateId, month, year);
