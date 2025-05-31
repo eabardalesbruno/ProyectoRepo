@@ -91,6 +91,11 @@ public class ReportManagerServiceImpl implements ReportManagerService {
     }
 
     @Override
+    public Mono<TotalCalculationMonthsDTO> totalReservationsSalesForMonthAndYear(Integer month, Integer year) {
+        return bookingService.totalReservationsForMonthAndYear(month, year);
+    }
+
+    @Override
     public Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month, Integer year) {
         return bookingService.findBookingsWithResumeByStateId(stateId, month, year);
     }

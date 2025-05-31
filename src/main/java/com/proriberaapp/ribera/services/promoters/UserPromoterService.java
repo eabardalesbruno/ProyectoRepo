@@ -18,6 +18,8 @@ public interface UserPromoterService {
     Mono<TokenResult> checkAndGenerateToken(String email);
     Mono<UserPromoterEntity> findByEmail(String email);
     Mono<UserPromoterPageDto> getAllPromoters(Integer indice, String status, String fecha, String filter);
+    Mono<UserPromoterPageDto> getAllPromotersWithParams(Integer indice, String status, String fechaInicio,
+                                                        String fechaFin, String filter);
     Mono<Void> savePromoter(UserPromoterDto entity);
     Mono<List<String>> getStatus();
     Mono<UserPromoterEntity> updatePassword(Integer id, String newPassword);

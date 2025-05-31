@@ -97,10 +97,20 @@ public class UserPromotersController {
         Integer idUserClient = jwtProvider.getIdFromToken(token);
         return userPromoterService.findPromotorDTOById(idUserClient);
     }
-
+    /*
     @GetMapping("/findAllPromoters")
     public Mono<UserPromoterPageDto> getAllClients(@RequestParam Integer indice, @RequestParam(required = false) String status, @RequestParam(required = false) String fecha, @RequestParam(required = false) String filter) {
         return userPromoterService.getAllPromoters(indice, status, fecha, filter);
+    }
+    */
+
+    @GetMapping("/findAllPromoters")
+    public Mono<UserPromoterPageDto> getAllClients(@RequestParam Integer indice,
+                                                   @RequestParam(required = false) String status,
+                                                   @RequestParam(required = false) String fechaInicio,
+                                                   @RequestParam(required = false) String fechaFin,
+                                                   @RequestParam(required = false) String filter) {
+        return userPromoterService.getAllPromotersWithParams(indice, status, fechaInicio,fechaFin, filter);
     }
 
     @PostMapping("/updatePromoter")

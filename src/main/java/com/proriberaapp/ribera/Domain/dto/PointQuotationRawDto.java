@@ -20,5 +20,5 @@ public class PointQuotationRawDto {
     private Integer offertypeid;
     private String offertypename;
     private double costPerNight;
-
+    private Integer status;
 }

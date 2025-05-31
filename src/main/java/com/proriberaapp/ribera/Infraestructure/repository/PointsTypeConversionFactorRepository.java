@@ -13,11 +13,23 @@ import org.springframework.stereotype.Repository;
 public interface PointsTypeConversionFactorRepository
                 extends R2dbcRepository<PointTypeConversionFactorEntity, Integer> {
         @Query("""
-                        SELECT pt.*,ptf.id,ptf.costpernight,ot.offertypeid,ot.offertypename FROM points_conversion_factor ptf
-                                                join pointstype pt on pt.pointstypeid = ptf.idpointtype
-                                                 join offertype ot on ot.offertypeid = ptf.offerttypeid
-                                                 order by pt.pointstypeid,ot.offertypeid asc
-                        """)
+                SELECT
+                    pt.*,
+                    ptf.id,
+                    ptf.costpernight,
+                    ot.offertypeid,
+                    ot.offertypename,
+                    ptf.state AS status
+                FROM
+                    points_conversion_factor ptf
+                JOIN
+                    pointstype pt ON pt.pointstypeid = ptf.idpointtype
+                JOIN
+                    offertype ot ON ot.offertypeid = ptf.offerttypeid
+                ORDER BY
+                    pt.pointstypeid,
+                    ot.offertypeid ASC;
+                """)
         Flux<PointQuotationRawDto> getAllWithPointType();
 
 }

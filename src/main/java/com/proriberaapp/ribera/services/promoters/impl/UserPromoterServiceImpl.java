@@ -268,6 +268,21 @@ public class UserPromoterServiceImpl implements UserPromoterService {
     }
 
     @Override
+    public Mono<UserPromoterPageDto> getAllPromotersWithParams(Integer indice, String status, String fechaInicio,
+                                                               String fechaFin, String filter) {
+        UserPromoterPageDto resp = new UserPromoterPageDto();
+        return userPromoterRepository.countPromoterAllWithParams(status, fechaInicio,fechaFin, filter)
+                .flatMap(totalPromoters -> {
+            resp.setTotalPromoters(totalPromoters);
+            return userPromoterRepository.getAllPromoterWithParams(indice, status, fechaInicio,fechaFin, filter)
+                    .collectList().map(userPromoterDtos -> {
+                resp.setUserPromoter(userPromoterDtos);
+                return resp;
+            });
+        });
+    }
+
+    @Override
     public Mono<Void> savePromoter(UserPromoterDto entity) {
         return userPromoterRepository.findById(entity.getUserPromoterId()).flatMap(userPromoterEntity -> {
             userPromoterEntity.setFirstName(entity.getFirstName());

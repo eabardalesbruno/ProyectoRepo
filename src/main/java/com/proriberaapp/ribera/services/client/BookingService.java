@@ -103,6 +103,8 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Mono<TotalCalculationMonthsDTO> totalPaymentMonthSum(Integer month, Integer year);
 
+    Mono<TotalCalculationMonthsDTO> totalReservationsForMonthAndYear(Integer month, Integer year);
+
     Flux<BookingResumenPaymentDTO> findBookingsWithResumeByStateId(Integer stateId, Integer month, Integer year);
 
     Mono<BigDecimal> getTotalBeforeYear();

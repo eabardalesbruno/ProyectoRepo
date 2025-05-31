@@ -83,6 +83,12 @@ public class ReportManagerController {
         return reportManagerService.TotalCancellSales(month, year);
     }
 
+    @GetMapping("/total-sales-reservation")
+    public Mono<TotalCalculationMonthsDTO> TotalReservationsSalesForMonthAndYear(@RequestParam Integer month,
+                                                                                 @RequestParam Integer year) {
+        return reportManagerService.totalReservationsSalesForMonthAndYear(month, year);
+    }
+
     @GetMapping("/total-before-year")
     public Mono<BigDecimal> getTotalBeforeYear() {
         return reportManagerService.getTotalBeforeYear();

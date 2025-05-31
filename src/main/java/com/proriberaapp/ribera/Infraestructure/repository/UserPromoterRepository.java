@@ -48,6 +48,42 @@ public interface UserPromoterRepository extends R2dbcRepository<UserPromoterEnti
     """)
     Flux<UserPromoterDto> getAllPromoter(Integer indice, String status, String fecha, String filter);
 
+    @Query("""
+            SELECT COUNT(*)
+            FROM (SELECT up.*,
+            (SELECT g.genderdesc FROM gender g WHERE g.genderId = up.genderid) genderdesc
+            FROM userpromoter up
+            ORDER BY up.createdat) t
+            WHERE (:status IS NULL OR t.status = :status)
+                    AND (:filter IS NULL OR (UPPER(t.firstName) LIKE UPPER(CONCAT('%', :filter, '%')) OR 
+                        UPPER(t.lastName) LIKE UPPER(CONCAT('%', :filter, '%')) OR 
+                        UPPER(t.documentnumber) LIKE UPPER(CONCAT('%', :filter, '%')) OR 
+                        UPPER(t.email) LIKE UPPER(CONCAT('%', :filter, '%'))))
+                    AND (:fechaInicio IS NULL OR t.createdat >= TO_DATE(:fechaInicio, 'YYYY/MM/DD'))
+                    AND (:fechaFin IS NULL OR t.createdat <= TO_DATE(COALESCE(:fechaFin, 
+                        TO_CHAR(CURRENT_DATE, 'YYYY/MM/DD')), 'YYYY/MM/DD'))
+            """)
+    Mono<Long> countPromoterAllWithParams(String status, String fechaInicio,String fechaFin, String filter);
+
+    @Query("""
+            SELECT *
+            FROM (SELECT up.*,
+            (SELECT g.genderdesc FROM gender g WHERE g.genderId = up.genderid) genderdesc
+            FROM userpromoter up
+            ORDER BY up.createdat) t
+            WHERE (:status IS NULL OR t.status = :status)
+                    AND (:filter IS NULL OR (UPPER(t.firstName) LIKE UPPER(CONCAT('%', :filter, '%')) OR 
+                        UPPER(t.lastName) LIKE UPPER(CONCAT('%', :filter, '%')) OR 
+                        UPPER(t.documentnumber) LIKE UPPER(CONCAT('%', :filter, '%')) OR 
+                        UPPER(t.email) LIKE UPPER(CONCAT('%', :filter, '%'))))
+                    AND (:fechaInicio IS NULL OR t.createdat >= TO_DATE(:fechaInicio, 'YYYY/MM/DD'))
+                    AND (:fechaFin IS NULL OR t.createdat <= TO_DATE(COALESCE(:fechaFin, 
+                        TO_CHAR(CURRENT_DATE, 'YYYY/MM/DD')), 'YYYY/MM/DD'))
+            OFFSET :indice*10 LIMIT 10
+            """)
+    Flux<UserPromoterDto> getAllPromoterWithParams(Integer indice, String status, String fechaInicio,String fechaFin,
+                                                   String filter);
+
     @Query("SELECT DISTINCT status FROM userpromoter")
     Flux<String> getStatus();
 
