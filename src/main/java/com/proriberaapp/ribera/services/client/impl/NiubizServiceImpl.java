@@ -298,8 +298,8 @@ public class NiubizServiceImpl implements NiubizService {
     public Mono<Object> savePayNiubiz(Integer bookingId, String invoiceType, String invoiceDocumentNumber, Double totalDiscount, Double percentageDiscount, Double totalCostWithOutDiscount, Double amount, String transactionId) {
         return bookingRepository.findByBookingId(bookingId)
                 .flatMap(booking -> {
-                    //booking.setBookingStateId(3);
-                    booking.setBookingStateId(2);
+                    booking.setBookingStateId(3);
+                    //booking.setBookingStateId(2);
                     booking.setCostFinal(BigDecimal.valueOf(amount));
                     return Mono.zip(bookingRepository.save(booking),
                             this.bookingRepository.getRoomNameAndDescriptionfindByBookingId(booking.getBookingId()),
@@ -378,7 +378,7 @@ public class NiubizServiceImpl implements NiubizService {
                                         .getUserClientId())
                                 .refuseReasonId(1)
                                 .paymentMethodId(6)//1
-                                .paymentStateId(2)
+                                .paymentStateId(1) //2
                                 .paymentTypeId(3)
                                 .paymentSubTypeId(6)
                                 .currencyTypeId(1)
@@ -393,7 +393,7 @@ public class NiubizServiceImpl implements NiubizService {
                                 .imageVoucher("Pago con Tarjeta")
                                 .totalPoints(0)
                                 .paymentComplete(true)
-                                .pendingpay(1)
+                                .pendingpay(0)
                                 .totalDiscount(totalDiscount)
                                 .percentageDiscount(percentageDiscount)
                                 .totalCostWithOutDiscount(totalCostWithOutDiscount)

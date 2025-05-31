@@ -119,6 +119,7 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
 
         @Query("""
                                   select
+                                        b.createdat,
                                           pb.paymentbookid as "paymentBookId",
                                           pb.bookingid as "bookingId",
                                           uc.userclientid as "userClientId",
