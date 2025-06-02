@@ -252,8 +252,8 @@ public class UserController {
             @RequestParam(required = false) String document) {
 
         return userClientService.findByEmailOrDocument(email, document)
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+                .map(ResponseEntity::ok);
+                //.defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
 
