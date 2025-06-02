@@ -653,6 +653,7 @@ public class UserClientServiceImpl implements UserClientService {
         });
     }
 
+    /*
     @Override
     public Mono<Void> updateUser(UserClientDto userClientEntity) {
         Mono<Void> updateUserM = Mono.defer(() -> {
@@ -670,6 +671,37 @@ public class UserClientServiceImpl implements UserClientService {
                 }).flatMap(d -> updateUserM)
                 .then();
 
+    }
+    */
+
+    @Override
+    public Mono<Void> updateUser(UserClientDto userClientEntity) {
+
+        Mono<String> emailDuplicateError = userClientRepository.findByEmailAndUserClientIdIsNot(
+                        userClientEntity.getUserClientId(), userClientEntity.getEmail()
+                )
+                .hasElement()
+                .filter(Boolean::booleanValue)
+                .map(exists -> "El correo electrónico ya está registrado por otro usuario.");
+
+        Mono<String> documentDuplicateError = userClientRepository.findByDocumentNumberAndUserClientIdIsNot(
+                        userClientEntity.getUserClientId(),userClientEntity.getDocumentNumber()
+                )
+                .hasElement()
+                .filter(Boolean::booleanValue)
+                .map(exists -> "El número de documento ya está registrado por otro usuario.");
+
+        return Flux.merge(emailDuplicateError, documentDuplicateError)
+                .collectList()
+                .flatMap(errors -> {
+                    if (!errors.isEmpty()) {
+                        String combinedErrorMessage = String.join("\n", errors);
+                        return Mono.error(new RuntimeException(combinedErrorMessage));
+                    } else {
+                        return userClientRepository.updateBasicData(userClientEntity);
+                    }
+                })
+                .then();
     }
 
     @Override

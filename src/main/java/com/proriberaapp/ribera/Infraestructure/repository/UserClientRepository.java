@@ -234,7 +234,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
     @Query("SELECT * FROM userclient WHERE userclientid <>:userClientId and (email = :email OR documentnumber = :documentNumber)  limit 1")
     Mono<UserClientEntity> findByEmailOrDocumentNumberAndIgnoreId(String email, String documentNumber,
             Integer userClientId);
-
+    /*
     @Query("""
                         update userclient set  genderid = :#{#userClientDto.genderId},
                         documentnumber = :#{#userClientDto.documentNumber},
@@ -242,6 +242,47 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
                                 countryId = :#{#userClientDto.countryId}
             where userclientid = :#{#userClientDto.userClientId}
                         """)
+    Mono<Void> updateBasicData(UserClientDto userClientDto);
+    */
+
+    @Query(value = """
+            SELECT
+                uc.email
+            FROM
+                userclient uc
+            WHERE
+                uc.userclientid <> :userClientId
+                AND uc.email = :email
+            LIMIT 1;
+            """)
+    Mono<String> findByEmailAndUserClientIdIsNot(Integer userClientId,String email);
+
+
+    @Query(value = """
+            SELECT
+                uc.documentnumber
+            FROM
+                userclient uc
+            WHERE
+                uc.userclientid <> :userClientId
+                AND uc.documentnumber = :documentNumber
+            LIMIT 1;
+            """)
+    Mono<String> findByDocumentNumberAndUserClientIdIsNot(Integer userClientId,String documentNumber);
+
+    @Query("""
+            UPDATE userclient
+            SET
+                genderid = :#{#userClientDto.genderId},
+                documentnumber = :#{#userClientDto.documentNumber},
+                address = :#{#userClientDto.address},
+                cellnumber = :#{#userClientDto.cellNumber},
+                email = :#{#userClientDto.email},
+                countryId = :#{#userClientDto.countryId},
+                birthdate = :#{#userClientDto.birthDate}
+            WHERE
+                userclientid = :#{#userClientDto.userClientId};
+            """)
     Mono<Void> updateBasicData(UserClientDto userClientDto);
 
     @Query("""
