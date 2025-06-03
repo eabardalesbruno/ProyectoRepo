@@ -430,6 +430,7 @@ public class BookingServiceImpl implements BookingService {
                                             return bookingRepository
                                                     .findExistingBookings(
                                                             bookingEntity.getRoomOfferId(),
+                                                            userClientId,
                                                             bookingEntity.getDayBookingInit(),
                                                             bookingEntity.getDayBookingEnd())
                                                     .hasElements()
