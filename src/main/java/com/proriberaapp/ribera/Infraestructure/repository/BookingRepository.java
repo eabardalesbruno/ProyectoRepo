@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingRepository extends R2dbcRepository<BookingEntity, Integer> {
+
   Mono<BookingEntity> findByBookingStateId(BookingEntity bookingEntity);
 
   Flux<BookingEntity> findAllByBookingStateId(Integer bookingStateId);
@@ -212,7 +213,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
       @Param("numberAdults") Integer numberAdults, @Param("numberChildren") Integer numberChildren,
       @Param("numberBabies") Integer numberBabies, @Param("userClientId") Integer userClientId,
       @Param("bookingStateId") Integer bookingStateId);
-
+  /*
   @Query("SELECT us.firstname, us.lastname, bo.bookingid, rt.roomtypeid, rt.roomtypename, rid.image, " +
       "r.offertimeinit, r.offertimeend, us.email, bo.costfinal, " +
       "TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS daybookinginit, " +
@@ -245,6 +246,99 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
       @Param("offertimeEnd") LocalDateTime offertimeEnd,
       @Param("limit") int limit,
       @Param("offset") int offset, @Param("userId") Integer userId);
+  */
+  @Query(value = """
+          SELECT
+              us.firstname,
+              us.lastname,
+              bo.bookingid,
+              rt.roomtypeid,
+              rt.roomtypename,
+              rid.image,
+              r.offertimeinit,
+              r.offertimeend,
+              us.email,
+              bo.costfinal,
+              TO_CHAR(bo.daybookinginit, 'YYYY-MM-DD"T"HH24:MI:SS') AS daybookinginit,
+              TO_CHAR(bo.daybookingend, 'YYYY-MM-DD"T"HH24:MI:SS') AS daybookingend,
+              bs.bookingstateid,
+              bs.bookingstatename,
+              STRING_AGG(CONCAT(be.quantity, ' ', bt.bedtypename), ' + ' ORDER BY bt.bedtypename) AS bedtypename,
+              bo.numberadults,
+              bo.numberchildren,
+              bo.numberbabies,
+              bo.numberadultsextra,
+              bo.numberadultsmayor,
+              r.riberapoints,
+              r.inresortpoints,
+              bo.total_rewards AS points,
+              calculate_nights(bo.daybookinginit, bo.daybookingend) AS nights,
+              bo.createdat
+          FROM
+              booking bo
+          JOIN
+              roomoffer r ON r.roomofferid = bo.roomofferid
+          JOIN
+              room rid ON rid.roomid = r.roomid
+          JOIN
+              roomtype rt ON rt.roomtypeid = rid.roomtypeid
+          JOIN
+              bookingstate bs ON bo.bookingstateid = bs.bookingstateid
+          JOIN
+              userclient us ON us.userclientid = bo.userclientid
+          LEFT JOIN
+              bedroom be ON be.roomid = rid.roomid -- LEFT JOIN para incluir habitaciones sin configuración de cama
+          LEFT JOIN
+              bedstype bt ON bt.bedtypeid = be.bedtypeid
+          WHERE
+              bo.bookingstateid = :bookingStateId
+              AND (:roomTypeId IS NULL OR rt.roomtypeid = :roomTypeId)
+              AND (
+                  :offertimeInit IS NULL
+                  OR :offertimeEnd IS NULL
+                  OR (
+                      bo.daybookinginit >= :offertimeInit
+                      AND bo.daybookingend <= :offertimeEnd
+                  )
+              )
+              AND bo.userclientid = :userId
+          GROUP BY
+              us.firstname,
+              us.lastname,
+              bo.bookingid,
+              rt.roomtypeid,
+              rt.roomtypename,
+              rid.image,
+              r.offertimeinit,
+              r.offertimeend,
+              us.email,
+              bo.costfinal,
+              daybookinginit,
+              daybookingend,
+              bs.bookingstateid,
+              bs.bookingstatename,
+              bo.numberadults,
+              bo.numberchildren,
+              bo.numberbabies,
+              bo.numberadultsextra,
+              bo.numberadultsmayor,
+              r.riberapoints,
+              r.inresortpoints,
+              bo.total_rewards,
+              nights,
+              bo.createdat
+          ORDER BY
+              bo.bookingid DESC
+          LIMIT
+              :limit OFFSET :offset;
+          """)
+  Flux<BookingStates> findBookingsByStateIdPaginatedAndUserId(
+          @Param("bookingStateId") Integer bookingStateId,
+          @Param("roomTypeId") Integer roomTypeId,
+          @Param("offertimeInit") LocalDateTime offertimeInit,
+          @Param("offertimeEnd") LocalDateTime offertimeEnd,
+          @Param("limit") int limit,
+          @Param("offset") int offset, @Param("userId") Integer userId);
 
   @Query("SELECT count(*) " +
       "FROM booking bo " +

@@ -16,11 +16,13 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
 
         Mono<PaymentBookEntity> findById(Integer id);
 
+        //Mono<PaymentBookEntity> findPaymentBookId(Integer id);
+
         Mono<PaymentBookEntity> findByPaymentBookId(Integer paymentBookId);
 
         @Query("SELECT userclientid FROM paymentbook WHERE paymentbookid = :id")
         Mono<Integer> findUserClientIdByPaymentBookId(Integer id);
-
+        /*
         @Query("""
                                 SELECT  pb.*,  bo.createdat, 
                           (CASE
@@ -46,6 +48,130 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
         Flux<PaymentBookWithChannelDto> findAllByRefuseReasonIdAndPendingPay(int refuseReasonId, int pendingPay,
                         int size,
                         int offset);
+
+
+        @Query(value = """
+                SELECT
+                    pb.*,
+                    bo.createdat,
+                    (CASE
+                        WHEN up.userpromoterid IS NOT NULL THEN CONCAT('PROMOTOR ', ' - ', up.firstname, ' ', up.lastname)
+                        WHEN ua.useradminid IS NOT NULL THEN CONCAT('RECEPCION', ' - ', ua.firstname, ' ', ua.lastname)
+                        WHEN uc.userclientid IS NOT NULL AND uc.isuserinclub THEN 'WEB - Socio'
+                        WHEN uc.userclientid IS NOT NULL AND NOT uc.isuserinclub THEN 'WEB'
+                        ELSE 'Sin clasificar'
+                    END) AS channel,
+                    pb.invoicedocumentnumber,
+                    pb.invoicetype,
+                    calculate_nights(bo.daybookinginit, bo.daybookingend) AS nights,
+                    TO_CHAR(bo.daybookinginit, 'DD/MM/YYYY') AS daybookinginit,
+                    TO_CHAR(bo.daybookingend, 'DD/MM/YYYY') AS daybookingend
+                FROM
+                    paymentbook pb
+                JOIN
+                    booking bo ON bo.bookingid = pb.bookingid
+                LEFT JOIN
+                    useradmin ua ON ua.useradminid = bo.receptionistid
+                LEFT JOIN
+                    userpromoter up ON up.userpromoterid = bo.userpromotorid
+                LEFT JOIN
+                    userclient uc ON uc.userclientid = pb.userclientid
+                WHERE
+                    refusereasonid = :refuseReasonId
+                    AND pendingpay = :pendingPay
+                ORDER BY
+                    pb.paymentdate DESC
+                LIMIT
+                    :size OFFSET :offset;
+                """)
+        Flux<PaymentBookWithChannelDto> findAllByRefuseReasonIdAndPendingPay(int refuseReasonId, int pendingPay,
+                                                                          int size, int offset);
+        */
+
+        @Query(value = """
+        SELECT
+            pb.paymentbookid,
+            pb.bookingid,
+            pb.userclientid,
+            pb.refusereasonid,
+            pb.cancelreasonid,
+            pb.paymentmethodid,
+            pb.paymentstateid,
+            pb.paymenttypeid,
+            pb.paymentsubtypeid,
+            pb.currencytypeid,
+            pb.amount,
+            pb.description,
+            pb.paymentdate,
+            pb.operationcode,
+            pb.note,
+            pb.totalcost,
+            pb.imagevoucher,
+            pb.totalpoints,
+            pb.paymentcomplete,
+            pb.pendingpay,
+            pb.percentagediscount,
+            pb.totaldiscount,
+            pb.totalcostwithoutdiscount,
+            pb.invoicedocumentnumber,
+            pb.invoicetype,
+            bo.createdat,
+            (CASE
+                WHEN up.userpromoterid IS NOT NULL THEN CONCAT('PROMOTOR ', ' - ', up.firstname, ' ', up.lastname)
+                WHEN ua.useradminid IS NOT NULL THEN CONCAT('RECEPCION', ' - ', ua.firstname, ' ', ua.lastname)
+                WHEN uc.userclientid IS NOT NULL AND uc.isuserinclub THEN 'WEB - Socio'
+                WHEN uc.userclientid IS NOT NULL AND NOT uc.isuserinclub THEN 'WEB'
+                ELSE 'Sin clasificar'
+            END) AS channel,
+            calculate_nights(bo.daybookinginit, bo.daybookingend) AS nights,
+            TO_CHAR(bo.daybookinginit, 'DD/MM/YYYY') AS daybookinginit,
+            TO_CHAR(bo.daybookingend, 'DD/MM/YYYY') AS daybookingend
+        FROM
+            paymentbook pb
+        JOIN
+            booking bo ON bo.bookingid = pb.bookingid
+        LEFT JOIN
+            useradmin ua ON ua.useradminid = bo.receptionistid
+        LEFT JOIN
+            userpromoter up ON up.userpromoterid = bo.userpromotorid
+        LEFT JOIN
+            userclient uc ON uc.userclientid = pb.userclientid
+        WHERE
+            pb.refusereasonid = :refuseReasonId
+            AND pb.pendingpay = :pendingPay
+        ORDER BY
+            pb.paymentdate DESC
+        LIMIT
+            :size OFFSET :offset;
+        """)
+        Flux<PaymentBookWithChannelDto> findAllByRefuseReasonIdAndPendingPay(
+                @Param("refuseReasonId") int refuseReasonId,
+                @Param("pendingPay") int pendingPay,
+                @Param("size") int size,
+                @Param("offset") int offset
+        );
+
+        @Query(value = """
+        SELECT
+            COUNT(pb.paymentbookid)
+        FROM
+            paymentbook pb
+        JOIN
+            booking bo ON bo.bookingid = pb.bookingid
+        LEFT JOIN
+            useradmin ua ON ua.useradminid = bo.receptionistid
+        LEFT JOIN
+            userpromoter up ON up.userpromoterid = bo.userpromotorid
+        LEFT JOIN
+            userclient uc ON uc.userclientid = pb.userclientid
+        WHERE
+            pb.refusereasonid = :refuseReasonId
+            AND pb.pendingpay = :pendingPay
+        """)
+        Mono<Long> countAllByRefuseReasonIdAndPendingPay(
+                @Param("refuseReasonId") int refuseReasonId,
+                @Param("pendingPay") int pendingPay
+        );
 
         @Query("""
                                   select

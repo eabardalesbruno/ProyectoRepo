@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Optional;
 
 @Service
 public class PaymentBookServiceImpl implements PaymentBookService {
@@ -592,7 +593,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
      * );
      * }
      */
-
+    /*
     @Override
     public Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetails(int page, int size) {
         int offset = page * size;
@@ -682,6 +683,113 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                     return Mono.just(new PaginatedResponse<>(totalElements, paymentBookDetails));
                 });
 
+    }
+    */
+
+    @Override
+    public Mono<PaginatedResponse<PaymentBookDetailsDTO>> getAllPaymentBookDetails(int page, int size) {
+        // Validar parámetros de paginación
+        if (page < 0 || size <= 0) {
+            return Mono.error(new IllegalArgumentException("La página debe ser no negativa y el tamaño debe ser positivo."));
+        }
+
+        int offset = page * size;
+
+        return paymentBookRepository.findAllByRefuseReasonIdAndPendingPay(1, 0, size, offset)
+                .flatMap(this::buildPaymentBookDetailsDTO)
+                .collectList()
+                .flatMap(paymentBookDetailsList ->
+                        paymentBookRepository.countAllByRefuseReasonIdAndPendingPay(1, 0)
+                        .map(totalElements -> new PaginatedResponse<>(totalElements, paymentBookDetailsList)));
+    }
+
+    private Mono<PaymentBookDetailsDTO> buildPaymentBookDetailsDTO(PaymentBookWithChannelDto paymentBook) {
+        return Mono.zip(
+                        userClientRepository.findById(paymentBook.getUserClientId())
+                                .map(Optional::ofNullable)
+                                .defaultIfEmpty(Optional.empty()),
+
+                        bookingService.searchById(paymentBook.getBookingId())
+                                .map(Optional::ofNullable)
+                                .defaultIfEmpty(Optional.empty()),
+
+                        paymentMethodRepository.findById(paymentBook.getPaymentMethodId())
+                                .map(Optional::ofNullable)
+                                .defaultIfEmpty(Optional.empty()),
+
+                        paymentStateRepository.findById(paymentBook.getPaymentStateId())
+                                .map(Optional::ofNullable)
+                                .defaultIfEmpty(Optional.empty()),
+
+                        paymentTypeRepository.findById(paymentBook.getPaymentTypeId())
+                                .map(Optional::ofNullable)
+                                .defaultIfEmpty(Optional.empty()),
+
+                        paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId())
+                                .map(Optional::ofNullable)
+                                .defaultIfEmpty(Optional.empty()),
+
+                        currencyTypeRepository.findById(paymentBook.getCurrencyTypeId())
+                                .map(Optional::ofNullable)
+                                .defaultIfEmpty(Optional.empty())
+                )
+                .map(tuple -> {
+                    UserClientEntity userClient = tuple.getT1().orElse(null);
+                    BookingEntity booking = tuple.getT2().orElse(null);
+                    PaymentMethodEntity paymentMethod = tuple.getT3().orElse(null);
+                    PaymentStateEntity paymentState = tuple.getT4().orElse(null);
+                    PaymentTypeEntity paymentType = tuple.getT5().orElse(null);
+                    PaymentSubtypeEntity paymentSubtype = tuple.getT6().orElse(null);
+                    CurrencyTypeEntity currencyType = tuple.getT7().orElse(null);
+
+                    PaymentBookDetailsDTO.PaymentBookDetailsDTOBuilder builder = PaymentBookDetailsDTO.builder()
+                            .paymentBookId(paymentBook.getPaymentBookId())
+                            .bookingId(paymentBook.getBookingId())
+                            .userClientId(paymentBook.getUserClientId())
+                            .paymentMethodId(paymentBook.getPaymentMethodId())
+                            .paymentStateId(paymentBook.getPaymentStateId())
+                            .refuseReasonId(paymentBook.getRefuseReasonId())
+                            .paymentTypeId(paymentBook.getPaymentTypeId())
+                            .paymentSubTypeId(paymentBook.getPaymentSubTypeId())
+                            .currencyTypeId(paymentBook.getCurrencyTypeId())
+                            .amount(paymentBook.getAmount())
+                            .description(paymentBook.getDescription())
+                            .paymentDate(paymentBook.getPaymentDate())
+                            .operationCode(paymentBook.getOperationCode())
+                            .note(paymentBook.getNote())
+                            .totalCost(paymentBook.getTotalCost())
+                            .imageVoucher(paymentBook.getImageVoucher())
+                            .totalPoints(paymentBook.getTotalPoints())
+                            .paymentComplete(paymentBook.getPaymentComplete())
+                            .pendingPay(paymentBook.getPendingpay())
+                            .totalDiscount(paymentBook.getTotalDiscount())
+                            .percentageDiscount(paymentBook.getPercentageDiscount())
+                            .channel(paymentBook.getChannel())
+                            .nights(paymentBook.getNights())
+                            .dayBookingEnd(paymentBook.getDayBookingEnd())
+                            .dayBookingInit(paymentBook.getDayBookingInit())
+                            .totalCostWithOutDiscount(paymentBook.getTotalCostWithOutDiscount());
+
+                    Optional.ofNullable(userClient).ifPresent(uc -> {
+                        builder.userClientName(uc.getFirstName());
+                        builder.userClientLastName(uc.getLastName());
+                        builder.userClientEmail(uc.getEmail());
+                        builder.userCellphoneNumber(uc.getCellNumber());
+                        builder.userDocumentType(uc.getDocumenttypeId());
+                        builder.userDocumentNumber(uc.getDocumentNumber());
+                    });
+                    Optional.ofNullable(booking).ifPresent(b -> {
+                        builder.bookingName(b.getDetail());
+                        builder.createdat(b.getCreatedAt());
+                    });
+                    Optional.ofNullable(paymentMethod).ifPresent(pm -> builder.paymentMethod(pm.getDescription()));
+                    Optional.ofNullable(paymentState).ifPresent(ps -> builder.paymentState(ps.getPaymentStateName()));
+                    Optional.ofNullable(paymentType).ifPresent(pt -> builder.paymentType(pt.getPaymentTypeDesc()));
+                    Optional.ofNullable(paymentSubtype).ifPresent(pst -> builder.paymentSubtype(pst.getPaymentSubtypeDesc()));
+                    Optional.ofNullable(currencyType).ifPresent(ct -> builder.currencyType(ct.getCurrencyTypeDescription()));
+
+                    return builder.build();
+                });
     }
 
 /*     @Override
