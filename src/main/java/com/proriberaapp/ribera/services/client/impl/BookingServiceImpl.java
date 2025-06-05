@@ -1093,7 +1093,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public Mono<BookingEntity> searchById(Integer bookingId) {
-        return this.bookingRepository.findById(bookingId);
+        return this.bookingRepository.findByBookingId(bookingId);
     }
 
 }

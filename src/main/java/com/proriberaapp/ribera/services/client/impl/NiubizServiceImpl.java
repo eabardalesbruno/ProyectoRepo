@@ -298,8 +298,8 @@ public class NiubizServiceImpl implements NiubizService {
     public Mono<Object> savePayNiubiz(Integer bookingId, String invoiceType, String invoiceDocumentNumber, Double totalDiscount, Double percentageDiscount, Double totalCostWithOutDiscount, Double amount, String transactionId) {
         return bookingRepository.findByBookingId(bookingId)
                 .flatMap(booking -> {
-                    booking.setBookingStateId(3);
-                    //booking.setBookingStateId(2);
+                    //booking.setBookingStateId(3);
+                    booking.setBookingStateId(2);
                     booking.setCostFinal(BigDecimal.valueOf(amount));
                     return Mono.zip(bookingRepository.save(booking),
                             this.bookingRepository.getRoomNameAndDescriptionfindByBookingId(booking.getBookingId()),
