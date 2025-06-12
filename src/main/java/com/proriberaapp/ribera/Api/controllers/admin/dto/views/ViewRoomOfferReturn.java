@@ -129,7 +129,7 @@ public class ViewRoomOfferReturn {
                 .costtotalexchange(row.get("costtotalexchange", BigDecimal.class))
                 .costtotalexchangestring(row.get("costtotalexchangestring", String.class))
                 .pointribera(row.get("pointribera", Integer.class))
-                .quotationId(row.get("quotationid", Integer.class))
+                .quotationId(row.get("quotation_id", Integer.class))
                 .build();
     }
 
