@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserClientResponseDTO;
 import com.proriberaapp.ribera.Domain.dto.DiscountDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalUsersDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
@@ -795,5 +796,28 @@ public class UserClientServiceImpl implements UserClientService {
     @Override
     public Mono<UserClientEntity> findByUsername(String username) {
         return userClientRepository.findByUsername(username);
+    }
+
+    @Override
+    public Flux<UserClientResponseDTO> listAllUsersExcludingCurrent(Integer currentUserId) {
+        return userClientRepository.findAll()
+                .filter(user -> !user.getUserClientId().equals(currentUserId))
+                .map(this::mapToDTO);
+    }
+
+    @Override
+    public UserClientResponseDTO mapToDTO(UserClientEntity user) {
+        return UserClientResponseDTO.builder()
+                .id(user.getUserClientId())
+                .country(user.getCountryId())
+                .firstname(user.getFirstName())
+                .lastname(user.getLastName())
+                .gender(user.getGenderId())
+                .documenttype(user.getDocumenttypeId())
+                .documentnumber(user.getDocumentNumber())
+                .birthdate(user.getBirthDate())
+                .username(user.getUsername())
+                .isuserinclub(user.isUserInclub())
+                .build();
     }
 }

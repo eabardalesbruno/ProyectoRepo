@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserClientResponseDTO;
 import com.proriberaapp.ribera.Api.controllers.exception.TokenInvalidException;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
@@ -389,4 +390,8 @@ public class UserController {
                 passwordDto.getPassword(), passwordDto.getConfirmPassword());
     }
 
+    @GetMapping("/find-username")
+    public Flux<UserClientResponseDTO> getAllUsersExcludingCurrent(@RequestParam Integer currentUserId) {
+        return userClientService.listAllUsersExcludingCurrent(currentUserId);
+    }
 }
