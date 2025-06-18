@@ -17,4 +17,5 @@ public class UserRewardRequest {
     private Double  points;
     private RewardType type;
     private LocalDateTime expirationDate;
+    private Integer bookingId;
 }
