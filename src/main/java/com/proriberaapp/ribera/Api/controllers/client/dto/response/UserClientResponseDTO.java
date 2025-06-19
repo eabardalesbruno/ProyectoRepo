@@ -22,4 +22,5 @@ public class UserClientResponseDTO {
     private Timestamp birthdate;
     private String username;
     private boolean isuserinclub;
+    private String email;
 }

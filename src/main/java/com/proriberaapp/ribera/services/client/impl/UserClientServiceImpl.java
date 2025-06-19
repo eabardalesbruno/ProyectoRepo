@@ -818,6 +818,7 @@ public class UserClientServiceImpl implements UserClientService {
                 .birthdate(user.getBirthDate())
                 .username(user.getUsername())
                 .isuserinclub(user.isUserInclub())
+                .email(user.getEmail())
                 .build();
     }
 }

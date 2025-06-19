@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.RewardTransferRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.TransferRequest;
 import com.proriberaapp.ribera.services.client.UserRewardTrasferHistoryService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,14 +23,9 @@ public class RewardTransferController {
 
 
     @PostMapping("/transfer")
-    public Mono<ResponseEntity<Map<String, Object>>> transferRewards(@RequestBody RewardTransferRequest request) {
-        return userRewardTrasferHistoryService.transferRewards(
-                        request.getFromInput(),
-                        request.getToInput(),
-                        request.getAmount(),
-                        request.getSubCategory()
-                )
-                .thenReturn(successResponse("Transferencia realizada con éxito"))
+    public Mono<ResponseEntity<Map<String, Object>>> transfer(@RequestBody TransferRequest request) {
+        return userRewardTrasferHistoryService.transferRewards(request)
+                .then(Mono.just(successResponse("Transferencia realizada con éxito")))
                 .onErrorResume(e -> Mono.just(errorResponse(e.getMessage())));
     }
 
