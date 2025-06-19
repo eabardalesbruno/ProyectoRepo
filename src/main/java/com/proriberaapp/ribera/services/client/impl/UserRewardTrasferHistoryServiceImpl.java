@@ -1,13 +1,18 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.TransferRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.PasswordValidationResponse;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.entities.UserRewardTransferHistoryEntity;
 import com.proriberaapp.ribera.Domain.entities.WalletPointEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserRewardTransferHistoryRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletPointRepository;
+import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.UserRewardTrasferHistoryService;
+import com.proriberaapp.ribera.utils.emails.TransferEmailTemplateBuilder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -24,41 +29,58 @@ public class UserRewardTrasferHistoryServiceImpl implements UserRewardTrasferHis
 
     private final WalletPointRepository walletPointRepository;
 
+    private final PasswordEncoder passwordEncoder;
+
+    private final EmailService emailService;
+
 
     @Override
-    public Mono<Void> transferRewards(String fromInput, String toInput, Double amount, String subCategory) {
+    public Mono<Void> transferRewards(TransferRequest request) {
         return Mono.zip(
-                findUserByIdentifier(fromInput, "origen"),
-                findUserByIdentifier(toInput, "destino")
-        ).flatMap(tuple -> {
-            UserClientEntity fromUser = tuple.getT1();
-            UserClientEntity toUser = tuple.getT2();
-            LocalDateTime now = LocalDateTime.now();
+                        findUserByIdentifier(request.fromInput(), "origen"),
+                        findUserByIdentifier(request.toInput(), "destino")
+                ).flatMap(tuple -> {
+                    UserClientEntity fromUser = tuple.getT1();
+                    UserClientEntity toUser = tuple.getT2();
 
-            return Mono.zip(
-                    getOrCreateWallet(fromUser.getUserClientId(), now),
-                    getOrCreateWallet(toUser.getUserClientId(), now)
-            ).flatMap(wallets -> {
-                WalletPointEntity fromWallet = wallets.getT1();
-                WalletPointEntity toWallet = wallets.getT2();
+                    String passwordRaw = request.passwordConfirm().trim();
 
-                if (fromWallet.getPoints() < amount) {
-                    return Mono.error(new RuntimeException("Fondos insuficientes en wallet origen"));
-                }
+                    if (!passwordEncoder.matches(passwordRaw, fromUser.getPassword())) {
+                        return Mono.error(new RuntimeException("Contraseña incorrecta. Transferencia denegada."));
+                    }
 
-                updateWalletBalances(fromWallet, toWallet, amount, now);
+                    LocalDateTime now = LocalDateTime.now();
 
-                LocalDate expirationDate = LocalDate.now().plusMonths(1);
-                var salida = buildTransferHistory(fromUser, toUser, fromWallet, amount, subCategory, now, expirationDate, "salida");
-                var ingreso = buildTransferHistory(fromUser, toUser, toWallet, amount, subCategory, now, expirationDate, "ingreso");
+                    return Mono.zip(
+                            getOrCreateWallet(fromUser.getUserClientId(), now),
+                            getOrCreateWallet(toUser.getUserClientId(), now)
+                    ).flatMap(wallets -> {
+                        WalletPointEntity fromWallet = wallets.getT1();
+                        WalletPointEntity toWallet = wallets.getT2();
 
-                return persistChanges(fromWallet, toWallet, salida, ingreso);
-            });
-        }).then();
+                        if (fromWallet.getPoints() < request.amount()) {
+                            return Mono.error(new RuntimeException("Fondos insuficientes en wallet origen"));
+                        }
+
+                        updateWalletBalances(fromWallet, toWallet, request.amount(), now);
+
+                        LocalDate expirationDate = LocalDate.now().plusMonths(1);
+                        var salida = buildTransferHistory(fromUser, toUser, fromWallet, request.amount(), request.subCategory(), now, expirationDate, "salida");
+                        var ingreso = buildTransferHistory(fromUser, toUser, toWallet, request.amount(), request.subCategory(), now, expirationDate, "ingreso");
+                        return persistChanges(fromWallet, toWallet, salida, ingreso)
+                                .then(sendSuccessEmail(fromUser, toUser, request.amount(), now));
+                    });
+                })
+                .then();
     }
 
-    private Mono<UserClientEntity> findUserByIdentifier(String identifier, String tipo) {
-        return userClientRepository.findByIdentifier(identifier)
+    private Mono<UserClientEntity> findUserByIdentifier(String input, String tipo) {
+        Mono<UserClientEntity> searchById = Mono.empty();
+        if (input.matches("\\d+")) {
+            searchById = userClientRepository.findById(Integer.parseInt(input));
+        }
+        return searchById
+                .switchIfEmpty(userClientRepository.findByIdentifier(input))
                 .switchIfEmpty(Mono.error(new RuntimeException("Usuario " + tipo + " no encontrado")));
     }
 
@@ -126,7 +148,25 @@ public class UserRewardTrasferHistoryServiceImpl implements UserRewardTrasferHis
         );
     }
 
+    private Mono<Void> sendSuccessEmail(UserClientEntity fromUser, UserClientEntity toUser, Double amount, LocalDateTime dateTime) {
+        String htmlBody = TransferEmailTemplateBuilder.buildTransferSuccessEmail(
+                String.valueOf(amount),
+                toUser.getFirstName()+" "+toUser.getLastName(),
+                dateTime
+        );
+
+        String subject = "Transferencia de Rewards exitosa";
+        return emailService.sendEmail(fromUser.getEmail(), subject, htmlBody);
+    }
+
+    @Override
+    public Mono<PasswordValidationResponse> validatePassword(String email, String rawPassword) {
+        return userClientRepository.findByEmail(email)
+                .map(user -> {
+                    boolean isValid = passwordEncoder.matches(rawPassword, user.getPassword());
+                    String message = isValid ? "Contraseña válida" : "Contraseña incorrecta";
+                    return new PasswordValidationResponse(isValid, message);
+                })
+                .switchIfEmpty(Mono.just(new PasswordValidationResponse(false, "Usuario no encontrado")));
+    }
 }
-
-
-
