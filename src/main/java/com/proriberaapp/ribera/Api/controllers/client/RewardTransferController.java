@@ -2,15 +2,16 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.RewardTransferRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.TransferRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardTransferHistoryResponse;
 import com.proriberaapp.ribera.services.client.UserRewardTrasferHistoryService;
 import lombok.AllArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,5 +42,16 @@ public class RewardTransferController {
         body.put("success", false);
         body.put("message", errorMessage);
         return ResponseEntity.badRequest().body(body);
+    }
+
+
+    @GetMapping("/transfers")
+    public Flux<UserRewardTransferHistoryResponse> getAllTransfers(
+            @RequestParam(value = "subcategory", required = false) String subcategory,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "dateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @RequestParam(value = "dateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo
+    ) {
+        return userRewardTrasferHistoryService.getFilteredTransfers(subcategory, status, dateFrom, dateTo);
     }
 }
