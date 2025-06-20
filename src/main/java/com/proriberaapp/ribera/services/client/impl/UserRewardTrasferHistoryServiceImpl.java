@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.TransferRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.PasswordValidationResponse;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardTransferHistoryResponse;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import com.proriberaapp.ribera.Domain.entities.UserRewardTransferHistoryEntity;
 import com.proriberaapp.ribera.Domain.entities.WalletPointEntity;
@@ -14,6 +15,7 @@ import com.proriberaapp.ribera.utils.emails.TransferEmailTemplateBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
@@ -130,6 +132,7 @@ public class UserRewardTrasferHistoryServiceImpl implements UserRewardTrasferHis
         history.setEmail(email);
         history.setType(tipo);
         history.setWalletPointId(wallet.getId());
+        history.setStatus("ACTIVO");
 
         return history;
     }
@@ -168,5 +171,63 @@ public class UserRewardTrasferHistoryServiceImpl implements UserRewardTrasferHis
                     return new PasswordValidationResponse(isValid, message);
                 })
                 .switchIfEmpty(Mono.just(new PasswordValidationResponse(false, "Usuario no encontrado")));
+    }
+
+    //History of transfers
+    public Flux<UserRewardTransferHistoryResponse> getFilteredTransfers(String subcategory, String status, LocalDate dateFrom, LocalDate dateTo) {
+        return userRewardTransferHistoryRepository.findAll()
+                .filter(entity -> filterBySubcategory(entity, subcategory))
+                .filter(entity -> filterByStatus(entity, status))
+                .filter(entity -> filterByDateRange(entity, dateFrom, dateTo))
+                .flatMap(this::mapToResponseWithUsers);
+    }
+
+    private Mono<UserRewardTransferHistoryResponse> mapToResponseWithUsers(UserRewardTransferHistoryEntity entity) {
+        Mono<UserClientEntity> fromUserMono = userClientRepository.findByUserClientId(entity.getFromUserId());
+        Mono<UserClientEntity> toUserMono = userClientRepository.findByUserClientId(entity.getToUserId());
+
+        return Mono.zip(fromUserMono, toUserMono)
+                .map(tuple -> buildResponse(entity, tuple.getT1(), tuple.getT2()));
+    }
+
+    private UserRewardTransferHistoryResponse  buildResponse(UserRewardTransferHistoryEntity entity, UserClientEntity fromUser, UserClientEntity toUser) {
+        return UserRewardTransferHistoryResponse.builder()
+                .userRewardTransferId(entity.getUser_reward_transfer_id())
+                .usdRewardsTransferred(entity.getUsdRewardsTransferred())
+                .usdRewardsRemaining(entity.getUsdRewardsRemaining())
+                .transferDate(entity.getTransferDate())
+                .expirationDate(entity.getExpirationDate() != null ? entity.getExpirationDate().atStartOfDay() : null)
+                .subCategory(entity.getSubCategory())
+                .fromUserFullName(formatFullName(fromUser))
+                .toUserFullName(formatFullName(toUser))
+                .email(fromUser.getEmail())
+                .symbol(determineSymbol(entity.getType()))
+                .Status(entity.getStatus())
+                .build();
+    }
+
+    private String formatFullName(UserClientEntity user) {
+        return user.getFirstName() + " " + user.getLastName();
+    }
+
+    private String determineSymbol(String type) {
+        return "salida".equalsIgnoreCase(type) ? "-"
+                : "ingreso".equalsIgnoreCase(type) ? "+" : "";
+    }
+
+    private boolean filterBySubcategory(UserRewardTransferHistoryEntity entity, String subcategory) {
+        return subcategory == null || subcategory.equalsIgnoreCase(entity.getSubCategory());
+    }
+
+    private boolean filterByStatus(UserRewardTransferHistoryEntity entity, String status) {
+        return status == null || status.equalsIgnoreCase(entity.getStatus());
+    }
+
+    private boolean filterByDateRange(UserRewardTransferHistoryEntity entity, LocalDate from, LocalDate to) {
+        if (entity.getTransferDate() == null) return false;
+        LocalDate date = entity.getTransferDate().toLocalDate();
+        boolean isAfterFrom = (from == null || !date.isBefore(from));
+        boolean isBeforeTo = (to == null || !date.isAfter(to));
+        return isAfterFrom && isBeforeTo;
     }
 }

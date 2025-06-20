@@ -54,4 +54,7 @@ public class UserRewardTransferHistoryEntity {
 
     @Column("wallet_point_id")
     private Integer WalletPointId;
+
+    @Column("status")
+    private String status;
 }
