@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseValidateCredential;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.TransferRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.PagedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.PasswordValidationResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardTransferHistoryResponse;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
@@ -22,6 +23,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -201,12 +203,34 @@ public class UserRewardTrasferHistoryServiceImpl implements UserRewardTrasferHis
     }
 
     //History of transfers
-    public Flux<UserRewardTransferHistoryResponse> getFilteredTransfers(String subcategory, String status, LocalDate dateFrom, LocalDate dateTo) {
+    public Mono<PagedResponse<UserRewardTransferHistoryResponse>> getFilteredTransfers(String subcategory, String status, LocalDate dateFrom, LocalDate dateTo, int page, int pageSize) {
+        int skipCount = (page - 1) * pageSize;
+
         return userRewardTransferHistoryRepository.findAll()
                 .filter(entity -> filterBySubcategory(entity, subcategory))
                 .filter(entity -> filterByStatus(entity, status))
                 .filter(entity -> filterByDateRange(entity, dateFrom, dateTo))
-                .flatMap(this::mapToResponseWithUsers);
+                .collectList()
+                .flatMap(filteredList -> {
+                    int totalElements = filteredList.size();
+                    int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+
+                    List<UserRewardTransferHistoryEntity> paginated = filteredList.stream()
+                            .skip(skipCount)
+                            .limit(pageSize)
+                            .toList();
+
+                    return Flux.fromIterable(paginated)
+                            .flatMap(this::mapToResponseWithUsers)
+                            .collectList()
+                            .map(content -> PagedResponse.<UserRewardTransferHistoryResponse>builder()
+                                    .content(content)
+                                    .page(page)
+                                    .pageSize(pageSize)
+                                    .totalElements(totalElements)
+                                    .totalPages(totalPages)
+                                    .build());
+                });
     }
 
     private Mono<UserRewardTransferHistoryResponse> mapToResponseWithUsers(UserRewardTransferHistoryEntity entity) {

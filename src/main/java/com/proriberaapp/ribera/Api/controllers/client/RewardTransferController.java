@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.RewardTransferRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.TransferRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.PagedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardTransferHistoryResponse;
 import com.proriberaapp.ribera.services.client.UserRewardTrasferHistoryService;
 import lombok.AllArgsConstructor;
@@ -46,12 +47,14 @@ public class RewardTransferController {
 
 
     @GetMapping("/transfers")
-    public Flux<UserRewardTransferHistoryResponse> getAllTransfers(
+    public Mono<PagedResponse<UserRewardTransferHistoryResponse>> getAllTransfers(
             @RequestParam(value = "subcategory", required = false) String subcategory,
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "dateFrom", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
-            @RequestParam(value = "dateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo
+            @RequestParam(value = "dateTo", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "pageSize", defaultValue = "10") int pageSize
     ) {
-        return userRewardTrasferHistoryService.getFilteredTransfers(subcategory, status, dateFrom, dateTo);
+        return userRewardTrasferHistoryService.getFilteredTransfers(subcategory, status, dateFrom, dateTo, page, pageSize);
     }
 }
