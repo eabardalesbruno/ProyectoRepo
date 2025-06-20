@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseValidateCredential;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.TransferRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.PasswordValidationResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardTransferHistoryResponse;
@@ -10,6 +11,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserRewardTransferHistoryRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletPointRepository;
 import com.proriberaapp.ribera.services.client.EmailService;
+import com.proriberaapp.ribera.services.client.LoginInclubService;
 import com.proriberaapp.ribera.services.client.UserRewardTrasferHistoryService;
 import com.proriberaapp.ribera.utils.emails.TransferEmailTemplateBuilder;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,8 @@ public class UserRewardTrasferHistoryServiceImpl implements UserRewardTrasferHis
 
     private final EmailService emailService;
 
+    private final LoginInclubService loginInclubService;
+
 
     @Override
     public Mono<Void> transferRewards(TransferRequest request) {
@@ -47,33 +51,47 @@ public class UserRewardTrasferHistoryServiceImpl implements UserRewardTrasferHis
 
                     String passwordRaw = request.passwordConfirm().trim();
 
-                    if (!passwordEncoder.matches(passwordRaw, fromUser.getPassword())) {
-                        return Mono.error(new RuntimeException("Contraseña incorrecta. Transferencia denegada."));
-                    }
+                    return validatePasswor(fromUser, passwordRaw)
+                            .flatMap(isValid -> {
+                                if (!isValid) {
+                                    return Mono.error(new RuntimeException("Contraseña incorrecta. Transferencia denegada."));
+                                }
 
-                    LocalDateTime now = LocalDateTime.now();
+                                LocalDateTime now = LocalDateTime.now();
 
-                    return Mono.zip(
-                            getOrCreateWallet(fromUser.getUserClientId(), now),
-                            getOrCreateWallet(toUser.getUserClientId(), now)
-                    ).flatMap(wallets -> {
-                        WalletPointEntity fromWallet = wallets.getT1();
-                        WalletPointEntity toWallet = wallets.getT2();
+                                return Mono.zip(
+                                        getOrCreateWallet(fromUser.getUserClientId(), now),
+                                        getOrCreateWallet(toUser.getUserClientId(), now)
+                                ).flatMap(wallets -> {
+                                    WalletPointEntity fromWallet = wallets.getT1();
+                                    WalletPointEntity toWallet = wallets.getT2();
 
-                        if (fromWallet.getPoints() < request.amount()) {
-                            return Mono.error(new RuntimeException("Fondos insuficientes en wallet origen"));
-                        }
+                                    if (fromWallet.getPoints() < request.amount()) {
+                                        return Mono.error(new RuntimeException("Fondos insuficientes en wallet origen"));
+                                    }
 
-                        updateWalletBalances(fromWallet, toWallet, request.amount(), now);
+                                    updateWalletBalances(fromWallet, toWallet, request.amount(), now);
 
-                        LocalDate expirationDate = LocalDate.now().plusMonths(1);
-                        var salida = buildTransferHistory(fromUser, toUser, fromWallet, request.amount(), request.subCategory(), now, expirationDate, "salida");
-                        var ingreso = buildTransferHistory(fromUser, toUser, toWallet, request.amount(), request.subCategory(), now, expirationDate, "ingreso");
-                        return persistChanges(fromWallet, toWallet, salida, ingreso)
-                                .then(sendSuccessEmail(fromUser, toUser, request.amount(), now));
-                    });
+                                    LocalDate expirationDate = LocalDate.now().plusMonths(1);
+
+                                    var salida = buildTransferHistory(fromUser, toUser, fromWallet, request.amount(), request.subCategory(), now, expirationDate, "salida");
+                                    var ingreso = buildTransferHistory(fromUser, toUser, toWallet, request.amount(), request.subCategory(), now, expirationDate, "ingreso");
+
+                                    return persistChanges(fromWallet, toWallet, salida, ingreso)
+                                            .then(sendSuccessEmail(fromUser, toUser, request.amount(), now));
+                                });
+                            });
                 })
                 .then();
+    }
+
+    private Mono<Boolean> validatePasswor(UserClientEntity user, String rawPassword) {
+        if (Boolean.TRUE.equals(user.isUserInclub())) {
+            return loginInclubService.verifiedCredentialsInclub(user.getUsername(), rawPassword)
+                    .map(ResponseValidateCredential::isData);
+        } else {
+            return Mono.just(passwordEncoder.matches(rawPassword, user.getPassword()));
+        }
     }
 
     private Mono<UserClientEntity> findUserByIdentifier(String input, String tipo) {
@@ -165,10 +183,19 @@ public class UserRewardTrasferHistoryServiceImpl implements UserRewardTrasferHis
     @Override
     public Mono<PasswordValidationResponse> validatePassword(String email, String rawPassword) {
         return userClientRepository.findByEmail(email)
-                .map(user -> {
-                    boolean isValid = passwordEncoder.matches(rawPassword, user.getPassword());
-                    String message = isValid ? "Contraseña válida" : "Contraseña incorrecta";
-                    return new PasswordValidationResponse(isValid, message);
+                .flatMap(user -> {
+                    if (Boolean.TRUE.equals(user.isUserInclub())) {
+                        return loginInclubService.verifiedCredentialsInclub(user.getUsername(), rawPassword)
+                                .map(response -> {
+                                    boolean isValid = response.isData();
+                                    String message = isValid ? "Contraseña válida (inclub)" : "Contraseña incorrecta (inclub)";
+                                    return new PasswordValidationResponse(isValid, message);
+                                });
+                    } else {
+                        boolean isValid = passwordEncoder.matches(rawPassword, user.getPassword());
+                        String message = isValid ? "Contraseña válida" : "Contraseña incorrecta";
+                        return Mono.just(new PasswordValidationResponse(isValid, message));
+                    }
                 })
                 .switchIfEmpty(Mono.just(new PasswordValidationResponse(false, "Usuario no encontrado")));
     }
