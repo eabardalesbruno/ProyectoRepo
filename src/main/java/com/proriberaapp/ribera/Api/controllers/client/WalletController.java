@@ -3,15 +3,18 @@ package com.proriberaapp.ribera.Api.controllers.client;
 import com.proriberaapp.ribera.Api.controllers.client.dto.WalletTransactionDTO;
 import com.proriberaapp.ribera.Domain.dto.PaymentDetailsPromoterDTO;
 import com.proriberaapp.ribera.Domain.entities.WalletTransactionEntity;
+import com.proriberaapp.ribera.Domain.entities.WalletEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.WalletTransactionRepository;
 import com.proriberaapp.ribera.services.client.WalletService;
 import com.proriberaapp.ribera.services.client.WalletTransactionService;
 import com.proriberaapp.ribera.services.client.impl.WalletTransactionServiceImpl;
+import com.proriberaapp.ribera.Api.controllers.client.dto.WithdrawRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -64,8 +67,8 @@ public class WalletController {
 
 
     @PostMapping("/withdraw")
-    public Mono<ResponseEntity<WalletTransactionEntity>> withdrawal(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
-        return walletTransactionService.makeWithdrawal(walletId, transactioncatid, amount)
+    public Mono<ResponseEntity<WalletTransactionEntity>> withdrawal(@RequestBody WithdrawRequestDTO withdrawRequest) {
+        return walletTransactionService.makeWithdrawal(withdrawRequest) 
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }
@@ -79,6 +82,10 @@ public class WalletController {
 
     @PostMapping("/recharge")
     public Mono<ResponseEntity<WalletTransactionEntity>> recharge(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
+
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return Mono.just(ResponseEntity.badRequest().body(null));
+        }
         return walletTransactionService.makeRecharge(walletId, transactioncatid, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
@@ -94,6 +101,14 @@ public class WalletController {
     public Mono<BigDecimal> getBalance(@PathVariable Integer walletId) {
         return walletRepository.findById(walletId)
                 .map(walletEntity -> walletEntity.getBalance());
+    }
+
+    @GetMapping
+    public Mono<WalletEntity> getWalletByUser(@RequestParam Integer userClientId) {
+        return walletService.findByUserClientId(userClientId)
+                .switchIfEmpty(
+                        Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe wallet para este userClientId"))
+                );
     }
 
     @GetMapping("/{walletId}")
@@ -158,6 +173,11 @@ public class WalletController {
     @GetMapping("/payment-details")
     public Flux<PaymentDetailsPromoterDTO> getPaymentDetails(@RequestParam Integer walletId) {
        return walletTransactionRepository.findPaymentDetailsByWalletId(walletId);
+    }
+
+    @GetMapping("/movements/{walletId}")
+    public Flux<WalletTransactionDTO> getMovementsWithCategory(@PathVariable Integer walletId) {
+        return walletTransactionRepository.findMovementsWithCategoryNameByWalletId(walletId);
     }
 
 }

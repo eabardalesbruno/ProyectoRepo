@@ -18,6 +18,11 @@ public class WalletServiceImpl implements WalletService {
     private final WalletRepository walletRepository;
 
     @Override
+    public Mono<WalletEntity> findByUserClientId(Integer userClientId) {
+        return walletRepository.findByUserClientId(userClientId);
+    }
+
+    @Override
     public Mono<String> generateUniqueAccountNumber(Integer userId) {
 
         String cardNumber = "4" + generaRamdomDigits(15);

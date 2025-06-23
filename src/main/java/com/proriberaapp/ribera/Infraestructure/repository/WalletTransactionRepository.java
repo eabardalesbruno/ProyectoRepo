@@ -19,7 +19,8 @@ public interface WalletTransactionRepository extends R2dbcRepository<WalletTrans
             wt.inicialdate, 
             wt.amount, 
             wt.description, 
-            wt.operationcode
+            wt.operationcode,
+            wt.transactioncategoryid
         FROM wallettransaction wt
         LEFT JOIN userclient u ON wt.walletid = u.walletid
         LEFT JOIN userpromoter p ON wt.walletid = p.walletid
@@ -49,5 +50,25 @@ public interface WalletTransactionRepository extends R2dbcRepository<WalletTrans
     WHERE w.walletid = :walletId
 """)
     Flux<PaymentDetailsPromoterDTO> findPaymentDetailsByWalletId(Integer walletId);
+
+    @Query("""
+        SELECT 
+            wt.wallettransactionid,
+            wt.walletid,
+            wt.currencytypeid,
+            wt.transactioncategoryid,
+            wt.inicialdate,
+            wt.amount,
+            wt.avalibledate,
+            wt.description,
+            wt.motivedescription,
+            wt.operationcode,
+            tcw.transactioncategoryname AS transactionCategoryName
+        FROM wallettransaction wt
+        JOIN transactioncategorywallet tcw ON wt.transactioncategoryid = tcw.transactioncategoryid
+        WHERE wt.walletid = :walletId
+        ORDER BY wt.inicialdate DESC
+    """)
+    Flux<com.proriberaapp.ribera.Api.controllers.client.dto.WalletTransactionDTO> findMovementsWithCategoryNameByWalletId(Integer walletId);
 
 }
