@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.services.admin.DiscountAdminService;
 import com.proriberaapp.ribera.services.admin.VerifiedDiscountAdminService;
 import com.proriberaapp.ribera.services.client.RoomOfferService;
 import com.proriberaapp.ribera.utils.DiscountUtil;
+import com.proriberaapp.ribera.utils.constants.Constants;
 import com.proriberaapp.ribera.utils.constants.DiscountTypeCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,7 @@ public class DiscountAdminServiceImpl implements DiscountAdminService {
             Integer userId, BigDecimal costTotal, BigDecimal totalAmountFeeding, DiscountTypeCode discountType) {
         return switch (discountType) {
             case DISCOUNT_MEMBER -> verifiedDiscountService.verifiedPercentajeDiscountAdmin(userId, costTotal);
-            case POINTS_REWARD -> {
+            case USD_REWARD -> {
                 float costFinal = costTotal.floatValue();
                 float feedingAmount = totalAmountFeeding.floatValue();
 
@@ -56,7 +57,7 @@ public class DiscountAdminServiceImpl implements DiscountAdminService {
                         DiscountDto.builder()
                                 .amount(discount1)
                                 .applyToReservation(true)
-                                .name("PUNTOS REWARDS")
+                                .name(Constants.USD_REWARDS)
                                 .percentage(70f)
                                 .build()
                 );
@@ -69,7 +70,7 @@ public class DiscountAdminServiceImpl implements DiscountAdminService {
                             DiscountDto.builder()
                                     .amount(discount2)
                                     .applyToReservation(true)
-                                    .name("DESCUENTO ALIMENTACION")
+                                    .name(Constants.DESCUENTO_ALIMENTACION)
                                     .percentage(20f)
                                     .build()
                     );
