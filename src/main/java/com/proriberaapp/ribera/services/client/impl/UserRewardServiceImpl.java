@@ -1,7 +1,11 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ExternalAuthService;
+import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseInclubLoginDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.UserRewardRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.HistoricalRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardResponse;
+import com.proriberaapp.ribera.Domain.dto.RetrieveFamilyPackageResponseDto;
 import com.proriberaapp.ribera.Domain.entities.UserRewardEntity;
 import com.proriberaapp.ribera.Domain.enums.RewardType;
 import com.proriberaapp.ribera.Domain.mapper.UserRewardMapper;
@@ -10,17 +14,30 @@ import com.proriberaapp.ribera.services.admin.DiscountToRewardService;
 import com.proriberaapp.ribera.services.client.UserRewardService;
 import com.proriberaapp.ribera.utils.constants.Constants;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserRewardServiceImpl implements UserRewardService {
+
+    @Value("${inclub.api.url.user}")
+    private String urlLoginUserInclub;
+    @Value("${inclub.api.url.bo.rewards}")
+    private String urlBoRewards;
+
+    private final ExternalAuthService externalAuthService;
+    private final WebClient webClient;
+
     private final UserRewardRepository userRewardRepository;
     private final DiscountToRewardService discountToRewardService;
     private final UserRewardMapper userRewardMapper;
@@ -92,5 +109,49 @@ public class UserRewardServiceImpl implements UserRewardService {
     public Mono<Double> updateStatusRewardsAndGetTotal(Integer bookingId, Integer userId) {
         return userRewardRepository.updateStatusByBookingIdAndUserId(Constants.ACTIVE, bookingId, userId)
                 .then(userRewardRepository.sumPointsByBookingIdAndUserId(bookingId, userId));
+    }
+
+    @Override
+    public Mono<HistoricalRewardResponse> getHistoricalRewardsByUsernameAndPagination(
+            String username, Integer page,Integer size,String status,String membership,String startDate,String endDate) {
+        return externalAuthService.getExternalToken()
+                .zipWith(
+                        webClient.get()
+                                .uri(urlLoginUserInclub + "/" + username)
+                                .retrieve()
+                                .bodyToMono(ResponseInclubLoginDto.class)
+                )
+                .flatMap(tuple -> {
+                    String tokenBackOffice = tuple.getT1();
+                    ResponseInclubLoginDto responseInclub = tuple.getT2();
+
+                    UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(urlBoRewards)
+                            .pathSegment(String.valueOf(responseInclub.getData().getId()), "historical-rewards")
+                            .queryParam("page", page)
+                            .queryParam("size", size);
+
+                    Optional.ofNullable(status)
+                            .filter(s -> !s.trim().isEmpty())
+                            .ifPresent(s -> uriBuilder.queryParam("status", s.trim()));
+
+                    Optional.ofNullable(membership)
+                            .filter(m -> !m.trim().isEmpty())
+                            .ifPresent(m -> uriBuilder.queryParam("membership", m.trim()));
+
+                    Optional.ofNullable(startDate)
+                            .filter(sd -> !sd.trim().isEmpty())
+                            .ifPresent(sd -> uriBuilder.queryParam("startDate", sd.trim()));
+
+                    Optional.ofNullable(endDate)
+                            .filter(ed -> !ed.trim().isEmpty())
+                            .ifPresent(ed -> uriBuilder.queryParam("endDate", ed.trim()));
+
+                    String finalUri = uriBuilder.build().toUriString();
+                    return webClient.get()
+                            .uri(finalUri)
+                            .header("Authorization", "Bearer " + tokenBackOffice)
+                            .retrieve()
+                            .bodyToMono(HistoricalRewardResponse.class);
+                });
     }
 }
