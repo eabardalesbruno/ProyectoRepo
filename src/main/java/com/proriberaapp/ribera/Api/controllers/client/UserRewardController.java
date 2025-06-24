@@ -49,7 +49,11 @@ public class UserRewardController {
     @GetMapping("/historical-rewards/{username}")
     public Mono<HistoricalRewardResponse> getHistoricalRewardasByUsername(@PathVariable String username,
                                                                           @RequestParam(value = "page", defaultValue = "0") int page,
-                                                                          @RequestParam(value = "size", defaultValue = "5") int size){
-        return userRewardService.getHistoricalRewardsByUsernameAndPagination(username,page,size);
+                                                                          @RequestParam(value = "size", defaultValue = "5") int size,
+                                                                          @RequestParam(required = false,value = "status") String status,
+                                                                          @RequestParam(required = false,value = "membership") String membership,
+                                                                          @RequestParam(required = false,value = "startDate") String startDate,
+                                                                          @RequestParam(required = false,value = "endDate") String endDate){
+        return userRewardService.getHistoricalRewardsByUsernameAndPagination(username,page,size,status,membership,startDate,endDate);
     }
 }

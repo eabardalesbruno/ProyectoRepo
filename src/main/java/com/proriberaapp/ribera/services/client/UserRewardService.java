@@ -22,5 +22,6 @@ public interface UserRewardService {
 
     Mono<Double> updateStatusRewardsAndGetTotal(Integer bookingId,Integer userId);
 
-    Mono<HistoricalRewardResponse> getHistoricalRewardsByUsernameAndPagination(String username,Integer page,Integer size);
+    Mono<HistoricalRewardResponse> getHistoricalRewardsByUsernameAndPagination(
+            String username,Integer page, Integer size,String status,String membership,String startDate,String endDate);
 }

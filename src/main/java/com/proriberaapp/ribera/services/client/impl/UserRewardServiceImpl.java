@@ -17,12 +17,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -110,7 +112,8 @@ public class UserRewardServiceImpl implements UserRewardService {
     }
 
     @Override
-    public Mono<HistoricalRewardResponse> getHistoricalRewardsByUsernameAndPagination(String username, Integer page, Integer size) {
+    public Mono<HistoricalRewardResponse> getHistoricalRewardsByUsernameAndPagination(
+            String username, Integer page,Integer size,String status,String membership,String startDate,String endDate) {
         return externalAuthService.getExternalToken()
                 .zipWith(
                         webClient.get()
@@ -121,8 +124,31 @@ public class UserRewardServiceImpl implements UserRewardService {
                 .flatMap(tuple -> {
                     String tokenBackOffice = tuple.getT1();
                     ResponseInclubLoginDto responseInclub = tuple.getT2();
+
+                    UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(urlBoRewards)
+                            .pathSegment(String.valueOf(responseInclub.getData().getId()), "historical-rewards")
+                            .queryParam("page", page)
+                            .queryParam("size", size);
+
+                    Optional.ofNullable(status)
+                            .filter(s -> !s.trim().isEmpty())
+                            .ifPresent(s -> uriBuilder.queryParam("status", s.trim()));
+
+                    Optional.ofNullable(membership)
+                            .filter(m -> !m.trim().isEmpty())
+                            .ifPresent(m -> uriBuilder.queryParam("membership", m.trim()));
+
+                    Optional.ofNullable(startDate)
+                            .filter(sd -> !sd.trim().isEmpty())
+                            .ifPresent(sd -> uriBuilder.queryParam("startDate", sd.trim()));
+
+                    Optional.ofNullable(endDate)
+                            .filter(ed -> !ed.trim().isEmpty())
+                            .ifPresent(ed -> uriBuilder.queryParam("endDate", ed.trim()));
+
+                    String finalUri = uriBuilder.build().toUriString();
                     return webClient.get()
-                            .uri(urlBoRewards + responseInclub.getData().getId() + "/historical-rewards" + "?page=" + page + "&size=" + size)
+                            .uri(finalUri)
                             .header("Authorization", "Bearer " + tokenBackOffice)
                             .retrieve()
                             .bodyToMono(HistoricalRewardResponse.class);
