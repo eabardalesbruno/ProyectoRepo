@@ -21,6 +21,8 @@ import java.util.Map;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import com.proriberaapp.ribera.Domain.entities.WalletTransactionEntity;
+import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/wallet/withdrawals/request")
@@ -34,22 +36,22 @@ public class WithdrawalController {
     private final WalletRepository walletRepository;
     private final EmailService emailService;
     private final WalletTransactionRepository walletTransactionRepository;
+    private final JwtProvider jtp;
 
     @PostMapping
     public Mono<ResponseEntity<WithdrawalRequestEntity>> requestWithdrawal(
-            @RequestBody WithdrawRequestDTO requestDTO,
-            @RequestHeader("X-User-Id") Integer userId
+            @Valid @RequestBody WithdrawRequestDTO requestDTO,
+            @RequestHeader("Authorization") String token
     ) {
-
+        Integer userId = jtp.getIdFromToken(token);
         if (userId == null) {
             return Mono.just(ResponseEntity.badRequest().build());
         }
-
         return withdrawalService.createWithdrawalRequest(requestDTO, userId)
-                .map(ResponseEntity::ok) 
+                .map(ResponseEntity::ok)
                 .onErrorResume(e -> {
                     log.error("Error al crear la solicitud de retiro: ", e);
-                    return Mono.just(ResponseEntity.badRequest().build()); 
+                    return Mono.just(ResponseEntity.badRequest().build());
                 });
     }
 
