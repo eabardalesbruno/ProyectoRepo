@@ -6,7 +6,6 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.ContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.EventContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
-import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserClientResponseDTO;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
@@ -74,8 +73,4 @@ public interface UserClientService {
     Mono<UserClientEntity> findByUsername(String username);
 
     Mono<UserClientEntity> findByEmailOrDocument(String email, String document);
-
-    Flux<UserClientResponseDTO> listAllUsersExcludingCurrent(Integer currentUserId);
-
-    UserClientResponseDTO mapToDTO(UserClientEntity user);
 }

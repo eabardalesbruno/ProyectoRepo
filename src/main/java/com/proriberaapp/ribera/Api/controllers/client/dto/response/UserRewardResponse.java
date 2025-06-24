@@ -21,6 +21,7 @@ public class UserRewardResponse {
     private Long id;
     private Long userId;
     private Double points;
+
     @JsonIgnore
     private LocalDateTime date;
 
@@ -32,8 +33,6 @@ public class UserRewardResponse {
 
     private RewardStatus rewardStatus;
 
-    private Integer bookingId;
-    private Integer status;
     @JsonGetter("date")
     public String getFormattedDate() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d 'de' MMM. yyyy", new Locale("es", "ES"));
@@ -57,7 +56,6 @@ public class UserRewardResponse {
             case REVIEW -> "Recompensa por dejar una reseña";
             case BIRTHDAY -> "Recompensa de cumpleaños";
             case PROMOTION -> "Recompensa promocional";
-            case FEEDING -> "Recompensa por alimentacion";
             case OTHER -> "Otro";
         };
     }

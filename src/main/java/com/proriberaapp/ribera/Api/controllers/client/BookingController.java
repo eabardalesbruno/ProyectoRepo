@@ -446,8 +446,4 @@ public class BookingController {
         }
     }
 
-    @GetMapping("/{bookingId}/feeding-cost")
-    public Mono<Float> getFeedingCostByBookingId(@PathVariable Integer bookingId){
-        return bookingService.getTotalFeedingAmount(bookingId);
-    }
 }

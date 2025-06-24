@@ -37,7 +37,4 @@ public class UserRewardEntity {
 
     @Column("expiration_date")
     private LocalDateTime expirationDate;
-
-    @Column("booking_id")
-    private Integer bookingId;
 }

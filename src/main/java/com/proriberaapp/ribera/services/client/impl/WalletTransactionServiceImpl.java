@@ -5,7 +5,6 @@ import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.WalletTransactionService;
-import com.proriberaapp.ribera.Api.controllers.client.dto.WithdrawRequestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -549,47 +548,30 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
 
     @Override
-    public Mono<WalletTransactionEntity> makeWithdrawal(WithdrawRequestDTO withdrawRequest) {
-        
-        if (withdrawRequest == null || withdrawRequest.getWalletId() == null || withdrawRequest.getAmount() == null || withdrawRequest.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            return Mono.error(new IllegalArgumentException("Datos de retiro inválidos."));
-        }
-    
-        return walletRepository.findById(withdrawRequest.getWalletId())
+    public Mono<WalletTransactionEntity> makeWithdrawal(Integer walletId, Integer transactionCatId, BigDecimal amount) {
+        return walletRepository.findById(walletId)
                 .flatMap(walletEntity -> {
-                    if (walletEntity.getBalance().compareTo(withdrawRequest.getAmount()) < 0) {
-                        return Mono.error(new IllegalStateException("Saldo insuficiente para realizar el retiro."));
+                    if (walletEntity.getBalance().compareTo(amount) >= 0) {
+                        walletEntity.setBalance(walletEntity.getBalance().subtract(amount));
+                        return walletRepository.save(walletEntity)
+                                .flatMap(savedWallet -> generateUniqueOperationCode()
+                                        .flatMap(operationCode -> {
+                                            WalletTransactionEntity transaction = WalletTransactionEntity.builder()
+                                                    .walletId(walletId)
+                                                    .currencyTypeId(walletEntity.getCurrencyTypeId())
+                                                    .transactionCategoryId(transactionCatId)
+                                                    .amount(amount)
+                                                    .operationCode(operationCode)
+                                                    .description("Retiro de efectivo")
+                                                    .inicialDate(Timestamp.valueOf(LocalDateTime.now()))
+                                                    .avalibleDate(Timestamp.valueOf(LocalDateTime.now().plusDays(1)))
+                                                    .build();
+                                            return walletTransactionRepository.save(transaction);
+                                        }));
+                    } else {
+                        return Mono.error(new Exception("Saldo insuficiente"));
                     }
-    
-                    walletEntity.setBalance(walletEntity.getBalance().subtract(withdrawRequest.getAmount()));
-    
-                    return walletRepository.save(walletEntity)
-                            .flatMap(savedWallet -> 
-                                generateUniqueOperationCode().flatMap(operationCode -> {
-                                    String description = String.format("Retiro a cuenta bancaria: %s. Titular: %s %s. Documento: %s %s.",
-                                            withdrawRequest.getBank(),
-                                            withdrawRequest.getHolderFirstName(),
-                                            withdrawRequest.getHolderLastName(),
-                                            withdrawRequest.getDocumentType(),
-                                            withdrawRequest.getDocumentNumber()
-                                    );
-    
-                                    WalletTransactionEntity transaction = WalletTransactionEntity.builder()
-                                            .walletId(withdrawRequest.getWalletId())
-                                            .currencyTypeId(savedWallet.getCurrencyTypeId())
-                                            .transactionCategoryId(3)
-                                            .amount(withdrawRequest.getAmount())
-                                            .operationCode(operationCode)
-                                            .description(description)
-                                            .inicialDate(Timestamp.valueOf(LocalDateTime.now()))
-                                            .avalibleDate(Timestamp.valueOf(LocalDateTime.now().plusDays(1)))
-                                            .build();
-                                    
-                                    return walletTransactionRepository.save(transaction);
-                                })
-                            );
-                })
-                .switchIfEmpty(Mono.error(new IllegalStateException("La billetera no fue encontrada.")));
+                });
     }
 
     @Override

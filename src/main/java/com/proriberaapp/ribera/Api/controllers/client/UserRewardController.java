@@ -38,10 +38,4 @@ public class UserRewardController {
             @RequestParam("totalCost") Double totalCost) {
         return userRewardService.create(userRewardRequest,type,totalCost);
     }
-
-    @PostMapping("/update-and-get-total")
-    public Mono<Double> updateStatusRewardsAndGetTotalRewards(
-            @RequestParam Integer bookingId, @RequestParam Integer userId){
-        return userRewardService.updateStatusRewardsAndGetTotal(bookingId,userId);
-    }
 }

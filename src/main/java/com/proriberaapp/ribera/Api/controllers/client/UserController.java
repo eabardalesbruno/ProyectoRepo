@@ -2,16 +2,16 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
-import com.proriberaapp.ribera.Api.controllers.client.dto.request.PasswordValidationRequest;
-import com.proriberaapp.ribera.Api.controllers.client.dto.response.PasswordValidationResponse;
-import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserClientResponseDTO;
 import com.proriberaapp.ribera.Api.controllers.exception.TokenInvalidException;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.UpdatePasswordDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
-import com.proriberaapp.ribera.services.client.*;
+import com.proriberaapp.ribera.services.client.LoginInclubService;
+import com.proriberaapp.ribera.services.client.UserApiClient;
+import com.proriberaapp.ribera.services.client.UserClientService;
+import com.proriberaapp.ribera.services.client.UserRegistrationService;
 import com.proriberaapp.ribera.services.client.impl.WalletServiceImpl;
 import com.proriberaapp.ribera.utils.constants.DiscountTypeCode;
 import lombok.extern.slf4j.Slf4j;
@@ -42,12 +42,8 @@ public class UserController {
     private WalletServiceImpl walletServiceImpl;
 
     @Autowired
-    private final UserRewardTrasferHistoryService userRewardTrasferHistoryService;
-
-    @Autowired
-    public UserController(UserRegistrationService userRegistrationService, UserRewardTrasferHistoryService userRewardTrasferHistoryService) {
+    public UserController(UserRegistrationService userRegistrationService) {
         this.userRegistrationService = userRegistrationService;
-        this.userRewardTrasferHistoryService = userRewardTrasferHistoryService;
     }
 
     /*
@@ -393,13 +389,4 @@ public class UserController {
                 passwordDto.getPassword(), passwordDto.getConfirmPassword());
     }
 
-    @GetMapping("/find-username")
-    public Flux<UserClientResponseDTO> getAllUsersExcludingCurrent(@RequestParam Integer currentUserId) {
-        return userClientService.listAllUsersExcludingCurrent(currentUserId);
-    }
-
-    @PostMapping("/validatePass")
-    public Mono<PasswordValidationResponse> validate(@RequestBody PasswordValidationRequest request) {
-        return userRewardTrasferHistoryService.validatePassword(request.email(), request.password());
-    }
 }

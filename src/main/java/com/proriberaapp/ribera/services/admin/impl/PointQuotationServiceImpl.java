@@ -13,6 +13,7 @@ import com.proriberaapp.ribera.Domain.dto.PointSaveQuotationDto;
 import com.proriberaapp.ribera.Domain.dto.PointTypeDto;
 import com.proriberaapp.ribera.Domain.entities.PointTypeConversionFactorDayEntity;
 import com.proriberaapp.ribera.Domain.entities.PointTypeConversionFactorEntity;
+import com.proriberaapp.ribera.Domain.entities.PointTypeConversionFactorDayEntity.PointTypeConversionFactorDayEntityBuilder;
 import com.proriberaapp.ribera.Infraestructure.exception.PointQuotationIsAlreadyRegisteredException;
 import com.proriberaapp.ribera.Infraestructure.repository.PointsTypeConversionFactorDayRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.PointsTypeConversionFactorRepository;

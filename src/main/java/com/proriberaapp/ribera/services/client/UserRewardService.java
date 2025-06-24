@@ -18,6 +18,4 @@ public interface UserRewardService {
     Flux<UserRewardResponse> findByType(RewardType type);
 
     Mono<UserRewardResponse> create(UserRewardRequest userRewardRequest,String type,Double totalCost);
-
-    Mono<Double> updateStatusRewardsAndGetTotal(Integer bookingId,Integer userId);
 }
