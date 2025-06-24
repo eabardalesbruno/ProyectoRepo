@@ -13,6 +13,7 @@ import org.mapstruct.Mapping;
 public interface UserRewardMapper {
     @Mapping(target = "userId", source = "userId")
     UserRewardEntity toEntity(UserRewardRequest request);
+    @Mapping(target = "bookingId",source = "bookingId")
     UserRewardResponse toDto(UserRewardEntity entity);
 
     @Mapping(target = "userId", source = "userId")
@@ -25,5 +26,7 @@ public interface UserRewardMapper {
     @Mapping(target = "points", source = "points")
     @Mapping(target = "expirationDate", source = "expirationDate")
     @Mapping(target = "type", source = "type")
+    @Mapping(target = "bookingId",source = "bookingId")
+    @Mapping(target = "status",source = "status")
     UserRewardResponse UserRewardEntitytoDto(UserRewardEntity entity);
 }

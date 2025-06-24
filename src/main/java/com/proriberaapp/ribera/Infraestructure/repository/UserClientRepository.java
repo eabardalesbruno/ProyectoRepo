@@ -293,4 +293,14 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
 
     @Query("SELECT * FROM userclient WHERE isuserinclub = false")
     Flux<UserClientEntity> findAllUsersNotInClub();
+
+    @Query("""
+     SELECT * FROM userclient 
+      WHERE username = :input 
+        OR documentnumber = :input 
+        OR firstname ILIKE CONCAT('%', :input, '%') 
+        OR lastname ILIKE CONCAT('%', :input, '%') 
+        OR CONCAT(firstname, ' ', lastname) ILIKE CONCAT('%', :input, '%')
+     """)
+    Mono<UserClientEntity> findByIdentifier(String input);
 }
