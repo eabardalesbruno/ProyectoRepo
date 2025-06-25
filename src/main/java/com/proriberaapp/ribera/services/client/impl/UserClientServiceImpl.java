@@ -253,7 +253,7 @@ public class UserClientServiceImpl implements UserClientService {
                 .flatMap(userClientRepository::save)
                 .flatMap(savedUser -> {
                     // Creacion de la wallet con el número de la wallet único
-                    return walletServiceImpl.createWalletUsuario(savedUser.getUserClientId(), 1) // Creamos la wallet
+                    return walletServiceImpl.createWalletUsuario(savedUser.getUserClientId(), 2) // Creamos la wallet
                             .flatMap(wallet -> {
                                 // Asociamos el walletId al usuario
                                 savedUser.setWalletId(wallet.getWalletId()); // Establecemos el walletId en el usuario
@@ -450,7 +450,7 @@ public class UserClientServiceImpl implements UserClientService {
                 .flatMap(user -> {
                     if (passwordEncoder.matches(password, user.getPassword())) {
                         if (user.getWalletId() == null) {
-                            return walletServiceImpl.createWalletUsuario(user.getUserClientId(), 1)
+                            return walletServiceImpl.createWalletUsuario(user.getUserClientId(), 2)
                                     .flatMap(wallet -> {
                                         user.setWalletId(wallet.getWalletId());
                                         return userClientRepository.save(user)

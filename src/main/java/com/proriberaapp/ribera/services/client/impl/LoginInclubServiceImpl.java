@@ -65,7 +65,7 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                                         // Verificar si el usuario tiene una wallet asociada
                                         if (user.getWalletId() == null) {
                                             // Si no tiene wallet, crear una nueva
-                                            return walletServiceImpl.createWalletUsuario(user.getUserClientId(), 1)
+                                            return walletServiceImpl.createWalletUsuario(user.getUserClientId(), 2)
                                                     .flatMap(wallet -> {
                                                         // Asociamos la wallet al usuario
                                                         user.setWalletId(wallet.getWalletId());

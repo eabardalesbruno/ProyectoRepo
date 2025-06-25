@@ -44,7 +44,7 @@ public class UserPromoterServiceImpl implements UserPromoterService {
                 .flatMap(user -> {
                     if (user.getWalletId() == null) {
                         // Crea una nueva wallet si el usuario no tiene una asociada
-                        return walletService.createWalletUsuario(user.getUserPromoterId(), 1)
+                        return walletService.createWalletUsuario(user.getUserPromoterId(), 2)
                                 .flatMap(wallet -> {
                                     user.setWalletId(wallet.getWalletId());
                                     return userPromoterRepository.save(user).thenReturn(user);
@@ -100,7 +100,7 @@ public class UserPromoterServiceImpl implements UserPromoterService {
                 .flatMap(userPromoterRepository::save)
                 .flatMap(savedUser -> {
                     // Creamos la wallet
-                    return walletService.createWalletPromoter(savedUser.getUserPromoterId(), 1)
+                    return walletService.createWalletPromoter(savedUser.getUserPromoterId(), 2)
                             .flatMap(wallet -> {
                                 // Asignamos el walletId generado al userPromoter
                                 savedUser.setWalletId(wallet.getWalletId());
