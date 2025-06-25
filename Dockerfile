@@ -1,4 +1,4 @@
-FROM 486849079485.dkr.ecr.us-east-1.amazonaws.com/openjdk:17.0.1-jdk-slim as build
+FROM eclipse-temurin:17-jdk-jammy as build
 
 RUN apt-get update && apt-get install -y ca-certificates-java wget && rm -rf /var/cache/apt/* && \
     find /usr/lib/jvm/java-11-openjdk-amd64/lib/security/ -name "cacerts" -exec keytool -import -trustcacerts \
@@ -21,7 +21,7 @@ COPY src src
 RUN mvn -gs settings.xml install -DskipTests
 RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
-FROM 486849079485.dkr.ecr.us-east-1.amazonaws.com/openjdk:17.0.1-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 ARG DEPENDENCY=/workspace/app/target/dependency
 COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF

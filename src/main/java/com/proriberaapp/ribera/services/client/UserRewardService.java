@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.HistoricalRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardResponse;
 import com.proriberaapp.ribera.Domain.enums.RewardType;
 import reactor.core.publisher.Flux;
@@ -20,4 +21,7 @@ public interface UserRewardService {
     Mono<UserRewardResponse> create(UserRewardRequest userRewardRequest,String type,Double totalCost);
 
     Mono<Double> updateStatusRewardsAndGetTotal(Integer bookingId,Integer userId);
+
+    Mono<HistoricalRewardResponse> getHistoricalRewardsByUsernameAndPagination(
+            String username,Integer page, Integer size,String status,String membership,String startDate,String endDate);
 }

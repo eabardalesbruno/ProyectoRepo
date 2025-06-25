@@ -12,6 +12,7 @@ import com.proriberaapp.ribera.Domain.entities.WalletEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import org.springframework.transaction.reactive.TransactionalOperator;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -27,32 +28,35 @@ public class WithdrawalServiceImpl implements WithdrawalService {
     private final UserClientRepository userClientRepository;
     private final EmailService emailService;
     private final WalletRepository walletRepository;
+    private final TransactionalOperator transactionalOperator;
 
     @Override
     public Mono<WithdrawalRequestEntity> createWithdrawalRequest(WithdrawRequestDTO requestDTO, Integer userId) {
-        WithdrawalRequestEntity newRequest = WithdrawalRequestEntity.builder()
-                .operationNumber(generateOperationNumber())
-                .userId(userId)
-                .walletId(requestDTO.getWalletId())
-                .amount(requestDTO.getAmount())
-                .destinationBank(requestDTO.getBank())
-                .accountNumber(requestDTO.getAccountNumber())
-                .accountHolderName(requestDTO.getHolderFirstName() + " " + requestDTO.getHolderLastName())
-                .accountHolderDocument(requestDTO.getDocumentNumber())
-                .country(requestDTO.getCountry())
-                .documentType(requestDTO.getDocumentType())
-                .observation(null)
-                .status("PENDING")
-                .creationDate(Timestamp.from(Instant.now()))
-                .updateDate(Timestamp.from(Instant.now()))
-                .build();
-
-        return withdrawalRequestRepository.save(newRequest)
-            .flatMap(savedRequest ->
-                userClientRepository.findById(userId)
-                    .flatMap(user ->
-                        walletRepository.findById(savedRequest.getWalletId())
-                            .flatMap(wallet -> {
+        return walletRepository.findById(requestDTO.getWalletId())
+            .flatMap(wallet -> {
+                if (wallet.getBalance().compareTo(requestDTO.getAmount()) < 0) {
+                    return Mono.error(new RuntimeException("Saldo insuficiente para el retiro."));
+                }
+                WithdrawalRequestEntity newRequest = WithdrawalRequestEntity.builder()
+                        .operationNumber(generateOperationNumber())
+                        .userId(userId)
+                        .walletId(requestDTO.getWalletId())
+                        .amount(requestDTO.getAmount())
+                        .destinationBank(requestDTO.getBank())
+                        .accountNumber(requestDTO.getAccountNumber())
+                        .accountHolderName(requestDTO.getHolderFirstName() + " " + requestDTO.getHolderLastName())
+                        .accountHolderDocument(requestDTO.getDocumentNumber())
+                        .country(requestDTO.getCountry())
+                        .documentType(requestDTO.getDocumentType())
+                        .observation(null)
+                        .status("PENDING")
+                        .creationDate(Timestamp.from(Instant.now()))
+                        .updateDate(Timestamp.from(Instant.now()))
+                        .build();
+                return withdrawalRequestRepository.save(newRequest)
+                    .flatMap(savedRequest ->
+                        userClientRepository.findById(userId)
+                            .flatMap(user -> {
                                 String nombreTitular = user.getLastName() + " " + user.getFirstName();
                                 String html = generarHtmlConstanciaRetiro(savedRequest, user, nombreTitular);
                                 return emailService.sendEmail(
@@ -61,9 +65,10 @@ public class WithdrawalServiceImpl implements WithdrawalService {
                                     html
                                 ).thenReturn(savedRequest);
                             })
-                    )
-                    .switchIfEmpty(Mono.just(savedRequest))
-            );
+                            .switchIfEmpty(Mono.just(savedRequest))
+                    );
+            })
+            .as(transactionalOperator::transactional);
     }
 
     private String generarHtmlConstanciaRetiro(WithdrawalRequestEntity retiro, UserClientEntity user, String nombreTitularWallet) {
