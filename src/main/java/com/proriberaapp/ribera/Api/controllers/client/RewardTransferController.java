@@ -1,9 +1,11 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.GroupedSubscriptionRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.RewardTransferRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.TransferRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.PagedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardTransferHistoryResponse;
+import com.proriberaapp.ribera.services.client.UserRewardService;
 import com.proriberaapp.ribera.services.client.UserRewardTrasferHistoryService;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,6 +25,7 @@ public class RewardTransferController {
 
     private final UserRewardTrasferHistoryService userRewardTrasferHistoryService;
 
+    private final UserRewardService userRewardService;
 
     @PostMapping("/transfer")
     public Mono<ResponseEntity<Map<String, Object>>> transfer(@RequestBody TransferRequest request) {
@@ -56,5 +59,12 @@ public class RewardTransferController {
             @RequestParam(value = "pageSize", defaultValue = "10") int pageSize
     ) {
         return userRewardTrasferHistoryService.getFilteredTransfers(subcategory, status, dateFrom, dateTo, page, pageSize);
+    }
+
+    @GetMapping("/subscriptions/{username}")
+    public Mono<ResponseEntity<GroupedSubscriptionRewardResponse>> getSubscriptionsByUsername(@PathVariable String username) {
+        return userRewardService.getUserSubscriptionsByUsername(username)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 }

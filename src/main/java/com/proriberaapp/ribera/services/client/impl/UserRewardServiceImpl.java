@@ -1,11 +1,16 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ExternalAuthService;
+import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.GroupedSubscriptionRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseInclubLoginDto;
+import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.UserLoginResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.UserRewardRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.HistoricalRewardResponse;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.SubscriptionRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardResponse;
 import com.proriberaapp.ribera.Domain.dto.RetrieveFamilyPackageResponseDto;
+import com.proriberaapp.ribera.Domain.dto.RewardSubscriptionDto;
 import com.proriberaapp.ribera.Domain.entities.UserRewardEntity;
 import com.proriberaapp.ribera.Domain.enums.RewardType;
 import com.proriberaapp.ribera.Domain.mapper.UserRewardMapper;
@@ -20,11 +25,16 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import java.util.TreeMap;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -153,5 +163,55 @@ public class UserRewardServiceImpl implements UserRewardService {
                             .retrieve()
                             .bodyToMono(HistoricalRewardResponse.class);
                 });
+    }
+    @Override
+    public Mono<GroupedSubscriptionRewardResponse> getUserSubscriptionsByUsername(String username) {
+        return getUserIdByUsername(username)
+                .zipWith(externalAuthService.getExternalToken())
+                .flatMap(tuple -> {
+                    int userId = tuple.getT1();
+                    String token = tuple.getT2();
+                    String uri = urlBoRewards + "/" + userId + "/rewards/subscriptions";
+
+                    return webClient.get().uri(uri)
+                            .header("Authorization", "Bearer " + token)
+                            .retrieve()
+                            .bodyToMono(SubscriptionRewardResponse.class)
+                            .map(this::groupResponseByFamilyPackage);
+                });
+    }
+
+    private Mono<Integer> getUserIdByUsername(String username) {
+        return webClient.get().uri(urlLoginUserInclub + "/" + username)
+                .retrieve()
+                .bodyToMono(String.class)
+                .flatMap(json -> {
+                    try {
+                        ObjectMapper mapper = new ObjectMapper();
+                        UserLoginResponse response = mapper.readValue(json, UserLoginResponse.class);
+                        int userId = response.getData().getId();
+                        if (userId <= 0) {
+                            return Mono.error(new RuntimeException("User ID inválido para username: " + username));
+                        }
+                        return Mono.just(userId);
+                    } catch (Exception e) {
+                        return Mono.error(new RuntimeException("Error al parsear UserDto: " + e.getMessage()));
+                    }
+                });
+    }
+
+    private GroupedSubscriptionRewardResponse groupResponseByFamilyPackage(SubscriptionRewardResponse originalResponse) {
+        Map<String, List<RewardSubscriptionDto>> grouped = originalResponse.getData().stream()
+                .sorted(Comparator.comparing(RewardSubscriptionDto::getPackageName, String.CASE_INSENSITIVE_ORDER))
+                .collect(Collectors.groupingBy(
+                        RewardSubscriptionDto::getFamilyPackageName,
+                        TreeMap::new,
+                        Collectors.toList()
+                ));
+
+        GroupedSubscriptionRewardResponse response = new GroupedSubscriptionRewardResponse();
+        response.setResult(true);
+        response.setData(grouped);
+        return response;
     }
 }
