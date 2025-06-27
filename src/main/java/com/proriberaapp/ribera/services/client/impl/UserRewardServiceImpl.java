@@ -2,13 +2,12 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ExternalAuthService;
-import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.GroupedSubscriptionRewardResponse;
-import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseInclubLoginDto;
-import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.UserLoginResponse;
+import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.UserRewardRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.HistoricalRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.SubscriptionRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardResponse;
+import com.proriberaapp.ribera.Domain.dto.PercentageDto;
 import com.proriberaapp.ribera.Domain.dto.RetrieveFamilyPackageResponseDto;
 import com.proriberaapp.ribera.Domain.dto.RewardSubscriptionDto;
 import com.proriberaapp.ribera.Domain.entities.UserRewardEntity;
@@ -25,15 +24,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import java.util.TreeMap;
+
+import java.util.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -213,5 +209,41 @@ public class UserRewardServiceImpl implements UserRewardService {
         response.setResult(true);
         response.setData(grouped);
         return response;
+    }
+
+    @Override
+    public Mono<GroupedSubscriptionFamilyRewardResponse> getGroupedRewardsByUsername(String username) {
+        return getUserIdByUsername(username)
+                .flatMap(userId -> webClient.get()
+                        .uri(urlBoRewards + "/" + userId + "/rewards/grouped")
+                        .retrieve()
+                        .bodyToMono(GroupedSubscriptionFamilyRewardResponse.class));
+    }
+
+    public Mono<List<PercentageDto>> getRandomSubscriptionPercentages(String username) {
+        return getUserSubscriptionsByUsername(username)
+                .flatMap(groupedResponse -> {
+                    List<RewardSubscriptionDto> all = groupedResponse.getData().values().stream()
+                            .flatMap(List::stream)
+                            .collect(Collectors.toList());
+
+                    if (all.isEmpty()) {
+                        return Mono.error(new RuntimeException("No se encontraron suscripciones para el usuario."));
+                    }
+                    RewardSubscriptionDto selected = all.get(new Random().nextInt(all.size()));
+                    Long subscriptionId = selected.getSubscriptionId();
+
+                    String uri = urlBoRewards + "subscriptions/" + subscriptionId + "/percentages";
+
+                    return webClient.get().uri(uri)
+                            .retrieve()
+                            .bodyToMono(PackageDetailRewardsResponse.class)
+                            .map(resp -> {
+                                if (resp.getData() == null || resp.getData().getPackageDetailRewards() == null) {
+                                    throw new RuntimeException("No se encontró información de porcentajes.");
+                                }
+                                return resp.getData().getPackageDetailRewards();
+                            });
+                });
     }
 }
