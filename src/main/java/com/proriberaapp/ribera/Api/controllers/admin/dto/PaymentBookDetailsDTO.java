@@ -62,6 +62,10 @@ public class PaymentBookDetailsDTO {
     private Integer userDocumentType;
     @Column("userCellphoneNumber")
     private String userCellphoneNumber;
+    @Column("username")
+    private String username;
+    @Column("isuserinclub")
+    private Boolean  isUserInclub;
     @Column("bookingName")
     private String bookingName;
     @Column("paymentMethod")
