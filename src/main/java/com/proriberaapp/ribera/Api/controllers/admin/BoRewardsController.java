@@ -17,7 +17,6 @@ public class BoRewardsController {
 
     private final BoRewardsService boRewardsService;
 
-
     @PostMapping("/reward-release-log")
     public Mono<RewardReleaseLogResponseDto> createRewardReleaseLog(@RequestBody RequestReleaseLogDto request){
        return  boRewardsService.createReleaseLog(request);
