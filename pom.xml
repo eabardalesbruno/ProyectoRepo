@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.pro-ribera-app</groupId>
 	<artifactId>ribera</artifactId>
-	<version>0.1.3-SNAPSHOT</version>
+	<version>0.1.5-SNAPSHOT</version>
 	<name>ribera</name>
 	<description>Ribera</description>
 	<properties>
