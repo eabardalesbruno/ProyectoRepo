@@ -26,7 +26,7 @@ import java.util.Map;
 @RestController
 @AllArgsConstructor
 @Slf4j
-@RequestMapping("/api/rewards")
+@RequestMapping("/api/v1/rewards")
 public class RewardTransferController {
 
     private final UserRewardTrasferHistoryService userRewardTrasferHistoryService;

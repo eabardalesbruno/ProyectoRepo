@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.services.client.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ExternalAuthService;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.*;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.RewardReleaseRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.UserRewardRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.HistoricalRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.SubscriptionRewardResponse;
@@ -177,7 +178,8 @@ public class UserRewardServiceImpl implements UserRewardService {
                 });
     }
 
-    private Mono<Integer> getUserIdByUsername(String username) {
+    @Override
+    public Mono<Integer> getUserIdByUsername(String username) {
         return webClient.get().uri(urlLoginUserInclub + "/" + username)
                 .retrieve()
                 .bodyToMono(String.class)
@@ -245,5 +247,16 @@ public class UserRewardServiceImpl implements UserRewardService {
                                 return resp.getData().getPackageDetailRewards();
                             });
                 });
+    }
+
+    @Override
+    public Mono<Void> releaseUserReward(RewardReleaseRequest request) {
+        return externalAuthService.getExternalToken()
+                .flatMap(token -> webClient.post()
+                        .uri(urlBoRewards + "/rewards/release")
+                        .header("Authorization", "Bearer " + token)
+                        .bodyValue(request)
+                        .retrieve()
+                        .bodyToMono(Void.class));
     }
 }
