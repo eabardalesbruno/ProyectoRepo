@@ -5,5 +5,10 @@ public record TransferRequest(
         String toInput,
         Double amount,
         String subCategory,
-        String passwordConfirm
+        String passwordConfirm,
+        Boolean isInclubPoints,
+        String familyPackageName,
+        Double totalRewardsBeforeTransfer,
+        String username
+
 ) {}

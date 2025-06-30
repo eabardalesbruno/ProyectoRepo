@@ -777,6 +777,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                         builder.userCellphoneNumber(uc.getCellNumber());
                         builder.userDocumentType(uc.getDocumenttypeId());
                         builder.userDocumentNumber(uc.getDocumentNumber());
+                        builder.username(uc.getUsername());
+                        builder.isUserInclub(uc.isUserInclub());
                     });
                     Optional.ofNullable(booking).ifPresent(b -> {
                         builder.bookingName(b.getDetail());

@@ -57,4 +57,13 @@ public class UserRewardTransferHistoryEntity {
 
     @Column("status")
     private String status;
+
+    @Column("is_inclub_points")
+    private Boolean isInclubPoints;
+
+    @Column("family_package_name")
+    private String familyPackageName;
+
+    @Column("total_rewards_before_transfer")
+    private Double totalRewardsBeforeTransfer;
 }
