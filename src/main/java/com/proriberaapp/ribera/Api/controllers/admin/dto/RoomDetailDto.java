@@ -16,6 +16,7 @@ public class RoomDetailDto {
     String roomnumber;
     Long roomid;
     Long roomofferid;
+    LocalDateTime daybookinginit;
     LocalDateTime daybookingend;
     Long paymentstateid;
     String paymentstatename;
@@ -23,5 +24,10 @@ public class RoomDetailDto {
     Long bookingid;
     Integer numdays;
     String bookingstate;
+    String offername;
+    LocalDateTime createdat;
+    Integer numberadults;
+    Integer numberchildren;
+    Integer numberbabies;
 
 }
