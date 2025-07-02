@@ -593,7 +593,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
     }
 
     @Override
-    public Mono<WalletTransactionEntity> makeDeposit(Integer walletId, Integer transactioncatid, BigDecimal amount) {
+    public Mono<WalletTransactionEntity> makeDeposit(Integer walletId, Integer transactioncatid, BigDecimal amount, String descripcion) {
         return walletRepository.findById(walletId)
                 .flatMap(walletEntity -> {
                     walletEntity.setBalance(walletEntity.getBalance().add(amount));
@@ -606,36 +606,12 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                                                 .transactionCategoryId(transactioncatid)
                                                 .amount(amount)
                                                 .operationCode(operationCode)
-                                                .description("Deposito de efectivo")
+                                                .description(descripcion != null ? descripcion : "Deposito de efectivo")
                                                 .inicialDate(Timestamp.valueOf(LocalDateTime.now()))
                                                 .avalibleDate(Timestamp.valueOf(LocalDateTime.now().plusDays(1)))
                                                 .build();
                                         return walletTransactionRepository.save(transaction);
                                     }));
-                });
-    }
-
-    @Override
-    public Mono<WalletTransactionEntity> makeRecharge(Integer walletId, Integer transactioncatid, BigDecimal amount) {
-        return walletRepository.findById(walletId)
-                .flatMap(walletEntity -> {
-                    walletEntity.setBalance(walletEntity.getBalance().add(amount));
-                    Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
-                    return generateUniqueOperationCode()
-                            .flatMap(operationCode -> {
-                                WalletTransactionEntity transactionEntity = WalletTransactionEntity.builder()
-                                        .walletId(walletId)
-                                        .currencyTypeId(walletEntity.getCurrencyTypeId())
-                                        .transactionCategoryId(transactioncatid)
-                                        .amount(amount)
-                                        .operationCode(operationCode)
-                                        .inicialDate(currentTimestamp)
-                                        .avalibleDate(currentTimestamp)
-                                        .description("Recarga de saldo")
-                                        .build();
-                                return walletRepository.save(walletEntity)
-                                        .then(walletTransactionRepository.save(transactionEntity));
-                            });
                 });
     }
 
@@ -730,50 +706,6 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
 
         return Mono.just(body);
     }
-
-    @Scheduled(cron = "0 0 10 5,20 * ?" , zone = "America/Lima")
-    public Flux<WalletTransactionEntity> processPendingCommissions() {
-        return commissionRepository.findValidCommissionsForProcessing()
-                .groupBy(CommissionEntity::getPromoterId)
-                .flatMap(groupedCommissions -> groupedCommissions.collectList()
-                        .flatMap(commissions -> {
-                            if(commissions.isEmpty()) {
-                                return Mono.empty();
-                            }
-                            Integer promoterId = commissions.get(0).getPromoterId();
-                            BigDecimal totalAmount = commissions.stream()
-                                    .map(CommissionEntity::getCommissionAmount)
-                                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-                            return walletRepository.findByUserPromoterId(promoterId)
-                                    .flatMap(wallet -> {
-                                        wallet.setBalance(wallet.getBalance().add(totalAmount));
-
-                                        return generateUniqueOperationCode()
-                                                .flatMap(operationCode -> {
-                                                    WalletTransactionEntity transaction = WalletTransactionEntity.builder()
-                                                            .walletId(wallet.getWalletId())
-                                                            .currencyTypeId(wallet.getCurrencyTypeId())
-                                                            .transactionCategoryId(4)
-                                                            .amount(totalAmount)
-                                                            .description("Recarga acumulada de comisiones")
-                                                            .operationCode(operationCode)
-                                                            .inicialDate(Timestamp.valueOf(LocalDateTime.now()))
-                                                            .avalibleDate(Timestamp.valueOf(LocalDateTime.now()))
-                                                            .build();
-                                                    commissions.forEach(commission -> {
-                                                        commission.setProcessed(true);
-                                                        commission.setProcessedAt(Timestamp.from(Instant.now()));
-                                                    });
-
-                                                    return walletRepository.save(wallet)
-                                                            .thenMany(commissionRepository.saveAll(commissions))
-                                                            .then(walletTransactionRepository.save(transaction));
-                                                });
-                                    });
-                        }));
-    }
-
 
     @Override
     public Map<String, Object> getExchangeRate(String date) {

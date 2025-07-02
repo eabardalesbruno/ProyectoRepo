@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import jakarta.annotation.PostConstruct;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -76,6 +77,15 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Autowired
     private UserPromoterRepository userPromoterRepository;
+
+    @Value("${wallet.microservice.url}")
+    private String walletMsUrl;
+    private WebClient webClientWallet;
+
+    @PostConstruct
+    public void init() {
+        this.webClientWallet = WebClient.builder().baseUrl(walletMsUrl).build();
+    }
 
     /*
      * @Override
@@ -252,21 +262,22 @@ public class UserClientServiceImpl implements UserClientService {
                 })
                 .flatMap(userClientRepository::save)
                 .flatMap(savedUser -> {
-                    // Creacion de la wallet con el número de la wallet único
-                    return walletServiceImpl.createWalletUsuario(savedUser.getUserClientId(), 1) // Creamos la wallet
-                            .flatMap(wallet -> {
-                                // Asociamos el walletId al usuario
-                                savedUser.setWalletId(wallet.getWalletId()); // Establecemos el walletId en el usuario
-                                return userClientRepository.save(savedUser)
-                                        .flatMap(updatedUser -> {
-                                            String emailBody = generateUserRegistrationEmailBody(updatedUser,
-                                                    randomPassword);
-                                            return emailService
-                                                    .sendEmail(updatedUser.getEmail(), "Confirmación de Registro",
-                                                            emailBody)
-                                                    .thenReturn(updatedUser);
-                                        });
-                            });
+                    // Creación de la wallet interna (actual)
+                    return walletServiceImpl.createWalletUsuario(savedUser.getUserClientId(), 1)
+                        .flatMap(wallet -> {
+                            savedUser.setWalletId(wallet.getWalletId());
+                            return userClientRepository.save(savedUser)
+                                .flatMap(updatedUser -> {
+                                    // Llamada al microservicio de wallet para provisionar la wallet externa
+                                    return webClientWallet.post()
+                                        .uri("/api/v1/wallet/create/{idUser}", updatedUser.getUserClientId())
+                                        .retrieve()
+                                        .bodyToMono(Void.class)
+                                        .doOnSuccess(resp -> log.info("Wallet provisionada en MS para usuario {}", updatedUser.getUserClientId()))
+                                        .doOnError(err -> log.error("Error creando wallet en MS para usuario {}: {}", updatedUser.getUserClientId(), err.getMessage()))
+                                        .thenReturn(updatedUser);
+                                });
+                        });
                 });
     }
 
@@ -820,5 +831,15 @@ public class UserClientServiceImpl implements UserClientService {
                 .isuserinclub(user.isUserInclub())
                 .email(user.getEmail())
                 .build();
+    }
+
+    @Override
+    public Mono<UserClientEntity> findByNameAndLastName(String name, String lastName) {
+        return userClientRepository.findByFirstNameAndLastName(name, lastName);
+    }
+
+    @Override
+    public Mono<UserClientEntity> findByDocumentNumber(String documentNumber) {
+        return userClientRepository.findByDocumentNumber(documentNumber);
     }
 }
