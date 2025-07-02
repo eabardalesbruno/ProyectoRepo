@@ -46,10 +46,10 @@ public class BoRewardsServiceImpl implements BoRewardsService {
                     }
 
                     UserDto userData = responseInclubLogin.getData();
-                    int userId = userData.getId();
+                    Integer userId = userData.getId();
                     log.info("Username '{}' mapeado a userId: {}", username, userId);
 
-                    request.setUserId(userId); // Asumo que setUserId acepta int
+                    request.setUserId(userId);
 
                     return callRewardsService(request);
                 })
@@ -86,7 +86,7 @@ public class BoRewardsServiceImpl implements BoRewardsService {
      * @return Mono<RewardReleaseLogResponseDto> si la operación es exitosa.
      */
     private Mono<RewardReleaseLogResponseDto> callRewardsService(RequestReleaseLogDto request) {
-        String fullRewardsUrl = URL_MS_BO_REWARDS + "/rewards-release-log";
+        String fullRewardsUrl = URL_MS_BO_REWARDS + "rewards-release-log";
         log.info("Llamando al servicio de recompensas a la URL: {} para userId: {}", fullRewardsUrl, request.getUserId());
 
         return webClientBuilder.build().post()
