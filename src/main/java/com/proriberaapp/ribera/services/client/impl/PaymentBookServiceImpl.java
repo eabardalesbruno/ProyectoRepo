@@ -768,7 +768,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                             .nights(paymentBook.getNights())
                             .dayBookingEnd(paymentBook.getDayBookingEnd())
                             .dayBookingInit(paymentBook.getDayBookingInit())
-                            .totalCostWithOutDiscount(paymentBook.getTotalCostWithOutDiscount());
+                            .totalCostWithOutDiscount(paymentBook.getTotalCostWithOutDiscount())
+                            .usdrewardsinclub(paymentBook.getUsdRewardsInClub());
 
                     Optional.ofNullable(userClient).ifPresent(uc -> {
                         builder.userClientName(uc.getFirstName());
