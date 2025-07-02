@@ -116,6 +116,7 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
             pb.invoicedocumentnumber,
             pb.invoicetype,
             bo.createdat,
+            pb.usdrewardsinclub,
             (CASE
                 WHEN up.userpromoterid IS NOT NULL THEN CONCAT('PROMOTOR ', ' - ', up.firstname, ' ', up.lastname)
                 WHEN ua.useradminid IS NOT NULL THEN CONCAT('RECEPCION', ' - ', ua.firstname, ' ', ua.lastname)
