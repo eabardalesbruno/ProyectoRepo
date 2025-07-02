@@ -17,4 +17,5 @@ public class Constants {
     public static final Integer INACTIVE = 0;
     public static final String EXCHANGE_TYPE = "CANJE DE RECOMPENSAS USD REWARDS";
     public static final String SERVICE_TYPE = "ALOJAMIENTO";
+    public static final String USER_ADMIN = "admin";
 }
