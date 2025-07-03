@@ -17,6 +17,7 @@ import com.proriberaapp.ribera.Domain.mapper.UserRewardMapper;
 import com.proriberaapp.ribera.Infraestructure.repository.UserRewardRepository;
 import com.proriberaapp.ribera.services.admin.DiscountToRewardService;
 import com.proriberaapp.ribera.services.client.UserRewardService;
+import com.proriberaapp.ribera.utils.constants.Constants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,7 @@ public class UserRewardServiceImpl implements UserRewardService {
 
     @Override
     public Flux<UserRewardResponse> findByUserId(Long userId) {
-        return userRewardRepository.findByUserId(userId)
+        return userRewardRepository.findByUserIdAndStatus(userId,Constants.ACTIVE)
                 .map(userRewardMapper::toDto);
     }
 
@@ -84,22 +85,31 @@ public class UserRewardServiceImpl implements UserRewardService {
 
         return discountToRewardService.getDiscountByName(type)
                 .flatMap(discountToReward -> {
+                    RewardType rewardTypeValue;
+                    if (Constants.REWARD_TYPE_BOOKING.equalsIgnoreCase(type)) {
+                        rewardTypeValue = RewardType.BOOKING;
+                    } else if (Constants.REWARD_TYPE_FEEDING.equalsIgnoreCase(type)) {
+                        rewardTypeValue = RewardType.FEEDING;
+                    } else {
+                        rewardTypeValue = RewardType.OTHER;
+                    }
                     var rewardReq = UserRewardRequest.builder()
                             .userId(userRewardDTO.getUserId())
                             .points(BigDecimal.valueOf(discountToReward.getDiscountValue() * totalCost)
                                     .setScale(2, RoundingMode.HALF_UP)
                                     .doubleValue())
                             .expirationDate(LocalDateTime.now().plusYears(1))
-                            .type(RewardType.BOOKING)
+                            .type(rewardTypeValue)
+                            .bookingId(userRewardDTO.getBookingId())
                             .build();
 
                     UserRewardEntity entity = userRewardMapper.toEntity(rewardReq);
                     entity.setDate(LocalDateTime.now());
-                    entity.setStatus(1);
+                    entity.setStatus(0);
+                    entity.setBookingId(userRewardDTO.getBookingId());
                     return userRewardRepository.save(entity)
                             .map(userRewardMapper::UserRewardEntitytoDto);
                 });
-
     }
 
     @Override

@@ -784,13 +784,13 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                     Optional.ofNullable(booking).ifPresent(b -> {
                         builder.bookingName(b.getDetail());
                         builder.createdat(b.getCreatedAt());
+                        builder.totalPoints(b.getTotalRewards());
                     });
                     Optional.ofNullable(paymentMethod).ifPresent(pm -> builder.paymentMethod(pm.getDescription()));
                     Optional.ofNullable(paymentState).ifPresent(ps -> builder.paymentState(ps.getPaymentStateName()));
                     Optional.ofNullable(paymentType).ifPresent(pt -> builder.paymentType(pt.getPaymentTypeDesc()));
                     Optional.ofNullable(paymentSubtype).ifPresent(pst -> builder.paymentSubtype(pst.getPaymentSubtypeDesc()));
                     Optional.ofNullable(currencyType).ifPresent(ct -> builder.currencyType(ct.getCurrencyTypeDescription()));
-
                     return builder.build();
                 });
     }

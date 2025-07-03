@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserClientResponseDTO;
 import com.proriberaapp.ribera.Domain.dto.DiscountDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalUsersDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
@@ -21,6 +22,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.WalletPointRepository;
 import com.proriberaapp.ribera.services.client.*;
 import com.proriberaapp.ribera.utils.ContactInfoUtil;
 import com.proriberaapp.ribera.utils.DiscountUtil;
+import com.proriberaapp.ribera.utils.constants.Constants;
 import com.proriberaapp.ribera.utils.constants.DiscountTypeCode;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.EmailTemplateCodeRecoveryPassword;
@@ -41,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.proriberaapp.ribera.utils.constants.DiscountTypeCode.DISCOUNT_MEMBER;
-import static com.proriberaapp.ribera.utils.constants.DiscountTypeCode.POINTS_REWARD;
+import static com.proriberaapp.ribera.utils.constants.DiscountTypeCode.USD_REWARD;
 
 @Slf4j
 @Service
@@ -579,7 +581,7 @@ public class UserClientServiceImpl implements UserClientService {
     private Mono<UserNameAndDiscountDto> getDiscount(Integer userId, Integer bookingId, DiscountTypeCode discountType) {
         return switch (discountType) {
             case DISCOUNT_MEMBER -> this.verifiedDiscountService.verifiedPercentajeDiscount(userId, bookingId);
-            case POINTS_REWARD ->Mono.zip( walletPointRepository.findByUserId(userId),
+            case USD_REWARD ->Mono.zip( walletPointRepository.findByUserId(userId),
                             this.bookingService.findById(bookingId),
                             this.bookingService.getTotalFeedingAmount(bookingId).switchIfEmpty(Mono.just(0F))
                             )
@@ -595,7 +597,7 @@ public class UserClientServiceImpl implements UserClientService {
                                         DiscountDto.builder()
                                                 .amount(discount1)
                                                 .applyToReservation(true)
-                                                .name("PUNTOS REWARDS")
+                                                .name(Constants.USD_REWARDS)
                                                 .percentage(70f)
                                                 .build()
                                 );
@@ -607,7 +609,7 @@ public class UserClientServiceImpl implements UserClientService {
                                             DiscountDto.builder()
                                                     .amount(discount2)
                                                     .applyToReservation(true)
-                                                    .name("DESCUENTO ALIMENTACION")
+                                                    .name(Constants.DESCUENTO_ALIMENTACION)
                                                     .percentage(20f)
                                                     .build()
                                     );
@@ -794,5 +796,29 @@ public class UserClientServiceImpl implements UserClientService {
     @Override
     public Mono<UserClientEntity> findByUsername(String username) {
         return userClientRepository.findByUsername(username);
+    }
+
+    @Override
+    public Flux<UserClientResponseDTO> listAllUsersExcludingCurrent(Integer currentUserId) {
+        return userClientRepository.findAll()
+                .filter(user -> !user.getUserClientId().equals(currentUserId))
+                .map(this::mapToDTO);
+    }
+
+    @Override
+    public UserClientResponseDTO mapToDTO(UserClientEntity user) {
+        return UserClientResponseDTO.builder()
+                .id(user.getUserClientId())
+                .country(user.getCountryId())
+                .firstname(user.getFirstName())
+                .lastname(user.getLastName())
+                .gender(user.getGenderId())
+                .documenttype(user.getDocumenttypeId())
+                .documentnumber(user.getDocumentNumber())
+                .birthdate(user.getBirthDate())
+                .username(user.getUsername())
+                .isuserinclub(user.isUserInclub())
+                .email(user.getEmail())
+                .build();
     }
 }
