@@ -91,4 +91,7 @@ public class PaymentBookEntity {
 
     @Column("fulldayid")
     private Integer fullDayId;
+
+    @Column("usdrewardsinclub")
+    private Boolean usdRewardsInclub;
 }

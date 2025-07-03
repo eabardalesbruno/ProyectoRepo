@@ -86,4 +86,9 @@ public class RoomController {
         );
     }
 
+    @GetMapping("/AllNumRooms")
+    public Flux<RoomEntity> getAllNumRooms() {
+        return roomService.getAllNumRooms();
+    }
+
 }

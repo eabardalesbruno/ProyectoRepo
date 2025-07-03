@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.services.client.MembershipsService;
@@ -16,10 +16,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 
@@ -37,6 +33,15 @@ public class PartnerRiberaController {
             @RequestHeader("Authorization") String token,
             @RequestHeader(value = "key-inclub-ribera", defaultValue = "") String tokenBackOffice) {
         String username = jtp.getUsernameFromToken(token);
+        return membershipsService.loadAllFamilies(username, tokenBackOffice)
+                .map(ResponseEntity::ok)
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
+    }
+
+    @GetMapping("/subscriptions/families/{username}")
+    public Mono<ResponseEntity<List<SubscriptionFamilyResponse>>> getFamiliesByUsername(
+            @PathVariable String username,
+            @RequestHeader(value = "key-inclub-ribera", defaultValue = "") String tokenBackOffice) {
         return membershipsService.loadAllFamilies(username, tokenBackOffice)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.status(HttpStatus.NO_CONTENT).build());

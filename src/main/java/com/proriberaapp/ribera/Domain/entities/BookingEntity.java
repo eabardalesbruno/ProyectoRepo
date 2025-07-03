@@ -71,6 +71,9 @@ public class BookingEntity {
     @Column("quotationid")
     private Integer quotationId;
 
+    @Column("type_of_day_booking")
+    private String typeOfDayBooking;
+
     public static BookingEntity createBookingEntity(Integer userClientId, BookingSaveRequest bookingSaveRequest,
             Integer numberOfDays, Boolean isPromotor, Boolean isReceptionist) {
         ZoneId limaZoneId = ZoneId.of("America/Lima");

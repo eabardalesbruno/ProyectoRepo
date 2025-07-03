@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client.impl;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingStateStatsDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDashboardDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
@@ -162,19 +163,22 @@ public class RoomServiceImpl implements RoomService {
                                                                 Integer roomtypeid, Integer numberadults,
                                                                 Integer numberchildren, Integer numberbabies,
                                                                 Integer bookingid) {
-        return roomRepository.findFilteredRooms(daybookinginit, daybookingend, roomtypeid, bookingid)
-                .publishOn(Schedulers.boundedElastic()).flatMap(room -> {
-            RoomDashboardDto roomDashboard = new RoomDashboardDto();
-            roomDashboard.setRoomNumber(room);
-            List<RoomDetailDto> listRoomDetail = roomRepository.findAllViewRoomsDetail(daybookinginit, daybookingend,
-                    room, roomtypeid, numberadults, numberchildren, numberbabies, bookingid).collectList().block();
-            //roomDashboard.setRoomStatus(listRoomDetail.size() > 0 ? "Evaluar" : "Libre");
-            if (listRoomDetail.size() > 0) {
-                roomDashboard.setRoomStatus(listRoomDetail.get(0).getRoomStatus());
-            }
-            roomDashboard.setDetails(listRoomDetail);
-            return Flux.just(roomDashboard);
-        });
+        return roomRepository.findFilteredRooms(roomtypeid, bookingid)
+                .flatMap(room ->
+                        roomRepository.findAllViewRoomsDetail(
+                                daybookinginit, daybookingend,
+                                room, roomtypeid,
+                                numberadults, numberchildren,
+                                numberbabies, bookingid
+                            )
+                            .collectList()
+                            .map(details -> {
+                                RoomDashboardDto roomDashboard = new RoomDashboardDto();
+                                roomDashboard.setRoomNumber(room);
+                                roomDashboard.setDetails(details);
+                                return roomDashboard;
+                            })
+                );
     }
 
     @Override
@@ -220,6 +224,21 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public Mono<PaymentDetailDTO> findPaymentDetailByBookingId(Integer bookingid) {
         return paymentBookRepository.getPaymentDetail(bookingid);
+    }
+
+    @Override
+    public Flux<RoomDetailDto> findAllViewRoomsDetailActivities(String daybookinginit, String daybookingend, String roomnumber, Integer bookingstateid, Integer size, Integer page) {
+        return roomRepository.findAllViewRoomsDetailActivities(daybookinginit, daybookingend, roomnumber, bookingstateid, size, page);
+    }
+
+    @Override
+    public Flux<BookingStateStatsDto> findBookingStateStats(String daybookinginit, String daybookingend) {
+        return roomRepository.findBookingStateStats(daybookinginit, daybookingend);
+    }
+
+    @Override
+    public Flux<RoomEntity> getAllNumRooms() {
+        return roomRepository.getAllNumRooms();
     }
 
 }
