@@ -9,6 +9,7 @@ import com.proriberaapp.ribera.Domain.dto.QuotationOfferDto;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.*;
+import com.proriberaapp.ribera.utils.BookingUtils;
 import com.proriberaapp.ribera.utils.GeneralMethods;
 import com.proriberaapp.ribera.utils.TransformDate;
 import com.proriberaapp.ribera.utils.constants.ExchangeRateCode;
@@ -29,13 +30,12 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Period;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -368,6 +368,12 @@ public class BookingServiceImpl implements BookingService {
                                                 numberOfDays,
                                                 isPromotor,
                                                 isReceptionist);
+                                String typeOfDay = BookingUtils.calculateBookingType(
+                                        bookingSaveRequest.getDayBookingInit(),
+                                        bookingSaveRequest.getDayBookingEnd()
+                                );
+                                bookingEntity.setTypeOfDayBooking(typeOfDay);
+
 
                                 // Cálculo del costo inicial (bebés, niños, adultos,
                                 // etc.)

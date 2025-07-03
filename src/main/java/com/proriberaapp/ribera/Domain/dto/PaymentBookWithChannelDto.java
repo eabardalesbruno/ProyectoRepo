@@ -99,4 +99,7 @@ public class PaymentBookWithChannelDto  {
     private String dayBookingEnd;
     @Column("daybookinginit")
     private String dayBookingInit;
+
+    @Column("usdrewardsinclub")
+    private Boolean usdRewardsInClub;
 }

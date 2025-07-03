@@ -107,6 +107,8 @@ public class PaymentBookDetailsDTO {
     private String dayBookingInit;
     @Column("createdat")
     private Timestamp createdat;
+    @Column("usdrewardsinclub")
+    private Boolean  usdrewardsinclub;
 
     @Override
     public String toString() {
@@ -142,6 +144,7 @@ public class PaymentBookDetailsDTO {
                 ", paymentType='" + paymentType + '\'' +
                 ", paymentSubtype='" + paymentSubtype + '\'' +
                 ", currencyType='" + currencyType + '\'' +
+                ", usdrewardsinclub'" + usdrewardsinclub + '\'' +
                 '}';
     }
 }
