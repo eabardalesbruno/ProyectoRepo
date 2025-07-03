@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.UserRewardRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.HistoricalRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardResponse;
 import com.proriberaapp.ribera.Domain.enums.RewardType;
 import com.proriberaapp.ribera.services.client.UserRewardService;
@@ -37,5 +38,22 @@ public class UserRewardController {
             @RequestBody UserRewardRequest userRewardRequest, @RequestParam("type") String type,
             @RequestParam("totalCost") Double totalCost) {
         return userRewardService.create(userRewardRequest,type,totalCost);
+    }
+
+    @PostMapping("/update-and-get-total")
+    public Mono<Double> updateStatusRewardsAndGetTotalRewards(
+            @RequestParam Integer bookingId, @RequestParam Integer userId){
+        return userRewardService.updateStatusRewardsAndGetTotal(bookingId,userId);
+    }
+
+    @GetMapping("/historical-rewards/{username}")
+    public Mono<HistoricalRewardResponse> getHistoricalRewardasByUsername(@PathVariable String username,
+                                                                          @RequestParam(value = "page", defaultValue = "0") int page,
+                                                                          @RequestParam(value = "size", defaultValue = "5") int size,
+                                                                          @RequestParam(required = false,value = "status") String status,
+                                                                          @RequestParam(required = false,value = "membership") String membership,
+                                                                          @RequestParam(required = false,value = "startDate") String startDate,
+                                                                          @RequestParam(required = false,value = "endDate") String endDate){
+        return userRewardService.getHistoricalRewardsByUsernameAndPagination(username,page,size,status,membership,startDate,endDate);
     }
 }
