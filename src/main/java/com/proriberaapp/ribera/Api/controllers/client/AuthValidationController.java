@@ -26,7 +26,9 @@ public class AuthValidationController {
      * @return Información del usuario si el token es válido
      */
     @PostMapping("/validate-token")
-    public Mono<ResponseEntity<Object>> validateToken(@RequestHeader("Authorization") String token) {
+    public Mono<ResponseEntity<Object>> validateToken(
+        @RequestHeader("Authorization") String token, 
+        @RequestBody (required = false) String ignoredBody) {
         log.debug("Validando token desde microservicio: {}", token);
         
         try {
@@ -47,7 +49,7 @@ public class AuthValidationController {
                     log.debug("Roles del token: {}", claims.get("roles"));
                     
                     // Obtener información del usuario desde el token
-                    Integer userId = jwtProvider.getIdFromToken(actualToken);
+                    Integer userId = jwtProvider.getIdFromToken(token);
                     log.debug("ID de usuario obtenido del token: {}", userId);
                     
                     // Verificar que el userId no sea null
@@ -60,7 +62,7 @@ public class AuthValidationController {
                     // Obtener username si es posible, sino usar un valor por defecto
                     String username;
                     try {
-                        username = jwtProvider.getUsernameFromToken(actualToken);
+                        username = jwtProvider.getUsernameFromToken(token);
                         log.debug("Username obtenido del token: {}", username);
                     } catch (Exception e) {
                         log.debug("No se pudo obtener username del token, usando ID: {}", userId);

@@ -833,13 +833,4 @@ public class UserClientServiceImpl implements UserClientService {
                 .build();
     }
 
-    @Override
-    public Mono<UserClientEntity> findByNameAndLastName(String name, String lastName) {
-        return userClientRepository.findByFirstNameAndLastName(name, lastName);
-    }
-
-    @Override
-    public Mono<UserClientEntity> findByDocumentNumber(String documentNumber) {
-        return userClientRepository.findByDocumentNumber(documentNumber);
-    }
 }

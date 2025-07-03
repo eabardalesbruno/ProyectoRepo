@@ -16,7 +16,7 @@ public interface WalletTransactionService {
 
     Mono<WalletTransactionEntity> makeTransfer (Integer walletIdOrigin, Integer walletIdDestiny , String emailDestiny, String cardNumber, BigDecimal amount , String motiveDescription);
     Mono<WalletTransactionEntity> makeWithdrawal(WithdrawRequestDTO withdrawRequest);
-    Mono<WalletTransactionEntity> makeDeposit(Integer walletId, Integer transactioncatid, BigDecimal amount, String descripcion);
+    // Mono<WalletTransactionEntity> makeDeposit(Integer walletId, Integer transactioncatid, BigDecimal amount, String descripcion);
     Mono<String> makePayment(Integer walletId, List<Integer> bookingIds);
     Mono<WalletEntity> findWalletByEmail(String email);
     Mono<BigDecimal> getTotalAmountForPromoter(Integer userPromoterId);

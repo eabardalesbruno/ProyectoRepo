@@ -45,7 +45,7 @@ public class ManagerWalletController {
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }
 
-    @PostMapping("/deposit")
+    /*@PostMapping("/deposit")
     public Mono<ResponseEntity<WalletTransactionEntity>> deposit(
             @RequestParam Integer walletId,
             @RequestParam Integer transactioncatid,
@@ -64,5 +64,5 @@ public class ManagerWalletController {
         return walletTransactionService.makeDeposit(walletId, transactioncatid, amount, "Depósito de efectivo")
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
-    }
+    } */
 } 

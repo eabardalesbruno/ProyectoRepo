@@ -592,7 +592,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                 .switchIfEmpty(Mono.error(new IllegalStateException("La billetera no fue encontrada.")));
     }
 
-    @Override
+    /*@Override
     public Mono<WalletTransactionEntity> makeDeposit(Integer walletId, Integer transactioncatid, BigDecimal amount, String descripcion) {
         return walletRepository.findById(walletId)
                 .flatMap(walletEntity -> {
@@ -613,7 +613,7 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                                         return walletTransactionRepository.save(transaction);
                                     }));
                 });
-    }
+    } */
 
     private Mono<String> generateSuccessEmailBodyOrigin(WalletEntity walletEntityOrigin, WalletEntity walletEntityDestiny, BigDecimal amount, String operationCode, Timestamp transactionDate) {
         String formattedDate = transactionDate.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
