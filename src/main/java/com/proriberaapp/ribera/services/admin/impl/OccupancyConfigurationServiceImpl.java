@@ -264,7 +264,7 @@ public class OccupancyConfigurationServiceImpl implements OccupancyConfiguration
         Optional.ofNullable(request.getExceptionRewardsPercentage())
                 .ifPresent(occupancyByRangeEntity::setExceptionRewardsPercentage);
         Optional.ofNullable(request.getNewMaxRewardsPercentage())
-                .ifPresent(occupancyByRangeEntity::setExceptionRewardsPercentage);
+                .ifPresent(occupancyByRangeEntity::setNewMaxRewardsPercentage);
 
         occupancyByRangeEntity.setUpdatedBy(Constants.USER_ADMIN);
         occupancyByRangeEntity.setUpdatedAt(LocalDateTime.now());
