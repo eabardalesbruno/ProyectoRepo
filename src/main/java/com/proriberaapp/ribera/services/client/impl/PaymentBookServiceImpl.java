@@ -768,7 +768,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                             .nights(paymentBook.getNights())
                             .dayBookingEnd(paymentBook.getDayBookingEnd())
                             .dayBookingInit(paymentBook.getDayBookingInit())
-                            .totalCostWithOutDiscount(paymentBook.getTotalCostWithOutDiscount());
+                            .totalCostWithOutDiscount(paymentBook.getTotalCostWithOutDiscount())
+                            .usdrewardsinclub(paymentBook.getUsdRewardsInClub());
 
                     Optional.ofNullable(userClient).ifPresent(uc -> {
                         builder.userClientName(uc.getFirstName());
@@ -777,6 +778,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                         builder.userCellphoneNumber(uc.getCellNumber());
                         builder.userDocumentType(uc.getDocumenttypeId());
                         builder.userDocumentNumber(uc.getDocumentNumber());
+                        builder.username(uc.getUsername());
+                        builder.isUserInclub(uc.isUserInclub());
                     });
                     Optional.ofNullable(booking).ifPresent(b -> {
                         builder.bookingName(b.getDetail());

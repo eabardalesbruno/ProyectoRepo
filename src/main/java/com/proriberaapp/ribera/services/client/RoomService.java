@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingStateStatsDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDashboardDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
@@ -36,4 +37,9 @@ public interface RoomService extends BaseService<RoomEntity, RoomEntity> {
 
     Mono<PaymentDetailDTO> findPaymentDetailByBookingId(Integer bookingid);
 
+    Flux<RoomDetailDto> findAllViewRoomsDetailActivities(String daybookinginit, String daybookingend, String roomnumber, Integer bookingstateid, Integer size, Integer page);
+
+    Flux<BookingStateStatsDto> findBookingStateStats(String daybookinginit, String daybookingend);
+
+    Flux<RoomEntity> getAllNumRooms();
 }

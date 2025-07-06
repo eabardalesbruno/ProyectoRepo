@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseValidateCredential;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.RewardReleaseRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.TransferRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.PagedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.PasswordValidationResponse;
@@ -13,6 +14,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.UserRewardTransferHist
 import com.proriberaapp.ribera.Infraestructure.repository.WalletPointRepository;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.LoginInclubService;
+import com.proriberaapp.ribera.services.client.UserRewardService;
 import com.proriberaapp.ribera.services.client.UserRewardTrasferHistoryService;
 import com.proriberaapp.ribera.utils.emails.TransferEmailTemplateBuilder;
 import lombok.RequiredArgsConstructor;
@@ -41,50 +43,75 @@ public class UserRewardTrasferHistoryServiceImpl implements UserRewardTrasferHis
 
     private final LoginInclubService loginInclubService;
 
+    private final UserRewardService userRewardService;
+
 
     @Override
     public Mono<Void> transferRewards(TransferRequest request) {
         return Mono.zip(
-                        findUserByIdentifier(request.fromInput(), "origen"),
-                        findUserByIdentifier(request.toInput(), "destino")
-                ).flatMap(tuple -> {
-                    UserClientEntity fromUser = tuple.getT1();
-                    UserClientEntity toUser = tuple.getT2();
+                findUserByIdentifier(request.fromInput(), "origen"),
+                findUserByIdentifier(request.toInput(), "destino")
+        ).flatMap(tuple -> {
+            UserClientEntity fromUser = tuple.getT1();
+            UserClientEntity toUser = tuple.getT2();
 
-                    String passwordRaw = request.passwordConfirm().trim();
+            String passwordRaw = request.passwordConfirm().trim();
 
-                    return validatePasswor(fromUser, passwordRaw)
-                            .flatMap(isValid -> {
-                                if (!isValid) {
-                                    return Mono.error(new RuntimeException("Contraseña incorrecta. Transferencia denegada."));
-                                }
+            return validatePasswor(fromUser, passwordRaw)
+                    .flatMap(isValid -> {
+                        if (!isValid) {
+                            return Mono.error(new RuntimeException("Contraseña incorrecta. Transferencia denegada."));
+                        }
 
-                                LocalDateTime now = LocalDateTime.now();
+                        LocalDateTime now = LocalDateTime.now();
+                        LocalDate expirationDate = LocalDate.now().plusMonths(1);
 
-                                return Mono.zip(
-                                        getOrCreateWallet(fromUser.getUserClientId(), now),
-                                        getOrCreateWallet(toUser.getUserClientId(), now)
-                                ).flatMap(wallets -> {
-                                    WalletPointEntity fromWallet = wallets.getT1();
-                                    WalletPointEntity toWallet = wallets.getT2();
+                        return Mono.zip(
+                                getOrCreateWallet(fromUser.getUserClientId(), now),
+                                getOrCreateWallet(toUser.getUserClientId(), now)
+                        ).flatMap(wallets -> {
+                            WalletPointEntity fromWallet = wallets.getT1();
+                            WalletPointEntity toWallet = wallets.getT2();
 
-                                    if (fromWallet.getPoints() < request.amount()) {
-                                        return Mono.error(new RuntimeException("Fondos insuficientes en wallet origen"));
-                                    }
+                            boolean isInclub = Boolean.TRUE.equals(request.isInclubPoints());
 
-                                    updateWalletBalances(fromWallet, toWallet, request.amount(), now);
+                            if (!isInclub && fromWallet.getPoints() < request.amount()) {
+                                return Mono.error(new RuntimeException("Fondos insuficientes en wallet origen"));
+                            }
+                            if (!isInclub) {
+                                updateWalletBalances(fromWallet, toWallet, request.amount(), now);
+                            } else {
+                                toWallet.setPoints(toWallet.getPoints() + request.amount());
+                                toWallet.setUpdatedAt(now);
+                            }
+                            var salida = buildTransferHistory(fromUser, toUser, fromWallet, toWallet, request, now, expirationDate, "salida", isInclub);
+                            var ingreso = buildTransferHistory(fromUser, toUser, toWallet, toWallet, request, now, expirationDate, "ingreso", isInclub);
+                            Mono<Void> saveChanges = isInclub ? Mono.when(
+                                    walletPointRepository.save(toWallet),
+                                    userRewardTransferHistoryRepository.save(salida),
+                                    userRewardTransferHistoryRepository.save(ingreso)
+                            )
+                                    : persistChanges(fromWallet, toWallet, salida, ingreso);
+                            Mono<Void> callInclubRelease = Mono.empty();
+                            if (isInclub) {
+                                callInclubRelease = userRewardService
+                                        .getUserIdByUsername(request.username())
+                                        .flatMap(inclubUserId -> userRewardService.releaseUserReward(
+                                                RewardReleaseRequest.builder()
+                                                        .userId(inclubUserId)
+                                                        .rewardsAmount(request.amount().intValue() * -1)
+                                                        .familyPackageName(request.familyPackageName())
+                                                        .detail("Transferencia de rewards a usuario " + toUser.getUserClientId() + " de RiberaApp")
+                                                        .build()
+                                        ));
+                            }
 
-                                    LocalDate expirationDate = LocalDate.now().plusMonths(1);
-
-                                    var salida = buildTransferHistory(fromUser, toUser, fromWallet, request.amount(), request.subCategory(), now, expirationDate, "salida");
-                                    var ingreso = buildTransferHistory(fromUser, toUser, toWallet, request.amount(), request.subCategory(), now, expirationDate, "ingreso");
-
-                                    return persistChanges(fromWallet, toWallet, salida, ingreso)
-                                            .then(sendSuccessEmail(fromUser, toUser, request.amount(), now));
-                                });
-                            });
-                })
-                .then();
+                            return saveChanges
+                                    .then(callInclubRelease)
+                                    .then(sendSuccessEmail(fromUser, toUser, request.amount(), now));
+                        });
+                    });
+        }).then();
     }
 
     private Mono<Boolean> validatePasswor(UserClientEntity user, String rawPassword) {
@@ -130,11 +157,12 @@ public class UserRewardTrasferHistoryServiceImpl implements UserRewardTrasferHis
             UserClientEntity fromUser,
             UserClientEntity toUser,
             WalletPointEntity wallet,
-            Double amount,
-            String subCategory,
+            WalletPointEntity referenceWallet,
+            TransferRequest request,
             LocalDateTime now,
             LocalDate expiration,
-            String tipo
+            String tipo,
+            boolean isInclub
     ) {
         String email = tipo.equals("salida") ? fromUser.getEmail() : toUser.getEmail();
         Double remaining = wallet.getPoints();
@@ -143,8 +171,8 @@ public class UserRewardTrasferHistoryServiceImpl implements UserRewardTrasferHis
         history.setTransferDate(now);
         history.setFromUserId(fromUser.getUserClientId());
         history.setToUserId(toUser.getUserClientId());
-        history.setSubCategory("SILVER");
-        history.setUsdRewardsTransferred(amount);
+        history.setSubCategory(request.subCategory());
+        history.setUsdRewardsTransferred(request.amount());
         history.setUsdRewardsRemaining(remaining);
         history.setExpirationDate(expiration);
         history.setCreatedAt(now);
@@ -154,6 +182,13 @@ public class UserRewardTrasferHistoryServiceImpl implements UserRewardTrasferHis
         history.setWalletPointId(wallet.getId());
         history.setStatus("ACTIVO");
 
+        if (isInclub) {
+            history.setIsInclubPoints(true);
+            history.setFamilyPackageName(request.familyPackageName());
+            history.setTotalRewardsBeforeTransfer(request.totalRewardsBeforeTransfer());
+        } else {
+            history.setIsInclubPoints(false);
+        }
         return history;
     }
 

@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingStateStatsDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDashboardDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
@@ -54,6 +55,22 @@ public class ManagerRoomController extends BaseManagerController<RoomEntity, Roo
     @GetMapping("/find/paymentDetailByBookingId")
     public Mono<PaymentDetailDTO> findPaymentDetailByBookingId(@RequestParam Integer bookingid) {
         return roomService.findPaymentDetailByBookingId(bookingid);
+    }
+
+    @GetMapping("/find/all-rooms-activities")
+    public Flux<RoomDetailDto> findAllViewRoomsDetailActivities(@RequestParam(required = false) String daybookinginit,
+                                                                @RequestParam(required = false) String daybookingend,
+                                                                @RequestParam(required = false) String roomnumber,
+                                                                @RequestParam(required = false) Integer bookingstateid,
+                                                                @RequestParam(required = false) Integer size,
+                                                                @RequestParam(required = false) Integer page) {
+        return roomService.findAllViewRoomsDetailActivities(daybookinginit, daybookingend, roomnumber, bookingstateid, size, page);
+    }
+
+    @GetMapping("/find/booking-state-stats")
+    public Flux<BookingStateStatsDto> findBookingStateStats(@RequestParam(required = false) String daybookinginit,
+                                                                @RequestParam(required = false) String daybookingend) {
+        return roomService.findBookingStateStats(daybookinginit, daybookingend);
     }
 
 }
