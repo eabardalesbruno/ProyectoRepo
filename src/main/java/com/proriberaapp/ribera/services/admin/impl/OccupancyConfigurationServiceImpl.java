@@ -7,12 +7,13 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.
 import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.byOccupancyAndDays.response.OccupancyDayDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.byRanges.request.OccupancyByRangesRequest;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.byRanges.response.OcupancyByRangesResponse;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.request.StandByRulesRequest;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.response.*;
 import com.proriberaapp.ribera.Domain.entities.OccupancyByRangeEntity;
 import com.proriberaapp.ribera.Domain.entities.OccupancyDayEntity;
 import com.proriberaapp.ribera.Domain.entities.OccupancyEntity;
-import com.proriberaapp.ribera.Infraestructure.repository.OccupancyByRangeRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.OccupancyDayRepository;
-import com.proriberaapp.ribera.Infraestructure.repository.OccupancyRepository;
+import com.proriberaapp.ribera.Domain.entities.StandbyRuleEntity;
+import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.admin.OccupancyConfigurationService;
 import com.proriberaapp.ribera.utils.constants.Constants;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,9 @@ public class OccupancyConfigurationServiceImpl implements OccupancyConfiguration
     private final OccupancyByRangeRepository occupancyByRangeRepository;
     private final OccupancyRepository occupancyRepository;
     private final OccupancyDayRepository occupancyDayRepository;
+    private final StandbyRuleRepository standbyRuleRepository;
+    private final ReservationTimeTypeRepository reservationTimeTypeRepository;
+    private final VisibilityTypeRepository visibilityTypeRepository;
     private final TransactionalOperator transactionalOperator;
 
     @Override
@@ -275,5 +279,106 @@ public class OccupancyConfigurationServiceImpl implements OccupancyConfiguration
     @Override
     public Mono<Void> deleteOccupancyByRangeEntity(Integer id) {
         return occupancyByRangeRepository.deleteById(id);
+    }
+
+    @Override
+    public Mono<StandByRulesResponse> getListStandByRulesWithPagination(String searchTerm, Integer size, Integer page) {
+        if (page < 0) page = 0;
+        if (size <= 0) size = 10;
+
+        Integer offset = page * size;
+
+        Mono<Integer> totalMono = standbyRuleRepository.countListStandByRules(searchTerm);
+        Mono<List<StandByRuleDto>> dataMono = standbyRuleRepository.getListStandByRules(searchTerm, size, offset)
+                .collectList();
+
+        Integer finalSize = size;
+        Integer finalPage = page;
+        return Mono.zip(totalMono, dataMono)
+                .map(tuple -> {
+                    Integer total = tuple.getT1();
+                    List<StandByRuleDto> data = tuple.getT2();
+                    boolean result = !data.isEmpty();
+                    return StandByRulesResponse.builder()
+                            .result(result)
+                            .total(total)
+                            .data(data)
+                            .size(finalSize)
+                            .page(finalPage)
+                            .build();
+                })
+                .switchIfEmpty(Mono.just(StandByRulesResponse.builder()
+                        .result(false)
+                        .total(0)
+                        .data(List.of())
+                        .size(size)
+                        .page(page)
+                        .build()));
+    }
+
+    @Override
+    public Mono<StandByRuleDetailDto> getStandByRuleById(Integer id) {
+        return standbyRuleRepository.getStandByRuleDetail(id);
+    }
+
+    @Override
+    public Flux<DropDownReservationTimeTypeResponse> getDropDownReservationTime(String searchTerm) {
+        return reservationTimeTypeRepository.getDropDownReservationTime(searchTerm);
+    }
+
+    @Override
+    public Flux<DropDownVisibilityTypeResponse> getDropDownVisivility(String searchTerm) {
+        return visibilityTypeRepository.getDropDownVisivility(searchTerm);
+    }
+
+    @Override
+    public Mono<StandbyRuleEntity> createStandByRuleEntity(StandByRulesRequest request) {
+        var standbyRuleEntity = StandbyRuleEntity.builder()
+                .idReservationTimeType(request.getIdReservationTimeType())
+                .idVisibilityType(request.getIdVisibilityType())
+                .status(Constants.ACTIVE)
+                .createdAt(LocalDateTime.now())
+                .createdBy(Constants.USER_ADMIN)
+                .build();
+        return standbyRuleRepository.save(standbyRuleEntity)
+                .as(transactionalOperator::transactional);
+    }
+
+    @Override
+    public Mono<StandbyRuleEntity> updateStandByRuleEntity(Integer id, StandByRulesRequest request) {
+        return standbyRuleRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "StandByRule entity not found with ID: " + id)))
+                .flatMap(standbyRuleEntity -> updateEntityStandByRule(standbyRuleEntity,request))
+                .flatMap(standbyRuleEntityUpdate ->
+                        updateReservationTimeTypeEntity(standbyRuleEntityUpdate,request)
+                                .thenReturn(standbyRuleEntityUpdate))
+                .as(transactionalOperator::transactional);
+    }
+
+    private Mono<StandbyRuleEntity> updateEntityStandByRule(StandbyRuleEntity standbyRuleEntity,StandByRulesRequest request) {
+        Optional.ofNullable(request.getIdReservationTimeType())
+                .ifPresent(standbyRuleEntity::setIdReservationTimeType);
+        Optional.ofNullable(request.getIdVisibilityType())
+                .ifPresent(standbyRuleEntity::setIdVisibilityType);
+        standbyRuleEntity.setUpdatedBy(Constants.USER_ADMIN);
+        standbyRuleEntity.setUpdatedAt(LocalDateTime.now());
+        return standbyRuleRepository.save(standbyRuleEntity);
+    }
+
+    private Mono<Void> updateReservationTimeTypeEntity(StandbyRuleEntity standbyRuleEntityUpdate, StandByRulesRequest request) {
+        return reservationTimeTypeRepository.findById(standbyRuleEntityUpdate.getIdReservationTimeType())
+                .flatMap(reservationTimeTypeEntity -> {
+                    Optional.ofNullable(request.getStandbyHours())
+                            .ifPresent(reservationTimeTypeEntity::setStandbyHours);
+                    reservationTimeTypeEntity.setUpdatedBy(Constants.USER_ADMIN);
+                    reservationTimeTypeEntity.setUpdatedAt(LocalDateTime.now());
+                    return reservationTimeTypeRepository.save(reservationTimeTypeEntity);
+                })
+                .then();
+    }
+
+    @Override
+    public Mono<Void> deleteStandByRuleEntity(Integer id) {
+        return standbyRuleRepository.deleteById(id);
     }
 }

@@ -31,6 +31,7 @@ public interface OccupancyRepository extends R2dbcRepository<OccupancyEntity, In
                 (
                     TRIM(UPPER(o.rule_name)) LIKE '%' || TRIM(UPPER(:searchTerm)) || '%'
                 )
+            ORDER BY o.id
             LIMIT :size OFFSET :offset;
             """)
     Flux<OccupancyEntity> getListByOccupancyAndDays(String searchTerm, Integer size, Integer offset);
