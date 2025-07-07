@@ -102,8 +102,8 @@ public class OccupancyConfigurationController {
         return occupancyConfigurationService.getDropDownReservationTime(searchTerm);
     }
 
-    @GetMapping("/standby-rules/drop-down-visivility-type")
-    public Flux<DropDownVisibilityTypeResponse> getDropDownVisivility(
+    @GetMapping("/standby-rules/drop-down-visibility-type")
+    public Flux<DropDownVisibilityTypeResponse> getDropDownVisibility(
             @RequestParam(required = false) String searchTerm){
         return occupancyConfigurationService.getDropDownVisivility(searchTerm);
     }

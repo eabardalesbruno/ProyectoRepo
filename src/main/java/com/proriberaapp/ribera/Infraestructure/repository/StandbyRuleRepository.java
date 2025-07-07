@@ -37,6 +37,7 @@ public interface StandbyRuleRepository extends R2dbcRepository<StandbyRuleEntity
                 OR (
                     TRIM(UPPER(rtt.type_name)) LIKE '%' || TRIM(UPPER(:searchTerm)) || '%'
                 )
+            ORDER BY sr.id_standby_rule
             LIMIT :size
             OFFSET :offset;
             """)
