@@ -87,7 +87,8 @@ public class SecurityConfig {
                                 "/api/v1/fullday/**",
                                 "/api/v1/ticketentryfullday/**",
                                 "/swagger-doc/**",
-                                "/api/v1/rewards/**"
+                                "/api/v1/rewards/**",
+                                "/api/internal/**"
                         ).permitAll()
 
                         .pathMatchers("/api/v1/admin/**").hasRole("SUPER_ADMIN")
