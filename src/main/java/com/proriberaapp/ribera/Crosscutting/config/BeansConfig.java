@@ -8,9 +8,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.config.EnableWebFlux;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
-public class BeansConfig {
+@EnableWebFlux
+public class BeansConfig implements WebFluxConfigurer {
     @Bean
     public WebProperties.Resources resources() {
         return new WebProperties.Resources();
@@ -34,5 +38,10 @@ public class BeansConfig {
     @Bean
     public SunatInvoice sunatInvoice() {
         return new VisualContIntegration();
+    }
+
+    @Bean
+    public WebClient.Builder webClientBuilder() {
+        return WebClient.builder();
     }
 }

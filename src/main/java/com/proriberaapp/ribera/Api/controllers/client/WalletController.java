@@ -73,23 +73,13 @@ public class WalletController {
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }
 
-    @PostMapping("/deposit")
+    /* @PostMapping("/deposit")
     public Mono<ResponseEntity<WalletTransactionEntity>> deposit(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
         return walletTransactionService.makeDeposit(walletId, transactioncatid, amount)
                 .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
     }
-
-    @PostMapping("/recharge")
-    public Mono<ResponseEntity<WalletTransactionEntity>> recharge(@RequestParam Integer walletId, @RequestParam Integer transactioncatid, @RequestParam BigDecimal amount) {
-
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            return Mono.just(ResponseEntity.badRequest().body(null));
-        }
-        return walletTransactionService.makeRecharge(walletId, transactioncatid, amount)
-                .map(walletTransactionEntity -> ResponseEntity.ok(walletTransactionEntity))
-                .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null)));
-    }
+    */
 
     @GetMapping("/cardnumber/{walletId}")
     public Mono<String> getCardNumber(@PathVariable Integer walletId) {
@@ -146,7 +136,7 @@ public class WalletController {
                 });
     }
 
-    @GetMapping("/exchange-rate/{date}")
+    /*  @GetMapping("/exchange-rate/{date}")
     public ResponseEntity<?> getExchangeRate(@PathVariable String date) {
         try {
             Map<String, Object> exchangeRate = walletTransactionService.getExchangeRate(date);
@@ -158,7 +148,7 @@ public class WalletController {
         }
     }
 
-    @PostMapping("/recharge-pending-commissions")
+    // @PostMapping("/recharge-pending-commissions")
     public Mono<ResponseEntity<List<WalletTransactionEntity>>> rechargePendingCommissions() {
         return walle.processPendingCommissions()
                 .collectList()
@@ -168,6 +158,7 @@ public class WalletController {
                     return Mono.just(ResponseEntity.badRequest().build());
                 });
     }
+    */
 
 
     @GetMapping("/payment-details")
