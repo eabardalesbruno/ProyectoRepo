@@ -5,7 +5,14 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.
 import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.byOccupancyAndDays.response.OccupancyByOccupancyAndDaysResponse;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.byRanges.request.OccupancyByRangesRequest;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.byRanges.response.OcupancyByRangesResponse;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.request.StandByRulesRequest;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.response.DropDownReservationTimeTypeResponse;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.response.DropDownVisibilityTypeResponse;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.response.StandByRuleDetailDto;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.response.StandByRulesResponse;
 import com.proriberaapp.ribera.Domain.entities.OccupancyByRangeEntity;
+import com.proriberaapp.ribera.Domain.entities.StandbyRuleEntity;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface OccupancyConfigurationService {
@@ -29,4 +36,18 @@ public interface OccupancyConfigurationService {
     Mono<OccupancyByRangeEntity> updateOccupancyByRangeEntity(Integer id,OccupancyByRangesRequest request);
 
     Mono<Void> deleteOccupancyByRangeEntity(Integer id);
+
+    Mono<StandByRulesResponse> getListStandByRulesWithPagination(String searchTerm, Integer size, Integer page);
+
+    Mono<StandByRuleDetailDto> getStandByRuleById(Integer id);
+
+    Flux<DropDownReservationTimeTypeResponse>getDropDownReservationTime(String searchTerm);
+
+    Flux<DropDownVisibilityTypeResponse> getDropDownVisivility(String searchTerm);
+
+    Mono<StandbyRuleEntity> createStandByRuleEntity(StandByRulesRequest request);
+
+    Mono<StandbyRuleEntity> updateStandByRuleEntity(Integer id,StandByRulesRequest request);
+
+    Mono<Void> deleteStandByRuleEntity(Integer id);
 }
