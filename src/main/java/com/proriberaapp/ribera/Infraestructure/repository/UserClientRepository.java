@@ -303,4 +303,8 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
         OR CONCAT(firstname, ' ', lastname) ILIKE CONCAT('%', :input, '%')
      """)
     Mono<UserClientEntity> findByIdentifier(String input);
+
+    // Método para buscar usuarios sin wallet (para retry en background)
+    @Query("SELECT * FROM userclient WHERE walletid IS NULL")
+    Flux<UserClientEntity> findByWalletIdIsNull();
 }

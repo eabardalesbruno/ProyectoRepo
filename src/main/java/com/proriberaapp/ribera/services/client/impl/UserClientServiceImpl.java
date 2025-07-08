@@ -36,6 +36,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import jakarta.annotation.PostConstruct;
+import org.springframework.scheduling.annotation.Scheduled;
+import java.util.concurrent.TimeUnit;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -44,6 +47,13 @@ import java.util.List;
 
 import static com.proriberaapp.ribera.utils.constants.DiscountTypeCode.DISCOUNT_MEMBER;
 import static com.proriberaapp.ribera.utils.constants.DiscountTypeCode.USD_REWARD;
+
+import com.proriberaapp.ribera.Api.controllers.admin.dto.UserDto;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.AuthDataResponse;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.WalletCreationResponse;
+import com.proriberaapp.ribera.Api.controllers.exception.CredentialsInvalidException;
+import com.proriberaapp.ribera.Domain.entities.WalletEntity;
+import com.proriberaapp.ribera.Domain.enums.Permission;
 
 @Slf4j
 @Service
@@ -76,6 +86,15 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Autowired
     private UserPromoterRepository userPromoterRepository;
+
+    @Value("${wallet.microservice.url}")
+    private String walletMsUrl;
+    private WebClient webClientWallet;
+
+    @PostConstruct
+    public void init() {
+        this.webClientWallet = WebClient.builder().baseUrl(walletMsUrl).build();
+    }
 
     /*
      * @Override
@@ -252,21 +271,38 @@ public class UserClientServiceImpl implements UserClientService {
                 })
                 .flatMap(userClientRepository::save)
                 .flatMap(savedUser -> {
-                    // Creacion de la wallet con el número de la wallet único
-                    return walletServiceImpl.createWalletUsuario(savedUser.getUserClientId(), 1) // Creamos la wallet
-                            .flatMap(wallet -> {
-                                // Asociamos el walletId al usuario
-                                savedUser.setWalletId(wallet.getWalletId()); // Establecemos el walletId en el usuario
-                                return userClientRepository.save(savedUser)
-                                        .flatMap(updatedUser -> {
-                                            String emailBody = generateUserRegistrationEmailBody(updatedUser,
-                                                    randomPassword);
-                                            return emailService
-                                                    .sendEmail(updatedUser.getEmail(), "Confirmación de Registro",
-                                                            emailBody)
-                                                    .thenReturn(updatedUser);
-                                        });
-                            });
+                    // Generar token temporal para el usuario recién creado
+                    String tempToken = jwtUtil.generateToken(savedUser);
+                    
+                    // Intentar creación de la wallet en el microservicio con fallback graceful
+                    return webClientWallet.post()
+                        .uri("/api/v1/wallet/create/{idUser}", savedUser.getUserClientId())
+                        .header("Authorization", "Bearer " + tempToken)
+                        .retrieve()
+                        .bodyToMono(WalletCreationResponse.class)
+                        .flatMap(walletResponse -> {
+                            // Éxito: Asociar wallet al usuario
+                            savedUser.setWalletId(walletResponse.getData().getWalletId());
+                            return userClientRepository.save(savedUser);
+                        })
+                        .flatMap(userWithWallet -> {
+                            // Enviar correo de confirmación después de crear la wallet
+                            String emailBody = generateUserRegistrationEmailBody(userWithWallet, randomPassword);
+                            return emailService.sendEmail(userWithWallet.getEmail(), "Confirmación de Registro", emailBody)
+                                    .thenReturn(userWithWallet);
+                        })
+                        .doOnSuccess(user -> log.info("Usuario registrado exitosamente con wallet en MS: {}", user.getUserClientId()))
+                        .onErrorResume(error -> {
+                            // Fallback graceful: Continuar sin wallet
+                            log.warn("Error creando wallet en MS para usuario {}, continuando sin wallet: {}", 
+                                    savedUser.getUserClientId(), error.getMessage());
+                            
+                            // El usuario ya está guardado, solo enviamos el correo
+                            String emailBody = generateUserRegistrationEmailBody(savedUser, randomPassword);
+                            return emailService.sendEmail(savedUser.getEmail(), "Confirmación de Registro", emailBody)
+                                    .thenReturn(savedUser)
+                                    .doOnSuccess(user -> log.info("Usuario registrado exitosamente sin wallet (se reintentará más tarde): {}", user.getUserClientId()));
+                        });
                 });
     }
 
@@ -450,11 +486,27 @@ public class UserClientServiceImpl implements UserClientService {
                 .flatMap(user -> {
                     if (passwordEncoder.matches(password, user.getPassword())) {
                         if (user.getWalletId() == null) {
-                            return walletServiceImpl.createWalletUsuario(user.getUserClientId(), 1)
-                                    .flatMap(wallet -> {
-                                        user.setWalletId(wallet.getWalletId());
+                            // Generar token temporal para el usuario
+                            String tempToken = jwtUtil.generateToken(user);
+                            
+                            // Intentar crear wallet en el microservicio con fallback graceful
+                            return webClientWallet.post()
+                                    .uri("/api/v1/wallet/create/{idUser}", user.getUserClientId())
+                                    .header("Authorization", "Bearer " + tempToken)
+                                    .retrieve()
+                                    .bodyToMono(WalletCreationResponse.class)
+                                    .flatMap(walletResponse -> {
+                                        // Éxito: Asociar wallet al usuario
+                                        user.setWalletId(walletResponse.getData().getWalletId());
                                         return userClientRepository.save(user)
                                                 .thenReturn(jwtUtil.generateToken(user));
+                                    })
+                                    .doOnSuccess(token -> log.info("Wallet creada en MS durante login para usuario {}", user.getUserClientId()))
+                                    .onErrorResume(error -> {
+                                        // Fallback graceful: Continuar sin wallet
+                                        log.warn("Error creando wallet en MS durante login para usuario {}, continuando sin wallet: {}", 
+                                                user.getUserClientId(), error.getMessage());
+                                        return Mono.just(jwtUtil.generateToken(user));
                                     });
                         } else {
                             return Mono.just(jwtUtil.generateToken(user));
@@ -486,7 +538,34 @@ public class UserClientServiceImpl implements UserClientService {
     @Override
     public Mono<String> loginWithGoogle(String googleId) {
         return userClientRepository.findByGoogleId(googleId)
-                .map(user -> jwtUtil.generateToken(user))
+                .flatMap(user -> {
+                    if (user.getWalletId() == null) {
+                        // Generar token temporal para el usuario
+                        String tempToken = jwtUtil.generateToken(user);
+                        
+                        // Intentar crear wallet en el microservicio con fallback graceful
+                        return webClientWallet.post()
+                                .uri("/api/v1/wallet/create/{idUser}", user.getUserClientId())
+                                .header("Authorization", "Bearer " + tempToken)
+                                .retrieve()
+                                .bodyToMono(WalletCreationResponse.class)
+                                .flatMap(walletResponse -> {
+                                    // Éxito: Asociar wallet al usuario
+                                    user.setWalletId(walletResponse.getData().getWalletId());
+                                    return userClientRepository.save(user)
+                                            .thenReturn(jwtUtil.generateToken(user));
+                                })
+                                .doOnSuccess(token -> log.info("Wallet creada en MS durante login con Google para usuario {}", user.getUserClientId()))
+                                .onErrorResume(error -> {
+                                    // Fallback graceful: Continuar sin wallet
+                                    log.warn("Error creando wallet en MS durante login con Google para usuario {}, continuando sin wallet: {}", 
+                                            user.getUserClientId(), error.getMessage());
+                                    return Mono.just(jwtUtil.generateToken(user));
+                                });
+                    } else {
+                        return Mono.just(jwtUtil.generateToken(user));
+                    }
+                })
                 .switchIfEmpty(Mono.error(new RuntimeException("Usuario no encontrado")));
     }
 
@@ -821,4 +900,42 @@ public class UserClientServiceImpl implements UserClientService {
                 .email(user.getEmail())
                 .build();
     }
+
+    /**
+     * Servicio de retry en background para usuarios sin wallet
+     * Se ejecuta cada 5 minutos para intentar crear wallets pendientes
+     */
+    @Scheduled(fixedDelay = 300000) // 5 minutos = 300,000 ms
+    public void retryPendingWallets() {
+        log.info("Iniciando retry de wallets pendientes...");
+        
+        userClientRepository.findByWalletIdIsNull()
+                .flatMap(user -> {
+                    log.info("Intentando crear wallet para usuario sin wallet: {}", user.getUserClientId());
+                    
+                    // Generar token temporal para el usuario
+                    String tempToken = jwtUtil.generateToken(user);
+                    
+                    // Intentar crear wallet en el microservicio
+                    return webClientWallet.post()
+                            .uri("/api/v1/wallet/create/{idUser}", user.getUserClientId())
+                            .header("Authorization", "Bearer " + tempToken)
+                            .retrieve()
+                            .bodyToMono(WalletCreationResponse.class)
+                            .flatMap(walletResponse -> {
+                                // Éxito: Asociar wallet al usuario
+                                user.setWalletId(walletResponse.getData().getWalletId());
+                                return userClientRepository.save(user)
+                                        .doOnSuccess(savedUser -> log.info("Wallet creada exitosamente en retry para usuario {}", savedUser.getUserClientId()));
+                            })
+                            .onErrorResume(error -> {
+                                // Error: Log y continuar con el siguiente usuario
+                                log.warn("Error en retry de wallet para usuario {}: {}", user.getUserClientId(), error.getMessage());
+                                return Mono.empty(); // Continuar sin interrumpir el flujo
+                            });
+                })
+                .doOnComplete(() -> log.info("Retry de wallets pendientes completado"))
+                .subscribe(); // Ejecutar de forma asíncrona
+    }
+
 }
