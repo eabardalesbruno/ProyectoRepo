@@ -38,6 +38,7 @@ public interface OccupancyByRangeRepository extends R2dbcRepository<OccupancyByR
                         (:endDate IS NULL OR TO_DATE(obr.range_to_date, 'DD/MM/YYYY') <= TO_DATE(:endDate, 'DD/MM/YYYY'))
                     )
                 )
+            ORDER BY obr.id
             LIMIT :size OFFSET :offset;
             """)
     Flux<OccupancyByRangeEntity>getListByRanges(String startDate, String endDate, Integer size, Integer offset);
