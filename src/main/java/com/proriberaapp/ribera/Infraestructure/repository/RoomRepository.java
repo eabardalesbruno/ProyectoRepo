@@ -72,8 +72,8 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
     JOIN paymentbook pb ON b.bookingid = pb.bookingid
     JOIN paymentstate ps ON pb.paymentstateid = ps.paymentstateid
     WHERE (:roomnumber IS NULL OR r.roomnumber = :roomnumber)
-      AND (:daybookinginit IS NULL OR b.daybookingend::DATE >= CAST(:daybookinginit AS DATE))
-      AND (:daybookingend IS NULL OR b.daybookinginit::DATE <= CAST(:daybookingend AS DATE))
+      AND (b.daybookingend::DATE >= CAST(:daybookingend AS DATE))
+      AND (b.daybookinginit::DATE <= CAST(:daybookinginit AS DATE))
       AND (:roomtypeid IS NULL OR r.roomtypeid = :roomtypeid)
       AND (:numberadults IS NULL OR b.numberadults = :numberadults)
       AND (:numberchildren IS NULL OR b.numberchildren = :numberchildren)
@@ -128,15 +128,15 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
             JOIN paymentbook pb ON b.bookingid = pb.bookingid
             JOIN paymentstate ps ON pb.paymentstateid = ps.paymentstateid
             JOIN bookingstate bs ON bs.bookingstateid = b.bookingstateid
-            WHERE (:daybookingend IS NULL OR b.daybookingend::DATE >= CAST(:daybookingend AS DATE))
-              AND (:daybookinginit IS NULL OR b.daybookinginit::DATE <= CAST(:daybookinginit AS DATE))
+            WHERE (b.daybookingend::DATE >= CAST(:daybookingend AS DATE))
+              AND (b.daybookinginit::DATE <= CAST(:daybookinginit AS DATE))
               AND (:roomnumber IS NULL OR r.roomnumber = :roomnumber)
               AND (:bookingstateid IS NULL OR b.bookingstateid = :bookingstateid)
             ORDER BY b.bookingid,
                      CASE WHEN ps.paymentstatename = 'ACEPTADO' THEN 1 ELSE 2 END
         ) AS result
         ORDER BY bookingid
-        LIMIT :size OFFSET :page        
+        LIMIT :size OFFSET :page
     """)
     Flux<RoomDetailDto> findAllViewRoomsDetailActivities(
             @Param("daybookinginit") String daybookinginit,
@@ -160,8 +160,8 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
                 FROM room r
                 LEFT JOIN roomoffer ro ON r.roomid = ro.roomid
                 LEFT JOIN booking b ON ro.roomofferid = b.roomofferid
-                    AND (:daybookingend IS NULL OR b.daybookingend::DATE >= CAST(:daybookingend AS DATE))
-                    AND (:daybookinginit IS NULL OR b.daybookinginit::DATE <= CAST(:daybookinginit AS DATE))
+                    AND (b.daybookingend::DATE >= CAST(:daybookingend AS DATE))
+                    AND (b.daybookinginit::DATE <= CAST(:daybookinginit AS DATE))
                 LEFT JOIN paymentbook pb ON b.bookingid = pb.bookingid
                 LEFT JOIN paymentstate ps ON pb.paymentstateid = ps.paymentstateid
                 LEFT JOIN bookingstate bs ON bs.bookingstateid = b.bookingstateid

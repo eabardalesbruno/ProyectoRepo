@@ -36,8 +36,8 @@ public class ManagerRoomController extends BaseManagerController<RoomEntity, Roo
     }
 
     @GetMapping("/find/detail-with-params")
-    public Flux<RoomDashboardDto> findViewRoomsDetailWithParams(@RequestParam(required = false) String daybookinginit,
-                                                               @RequestParam(required = false) String daybookingend,
+    public Flux<RoomDashboardDto> findViewRoomsDetailWithParams(@RequestParam(required = true) String daybookinginit,
+                                                               @RequestParam(required = true) String daybookingend,
                                                                @RequestParam(required = false) Integer roomtypeid,
                                                                @RequestParam(required = false) Integer numberadults,
                                                                @RequestParam(required = false) Integer numberchildren,
@@ -58,8 +58,8 @@ public class ManagerRoomController extends BaseManagerController<RoomEntity, Roo
     }
 
     @GetMapping("/find/all-rooms-activities")
-    public Flux<RoomDetailDto> findAllViewRoomsDetailActivities(@RequestParam(required = false) String daybookinginit,
-                                                                @RequestParam(required = false) String daybookingend,
+    public Flux<RoomDetailDto> findAllViewRoomsDetailActivities(@RequestParam(required = true) String daybookinginit,
+                                                                @RequestParam(required = true) String daybookingend,
                                                                 @RequestParam(required = false) String roomnumber,
                                                                 @RequestParam(required = false) Integer bookingstateid,
                                                                 @RequestParam(required = false) Integer size,
@@ -68,8 +68,8 @@ public class ManagerRoomController extends BaseManagerController<RoomEntity, Roo
     }
 
     @GetMapping("/find/booking-state-stats")
-    public Flux<BookingStateStatsDto> findBookingStateStats(@RequestParam(required = false) String daybookinginit,
-                                                                @RequestParam(required = false) String daybookingend) {
+    public Flux<BookingStateStatsDto> findBookingStateStats(@RequestParam(required = true) String daybookinginit,
+                                                                @RequestParam(required = true) String daybookingend) {
         return roomService.findBookingStateStats(daybookinginit, daybookingend);
     }
 

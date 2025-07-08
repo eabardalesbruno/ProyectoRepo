@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.ResponseVa
 import com.proriberaapp.ribera.Api.controllers.client.dto.TokenValid;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.AuthDataResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.AuthResponse;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.WalletCreationResponse;
 import com.proriberaapp.ribera.Api.controllers.exception.CredentialsInvalidException;
 import com.proriberaapp.ribera.Api.controllers.exception.TokenInvalidException;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
@@ -14,6 +15,7 @@ import com.proriberaapp.ribera.Domain.enums.StatesUser;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.services.client.LoginInclubService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,11 +23,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import jakarta.annotation.PostConstruct;
 import java.sql.Timestamp;
 import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LoginInclubServiceImpl implements LoginInclubService {
     @Value("${inclub.api.url.user}")
     private String URL_LOGIN_USER;
@@ -36,14 +40,20 @@ public class LoginInclubServiceImpl implements LoginInclubService {
     @Value("${backoffice.api.url}")
     private String urlBackOffice;
 
+    @Value("${wallet.microservice.url}")
+    private String walletMsUrl;
+
     private final UserClientRepository userClientRepository;
-
     private final JwtProvider jwtUtil;
-
     private final PasswordEncoder passwordEncoder;
-
     private final WalletServiceImpl walletServiceImpl;
     private final WebClient webClient;
+    private WebClient webClientWallet;
+
+    @PostConstruct
+    public void init() {
+        this.webClientWallet = WebClient.builder().baseUrl(walletMsUrl).build();
+    }
 
     @Override
     public Mono<TokenValid> login(String userName, String password) throws TokenInvalidException {
@@ -64,11 +74,18 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                                     .flatMap(user -> {
                                         // Verificar si el usuario tiene una wallet asociada
                                         if (user.getWalletId() == null) {
-                                            // Si no tiene wallet, crear una nueva
-                                            return walletServiceImpl.createWalletUsuario(user.getUserClientId(), 2)
-                                                    .flatMap(wallet -> {
-                                                        // Asociamos la wallet al usuario
-                                                        user.setWalletId(wallet.getWalletId());
+                                            // Generar token temporal para el usuario
+                                            String tempToken = jwtUtil.generateToken(user);
+                                            
+                                            // Intentar crear wallet en el microservicio con fallback graceful
+                                            return webClientWallet.post()
+                                                    .uri("/api/v1/wallet/create/{idUser}", user.getUserClientId())
+                                                    .header("Authorization", "Bearer " + tempToken)
+                                                    .retrieve()
+                                                    .bodyToMono(WalletCreationResponse.class)
+                                                    .flatMap(walletResponse -> {
+                                                        // Éxito: Asociar wallet al usuario
+                                                        user.setWalletId(walletResponse.getData().getWalletId());
                                                         if (responseInclubLoginDto.getData().getIdState() == 1) {
                                                             user.setStatus(StatesUser.ACTIVE);
                                                         } else {
@@ -76,12 +93,25 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                                                         }
                                                         return userClientRepository.save(user) // Guardamos el usuario con la wallet
                                                                 .flatMap(userClientEntity -> {
-                                                                    TokenValid tokenValid = null; // Generar token
-                                                                    tokenValid = new TokenValid(jwtUtil.generateToken(user), tokenBackOffice);
-
+                                                                    TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user), tokenBackOffice);
                                                                     return Mono.just(tokenValid); // Devolvemos el token
                                                                 });
-
+                                                    })
+                                                    .doOnSuccess(token -> log.info("Wallet creada en MS para usuario InClub {}", user.getUserClientId()))
+                                                    .onErrorResume(error -> {
+                                                        // Fallback graceful: Continuar sin wallet
+                                                        log.warn("Error creando wallet en MS para usuario InClub {}, continuando sin wallet: {}", 
+                                                                user.getUserClientId(), error.getMessage());
+                                                        if (responseInclubLoginDto.getData().getIdState() == 1) {
+                                                            user.setStatus(StatesUser.ACTIVE);
+                                                        } else {
+                                                            user.setStatus(StatesUser.INACTIVE);
+                                                        }
+                                                        return userClientRepository.save(user)
+                                                                .flatMap(userClientEntity -> {
+                                                                    TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user), tokenBackOffice);
+                                                                    return Mono.just(tokenValid);
+                                                                });
                                                     });
                                         } else {
                                             if (responseInclubLoginDto.getData().getIdState() == 1) {
