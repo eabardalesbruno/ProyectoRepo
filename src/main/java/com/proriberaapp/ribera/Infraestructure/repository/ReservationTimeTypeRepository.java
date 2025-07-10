@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Domain.entities.ReservationTimeTypeEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 public interface ReservationTimeTypeRepository extends R2dbcRepository<ReservationTimeTypeEntity,Integer> {
     @Query(value = """
@@ -24,4 +25,17 @@ public interface ReservationTimeTypeRepository extends R2dbcRepository<Reservati
             ORDER BY rtt.id_reservation_time_type ASC;
             """)
     Flux<DropDownReservationTimeTypeResponse>getDropDownReservationTime(String searchTerm);
+
+    @Query(value = """
+            SELECT
+                EXTRACT(EPOCH FROM (b.daybookinginit - b.createdat)) / 3600 AS hours_diff
+            FROM
+                booking AS b
+            WHERE
+                b.bookingid = :bookingId;
+            """)
+    Mono<Double> getHoursDiffByBookingId(Integer bookingId);
+
+    @Query("SELECT * FROM reservation_time_type WHERE status = 1")
+    Flux<ReservationTimeTypeEntity> findAllActive();
 }
