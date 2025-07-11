@@ -4,4 +4,5 @@ public enum DiscountTypeCode {
     USD_REWARD,
     DISCOUNT_MEMBER,
     DISCOUNT_COUPON,
+    USD_REWARD_INCLUB
 }
