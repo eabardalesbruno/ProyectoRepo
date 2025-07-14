@@ -6,10 +6,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.
 import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.byRanges.request.OccupancyByRangesRequest;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.byRanges.response.OcupancyByRangesResponse;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.request.StandByRulesRequest;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.response.DropDownReservationTimeTypeResponse;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.response.DropDownVisibilityTypeResponse;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.response.StandByRuleDetailDto;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.response.StandByRulesResponse;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.response.*;
 import com.proriberaapp.ribera.Domain.entities.OccupancyByRangeEntity;
 import com.proriberaapp.ribera.Domain.entities.StandbyRuleEntity;
 import reactor.core.publisher.Flux;
@@ -38,6 +35,8 @@ public interface OccupancyConfigurationService {
     Mono<Void> deleteOccupancyByRangeEntity(Integer id);
 
     Mono<StandByRulesResponse> getListStandByRulesWithPagination(String searchTerm, Integer size, Integer page);
+
+    Mono<StandByRuleByUserResponse> getStandByRuleByUser(Integer bookingId, Boolean isUserInclub);
 
     Mono<StandByRuleDetailDto> getStandByRuleById(Integer id);
 
