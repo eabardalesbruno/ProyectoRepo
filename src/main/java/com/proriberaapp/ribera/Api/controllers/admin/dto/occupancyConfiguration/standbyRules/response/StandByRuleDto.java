@@ -13,4 +13,5 @@ public class StandByRuleDto {
     private Integer idstandbyrule;
     private String reservationtimetypename;
     private Integer standbyhours;
+    private String visibilityname;
 }
