@@ -17,6 +17,8 @@ public interface StandbyRuleRepository extends R2dbcRepository<StandbyRuleEntity
             FROM standby_rule sr
             INNER JOIN reservation_time_type rtt
                 ON rtt.id_reservation_time_type = sr.id_reservation_time_type
+            INNER JOIN
+                visibility_type vt ON vt.id_visibility_type = sr.id_visibility_type
             WHERE
                 (:searchTerm IS NULL)
                 OR (
@@ -29,10 +31,13 @@ public interface StandbyRuleRepository extends R2dbcRepository<StandbyRuleEntity
             SELECT
                 sr.id_standby_rule AS idstandbyrule,
                 rtt.type_name AS reservationtimetypename,
-                rtt.standby_hours AS standbyhours
+                rtt.standby_hours AS standbyhours,
+                vt.visibility_name AS visibilityname
             FROM standby_rule sr
             INNER JOIN reservation_time_type rtt
                 ON rtt.id_reservation_time_type = sr.id_reservation_time_type
+            INNER JOIN
+                visibility_type vt ON vt.id_visibility_type = sr.id_visibility_type
             WHERE
                 (:searchTerm IS NULL)
                 OR (
