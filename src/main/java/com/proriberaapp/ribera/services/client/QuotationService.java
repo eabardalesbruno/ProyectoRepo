@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 import java.math.BigDecimal;
 
 public interface QuotationService {
-    Mono<QuotationObjectDto> findAllQuotations(Integer condition);
+    Mono<QuotationObjectDto> findAllQuotations(Integer condition, Integer roomTypeId, String roomNumber);
 
     Flux<quotationDayDto> getQuotationDaySelected(Integer quotationId);
 
