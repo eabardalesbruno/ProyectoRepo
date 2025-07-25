@@ -5,13 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
-public class StandByRuleDto {
-    private Integer idstandbyrule;
-    private String reservationtimetypename;
-    private Integer standbyhours;
-    private String visibilityname;
+public class StandByRuleByUserResponse {
+    private boolean result;
+    private StandByRuleByUserDetailDto data;
 }
