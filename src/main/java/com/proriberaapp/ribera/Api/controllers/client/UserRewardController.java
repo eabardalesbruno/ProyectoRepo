@@ -2,6 +2,8 @@ package com.proriberaapp.ribera.Api.controllers.client;
 
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.UserRewardRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.RewardReleaseRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.WalletBalanceUpdateRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.HistoricalRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardResponse;
 import com.proriberaapp.ribera.Domain.enums.RewardType;
@@ -55,5 +57,23 @@ public class UserRewardController {
                                                                           @RequestParam(required = false,value = "startDate") String startDate,
                                                                           @RequestParam(required = false,value = "endDate") String endDate){
         return userRewardService.getHistoricalRewardsByUsernameAndPagination(username,page,size,status,membership,startDate,endDate);
+    }
+
+    /**
+     * Endpoint para actualizar el saldo de rewards cuando se realizan transacciones desde la wallet
+     * Este endpoint permite mantener sincronizados los saldos entre wallet y rewards
+     */
+    @PostMapping("/update-balance")
+    public Mono<Void> updateRewardBalance(@RequestBody RewardReleaseRequest request) {
+        return userRewardService.releaseUserReward(request);
+    }
+
+    /**
+     * Endpoint específico para actualizar el balance de rewards desde transacciones de wallet
+     * Incluye información adicional para trazabilidad y auditoría
+     */
+    @PostMapping("/wallet/update-balance")
+    public Mono<Void> updateRewardBalanceFromWallet(@RequestBody WalletBalanceUpdateRequest request) {
+        return userRewardService.updateRewardBalanceFromWallet(request);
     }
 }

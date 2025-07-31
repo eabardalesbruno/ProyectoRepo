@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.services.client;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.GroupedSubscriptionFamilyRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.GroupedSubscriptionRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.RewardReleaseRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.WalletBalanceUpdateRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.HistoricalRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardResponse;
 import com.proriberaapp.ribera.Domain.dto.PercentageDto;
@@ -36,4 +37,10 @@ public interface UserRewardService {
     Mono<List<PercentageDto>> getRandomSubscriptionPercentages(String username);
     Mono<Void> releaseUserReward(RewardReleaseRequest request);
     Mono<Integer> getUserIdByUsername(String username);
+    
+    /**
+     * Actualiza el balance de rewards cuando se realizan transacciones desde la wallet
+     * Permite mantener sincronizados los saldos entre wallet y rewards
+     */
+    Mono<Void> updateRewardBalanceFromWallet(WalletBalanceUpdateRequest request);
 }
