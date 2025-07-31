@@ -100,6 +100,16 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
     """)
     Flux<RoomDto> findRoomByRoomTypeId(@Param("roomtypeid") Integer roomtypeid);
 
+
+    @Query("""
+        SELECT distinct r.roomnumber
+        FROM room r
+        JOIN roomtype rt ON r.roomtypeid = rt.roomtypeid AND rt.roomtypeid = :roomtypeid
+        WHERE :roomNumber IS NULL OR r.roomnumber = :roomNumber
+        ORDER BY r.roomnumber
+    """)
+    Flux<RoomDto> findRoomByRoomNumberAndRoomTypeId(@Param("roomNumber") String roomNumber, @Param("roomtypeid") Integer roomtypeid);
+
     @Query("""
         SELECT *
         FROM (

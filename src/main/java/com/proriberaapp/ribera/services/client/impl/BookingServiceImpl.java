@@ -8,6 +8,7 @@ import com.proriberaapp.ribera.Domain.dto.BookingFeedingDto;
 import com.proriberaapp.ribera.Domain.dto.QuotationOfferDto;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
+import com.proriberaapp.ribera.services.admin.OccupancyConfigurationService;
 import com.proriberaapp.ribera.services.client.*;
 import com.proriberaapp.ribera.utils.BookingUtils;
 import com.proriberaapp.ribera.utils.GeneralMethods;
@@ -57,6 +58,7 @@ public class BookingServiceImpl implements BookingService {
     private final RoomRepository roomRepository;
     private final QuotationService quotationService;
     private final ExchangeRateService exchangeRateService;
+    private  final OccupancyConfigurationService occupancyConfigurationService;
     @Value("${app.upload.dir}")
     private String uploadDir;
 
@@ -77,7 +79,8 @@ public class BookingServiceImpl implements BookingService {
             BookingFeedingRepository bookingFeedingRepository,
             FeedingRepository feedingRepository,
             QuotationService quotationService,
-            ExchangeRateService exchangeRateService
+            ExchangeRateService exchangeRateService,
+            OccupancyConfigurationService occupancyConfigurationService
     ) {
         this.bookingRepository = bookingRepository;
         this.userClientRepository = userClientRepository;
@@ -95,6 +98,7 @@ public class BookingServiceImpl implements BookingService {
         this.feedingRepository = feedingRepository;
         this.quotationService = quotationService;
         this.exchangeRateService = exchangeRateService;
+        this.occupancyConfigurationService = occupancyConfigurationService;
     }
 
     @Override
@@ -529,65 +533,128 @@ public class BookingServiceImpl implements BookingService {
 
     // Método para enviar el correo de confirmación de reserva con el nombre de la
     // habitación
+    /*
     private Mono<BookingEntity> sendBookingConfirmationEmail(BookingEntity bookingEntity, String roomName,
                                                              String totalPeoples, boolean isPaying) {
         if (isPaying) {
             return Mono.empty();
         } else {
             return userClientRepository.findByUserClientId(bookingEntity.getUserClientId())
-                    .flatMap(userClient -> {
-                        return paymentBookRepository
-                                .countPaymentBookByBookingId(
-                                        bookingEntity.getBookingId())
-                                .flatMap(payment -> {
-                                    int hidePayment = 1; // Por el momento es para
-                                    // ocultar el botón pagar
-                                    BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
-                                    String monthInit = TransformDate
-                                            .getAbbreviatedMonth(
-                                                    bookingEntity.getDayBookingInit());
-                                    String monthEnd = TransformDate
-                                            .getAbbreviatedMonth(
-                                                    bookingEntity.getDayBookingEnd());
-                                    int dayInit = TransformDate.getDayNumber(
-                                            bookingEntity.getDayBookingInit());
-                                    int dayEnd = TransformDate.getDayNumber(
-                                            bookingEntity.getDayBookingEnd());
-                                    long dayInterval = TransformDate
-                                            .calculateDaysDifference(
-                                                    bookingEntity.getDayBookingInit(),
-                                                    bookingEntity.getDayBookingEnd());
-                                    baseEmailReserve.addEmailHandler(
-                                            new ConfirmReserveBookingTemplateEmail(
-                                                    monthInit,
-                                                    monthEnd,
-                                                    String.valueOf(dayInit),
-                                                    String.valueOf(
-                                                            dayEnd),
-                                                    dayInterval,
-                                                    roomName,
-                                                    userClient.getFirstName(),
-                                                    String.valueOf(bookingEntity
-                                                            .getBookingId()),
-                                                    totalPeoples,
-                                                    hidePayment));
-                                    String emailBody = baseEmailReserve.execute();
-                                    // Generar el cuerpo del correo electrónico con
-                                    // el nombre de la habitación
-                                    /*
-                                     * String emailBody =
-                                     * generateEmailBody(bookingEntity, roomName);
-                                     */
-                                    // Enviar el correo electrónico utilizando el
-                                    // servicio de correo
-                                    return emailService
-                                            .sendEmail(userClient
-                                                            .getEmail(),
-                                                    "Confirmación de Reserva",
-                                                    emailBody)
-                                            .thenReturn(bookingEntity);
-                                });
-                    });
+                    .flatMap(userClient -> paymentBookRepository
+                            .countPaymentBookByBookingId(
+                                    bookingEntity.getBookingId())
+                            .flatMap(payment -> occupancyConfigurationService
+                                    .getStandByRuleByUser(bookingEntity.getBookingId(), userClient.isUserInclub())
+                                    .flatMap(standByRuleByUserResponse -> {
+                                        int hidePayment = 1; // Por el momento es para
+                                        // ocultar el botón pagar
+                                        BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+                                        String monthInit = TransformDate
+                                                .getAbbreviatedMonth(
+                                                        bookingEntity.getDayBookingInit());
+                                        String monthEnd = TransformDate
+                                                .getAbbreviatedMonth(
+                                                        bookingEntity.getDayBookingEnd());
+                                        int dayInit = TransformDate.getDayNumber(
+                                                bookingEntity.getDayBookingInit());
+                                        int dayEnd = TransformDate.getDayNumber(
+                                                bookingEntity.getDayBookingEnd());
+                                        long dayInterval = TransformDate
+                                                .calculateDaysDifference(
+                                                        bookingEntity.getDayBookingInit(),
+                                                        bookingEntity.getDayBookingEnd());
+                                        baseEmailReserve.addEmailHandler(
+                                                new ConfirmReserveBookingTemplateEmail(
+                                                        monthInit,
+                                                        monthEnd,
+                                                        String.valueOf(dayInit),
+                                                        String.valueOf(
+                                                                dayEnd),
+                                                        dayInterval,
+                                                        roomName,
+                                                        userClient.getFirstName()+ " " +userClient.getLastName(),
+                                                        String.valueOf(bookingEntity
+                                                                .getBookingId()),
+                                                        totalPeoples,
+                                                        hidePayment,standByRuleByUserResponse.getData().getStandbyhours()));
+                                        String emailBody = baseEmailReserve.execute();
+                                        // Generar el cuerpo del correo electrónico con
+                                        // el nombre de la habitación
+
+                                        // Enviar el correo electrónico utilizando el
+                                        // servicio de correo
+                                        return emailService
+                                                .sendEmail(userClient
+                                                                .getEmail(),
+                                                        "Confirmación de Reserva",
+                                                        emailBody)
+                                                .thenReturn(bookingEntity);
+                                    })));
+        }
+    }
+     */
+
+    private Mono<BookingEntity> sendBookingConfirmationEmail(BookingEntity bookingEntity, String roomName,
+                                                             String totalPeoples, boolean isPaying) {
+        if (isPaying) {
+            return Mono.empty();
+        } else {
+            return userClientRepository.findByUserClientId(bookingEntity.getUserClientId())
+                    .flatMap(userClient -> paymentBookRepository
+                            .countPaymentBookByBookingId(
+                                    bookingEntity.getBookingId())
+                            .flatMap(payment -> occupancyConfigurationService
+                                    .getStandByRuleByUser(bookingEntity.getBookingId(), userClient.isUserInclub())
+                                    .flatMap(standByRuleByUserResponse -> {
+                                        int hidePayment = 1; // Por el momento es para
+                                        // ocultar el botón pagar
+                                        BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+                                        String monthInit = TransformDate
+                                                .getAbbreviatedMonth(
+                                                        bookingEntity.getDayBookingInit());
+                                        String monthEnd = TransformDate
+                                                .getAbbreviatedMonth(
+                                                        bookingEntity.getDayBookingEnd());
+                                        int dayInit = TransformDate.getDayNumber(
+                                                bookingEntity.getDayBookingInit());
+                                        int dayEnd = TransformDate.getDayNumber(
+                                                bookingEntity.getDayBookingEnd());
+                                        long dayInterval = TransformDate
+                                                .calculateDaysDifference(
+                                                        bookingEntity.getDayBookingInit(),
+                                                        bookingEntity.getDayBookingEnd());
+
+                                        // Lógica para manejar standbyHours
+                                        Integer standbyHoursToSend = null;
+                                        if (standByRuleByUserResponse != null && standByRuleByUserResponse.getData() != null) {
+                                            standbyHoursToSend = standByRuleByUserResponse.getData().getStandbyhours();
+                                        }
+
+                                        baseEmailReserve.addEmailHandler(
+                                                new ConfirmReserveBookingTemplateEmail(
+                                                        monthInit,
+                                                        monthEnd,
+                                                        String.valueOf(dayInit),
+                                                        String.valueOf(
+                                                                dayEnd),
+                                                        dayInterval,
+                                                        roomName,
+                                                        userClient.getFirstName()+ " " +userClient.getLastName(),
+                                                        String.valueOf(bookingEntity
+                                                                .getBookingId()),
+                                                        totalPeoples,
+                                                        hidePayment,
+                                                        standbyHoursToSend // Pasamos el valor condicionalmente
+                                                ));
+                                        String emailBody = baseEmailReserve.execute();
+
+                                        return emailService
+                                                .sendEmail(userClient
+                                                                .getEmail(),
+                                                        "Confirmación de Reserva",
+                                                        emailBody)
+                                                .thenReturn(bookingEntity);
+                                    })));
         }
     }
 

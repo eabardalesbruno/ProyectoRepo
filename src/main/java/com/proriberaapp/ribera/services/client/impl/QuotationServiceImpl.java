@@ -34,34 +34,42 @@ public class QuotationServiceImpl implements QuotationService {
     private final RoomRepository roomRepository;
 
     @Override
-    public Mono<QuotationObjectDto> findAllQuotations(Integer condition) {
-        return roomTypeRepository.findAllRoomTypes()
-                .flatMap(roomTypeEntity ->
-                        roomRepository.findRoomByRoomTypeId(roomTypeEntity.getRoomTypeId())
-                                .flatMap(roomNumberEntity ->
-                                        quotationRepository.getAllQuotationByRoomNumber(roomNumberEntity.getRoomNumber(), condition)
-                                                .collectList()
-                                                .map(quotationOffers -> {
-                                                    RoomDto roomDto = new RoomDto();
-                                                    roomDto.setRoomNumber(roomNumberEntity.getRoomNumber());
-                                                    roomDto.setQuotationOffers(quotationOffers);
-                                                    return roomDto;
-                                                })
-                                )
-                                .collectList()
-                                .map(roomDtos -> {
-                                    RoomTypeDto roomTypeDto = new RoomTypeDto();
-                                    roomTypeDto.setRoomTypeId(roomTypeEntity.getRoomTypeId());
-                                    roomTypeDto.setRoomType(roomTypeEntity.getRoomType());
-                                    roomTypeDto.setRoomTypeName(roomTypeEntity.getRoomTypeName());
-                                    roomTypeDto.setRoomTypeDescription(roomTypeEntity.getRoomTypeDescription());
-                                    roomTypeDto.setRoomstateid(roomTypeEntity.getRoomstateid());
-                                    roomTypeDto.setRoomState(roomTypeEntity.getRoomState());
-                                    roomTypeDto.setCategory(roomTypeEntity.getCategory());
-                                    roomTypeDto.setRoomnumbers(roomDtos);
-                                    return roomTypeDto;
-                                })
-                )
+    public Mono<QuotationObjectDto> findAllQuotations(Integer condition, Integer roomTypeId, String roomNumber) {
+        return roomTypeRepository.findAllRoomTypes(roomTypeId)
+                .flatMap(roomTypeEntity -> {
+                    Flux<RoomDto> roomsFlux;
+
+                    if (roomNumber != null && !roomNumber.isEmpty()) {
+                        roomsFlux = roomRepository.findRoomByRoomNumberAndRoomTypeId(roomNumber, roomTypeEntity.getRoomTypeId());
+                    } else {
+                        roomsFlux = roomRepository.findRoomByRoomTypeId(roomTypeEntity.getRoomTypeId());
+                    }
+
+                    return roomsFlux
+                            .flatMap(roomNumberEntity ->
+                                    quotationRepository.getAllQuotationByRoomNumber(roomNumberEntity.getRoomNumber(), condition)
+                                            .collectList()
+                                            .map(quotationOffers -> {
+                                                RoomDto roomDto = new RoomDto();
+                                                roomDto.setRoomNumber(roomNumberEntity.getRoomNumber());
+                                                roomDto.setQuotationOffers(quotationOffers);
+                                                return roomDto;
+                                            })
+                            )
+                            .collectList()
+                            .map(roomDtos -> {
+                                RoomTypeDto roomTypeDto = new RoomTypeDto();
+                                roomTypeDto.setRoomTypeId(roomTypeEntity.getRoomTypeId());
+                                roomTypeDto.setRoomType(roomTypeEntity.getRoomType());
+                                roomTypeDto.setRoomTypeName(roomTypeEntity.getRoomTypeName());
+                                roomTypeDto.setRoomTypeDescription(roomTypeEntity.getRoomTypeDescription());
+                                roomTypeDto.setRoomstateid(roomTypeEntity.getRoomstateid());
+                                roomTypeDto.setRoomState(roomTypeEntity.getRoomState());
+                                roomTypeDto.setCategory(roomTypeEntity.getCategory());
+                                roomTypeDto.setRoomnumbers(roomDtos);
+                                return roomTypeDto;
+                            });
+                })
                 .collectList()
                 .map(roomTypeDtos -> {
                     QuotationObjectDto response = new QuotationObjectDto();
@@ -69,6 +77,7 @@ public class QuotationServiceImpl implements QuotationService {
                     return response;
                 });
     }
+
     @Override
     public Mono<QuotationEntity> findQuotationById(Integer quotationId) {
         return quotationRepository.findById(quotationId);

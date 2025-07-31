@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Domain.entities.RoomTypeViewEntity;
 
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -28,9 +29,10 @@ public interface RoomTypeRepository extends R2dbcRepository<RoomTypeEntity, Inte
     Flux<RoomTypeViewEntity> findAllRoomTypeView();
 
     @Query("""
-            SELECT * FROM
-            roomtype ORDER BY roomtypename
+            SELECT * FROM roomtype
+            WHERE :roomtypeid IS NULL OR roomtypeId = :roomtypeid
+            ORDER BY roomtypename
             """)
-    Flux<RoomTypeDto> findAllRoomTypes();
+    Flux<RoomTypeDto> findAllRoomTypes(@Param("roomtypeId") Integer roomtypeId);
 
 }

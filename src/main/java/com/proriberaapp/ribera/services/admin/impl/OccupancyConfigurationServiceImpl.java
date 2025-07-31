@@ -9,10 +9,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.
 import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.byRanges.response.OcupancyByRangesResponse;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.request.StandByRulesRequest;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.occupancyConfiguration.standbyRules.response.*;
-import com.proriberaapp.ribera.Domain.entities.OccupancyByRangeEntity;
-import com.proriberaapp.ribera.Domain.entities.OccupancyDayEntity;
-import com.proriberaapp.ribera.Domain.entities.OccupancyEntity;
-import com.proriberaapp.ribera.Domain.entities.StandbyRuleEntity;
+import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.admin.OccupancyConfigurationService;
 import com.proriberaapp.ribera.utils.constants.Constants;
@@ -26,8 +23,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -314,6 +310,104 @@ public class OccupancyConfigurationServiceImpl implements OccupancyConfiguration
                         .size(size)
                         .page(page)
                         .build()));
+    }
+    /*
+    @Override
+    public Mono<StandByRuleByUserResponse> getStandByRuleByUser(Integer bookingId, Boolean isUserInclub) {
+        return reservationTimeTypeRepository.getHoursDiffByBookingId(bookingId)
+                .flatMap(hoursDiff  ->
+                        standbyRuleRepository.findStandByRuleByUser(isUserInclub)
+                                .map(ruleDetailDto -> {
+                                    log.info("Se econtro la regla de espera cuyo id es {}",ruleDetailDto.getIdstandbyrule());
+                                    return StandByRuleByUserResponse.builder()
+                                            .result(true)
+                                            .data(ruleDetailDto)
+                                            .build();
+                                })
+                                .switchIfEmpty(Mono.defer(() -> {
+                                    log.info("No se encontró una regla aplicable para este caso bookingId {}",bookingId);
+                                    return Mono.just(StandByRuleByUserResponse.builder()
+                                            .result(true)
+                                            .data(null)
+                                            .build());
+                                }))
+                )
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.info("No se pudo obtener la diferencia de horas para el bookingId {}",bookingId);
+                    return Mono.just(StandByRuleByUserResponse.builder()
+                            .result(false)
+                            .data(null)
+                            .build());
+                }));
+    }
+    */
+
+    @Override
+    public Mono<StandByRuleByUserResponse> getStandByRuleByUser(Integer bookingId, Boolean isUserInclub) {
+        return reservationTimeTypeRepository.getHoursDiffByBookingId(bookingId)
+                .flatMap(hoursDiffDouble -> {
+                    final int hoursDiff = hoursDiffDouble.intValue();
+
+                    return standbyRuleRepository.findAllApplicableRulesByVisibility(isUserInclub)
+                            .collectList()
+                            .flatMap(allRules -> {
+                                if (allRules.isEmpty()) {
+                                    log.info("No se encontraron reglas de standby aplicables para la visibilidad " +
+                                            "del usuario ({}).", isUserInclub);
+                                    return Mono.just(StandByRuleByUserResponse.builder().result(false).data(null).build());
+                                }
+
+                                List<StandByRuleByUserDetailDto> validSortedRules = new ArrayList<>();
+                                for (StandByRuleByUserDetailDto rule : allRules) {
+                                    if (rule.getParsedhoursfromtypename() != null) {
+                                        validSortedRules.add(rule);
+                                    } else {
+                                        log.warn("ADVERTENCIA: Regla con type_name no parseable y omitida: {}", rule.getTypename());
+                                    }
+                                }
+
+                                if (validSortedRules.isEmpty()) {
+                                    log.info("Ninguna regla válida pudo ser parseada para comparación después de los filtros iniciales.");
+                                    return Mono.just(StandByRuleByUserResponse.builder().result(false).data(null).build());
+                                }
+
+                                Collections.sort(validSortedRules, Comparator.comparing(StandByRuleByUserDetailDto::getParsedhoursfromtypename));
+
+
+                               StandByRuleByUserDetailDto selectedRule = null;
+
+                                for (StandByRuleByUserDetailDto rule : validSortedRules) {
+                                    if (hoursDiff <= rule.getParsedhoursfromtypename()) {
+                                        selectedRule = rule;
+                                        break;
+                                    }
+                                }
+
+                                if (selectedRule == null && !validSortedRules.isEmpty()) {
+                                    selectedRule = validSortedRules.get(validSortedRules.size() - 1);
+                                    log.info("hoursDiff ({}) es mayor que todas las reglas. Usando la última regla: {}",
+                                            hoursDiff, selectedRule.getTypename());
+                                }
+
+                                if (selectedRule != null) {
+                                    log.info("Regla seleccionada: {} para hoursDiff: {} horas", selectedRule.getTypename(), hoursDiff);
+                                    return Mono.just(StandByRuleByUserResponse.builder()
+                                            .result(true)
+                                            .data(selectedRule)
+                                            .build());
+                                } else {
+                                    log.info("No se encontró una regla de rango para hoursDiff: {} horas", hoursDiff);
+                                    return Mono.just(StandByRuleByUserResponse.builder().result(false).data(null).build());
+                                }
+                            });
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.info("No se pudo obtener la diferencia de horas para el bookingId {}", bookingId);
+                    return Mono.just(StandByRuleByUserResponse.builder()
+                            .result(false)
+                            .data(null)
+                            .build());
+                }));
     }
 
     @Override
