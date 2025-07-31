@@ -17,8 +17,11 @@ public class QuotationController {
     private final QuotationService quotationService;
 
     @GetMapping
-    public Mono<QuotationObjectDto> findAllQuotation(@RequestParam("condition") Integer condition) {
-        return quotationService.findAllQuotations(condition);
+    public Mono<QuotationObjectDto> findAllQuotation(
+        @RequestParam("condition") Integer condition,
+        @RequestParam(value = "roomTypeId", required = false) Integer roomTypeId,
+        @RequestParam(value = "roomNumber", required = false) String roomNumber) {
+        return quotationService.findAllQuotations(condition, roomTypeId, roomNumber);
     }
 
     @GetMapping("/quotation-day/{quotationId}")

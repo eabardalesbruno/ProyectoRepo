@@ -9,9 +9,11 @@ import lombok.Setter;
 @Setter
 @Builder
 @AllArgsConstructor
-public class StandByRuleDto {
+public class StandByRuleByUserDetailDto {
     private Integer idstandbyrule;
-    private String reservationtimetypename;
+    private Integer idreservationtimetype;
+    private String typename;
     private Integer standbyhours;
     private String visibilityname;
+    private Integer parsedhoursfromtypename;
 }
