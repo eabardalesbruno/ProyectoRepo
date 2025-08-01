@@ -1,7 +1,11 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.ValidateUserTypeRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.AuthDataResponse;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.ValidateUserTypeResponse;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
+import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
+import com.proriberaapp.ribera.services.client.UserClientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,6 +23,7 @@ import java.util.Map;
 public class AuthValidationController {
 
     private final JwtProvider jwtProvider;
+    private final UserClientService userClientService;
 
     /**
      * Endpoint para validar tokens desde microservicios
@@ -107,11 +112,68 @@ public class AuthValidationController {
                 return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse));
             }
         } catch (Exception e) {
-            log.error("Error al validar token: {}", e.getMessage(), e);
+            log.error("Error general al validar token: {}", e.getMessage(), e);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("valid", false);
-            errorResponse.put("message", "Error al validar token: " + e.getMessage());
-            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse));
+            errorResponse.put("message", "Error interno del servidor: " + e.getMessage());
+            return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse));
+        }
+    }
+
+    /**
+     * Endpoint para validar el tipo de usuario
+     * @param request Request con idUser y password (opcional)
+     * @return Información del tipo de usuario
+     */
+    @PostMapping("/validate-user-type")
+    public Mono<ResponseEntity<ValidateUserTypeResponse>> validateUserType(
+            @RequestBody ValidateUserTypeRequest request) {
+        
+        log.debug("Validando tipo de usuario para idUser: {}", request.getIdUser());
+        
+        return userClientService.findById(request.getIdUser().intValue())
+                .map(user -> {
+                    // Determinar el tipo de usuario basado en los datos
+                    String userType = determineUserType(user);
+                    Boolean isUserInclub = user.isUserInclub();
+                    
+                    ValidateUserTypeResponse response = ValidateUserTypeResponse.builder()
+                            .id(request.getIdUser())
+                            .userType(userType)
+                            .isUserInclub(isUserInclub)
+                            .message("Usuario validado exitosamente")
+                            .build();
+                    
+                    log.debug("Usuario {} validado como tipo: {}", request.getIdUser(), userType);
+                    return ResponseEntity.ok(response);
+                })
+                .defaultIfEmpty(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ValidateUserTypeResponse.builder()
+                                .id(request.getIdUser())
+                                .userType("NOT_FOUND")
+                                .isUserInclub(false)
+                                .message("Usuario no encontrado")
+                                .build()))
+                .onErrorResume(error -> {
+                    log.error("Error validando usuario {}: {}", request.getIdUser(), error.getMessage());
+                    return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body(ValidateUserTypeResponse.builder()
+                                    .id(request.getIdUser())
+                                    .userType("ERROR")
+                                    .isUserInclub(false)
+                                    .message("Error interno del servidor: " + error.getMessage())
+                                    .build()));
+                });
+    }
+
+    /**
+     * Determina el tipo de usuario basado en sus características
+     */
+    private String determineUserType(UserClientEntity user) {
+        if (Boolean.TRUE.equals(user.isUserInclub())) {
+            return "INCLUB_MEMBER";
+        } else {
+            return "REGULAR_USER";
         }
     }
 
