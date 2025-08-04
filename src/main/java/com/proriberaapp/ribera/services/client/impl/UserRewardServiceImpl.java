@@ -280,34 +280,29 @@ public class UserRewardServiceImpl implements UserRewardService {
             return Mono.error(new RuntimeException("rewardsAmount no puede ser null"));
         }
         
-        // Actualizar directamente en wallet_point table (sin depender del BO)
-        return walletPointRepository.findByUserId(request.getUserId())
-                .switchIfEmpty(Mono.fromCallable(() -> {
-                    WalletPointEntity newWallet = WalletPointEntity.builder()
-                            .userId(request.getUserId())
-                            .points(0.0)
-                            .build();
-                    return newWallet;
-                }).flatMap(walletPointRepository::save))
-                .flatMap(wallet -> {
-                    double nuevoSaldo = wallet.getPoints() + request.getRewardsAmount();
-                    
-                    if (nuevoSaldo < 0) {
-                        return Mono.error(new RuntimeException("Saldo insuficiente. Balance actual: " + wallet.getPoints() + 
-                                ", intento de descuento: " + Math.abs(request.getRewardsAmount())));
-                    }
-                    
-                    wallet.setPoints(nuevoSaldo);
-                    return walletPointRepository.save(wallet);
-                })
-                .flatMap(updatedWallet -> {
-                    WalletPointHistoryEntity history = WalletPointHistoryEntity.builder()
-                            .userId(request.getUserId())
-                            .points(request.getRewardsAmount().doubleValue())
-                            .walletPointId(updatedWallet.getId())
-                            .build();
-                    return walletPointHistoryRepository.save(history);
-                })
-                .then();
+        if (request.getFamilyPackageName() == null || request.getFamilyPackageName().trim().isEmpty()) {
+            return Mono.error(new RuntimeException("familyPackageName es requerido"));
+        }
+
+        // Convertir WalletBalanceUpdateRequest a RewardReleaseRequest para el Back Office
+        RewardReleaseRequest rewardRequest = RewardReleaseRequest.builder()
+                .userId(request.getUserId())
+                .rewardsAmount(request.getRewardsAmount()) // Negativo para descuento, positivo para suma
+                .familyPackageName(request.getFamilyPackageName())
+                .detail(request.getDetail() != null ? request.getDetail() : "Transacción desde wallet")
+                .build();
+
+        // Llamar al Back Office de rewards (mismo endpoint que usa el sistema de reservas)
+        return externalAuthService.getExternalToken()
+                .flatMap(token -> webClient.post()
+                        .uri(urlBoRewards + "/rewards/release")
+                        .header("Authorization", "Bearer " + token)
+                        .bodyValue(rewardRequest)
+                        .retrieve()
+                        .bodyToMono(Void.class))
+                .doOnSuccess(v -> log.info("Rewards actualizados en Back Office para usuario {} con monto {} para familia {}", 
+                        request.getUserId(), request.getRewardsAmount(), request.getFamilyPackageName()))
+                .doOnError(error -> log.error("Error actualizando rewards en Back Office para usuario {}: {}", 
+                        request.getUserId(), error.getMessage()));
     }
 }
