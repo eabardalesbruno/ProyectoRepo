@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.ExternalAuthService;
 import com.proriberaapp.ribera.Api.controllers.client.dto.LoginInclub.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.RewardReleaseRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.UserRewardRequest;
+import com.proriberaapp.ribera.Api.controllers.client.dto.request.WalletBalanceUpdateRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.HistoricalRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.SubscriptionRewardResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserRewardResponse;
@@ -12,13 +13,18 @@ import com.proriberaapp.ribera.Domain.dto.PercentageDto;
 import com.proriberaapp.ribera.Domain.dto.RetrieveFamilyPackageResponseDto;
 import com.proriberaapp.ribera.Domain.dto.RewardSubscriptionDto;
 import com.proriberaapp.ribera.Domain.entities.UserRewardEntity;
+import com.proriberaapp.ribera.Domain.entities.WalletPointEntity;
+import com.proriberaapp.ribera.Domain.entities.WalletPointHistoryEntity;
 import com.proriberaapp.ribera.Domain.enums.RewardType;
 import com.proriberaapp.ribera.Domain.mapper.UserRewardMapper;
 import com.proriberaapp.ribera.Infraestructure.repository.UserRewardRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.WalletPointRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.WalletPointHistoryRepository;
 import com.proriberaapp.ribera.services.admin.DiscountToRewardService;
 import com.proriberaapp.ribera.services.client.UserRewardService;
 import com.proriberaapp.ribera.utils.constants.Constants;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -35,6 +41,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserRewardServiceImpl implements UserRewardService {
 
     @Value("${inclub.api.url.user}")
@@ -48,6 +55,8 @@ public class UserRewardServiceImpl implements UserRewardService {
     private final UserRewardRepository userRewardRepository;
     private final DiscountToRewardService discountToRewardService;
     private final UserRewardMapper userRewardMapper;
+    private final WalletPointRepository walletPointRepository;
+    private final WalletPointHistoryRepository walletPointHistoryRepository;
 
     @Override
     public Flux<UserRewardResponse> findAll() {
@@ -258,5 +267,47 @@ public class UserRewardServiceImpl implements UserRewardService {
                         .bodyValue(request)
                         .retrieve()
                         .bodyToMono(Void.class));
+    }
+
+    @Override
+    public Mono<Void> updateRewardBalanceFromWallet(WalletBalanceUpdateRequest request) {
+        // Validar request
+        if (request.getUserId() == null) {
+            return Mono.error(new RuntimeException("userId no puede ser null"));
+        }
+        
+        if (request.getRewardsAmount() == null) {
+            return Mono.error(new RuntimeException("rewardsAmount no puede ser null"));
+        }
+        
+        // Actualizar directamente en wallet_point table (sin depender del BO)
+        return walletPointRepository.findByUserId(request.getUserId())
+                .switchIfEmpty(Mono.fromCallable(() -> {
+                    WalletPointEntity newWallet = WalletPointEntity.builder()
+                            .userId(request.getUserId())
+                            .points(0.0)
+                            .build();
+                    return newWallet;
+                }).flatMap(walletPointRepository::save))
+                .flatMap(wallet -> {
+                    double nuevoSaldo = wallet.getPoints() + request.getRewardsAmount();
+                    
+                    if (nuevoSaldo < 0) {
+                        return Mono.error(new RuntimeException("Saldo insuficiente. Balance actual: " + wallet.getPoints() + 
+                                ", intento de descuento: " + Math.abs(request.getRewardsAmount())));
+                    }
+                    
+                    wallet.setPoints(nuevoSaldo);
+                    return walletPointRepository.save(wallet);
+                })
+                .flatMap(updatedWallet -> {
+                    WalletPointHistoryEntity history = WalletPointHistoryEntity.builder()
+                            .userId(request.getUserId())
+                            .points(request.getRewardsAmount().doubleValue())
+                            .walletPointId(updatedWallet.getId())
+                            .build();
+                    return walletPointHistoryRepository.save(history);
+                })
+                .then();
     }
 }

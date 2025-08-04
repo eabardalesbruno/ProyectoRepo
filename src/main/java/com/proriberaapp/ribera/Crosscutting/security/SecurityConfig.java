@@ -88,6 +88,8 @@ public class SecurityConfig {
                                 "/api/v1/ticketentryfullday/**",
                                 "/swagger-doc/**",
                                 "/api/v1/rewards/**",
+                                "/api/v1/user-rewards/**",
+                                "/api/v1/auth/**",
                                 "/api/internal/**"
                         ).permitAll()
 

@@ -79,13 +79,13 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                                             
                                             // Intentar crear wallet en el microservicio con fallback graceful
                                             return webClientWallet.post()
-                                                    .uri("/api/v1/wallet/create/{idUser}", user.getUserClientId())
+                                                    .uri("/api/v1/wallet/create-complete")
                                                     .header("Authorization", "Bearer " + tempToken)
                                                     .retrieve()
                                                     .bodyToMono(WalletCreationResponse.class)
                                                     .flatMap(walletResponse -> {
                                                         // Éxito: Asociar wallet al usuario
-                                                        user.setWalletId(walletResponse.getData().getWalletId());
+                                                        user.setWalletId(walletResponse.getWalletId());
                                                         if (responseInclubLoginDto.getData().getIdState() == 1) {
                                                             user.setStatus(StatesUser.ACTIVE);
                                                         } else {

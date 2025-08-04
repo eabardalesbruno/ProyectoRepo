@@ -276,13 +276,13 @@ public class UserClientServiceImpl implements UserClientService {
                     
                     // Intentar creación de la wallet en el microservicio con fallback graceful
                     return webClientWallet.post()
-                        .uri("/api/v1/wallet/create/{idUser}", savedUser.getUserClientId())
+                        .uri("/api/v1/wallet/create-complete")
                         .header("Authorization", "Bearer " + tempToken)
                         .retrieve()
                         .bodyToMono(WalletCreationResponse.class)
                         .flatMap(walletResponse -> {
                             // Éxito: Asociar wallet al usuario
-                            savedUser.setWalletId(walletResponse.getData().getWalletId());
+                            savedUser.setWalletId(walletResponse.getWalletId());
                             return userClientRepository.save(savedUser);
                         })
                         .flatMap(userWithWallet -> {
@@ -491,13 +491,13 @@ public class UserClientServiceImpl implements UserClientService {
                             
                             // Intentar crear wallet en el microservicio con fallback graceful
                             return webClientWallet.post()
-                                    .uri("/api/v1/wallet/create/{idUser}", user.getUserClientId())
+                                    .uri("/api/v1/wallet/create-complete")
                                     .header("Authorization", "Bearer " + tempToken)
                                     .retrieve()
                                     .bodyToMono(WalletCreationResponse.class)
                                     .flatMap(walletResponse -> {
                                         // Éxito: Asociar wallet al usuario
-                                        user.setWalletId(walletResponse.getData().getWalletId());
+                                        user.setWalletId(walletResponse.getWalletId());
                                         return userClientRepository.save(user)
                                                 .thenReturn(jwtUtil.generateToken(user));
                                     })
@@ -545,13 +545,13 @@ public class UserClientServiceImpl implements UserClientService {
                         
                         // Intentar crear wallet en el microservicio con fallback graceful
                         return webClientWallet.post()
-                                .uri("/api/v1/wallet/create/{idUser}", user.getUserClientId())
+                                .uri("/api/v1/wallet/create-complete")
                                 .header("Authorization", "Bearer " + tempToken)
                                 .retrieve()
                                 .bodyToMono(WalletCreationResponse.class)
                                 .flatMap(walletResponse -> {
                                     // Éxito: Asociar wallet al usuario
-                                    user.setWalletId(walletResponse.getData().getWalletId());
+                                    user.setWalletId(walletResponse.getWalletId());
                                     return userClientRepository.save(user)
                                             .thenReturn(jwtUtil.generateToken(user));
                                 })
@@ -924,7 +924,7 @@ public class UserClientServiceImpl implements UserClientService {
                             .bodyToMono(WalletCreationResponse.class)
                             .flatMap(walletResponse -> {
                                 // Éxito: Asociar wallet al usuario
-                                user.setWalletId(walletResponse.getData().getWalletId());
+                                user.setWalletId(walletResponse.getWalletId());
                                 return userClientRepository.save(user)
                                         .doOnSuccess(savedUser -> log.info("Wallet creada exitosamente en retry para usuario {}", savedUser.getUserClientId()));
                             })
