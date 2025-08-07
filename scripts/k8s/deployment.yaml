@@ -31,8 +31,8 @@ spec:
                 name: ${P_K8S_SECRET}
           resources:
             requests:
-              memory: "8Gi"
-              cpu: "1242m"
+              memory: "4Gi"
+              cpu: "848m"
       imagePullSecrets:
         - name: ${P_K8S_SECRET_REGISTRY}
 ---
