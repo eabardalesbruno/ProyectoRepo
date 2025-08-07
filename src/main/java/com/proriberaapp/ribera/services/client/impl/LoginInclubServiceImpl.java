@@ -72,59 +72,47 @@ public class LoginInclubServiceImpl implements LoginInclubService {
                             .bodyToMono(ResponseInclubLoginDto.class)
                             .flatMap(responseInclubLoginDto -> this.userClientRepository.findByUsername(userName)
                                     .flatMap(user -> {
-                                        // Verificar si el usuario tiene una wallet asociada
-                                        if (user.getWalletId() == null) {
-                                            // Generar token temporal para el usuario
-                                            String tempToken = jwtUtil.generateToken(user);
-                                            
-                                            // Intentar crear wallet en el microservicio con fallback graceful
-                                            return webClientWallet.post()
-                                                    .uri("/api/v1/wallet/create/{idUser}", user.getUserClientId())
-                                                    .header("Authorization", "Bearer " + tempToken)
-                                                    .retrieve()
-                                                    .bodyToMono(WalletCreationResponse.class)
-                                                    .flatMap(walletResponse -> {
-                                                        // Éxito: Asociar wallet al usuario
-                                                        user.setWalletId(walletResponse.getData().getWalletId());
-                                                        if (responseInclubLoginDto.getData().getIdState() == 1) {
-                                                            user.setStatus(StatesUser.ACTIVE);
-                                                        } else {
-                                                            user.setStatus(StatesUser.INACTIVE);
-                                                        }
-                                                        return userClientRepository.save(user) // Guardamos el usuario con la wallet
-                                                                .flatMap(userClientEntity -> {
-                                                                    TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user), tokenBackOffice);
-                                                                    return Mono.just(tokenValid); // Devolvemos el token
-                                                                });
-                                                    })
-                                                    .doOnSuccess(token -> log.info("Wallet creada en MS para usuario InClub {}", user.getUserClientId()))
-                                                    .onErrorResume(error -> {
-                                                        // Fallback graceful: Continuar sin wallet
-                                                        log.warn("Error creando wallet en MS para usuario InClub {}, continuando sin wallet: {}", 
-                                                                user.getUserClientId(), error.getMessage());
-                                                        if (responseInclubLoginDto.getData().getIdState() == 1) {
-                                                            user.setStatus(StatesUser.ACTIVE);
-                                                        } else {
-                                                            user.setStatus(StatesUser.INACTIVE);
-                                                        }
-                                                        return userClientRepository.save(user)
-                                                                .flatMap(userClientEntity -> {
-                                                                    TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user), tokenBackOffice);
-                                                                    return Mono.just(tokenValid);
-                                                                });
-                                                    });
-                                        } else {
-                                            if (responseInclubLoginDto.getData().getIdState() == 1) {
-                                                user.setStatus(StatesUser.ACTIVE);
-                                            } else {
-                                                user.setStatus(StatesUser.INACTIVE);
-                                            }
-                                            return userClientRepository.save(user) // Guardamos el usuario con la wallet
-                                                    .flatMap(userClientEntity -> {
-                                                        TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user), tokenBackOffice); // Generar token
-                                                        return Mono.just(tokenValid); // Devolvemos el token
-                                                    });
-                                        }
+                                        // Generar token temporal para el usuario
+                                        String tempToken = jwtUtil.generateToken(user);
+                                        
+                                        // Siempre intentar crear/verificar wallet en el microservicio con fallback graceful
+                                        return webClientWallet.post()
+                                                .uri("/api/v1/wallet/create-complete")
+                                                .header("Authorization", "Bearer " + tempToken)
+                                                .retrieve()
+                                                .bodyToMono(WalletCreationResponse.class)
+                                                .flatMap(walletResponse -> {
+                                                    // Éxito: Asociar wallet al usuario si no tenía una
+                                                    if (user.getWalletId() == null) {
+                                                        user.setWalletId(walletResponse.getWalletId());
+                                                    }
+                                                    if (responseInclubLoginDto.getData().getIdState() == 1) {
+                                                        user.setStatus(StatesUser.ACTIVE);
+                                                    } else {
+                                                        user.setStatus(StatesUser.INACTIVE);
+                                                    }
+                                                    return userClientRepository.save(user) // Guardamos el usuario
+                                                            .flatMap(userClientEntity -> {
+                                                                TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user), tokenBackOffice);
+                                                                return Mono.just(tokenValid); // Devolvemos el token
+                                                            });
+                                                })
+                                                .doOnSuccess(token -> log.info("Wallet verificada/creada en MS para usuario InClub {}", user.getUserClientId()))
+                                                .onErrorResume(error -> {
+                                                    // Fallback graceful: Continuar sin wallet
+                                                    log.warn("Error verificando/creando wallet en MS para usuario InClub {}, continuando sin wallet: {}", 
+                                                            user.getUserClientId(), error.getMessage());
+                                                    if (responseInclubLoginDto.getData().getIdState() == 1) {
+                                                        user.setStatus(StatesUser.ACTIVE);
+                                                    } else {
+                                                        user.setStatus(StatesUser.INACTIVE);
+                                                    }
+                                                    return userClientRepository.save(user)
+                                                            .flatMap(userClientEntity -> {
+                                                                TokenValid tokenValid = new TokenValid(jwtUtil.generateToken(user), tokenBackOffice);
+                                                                return Mono.just(tokenValid);
+                                                            });
+                                                });
                                     }).switchIfEmpty(Mono.defer(() -> {
                                         long currentTimeMillis = System.currentTimeMillis();
                                         Timestamp currentTimestamp = new Timestamp(currentTimeMillis);
