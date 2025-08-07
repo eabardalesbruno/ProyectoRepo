@@ -485,32 +485,32 @@ public class UserClientServiceImpl implements UserClientService {
         return userClientRepository.findByEmail(email)
                 .flatMap(user -> {
                     if (passwordEncoder.matches(password, user.getPassword())) {
-                        if (user.getWalletId() == null) {
-                            // Generar token temporal para el usuario
-                            String tempToken = jwtUtil.generateToken(user);
-                            
-                            // Intentar crear wallet en el microservicio con fallback graceful
-                            return webClientWallet.post()
-                                    .uri("/api/v1/wallet/create-complete")
-                                    .header("Authorization", "Bearer " + tempToken)
-                                    .retrieve()
-                                    .bodyToMono(WalletCreationResponse.class)
-                                    .flatMap(walletResponse -> {
-                                        // Éxito: Asociar wallet al usuario
+                        // Generar token temporal para el usuario
+                        String tempToken = jwtUtil.generateToken(user);
+                        
+                        // Siempre intentar crear/verificar wallet en el microservicio con fallback graceful
+                        return webClientWallet.post()
+                                .uri("/api/v1/wallet/create-complete")
+                                .header("Authorization", "Bearer " + tempToken)
+                                .retrieve()
+                                .bodyToMono(WalletCreationResponse.class)
+                                .flatMap(walletResponse -> {
+                                    // Éxito: Asociar wallet al usuario si no tenía una
+                                    if (user.getWalletId() == null) {
                                         user.setWalletId(walletResponse.getWalletId());
                                         return userClientRepository.save(user)
                                                 .thenReturn(jwtUtil.generateToken(user));
-                                    })
-                                    .doOnSuccess(token -> log.info("Wallet creada en MS durante login para usuario {}", user.getUserClientId()))
-                                    .onErrorResume(error -> {
-                                        // Fallback graceful: Continuar sin wallet
-                                        log.warn("Error creando wallet en MS durante login para usuario {}, continuando sin wallet: {}", 
-                                                user.getUserClientId(), error.getMessage());
+                                    } else {
                                         return Mono.just(jwtUtil.generateToken(user));
-                                    });
-                        } else {
-                            return Mono.just(jwtUtil.generateToken(user));
-                        }
+                                    }
+                                })
+                                .doOnSuccess(token -> log.info("Wallet verificada/creada en MS durante login para usuario {}", user.getUserClientId()))
+                                .onErrorResume(error -> {
+                                    // Fallback graceful: Continuar sin wallet
+                                    log.warn("Error verificando/creando wallet en MS durante login para usuario {}, continuando sin wallet: {}", 
+                                            user.getUserClientId(), error.getMessage());
+                                    return Mono.just(jwtUtil.generateToken(user));
+                                });
                     } else {
                         return Mono.error(new RuntimeException("Credenciales inválidas"));
                     }
@@ -539,32 +539,32 @@ public class UserClientServiceImpl implements UserClientService {
     public Mono<String> loginWithGoogle(String googleId) {
         return userClientRepository.findByGoogleId(googleId)
                 .flatMap(user -> {
-                    if (user.getWalletId() == null) {
-                        // Generar token temporal para el usuario
-                        String tempToken = jwtUtil.generateToken(user);
-                        
-                        // Intentar crear wallet en el microservicio con fallback graceful
-                        return webClientWallet.post()
-                                .uri("/api/v1/wallet/create-complete")
-                                .header("Authorization", "Bearer " + tempToken)
-                                .retrieve()
-                                .bodyToMono(WalletCreationResponse.class)
-                                .flatMap(walletResponse -> {
-                                    // Éxito: Asociar wallet al usuario
+                    // Generar token temporal para el usuario
+                    String tempToken = jwtUtil.generateToken(user);
+                    
+                    // Siempre intentar crear/verificar wallet en el microservicio con fallback graceful
+                    return webClientWallet.post()
+                            .uri("/api/v1/wallet/create-complete")
+                            .header("Authorization", "Bearer " + tempToken)
+                            .retrieve()
+                            .bodyToMono(WalletCreationResponse.class)
+                            .flatMap(walletResponse -> {
+                                // Éxito: Asociar wallet al usuario si no tenía una
+                                if (user.getWalletId() == null) {
                                     user.setWalletId(walletResponse.getWalletId());
                                     return userClientRepository.save(user)
                                             .thenReturn(jwtUtil.generateToken(user));
-                                })
-                                .doOnSuccess(token -> log.info("Wallet creada en MS durante login con Google para usuario {}", user.getUserClientId()))
-                                .onErrorResume(error -> {
-                                    // Fallback graceful: Continuar sin wallet
-                                    log.warn("Error creando wallet en MS durante login con Google para usuario {}, continuando sin wallet: {}", 
-                                            user.getUserClientId(), error.getMessage());
+                                } else {
                                     return Mono.just(jwtUtil.generateToken(user));
-                                });
-                    } else {
-                        return Mono.just(jwtUtil.generateToken(user));
-                    }
+                                }
+                            })
+                            .doOnSuccess(token -> log.info("Wallet verificada/creada en MS durante login con Google para usuario {}", user.getUserClientId()))
+                            .onErrorResume(error -> {
+                                // Fallback graceful: Continuar sin wallet
+                                log.warn("Error verificando/creando wallet en MS durante login con Google para usuario {}, continuando sin wallet: {}", 
+                                        user.getUserClientId(), error.getMessage());
+                                return Mono.just(jwtUtil.generateToken(user));
+                            });
                 })
                 .switchIfEmpty(Mono.error(new RuntimeException("Usuario no encontrado")));
     }
