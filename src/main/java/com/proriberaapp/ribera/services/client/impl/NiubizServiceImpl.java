@@ -378,7 +378,7 @@ public class NiubizServiceImpl implements NiubizService {
                                         .getUserClientId())
                                 .refuseReasonId(1)
                                 .paymentMethodId(6)//1
-                                .paymentStateId(1) //2
+                                .paymentStateId(2) //1: Pendiente, 2: Aceptado
                                 .paymentTypeId(3)
                                 .paymentSubTypeId(6)
                                 .currencyTypeId(1)
