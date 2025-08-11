@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ReportOfKitchenDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.AvailabilityResponse;
 import com.proriberaapp.ribera.Domain.dto.BookingFeedingDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.services.BaseService;
@@ -122,4 +123,5 @@ public interface BookingService extends BaseService<BookingEntity, BookingEntity
 
     Mono<BookingEntity> searchById(Integer bookingId);
 
+    Mono<AvailabilityResponse>checkRoomOfferAvailability(Integer roomOfferId, String startDate, String endDate);
 }
