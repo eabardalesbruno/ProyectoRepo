@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStateDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.AvailabilityResponse;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.dto.CompanionsDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
@@ -449,5 +450,14 @@ public class BookingController {
     @GetMapping("/{bookingId}/feeding-cost")
     public Mono<Float> getFeedingCostByBookingId(@PathVariable Integer bookingId){
         return bookingService.getTotalFeedingAmount(bookingId);
+    }
+
+    @GetMapping("/room-offer/validate-availability")
+    public Mono<AvailabilityResponse>checkRoomOfferAvailability(
+            @RequestParam("roomOfferId") Integer roomOfferId,
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate
+    ){
+        return bookingService.checkRoomOfferAvailability(roomOfferId, startDate, endDate);
     }
 }

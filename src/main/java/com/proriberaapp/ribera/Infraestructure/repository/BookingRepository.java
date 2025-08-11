@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingResumenPaymentDT
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.BookingConflictDto;
 import com.proriberaapp.ribera.Domain.dto.BookingAndRoomNameDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.BookingFeedingEntity;
@@ -838,4 +839,17 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
           update booking set costfinal = :newCostFinal where bookingid = :bookingId 
           """)
   Mono<Void> updateCostFinalByBookingId(Integer bookingId,BigDecimal newCostFinal);
+
+  @Query(value = """
+          SELECT
+              b.bookingid AS bookingid,
+              TO_CHAR(b.daybookinginit, 'DD/MM/YYYY') AS datebookinginit,
+              TO_CHAR(b.daybookingend, 'DD/MM/YYYY') AS datebookingend
+          FROM booking b
+          WHERE b.roomofferid = :roomOfferId
+            AND (:startDate::timestamp, :endDate::timestamp) OVERLAPS (b.daybookinginit, b.daybookingend)
+            AND b.dayBookingEnd >= CURRENT_DATE
+            AND b.bookingstateid != 4;
+          """)
+  Flux<BookingConflictDto> findNewConflictingBookings(Integer roomOfferId, String startDate, String endDate);
 }
