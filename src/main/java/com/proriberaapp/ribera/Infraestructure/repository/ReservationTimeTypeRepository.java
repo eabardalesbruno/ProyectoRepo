@@ -38,4 +38,10 @@ public interface ReservationTimeTypeRepository extends R2dbcRepository<Reservati
 
     @Query("SELECT * FROM reservation_time_type WHERE status = 1")
     Flux<ReservationTimeTypeEntity> findAllActive();
+
+    @Query(value = """
+            SELECT TO_CHAR(b.createdat, 'YYYY-MM-DD HH24:MI:SS.MS') AS creationtimestamp
+            FROM booking b WHERE b.bookingId = :bookingId;
+            """)
+    Mono<String> getCreationTimestampByBookingId(Integer bookingId);
 }
