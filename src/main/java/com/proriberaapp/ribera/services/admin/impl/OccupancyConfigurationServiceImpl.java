@@ -347,59 +347,60 @@ public class OccupancyConfigurationServiceImpl implements OccupancyConfiguration
         return reservationTimeTypeRepository.getHoursDiffByBookingId(bookingId)
                 .flatMap(hoursDiffDouble -> {
                     final int hoursDiff = hoursDiffDouble.intValue();
+                    return  reservationTimeTypeRepository.getCreationTimestampByBookingId(bookingId)
+                            .flatMap(creationtimestamp -> standbyRuleRepository.findAllApplicableRulesByVisibility(isUserInclub)
+                                    .collectList()
+                                    .flatMap(allRules -> {
+                                        if (allRules.isEmpty()) {
+                                            log.info("No se encontraron reglas de standby aplicables para la visibilidad " +
+                                                    "del usuario ({}).", isUserInclub);
+                                            return Mono.just(StandByRuleByUserResponse.builder().result(false).data(null).build());
+                                        }
 
-                    return standbyRuleRepository.findAllApplicableRulesByVisibility(isUserInclub)
-                            .collectList()
-                            .flatMap(allRules -> {
-                                if (allRules.isEmpty()) {
-                                    log.info("No se encontraron reglas de standby aplicables para la visibilidad " +
-                                            "del usuario ({}).", isUserInclub);
-                                    return Mono.just(StandByRuleByUserResponse.builder().result(false).data(null).build());
-                                }
+                                        List<StandByRuleByUserDetailDto> validSortedRules = new ArrayList<>();
+                                        for (StandByRuleByUserDetailDto rule : allRules) {
+                                            if (rule.getParsedhoursfromtypename() != null) {
+                                                validSortedRules.add(rule);
+                                            } else {
+                                                log.warn("ADVERTENCIA: Regla con type_name no parseable y omitida: {}", rule.getTypename());
+                                            }
+                                        }
 
-                                List<StandByRuleByUserDetailDto> validSortedRules = new ArrayList<>();
-                                for (StandByRuleByUserDetailDto rule : allRules) {
-                                    if (rule.getParsedhoursfromtypename() != null) {
-                                        validSortedRules.add(rule);
-                                    } else {
-                                        log.warn("ADVERTENCIA: Regla con type_name no parseable y omitida: {}", rule.getTypename());
-                                    }
-                                }
+                                        if (validSortedRules.isEmpty()) {
+                                            log.info("Ninguna regla válida pudo ser parseada para comparación después de los filtros iniciales.");
+                                            return Mono.just(StandByRuleByUserResponse.builder().result(false).data(null).build());
+                                        }
 
-                                if (validSortedRules.isEmpty()) {
-                                    log.info("Ninguna regla válida pudo ser parseada para comparación después de los filtros iniciales.");
-                                    return Mono.just(StandByRuleByUserResponse.builder().result(false).data(null).build());
-                                }
-
-                                Collections.sort(validSortedRules, Comparator.comparing(StandByRuleByUserDetailDto::getParsedhoursfromtypename));
+                                        Collections.sort(validSortedRules, Comparator.comparing(StandByRuleByUserDetailDto::getParsedhoursfromtypename));
 
 
-                               StandByRuleByUserDetailDto selectedRule = null;
+                                        StandByRuleByUserDetailDto selectedRule = null;
 
-                                for (StandByRuleByUserDetailDto rule : validSortedRules) {
-                                    if (hoursDiff <= rule.getParsedhoursfromtypename()) {
-                                        selectedRule = rule;
-                                        break;
-                                    }
-                                }
+                                        for (StandByRuleByUserDetailDto rule : validSortedRules) {
+                                            if (hoursDiff <= rule.getParsedhoursfromtypename()) {
+                                                selectedRule = rule;
+                                                break;
+                                            }
+                                        }
 
-                                if (selectedRule == null && !validSortedRules.isEmpty()) {
-                                    selectedRule = validSortedRules.get(validSortedRules.size() - 1);
-                                    log.info("hoursDiff ({}) es mayor que todas las reglas. Usando la última regla: {}",
-                                            hoursDiff, selectedRule.getTypename());
-                                }
+                                        if (selectedRule == null && !validSortedRules.isEmpty()) {
+                                            selectedRule = validSortedRules.get(validSortedRules.size() - 1);
+                                            log.info("hoursDiff ({}) es mayor que todas las reglas. Usando la última regla: {}",
+                                                    hoursDiff, selectedRule.getTypename());
+                                        }
 
-                                if (selectedRule != null) {
-                                    log.info("Regla seleccionada: {} para hoursDiff: {} horas", selectedRule.getTypename(), hoursDiff);
-                                    return Mono.just(StandByRuleByUserResponse.builder()
-                                            .result(true)
-                                            .data(selectedRule)
-                                            .build());
-                                } else {
-                                    log.info("No se encontró una regla de rango para hoursDiff: {} horas", hoursDiff);
-                                    return Mono.just(StandByRuleByUserResponse.builder().result(false).data(null).build());
-                                }
-                            });
+                                        if (selectedRule != null) {
+                                            log.info("Regla seleccionada: {} para hoursDiff: {} horas", selectedRule.getTypename(), hoursDiff);
+                                            return Mono.just(StandByRuleByUserResponse.builder()
+                                                    .result(true)
+                                                    .data(selectedRule)
+                                                    .creationtimestamp(creationtimestamp)
+                                                    .build());
+                                        } else {
+                                            log.info("No se encontró una regla de rango para hoursDiff: {} horas", hoursDiff);
+                                            return Mono.just(StandByRuleByUserResponse.builder().result(false).data(null).build());
+                                        }
+                                    }));
                 })
                 .switchIfEmpty(Mono.defer(() -> {
                     log.info("No se pudo obtener la diferencia de horas para el bookingId {}", bookingId);

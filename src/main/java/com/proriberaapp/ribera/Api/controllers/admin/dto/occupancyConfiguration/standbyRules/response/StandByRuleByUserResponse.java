@@ -13,4 +13,5 @@ import lombok.Setter;
 public class StandByRuleByUserResponse {
     private boolean result;
     private StandByRuleByUserDetailDto data;
+    private String creationtimestamp;
 }
