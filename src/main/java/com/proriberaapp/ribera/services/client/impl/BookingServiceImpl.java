@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.AvailabilityResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.ExchangeRateResponse;
 import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Domain.dto.BookingFeedingDto;
@@ -1169,4 +1170,15 @@ public class BookingServiceImpl implements BookingService {
         return this.bookingRepository.findByBookingId(bookingId);
     }
 
+    @Override
+    public Mono<AvailabilityResponse> checkRoomOfferAvailability(Integer roomOfferId, String startDate, String endDate) {
+        log.info("Inicio de metodo checkRoomOfferAvailability");
+        return bookingRepository.findNewConflictingBookings(roomOfferId, startDate, endDate)
+                .collectList()
+                .map(bookingConflictDtos -> AvailabilityResponse.builder()
+                        .avaliable(bookingConflictDtos.isEmpty())
+                        .conflictingBookings(bookingConflictDtos)
+                        .build()
+                );
+    }
 }
