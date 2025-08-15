@@ -1,11 +1,15 @@
 package com.proriberaapp.ribera.services.admin.impl;
 
-import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.*;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.booking.response.BookingDetailDto;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.booking.response.BookingDetailResponse;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.FindFiltersBooking;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersBooking;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersBookingAvailability;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersBookingInventory;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewAdminBookingAvailabilityReturn;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewAdminBookingInventoryReturn;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewAdminBookingReturn;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
-import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.Infraestructure.viewRepository.BookingViewRepository;
 import com.proriberaapp.ribera.services.admin.BookingManagerService;
@@ -27,6 +31,7 @@ public class BookingManagerServiceImpl implements BookingManagerService {
     private final BookingRepository bookingRepository;
     private final ComfortTypeRepository comfortTypeRepository;
     private final BedsTypeRepository bedsTypeRepository;
+    private final UserClientRepository userClientRepository;
 
     @Override
     public Flux<ViewAdminBookingReturn> viewAdminBookingReturn(SearchFiltersBooking filters) {
@@ -79,4 +84,37 @@ public class BookingManagerServiceImpl implements BookingManagerService {
                 );
     }
 
+    @Override
+    public Mono<BookingDetailResponse> getBookingDetailByBookingId(Integer bookingId) {
+        log.info("Inicio de metodo getBookingDetailByBookingId con bookingId:{}", bookingId);
+        return bookingRepository.findBookingDetailByBookingId(bookingId)
+                .flatMap(bookingDetailDto ->
+                        userClientRepository.findUserDetailByUserClientId(bookingDetailDto.getUserclientid())
+                                .map(userDetailDto -> {
+                                    BookingDetailDto detailDto = BookingDetailDto.builder()
+                                            .bookingid(bookingDetailDto.getBookingid())
+                                            .roomofferid(bookingDetailDto.getRoomofferid())
+                                            .roomnumber(bookingDetailDto.getRoomnumber())
+                                            .imgurl(bookingDetailDto.getImgurl())
+                                            .bookingstate(bookingDetailDto.getBookingstate())
+                                            .checkin(bookingDetailDto.getCheckin())
+                                            .checkout(bookingDetailDto.getCheckout())
+                                            .totalnights(bookingDetailDto.getTotalnights())
+                                            .totalpeople(bookingDetailDto.getTotalpeople())
+                                            .userclientid(bookingDetailDto.getUserclientid())
+                                            .user(userDetailDto)
+                                            .build();
+                                    return BookingDetailResponse.builder()
+                                            .data(detailDto)
+                                            .result(true)
+                                            .build();
+                                })
+                )
+                .switchIfEmpty(Mono.just(BookingDetailResponse.builder().result(false).data(null).build()))
+                .onErrorResume(e -> {
+                    log.error("Error al obtener detalle de booking | bookingId: {} | Error: {}", bookingId, e.getMessage(), e);
+                    return Mono.just(BookingDetailResponse.builder().result(false).data(null).build());
+                })
+                .doOnSuccess(value -> log.info("Fin del método getBookingDetailByBookingId"));
+    }
 }

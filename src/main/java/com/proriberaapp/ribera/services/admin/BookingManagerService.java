@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.admin;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.booking.response.BookingDetailResponse;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.*;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewAdminBookingAvailabilityReturn;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewAdminBookingInventoryReturn;
@@ -20,4 +21,6 @@ public interface BookingManagerService {
     Mono<FindFiltersBooking> findFiltersBooking();
 
     Mono<ViewBookingReturn> getBooking(Integer id);
+
+    Mono<BookingDetailResponse> getBookingDetailByBookingId(Integer bookingId);
 }

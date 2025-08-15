@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.services.client;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.roomoffer.response.DropdownRoomOfferResponse;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOffer;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOfferFiltro;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
@@ -9,7 +10,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface RoomOfferService extends BaseService<RoomOfferEntity, RoomOfferEntity> {
@@ -36,4 +36,6 @@ public interface RoomOfferService extends BaseService<RoomOfferEntity, RoomOffer
         Mono<ViewRoomOfferReturn> findRoomOfferById(Integer id);
 
         Mono<ViewRoomOfferReturn> findRoomOfferByIdAndQuotationId(Integer roomOfferId, Integer quotationId);
+
+        Mono<DropdownRoomOfferResponse> findDropdownRoomOffer(String searchTerm);
 }
