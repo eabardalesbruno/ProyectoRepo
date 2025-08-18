@@ -3,6 +3,7 @@ package com.proriberaapp.ribera.Infraestructure.repository;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingResumenPaymentDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingWithPaymentDTO;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.booking.response.BookingDetailDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.BookingConflictDto;
 import com.proriberaapp.ribera.Domain.dto.BookingAndRoomNameDto;
@@ -852,4 +853,108 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
             AND b.bookingstateid != 4;
           """)
   Flux<BookingConflictDto> findNewConflictingBookings(Integer roomOfferId, String startDate, String endDate);
+
+  @Query(value = """
+          SELECT
+              b.bookingid,
+              b.roomofferid,
+              r.roomnumber,
+              r.image AS imgurl,
+              bs.bookingstatename AS bookingstate,
+              CONCAT(
+                  CASE EXTRACT(DOW FROM b.daybookinginit)
+                      WHEN 0 THEN 'Dom'
+                      WHEN 1 THEN 'Lun'
+                      WHEN 2 THEN 'Mar'
+                      WHEN 3 THEN 'Mié'
+                      WHEN 4 THEN 'Jue'
+                      WHEN 5 THEN 'Vie'
+                      WHEN 6 THEN 'Sáb'
+                  END,
+                  ', ',
+                  EXTRACT(DAY FROM b.daybookinginit),
+                  ' ',
+                  CASE EXTRACT(MONTH FROM b.daybookinginit)
+                      WHEN 1  THEN 'Ene'
+                      WHEN 2  THEN 'Feb'
+                      WHEN 3  THEN 'Mar'
+                      WHEN 4  THEN 'Abr'
+                      WHEN 5  THEN 'May'
+                      WHEN 6  THEN 'Jun'
+                      WHEN 7  THEN 'Jul'
+                      WHEN 8  THEN 'Ago'
+                      WHEN 9  THEN 'Set'
+                      WHEN 10 THEN 'Oct'
+                      WHEN 11 THEN 'Nov'
+                      WHEN 12 THEN 'Dic'
+                  END
+              ) AS checkin,
+              CONCAT(
+                  CASE EXTRACT(DOW FROM b.daybookingend)
+                      WHEN 0 THEN 'Dom'
+                      WHEN 1 THEN 'Lun'
+                      WHEN 2 THEN 'Mar'
+                      WHEN 3 THEN 'Mié'
+                      WHEN 4 THEN 'Jue'
+                      WHEN 5 THEN 'Vie'
+                      WHEN 6 THEN 'Sáb'
+                  END,
+                  ', ',
+                  EXTRACT(DAY FROM b.daybookingend),
+                  ' ',
+                  CASE EXTRACT(MONTH FROM b.daybookingend)
+                      WHEN 1  THEN 'Ene'
+                      WHEN 2  THEN 'Feb'
+                      WHEN 3  THEN 'Mar'
+                      WHEN 4  THEN 'Abr'
+                      WHEN 5  THEN 'May'
+                      WHEN 6  THEN 'Jun'
+                      WHEN 7  THEN 'Jul'
+                      WHEN 8  THEN 'Ago'
+                      WHEN 9  THEN 'Set'
+                      WHEN 10 THEN 'Oct'
+                      WHEN 11 THEN 'Nov'
+                      WHEN 12 THEN 'Dic'
+                  END
+              ) AS checkout,
+              CASE
+                  WHEN (b.daybookingend::DATE - b.daybookinginit::DATE) = 1 THEN '1 noche'
+                  ELSE (b.daybookingend::DATE - b.daybookinginit::DATE)::TEXT || ' noches'
+              END AS totalnights,
+              CONCAT(
+                  CASE
+                      WHEN b.numberadults > 0 THEN
+                          b.numberadults || ' ' ||
+                          CASE WHEN b.numberadults = 1 THEN 'adulto' ELSE 'adultos' END
+                      ELSE NULL
+                  END,
+                  CASE
+                      WHEN (b.numberadults > 0 AND (b.numberchildren > 0 OR b.numberbabies > 0)) THEN ', '
+                      ELSE ''
+                  END,
+                  CASE
+                      WHEN b.numberchildren > 0 THEN
+                          b.numberchildren || ' ' ||
+                          CASE WHEN b.numberchildren = 1 THEN 'niño' ELSE 'niños' END
+                      ELSE NULL
+                  END,
+                  CASE
+                      WHEN (b.numberchildren > 0 AND b.numberbabies > 0) THEN ', '
+                      ELSE ''
+                  END,
+                  CASE
+                      WHEN b.numberbabies > 0 THEN
+                          b.numberbabies || ' ' ||
+                          CASE WHEN b.numberbabies = 1 THEN 'bebé' ELSE 'bebés' END
+                      ELSE NULL
+                  END
+              ) AS totalpeople,
+              b.userclientid
+          FROM booking b
+          INNER JOIN bookingstate bs ON bs.bookingstateid = b.bookingstateid
+          INNER JOIN roomoffer ro ON ro.roomofferid = b.roomofferid
+          INNER JOIN room r ON r.roomid = ro.roomid
+          WHERE b.bookingid = :bookingId;
+          """)
+  Mono<BookingDetailDto> findBookingDetailByBookingId(Integer bookingId);
 }

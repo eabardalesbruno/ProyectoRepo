@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.FeedingItemsGrouped;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.roomoffer.response.DropdownRoomOfferResponse;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOffer;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOfferFiltro;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
@@ -444,5 +445,24 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                     return Mono.just(viewRoomOfferReturn);
                 }).switchIfEmpty(
                         Mono.error(new IllegalArgumentException("No se encontró la oferta")));
+    }
+
+    @Override
+    public Mono<DropdownRoomOfferResponse> findDropdownRoomOffer(String searchTerm) {
+        log.info("Inicio de método findDropdownRoomOffer con parametro :{}",searchTerm);
+        return roomOfferRepository.getDropdownRoomOffer(searchTerm).collectList()
+                .map(roomOfferDtos -> DropdownRoomOfferResponse.builder()
+                        .result(true)
+                        .data(roomOfferDtos)
+                        .build()
+                )
+                .onErrorResume(e -> {
+                    log.error("Error al buscar ofertas de habitaciones: {}", e.getMessage());
+                    return Mono.just(DropdownRoomOfferResponse.builder()
+                            .result(false)
+                            .data(null)
+                            .build());
+                })
+                .doOnSuccess(value -> log.info("Fin del método findDropdownRoomOffer"));
     }
 }

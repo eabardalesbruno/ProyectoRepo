@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.booking.response.BookingDetailResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.AvailabilityResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
@@ -56,5 +57,10 @@ public class ManagerBookingController extends BaseManagerController<BookingEntit
             @RequestParam("endDate") String endDate
     ){
         return bookingService.checkRoomOfferAvailability(roomOfferId, startDate, endDate);
+    }
+
+    @GetMapping("/detail/{bookingId}")
+    public Mono<BookingDetailResponse>getBookingDetailById(@PathVariable Integer bookingId){
+        return bookingManagerService.getBookingDetailByBookingId(bookingId);
     }
 }
