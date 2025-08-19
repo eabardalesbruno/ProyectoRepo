@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 public class NotificationDto {
+    private int id;
     private int notificationId;
     private LocalDateTime createdAt = LocalDateTime.now();
     private String notificationTitle;
