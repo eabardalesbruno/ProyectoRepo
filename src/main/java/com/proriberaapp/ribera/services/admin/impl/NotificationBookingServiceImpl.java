@@ -1,13 +1,10 @@
 package com.proriberaapp.ribera.services.admin.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.proriberaapp.ribera.Domain.dto.NotificationDto;
 import com.proriberaapp.ribera.Domain.mapper.NotificationBookingMapper;
 import com.proriberaapp.ribera.Infraestructure.repository.NotificationBookingRepository;
 import com.proriberaapp.ribera.services.admin.NotificationBookingService;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
@@ -48,7 +45,7 @@ public class NotificationBookingServiceImpl implements NotificationBookingServic
     }
 
     @Override
-    public Mono<Void> markAsRead( @RequestBody List<Integer> notificationIds) {
+    public Mono<Void> markAsRead( List<Integer> notificationIds) {
         return notificationBookingRepository.markAsRead(notificationIds);
     }
 
