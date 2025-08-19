@@ -13,6 +13,7 @@ public class BookingDetailDto {
     private Integer bookingid;
     private Integer roomofferid;
     private String roomnumber;
+    private String roomname;
     private String imgurl;
     private String bookingstate;
     private String checkin;

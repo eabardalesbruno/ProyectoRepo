@@ -95,6 +95,7 @@ public class BookingManagerServiceImpl implements BookingManagerService {
                                             .bookingid(bookingDetailDto.getBookingid())
                                             .roomofferid(bookingDetailDto.getRoomofferid())
                                             .roomnumber(bookingDetailDto.getRoomnumber())
+                                            .roomname(bookingDetailDto.getRoomname())
                                             .imgurl(bookingDetailDto.getImgurl())
                                             .bookingstate(bookingDetailDto.getBookingstate())
                                             .checkin(bookingDetailDto.getCheckin())
