@@ -34,6 +34,8 @@ import org.springframework.stereotype.Service;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 @Slf4j
 @Service
@@ -683,12 +685,19 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                                                                                 booking.getNumberAdultsExtra(),
                                                                                                 booking.getNumberAdultsMayor());
 
+                                                                Mono<Tuple2<Integer, String>> clienteInfo = userClientRepository
+                                                                    .findById(Integer.parseInt(userClientId.toString()))
+                                                                    .map(u -> Tuples.of(
+                                                                            u.getUserClientId(),
+                                                                            u.getFirstName().concat(" ").concat(u.getLastName())
+                                                                    ));
+
                                                                 // Obtener nombre del cliente
-                                                                Mono<String> nombreCliente = userClientRepository
-                                                                                .findById(Integer.parseInt(userClientId
-                                                                                                .toString()))
-                                                                                .map(u -> u.getFirstName().concat(" ")
-                                                                                                .concat(u.getLastName()));
+//                                                                Mono<String> nombreCliente = userClientRepository
+//                                                                                .findById(Integer.parseInt(userClientId
+//                                                                                                .toString()))
+//                                                                                .map(u -> u.getFirstName().concat(" ")
+//                                                                                                .concat(u.getLastName()));
 
                                                                 // Obtener imagen del cuarto
                                                                 Mono<String> imagenCuarto = roomOfferRepository
@@ -714,17 +723,20 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                                                                 .collectList();
 
                                                                 // Unir los datos en un mapa
-                                                                return Mono.zip(nombreCliente, imagenCuarto, descCuarto,
+                                                                return Mono.zip(clienteInfo, imagenCuarto, descCuarto,
                                                                                 bookingFeedingMono)
                                                                                 .map(tuple -> {
-                                                                                        String nombre = tuple.getT1();
+                                                                                        Tuple2<Integer, String> clienteTuple = tuple.getT1();
                                                                                         String imagen = tuple.getT2();
                                                                                         String roomName = tuple.getT3();
-                                                                                        List<BookingFeedingDto> bookingFeeding = tuple
-                                                                                                        .getT4();
+                                                                                        List<BookingFeedingDto> bookingFeeding = tuple.getT4();
+
+                                                                                        Integer idCliente = clienteTuple.getT1();
+                                                                                        String nombreCliente = clienteTuple.getT2();
 
                                                                                         Map<String, Object> response = new HashMap<>();
-                                                                                        response.put("Nombres", nombre);
+                                                                                        response.put("Nombres", nombreCliente);
+                                                                                        response.put("Id", idCliente);
                                                                                         response.put("Codigo Reserva",
                                                                                                         codigoReserva);
                                                                                         response.put("Check In",

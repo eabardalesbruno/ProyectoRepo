@@ -8,9 +8,11 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.response.AvailabilityR
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.ExchangeRateResponse;
 import com.proriberaapp.ribera.Api.controllers.exception.CustomException;
 import com.proriberaapp.ribera.Domain.dto.BookingFeedingDto;
+import com.proriberaapp.ribera.Domain.dto.NotificationDto;
 import com.proriberaapp.ribera.Domain.dto.QuotationOfferDto;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
+import com.proriberaapp.ribera.services.admin.NotificationBookingService;
 import com.proriberaapp.ribera.services.admin.OccupancyConfigurationService;
 import com.proriberaapp.ribera.services.client.*;
 import com.proriberaapp.ribera.utils.BookingUtils;
@@ -61,7 +63,9 @@ public class BookingServiceImpl implements BookingService {
     private final RoomRepository roomRepository;
     private final QuotationService quotationService;
     private final ExchangeRateService exchangeRateService;
-    private  final OccupancyConfigurationService occupancyConfigurationService;
+    private final OccupancyConfigurationService occupancyConfigurationService;
+    private final NotificationBookingService notificationBookingService;
+
     @Value("${app.upload.dir}")
     private String uploadDir;
 
@@ -83,7 +87,8 @@ public class BookingServiceImpl implements BookingService {
             FeedingRepository feedingRepository,
             QuotationService quotationService,
             ExchangeRateService exchangeRateService,
-            OccupancyConfigurationService occupancyConfigurationService
+            OccupancyConfigurationService occupancyConfigurationService,
+            NotificationBookingService notificationBookingService
     ) {
         this.bookingRepository = bookingRepository;
         this.userClientRepository = userClientRepository;
@@ -102,6 +107,7 @@ public class BookingServiceImpl implements BookingService {
         this.quotationService = quotationService;
         this.exchangeRateService = exchangeRateService;
         this.occupancyConfigurationService = occupancyConfigurationService;
+        this.notificationBookingService = notificationBookingService;
     }
 
     @Override
@@ -460,26 +466,36 @@ public class BookingServiceImpl implements BookingService {
                                                                     .flatMap(savedBooking -> {
 
                                                                         return saveSelectedBookingFeeding(
-                                                                                Long.parseLong(savedBooking
-                                                                                        .getBookingId()
-                                                                                        .toString()),
-                                                                                feedingList,
-                                                                                feedingItemsGrouped,
-                                                                                bookingSaveRequest
-                                                                                        .getNumberAdult(),
-                                                                                bookingSaveRequest
-                                                                                        .getNumberAdultExtra(),
-                                                                                bookingSaveRequest
-                                                                                        .getNumberAdultMayor(),
-                                                                                bookingSaveRequest
-                                                                                        .getNumberChild())
-                                                                                .then(sendBookingConfirmationEmail(
-                                                                                        savedBooking,
-                                                                                        roomName,
-                                                                                        totalPeoples,
-                                                                                        bookingSaveRequest
-                                                                                                .isPaying())
-                                                                                        .then(Mono.just(savedBooking)));
+                                                                            Long.parseLong(savedBooking
+                                                                                    .getBookingId()
+                                                                                    .toString()),
+                                                                            feedingList,
+                                                                            feedingItemsGrouped,
+                                                                            bookingSaveRequest.getNumberAdult(),
+                                                                            bookingSaveRequest.getNumberAdultExtra(),
+                                                                            bookingSaveRequest.getNumberAdultMayor(),
+                                                                            bookingSaveRequest.getNumberChild())
+                                                                            .then(
+                                                                                sendBookingConfirmationEmail(
+                                                                                savedBooking,
+                                                                                roomName,
+                                                                                totalPeoples,
+                                                                                bookingSaveRequest.isPaying())
+                                                                                .flatMap(bookingEntityToNotify -> {
+
+                                                                                    NotificationDto notificationDto =
+                                                                                        NotificationDto.getTemplateNotificationConfirm(bookingEntity.getUserClientId());
+
+                                                                                    return notificationBookingService.save(notificationDto)
+                                                                                        .flatMap(savedNotification ->
+                                                                                                notificationBookingService.sendNotification(
+                                                                                                        bookingEntityToNotify.getUserClientId().toString(),
+                                                                                                        savedNotification
+                                                                                                )
+                                                                                    )
+                                                                                    .thenReturn(bookingEntityToNotify);
+                                                                                })
+                                                                            );
                                                                     });
                                                         }
                                                     })
@@ -612,20 +628,13 @@ public class BookingServiceImpl implements BookingService {
                                         int hidePayment = 1; // Por el momento es para
                                         // ocultar el botón pagar
                                         BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
-                                        String monthInit = TransformDate
-                                                .getAbbreviatedMonth(
-                                                        bookingEntity.getDayBookingInit());
-                                        String monthEnd = TransformDate
-                                                .getAbbreviatedMonth(
-                                                        bookingEntity.getDayBookingEnd());
-                                        int dayInit = TransformDate.getDayNumber(
-                                                bookingEntity.getDayBookingInit());
-                                        int dayEnd = TransformDate.getDayNumber(
+                                        String monthInit = TransformDate.getAbbreviatedMonth(bookingEntity.getDayBookingInit());
+                                        String monthEnd = TransformDate.getAbbreviatedMonth(bookingEntity.getDayBookingEnd());
+                                        int dayInit = TransformDate.getDayNumber(bookingEntity.getDayBookingInit());
+                                        int dayEnd = TransformDate.getDayNumber(bookingEntity.getDayBookingEnd());
+                                        long dayInterval = TransformDate.calculateDaysDifference(
+                                                bookingEntity.getDayBookingInit(),
                                                 bookingEntity.getDayBookingEnd());
-                                        long dayInterval = TransformDate
-                                                .calculateDaysDifference(
-                                                        bookingEntity.getDayBookingInit(),
-                                                        bookingEntity.getDayBookingEnd());
 
                                         // Lógica para manejar standbyHours
                                         Integer standbyHoursToSend = null;
@@ -638,13 +647,11 @@ public class BookingServiceImpl implements BookingService {
                                                         monthInit,
                                                         monthEnd,
                                                         String.valueOf(dayInit),
-                                                        String.valueOf(
-                                                                dayEnd),
+                                                        String.valueOf(dayEnd),
                                                         dayInterval,
                                                         roomName,
                                                         userClient.getFirstName()+ " " +userClient.getLastName(),
-                                                        String.valueOf(bookingEntity
-                                                                .getBookingId()),
+                                                        String.valueOf(bookingEntity.getBookingId()),
                                                         totalPeoples,
                                                         hidePayment,
                                                         standbyHoursToSend // Pasamos el valor condicionalmente

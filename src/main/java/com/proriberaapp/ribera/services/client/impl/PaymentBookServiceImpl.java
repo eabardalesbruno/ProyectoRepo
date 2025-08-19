@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.services.client.impl;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
+import com.proriberaapp.ribera.Domain.dto.NotificationDto;
 import com.proriberaapp.ribera.Domain.dto.PaymentBookWithChannelDto;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
@@ -12,8 +13,10 @@ import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
 import com.proriberaapp.ribera.Domain.invoice.ProductSunatDomain;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.ProductSunatRepository;
+import com.proriberaapp.ribera.services.admin.NotificationBookingService;
 import com.proriberaapp.ribera.services.client.*;
 import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
+import com.proriberaapp.ribera.utils.TransformDate;
 import com.proriberaapp.ribera.utils.emails.BaseEmailReserve;
 import com.proriberaapp.ribera.utils.emails.PaymentByBankTransferTemplateEmail;
 
@@ -287,6 +290,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     private final FullDayRepository fullDayRepository;
     private final ProductSunatRepository productSunatRepository;
     private final BookingRepository bookingRepository;
+    private final NotificationBookingService notificationBookingService;
 
     @Autowired
     public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository,
@@ -299,7 +303,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                   PaymentSubtypeRepository paymentSubtypeRepository, CurrencyTypeRepository currencyTypeRepository,
                                   CommissionService commissionService,
                                   InvoiceServiceI invoiceService, FullDayRepository fullDayRepository, ProductSunatRepository productSunatRepository,
-                                  BookingRepository bookingRepository) {
+                                  BookingRepository bookingRepository,
+                                  NotificationBookingService notificationBookingService) {
         this.invoiceService = invoiceService;
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
@@ -318,6 +323,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         this.fullDayRepository = fullDayRepository;
         this.productSunatRepository = productSunatRepository;
         this.bookingRepository= bookingRepository;
+
+        this.notificationBookingService = notificationBookingService;
     }
 
     @Override
@@ -820,19 +827,61 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
     private Mono<Void> sendPaymentConfirmationEmail(PaymentBookEntity paymentBook, String email, String userName) {
         return bookingService.findById(paymentBook.getBookingId())
-                .flatMap(booking -> roomOfferRepository.findById(booking.getRoomOfferId()))
-                .flatMap(roomOffer -> roomRepository.findById(roomOffer.getRoomId()))
-                .flatMap(room -> {
+                .zipWhen(booking -> roomOfferRepository.findById(booking.getRoomOfferId()))
+                .zipWhen(tuple  -> roomRepository.findById(tuple.getT2().getRoomId()))
+                .flatMap(tuple  -> {
+
+                    var booking = tuple.getT1().getT1();   // booking
+                    var roomOffer = tuple.getT1().getT2(); // roomOffer
+                    var room = tuple.getT2();              // room
+
                     String roomName = room.getRoomName(); // Extract roomName
+
+                    String monthInit = TransformDate.getAbbreviatedMonth(booking.getDayBookingInit());
+                    String monthEnd = TransformDate.getAbbreviatedMonth(booking.getDayBookingEnd());
+                    int dayInit = TransformDate.getDayNumber(booking.getDayBookingInit());
+                    int dayEnd = TransformDate.getDayNumber(booking.getDayBookingEnd());
+                    long dayInterval = TransformDate.calculateDaysDifference(
+                            booking.getDayBookingInit(),
+                            booking.getDayBookingEnd());
+
+                    String people = booking.getNumberAdults() + " adultos";
+                    if(booking.getNumberChildren() > 0)
+                        people+= (booking.getNumberChildren() + " niños");
+
                     BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
                     baseEmailReserve.addEmailHandler(
-                            new PaymentByBankTransferTemplateEmail(userName, paymentBook.getTotalCost()));
-                    /*
-                     * String emailBody = generatePaymentConfirmationEmailBody(paymentBook,
-                     * roomName);
-                     */
+                        new PaymentByBankTransferTemplateEmail(
+                            monthInit,
+                            monthEnd,
+                            String.valueOf(dayInit),
+                            String.valueOf(dayEnd),
+                            dayInterval,
+                            roomName,
+                            userName,
+                            String.valueOf(paymentBook.getBookingId()),
+                            people,
+                            paymentBook.getTotalCost())
+                    );
+
                     String emailBody = baseEmailReserve.execute();
-                    return emailService.sendEmail(email, "Confirmación de Pago", emailBody);
+
+                    return emailService.sendEmail(email, "Confirmación de Pago", emailBody)
+                        .then(
+                            notificationBookingService.save(
+                                NotificationDto.getTemplateNotificationPayment(
+                                    paymentBook.getUserClientId(),
+                                    paymentBook.getTotalCost(),
+                                    roomName
+                                )
+                            )
+                            .flatMap(savedNotification ->
+                                notificationBookingService.sendNotification(
+                                    paymentBook.getUserClientId().toString(),
+                                    savedNotification
+                                )
+                            )
+                        );
                 });
     }
 
