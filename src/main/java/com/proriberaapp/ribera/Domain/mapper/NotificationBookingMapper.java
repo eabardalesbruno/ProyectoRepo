@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Domain.entities.NotificationBookingEntity;
 public class NotificationBookingMapper {
     public static NotificationDto toDto(NotificationBookingEntity notificationEntity){
         return NotificationDto.builder()
+                .id(notificationEntity.getNotificationId())
                 .createdAt(notificationEntity.getCreatedAt())
                 .notificationTitle(notificationEntity.getNotificationTitle())
                 .notificationMessage(notificationEntity.getNotificationMessage())
