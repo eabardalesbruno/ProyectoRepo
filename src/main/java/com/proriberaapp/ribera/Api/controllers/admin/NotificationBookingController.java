@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/notification")
 @RequiredArgsConstructor
@@ -42,4 +44,8 @@ public class NotificationBookingController {
         service.save(notificationDto).subscribe();
     }
 
+    @PostMapping("/mark-as-read")
+    public Mono<Void> updateState(@RequestBody List<Integer> notificationIds) {
+        return service.markAsRead(notificationIds);
+    }
 }
