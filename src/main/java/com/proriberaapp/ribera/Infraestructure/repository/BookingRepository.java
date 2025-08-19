@@ -859,6 +859,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
               b.bookingid,
               b.roomofferid,
               r.roomnumber,
+              r.roomname,
               r.image AS imgurl,
               bs.bookingstatename AS bookingstate,
               CONCAT(
