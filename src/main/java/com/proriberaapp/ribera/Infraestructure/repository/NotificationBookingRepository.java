@@ -23,6 +23,6 @@ public interface NotificationBookingRepository extends R2dbcRepository<Notificat
     Flux<NotificationBookingEntity> findLastNotificationsByUserClientId(int userclientid, int limit);
 
     @Modifying
-    @Query("UPDATE notification SET read = true WHERE id IN (:ids)")
+    @Query("UPDATE notification SET isread = true WHERE id IN (:ids)")
     Mono<Void> markAsRead(@Param("ids") List<Integer> ids);
 }
