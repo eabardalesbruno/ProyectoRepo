@@ -857,6 +857,7 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
   @Query(value = """
           SELECT
               b.bookingid,
+              b.costfinal,
               b.roomofferid,
               r.roomnumber,
               r.roomname,

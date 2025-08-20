@@ -5,12 +5,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
 public class BookingDetailDto {
     private Integer bookingid;
+    private BigDecimal costfinal;
     private Integer roomofferid;
     private String roomnumber;
     private String roomname;
