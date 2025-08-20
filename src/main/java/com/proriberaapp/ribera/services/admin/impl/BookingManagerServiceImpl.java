@@ -94,6 +94,8 @@ public class BookingManagerServiceImpl implements BookingManagerService {
                                     BookingDetailDto detailDto = BookingDetailDto.builder()
                                             .bookingid(bookingDetailDto.getBookingid())
                                             .costfinal(bookingDetailDto.getCostfinal())
+                                            .daybookinginit(bookingDetailDto.getDaybookinginit())
+                                            .daybookingend(bookingDetailDto.getDaybookingend())
                                             .roomofferid(bookingDetailDto.getRoomofferid())
                                             .roomnumber(bookingDetailDto.getRoomnumber())
                                             .roomname(bookingDetailDto.getRoomname())
