@@ -19,6 +19,8 @@ public class NotificationBookingEntity {
     @Id
     @Column("id")
     private int notificationId;
+    @Column("bookingid")
+    private int bookingId;
     @Column("createdat")
     private LocalDateTime createdAt;
     @Column("title")

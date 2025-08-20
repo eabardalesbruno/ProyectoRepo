@@ -13,6 +13,7 @@ public class NotificationBookingMapper {
                 .notificationType(notificationEntity.getNotificationType())
                 .userClientId(notificationEntity.getUserClientId())
                 .notificationIsRead(notificationEntity.isNotificationIsRead())
+                .bookingId(notificationEntity.getBookingId())
                 .build();
     }
 
@@ -24,6 +25,7 @@ public class NotificationBookingMapper {
                 .notificationType(notificationDto.getNotificationType())
                 .userClientId(notificationDto.getUserClientId())
                 .notificationIsRead(notificationDto.isNotificationIsRead())
+                .bookingId(notificationDto.getBookingId())
                 .build();
     }
 }
