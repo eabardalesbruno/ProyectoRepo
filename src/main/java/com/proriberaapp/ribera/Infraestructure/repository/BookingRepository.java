@@ -858,6 +858,8 @@ public interface BookingRepository extends R2dbcRepository<BookingEntity, Intege
           SELECT
               b.bookingid,
               b.costfinal,
+              b.daybookinginit,
+              b.daybookingend,
               b.roomofferid,
               r.roomnumber,
               r.roomname,
