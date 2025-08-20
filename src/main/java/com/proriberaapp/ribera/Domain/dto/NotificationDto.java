@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class NotificationDto {
     private int id;
     private int notificationId;
+    private int bookingId;
     private LocalDateTime createdAt = LocalDateTime.now();
     private String notificationTitle;
     private String notificationMessage;
@@ -18,14 +19,15 @@ public class NotificationDto {
     private int userClientId;
     private boolean notificationIsRead;
 
-    public static NotificationDto getTemplateNotificationConfirm(int userClientId) {
+    public static NotificationDto getTemplateNotificationConfirm(int userClientId, Integer dayToPay, int bookingId) {
         return NotificationDto.builder()
                 .createdAt(LocalDateTime.now())
-                .notificationTitle("Confirmación de Reserva")
-                .notificationMessage("Tu reserva está en espera.")
-                .notificationType("BOOKING")
+                .notificationTitle("Tienes un pago pendiente para tu reserva")
+                .notificationMessage("Tienes "+dayToPay+" horas para pagar.")
+                .notificationType("BOOKING_CONFIRM")
                 .notificationIsRead(false)
                 .userClientId(userClientId)
+                .bookingId(bookingId)
                 .build();
     }
 
@@ -34,9 +36,10 @@ public class NotificationDto {
                 .createdAt(LocalDateTime.now())
                 .notificationTitle("Confirmación de pago")
                 .notificationMessage("Tu reserva "+roomName+",ha sido confirmada (Total pagado: "+totalCost.toString()+").")
-                .notificationType("BOOKING")
+                .notificationType("BOOKING_PAYMENT")
                 .notificationIsRead(false)
                 .userClientId(userClientId)
+                .bookingId(0)
                 .build();
     }
 
@@ -45,9 +48,10 @@ public class NotificationDto {
                 .createdAt(LocalDateTime.now())
                 .notificationTitle("Confirmación de pago")
                 .notificationMessage("Tu reserva "+roomName+",el pago ha sido confirmado.")
-                .notificationType("BOOKING")
+                .notificationType("BOOKING_CONFIRM_PAYMENT")
                 .notificationIsRead(false)
                 .userClientId(userClientId)
+                .bookingId(0)
                 .build();
     }
 }

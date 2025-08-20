@@ -369,9 +369,8 @@ public class BookingServiceImpl implements BookingService {
                 .flatMap(roomName -> {
                     // Obtener la oferta de habitación
                     return Mono.zip(
-                            roomOfferRepository.findById(bookingSaveRequest.getRoomOfferId()),
-                            exchangeRateService.getExchangeRateByCode(ExchangeRateCode.USD)
-                                    )
+                                roomOfferRepository.findById(bookingSaveRequest.getRoomOfferId()),
+                                exchangeRateService.getExchangeRateByCode(ExchangeRateCode.USD))
                             .flatMap(data -> {
                                 RoomOfferEntity roomOfferEntity = data.getT1();
                                 ExchangeRateResponse exchangeRateEntity = data.getT2();
@@ -387,62 +386,23 @@ public class BookingServiceImpl implements BookingService {
                                 );
                                 bookingEntity.setTypeOfDayBooking(typeOfDay);
 
-
-                                // Cálculo del costo inicial (bebés, niños, adultos,
-                                // etc.)
-                                /*
-                                BigDecimal costFinal = GeneralMethods
-                                        .calculateCostTotal(
-                                                bookingSaveRequest
-                                                        .getAdultCost()
-                                                        .floatValue(),
-                                                bookingSaveRequest
-                                                        .getAdultExtraCost()
-                                                        .floatValue(),
-                                                bookingSaveRequest
-                                                        .getAdultMayorCost()
-                                                        .floatValue(),
-                                                bookingSaveRequest
-                                                        .getKidCost()
-                                                        .floatValue(),
-                                                bookingSaveRequest
-                                                        .getInfantCost()
-                                                        .floatValue(),
-                                                bookingSaveRequest
-                                                        .getNumberAdult(),
-                                                bookingSaveRequest
-                                                        .getNumberAdultExtra(),
-                                                bookingSaveRequest
-                                                        .getNumberAdultMayor(),
-                                                bookingSaveRequest
-                                                        .getNumberBaby(),
-                                                bookingSaveRequest
-                                                        .getNumberChild(),
-                                                numberOfDays - 1).setScale(2, RoundingMode.HALF_UP)
-                                        .multiply(BigDecimal.valueOf(exchangeRateEntity.getSale()))
-                                        ;
-                                */
                                 return quotationService.calculateTotalRewards(bookingSaveRequest)
                                         .map(BigDecimal::intValue)
                                         .doOnNext(bookingEntity::setTotalRewards)
                                         .then(Mono.zip(feedings.collectList(), feedingsGrouped.collectList()))
                                         .flatMap(monoZip -> {
-                                            List<FeedingEntity> feedingList = monoZip
-                                                    .getT1();
-                                            List<FeedingItemsGrouped> feedingItemsGrouped = monoZip
-                                                    .getT2();
+                                            List<FeedingEntity> feedingList = monoZip.getT1();
+                                            List<FeedingItemsGrouped> feedingItemsGrouped = monoZip.getT2();
                                             BigDecimal extraCost = GeneralMethods
                                                     .calculatedTotalAmountFeeding(
                                                             feedingList,
                                                             feedingItemsGrouped,
-                                                            bookingSaveRequest
-                                                                    .getNumberAdult(),
-                                                            bookingSaveRequest
-                                                                    .getNumberAdultExtra(),
-                                                            bookingSaveRequest
-                                                                    .getNumberAdultMayor(),
-                                                            bookingSaveRequest
-                                                                    .getNumberChild()).multiply(BigDecimal.valueOf(numberOfDays - 1));
+                                                            bookingSaveRequest.getNumberAdult(),
+                                                            bookingSaveRequest.getNumberAdultExtra(),
+                                                            bookingSaveRequest.getNumberAdultMayor(),
+                                                            bookingSaveRequest.getNumberChild())
+                                                    .multiply(BigDecimal.valueOf(numberOfDays - 1));
+
                                             BigDecimal totalCost = bookingSaveRequest.getTotalCost() != null ? bookingSaveRequest.getTotalCost() : BigDecimal.ZERO;
                                             //bookingEntity.setCostFinal(totalCost.add(extraCost));
                                             bookingEntity.setCostFinal(totalCost);
@@ -454,8 +414,7 @@ public class BookingServiceImpl implements BookingService {
                                                             bookingEntity.getDayBookingEnd())
                                                     .hasElements()
                                                     .flatMap(exists -> {
-                                                        if (exists && bookingSaveRequest
-                                                                .getBookingId() == null) {
+                                                        if (exists && bookingSaveRequest.getBookingId() == null) {
                                                             return Mono.error(
                                                                     new CustomException(
                                                                             HttpStatus.BAD_REQUEST,
@@ -477,24 +436,11 @@ public class BookingServiceImpl implements BookingService {
                                                                             bookingSaveRequest.getNumberChild())
                                                                             .then(
                                                                                 sendBookingConfirmationEmail(
-                                                                                savedBooking,
-                                                                                roomName,
-                                                                                totalPeoples,
-                                                                                bookingSaveRequest.isPaying())
-                                                                                .flatMap(bookingEntityToNotify -> {
-
-                                                                                    NotificationDto notificationDto =
-                                                                                        NotificationDto.getTemplateNotificationConfirm(bookingEntity.getUserClientId());
-
-                                                                                    return notificationBookingService.save(notificationDto)
-                                                                                        .flatMap(savedNotification ->
-                                                                                                notificationBookingService.sendNotification(
-                                                                                                        bookingEntityToNotify.getUserClientId().toString(),
-                                                                                                        savedNotification
-                                                                                                )
-                                                                                    )
-                                                                                    .thenReturn(bookingEntityToNotify);
-                                                                                })
+                                                                                    savedBooking,
+                                                                                    roomName,
+                                                                                    totalPeoples,
+                                                                                    bookingSaveRequest.isPaying())
+                                                                                .then(Mono.just(savedBooking))
                                                                             );
                                                                     });
                                                         }
@@ -658,12 +604,23 @@ public class BookingServiceImpl implements BookingService {
                                                 ));
                                         String emailBody = baseEmailReserve.execute();
 
-                                        return emailService
-                                                .sendEmail(userClient
-                                                                .getEmail(),
-                                                        "Confirmación de Reserva",
-                                                        emailBody)
-                                                .thenReturn(bookingEntity);
+                                        return emailService.sendEmail(userClient.getEmail(),"Confirmación de Reserva", emailBody)
+                                                .then(
+                                                        notificationBookingService.save(
+                                                                NotificationDto.getTemplateNotificationConfirm(
+                                                                        bookingEntity.getUserClientId(),
+                                                                        standbyHoursToSend,
+                                                                        bookingEntity.getBookingId()
+                                                                )
+                                                        )
+                                                )
+                                                .flatMap(savedNotification ->
+                                                        notificationBookingService.sendNotification(
+                                                                String.valueOf(bookingEntity.getUserClientId()),
+                                                                savedNotification
+                                                        )
+                                                )
+                                            .thenReturn(bookingEntity);
                                     })));
         }
     }
