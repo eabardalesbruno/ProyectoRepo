@@ -46,8 +46,17 @@ public class EmailSenderTest {
     void testSendEmailPaymentByBankTransfer() {
         BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
         baseEmailReserve.addEmailHandler(new PaymentByBankTransferTemplateEmail(
+                "Agosto",
+                "Agosto",
+                "21",
+                "25",
+                4L,
+                "Suite Deluxe",
                 "Antony Inga Atunga",
-                new BigDecimal(100.0)));
+                "BK-12345",
+                "2",
+                new BigDecimal("100.0")
+        ));
         String emailBody = baseEmailReserve.execute();
         StepVerifier.create(emailService.sendEmail(to, subject, emailBody)).verifyComplete();
     }
