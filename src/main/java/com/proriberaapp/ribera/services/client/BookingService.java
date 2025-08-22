@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.services.client;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.booking.response.BookingDetailResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingSaveRequest;
 import com.proriberaapp.ribera.Api.controllers.client.dto.BookingStates;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;

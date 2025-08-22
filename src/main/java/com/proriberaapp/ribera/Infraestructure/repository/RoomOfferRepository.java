@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.roomoffer.response.RoomOfferDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.searchFilters.SearchFiltersRoomOffer;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomOfferReturn;
 import com.proriberaapp.ribera.Domain.dto.QuotationOfferDto;
@@ -234,4 +235,21 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
     Flux<QuotationOfferDto> getQuotationByRangeDateAndRoomOfferId(LocalDate offerTimeInit,
                                                                   LocalDate offerTimeEnd);
 
+    @Query(value = """
+            SELECT
+              ro.roomofferid,
+              ro.offername as roomoffername
+            FROM
+              roomoffer ro
+            WHERE
+              (
+                :searchTerm IS NULL
+              )
+              OR (
+                TRIM(UPPER(ro.offername)) LIKE '%' || TRIM(UPPER(:searchTerm)) || '%'
+              )
+            ORDER BY
+              ro.roomofferid;
+            """)
+    Flux<RoomOfferDto>getDropdownRoomOffer(String searchTerm);
 }
