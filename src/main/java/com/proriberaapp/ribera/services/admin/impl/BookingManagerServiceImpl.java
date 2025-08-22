@@ -93,8 +93,12 @@ public class BookingManagerServiceImpl implements BookingManagerService {
                                 .map(userDetailDto -> {
                                     BookingDetailDto detailDto = BookingDetailDto.builder()
                                             .bookingid(bookingDetailDto.getBookingid())
+                                            .costfinal(bookingDetailDto.getCostfinal())
+                                            .daybookinginit(bookingDetailDto.getDaybookinginit())
+                                            .daybookingend(bookingDetailDto.getDaybookingend())
                                             .roomofferid(bookingDetailDto.getRoomofferid())
                                             .roomnumber(bookingDetailDto.getRoomnumber())
+                                            .roomname(bookingDetailDto.getRoomname())
                                             .imgurl(bookingDetailDto.getImgurl())
                                             .bookingstate(bookingDetailDto.getBookingstate())
                                             .checkin(bookingDetailDto.getCheckin())
