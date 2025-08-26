@@ -718,6 +718,9 @@ public class PayMeService {
                                 String cantidadPersonas = (String) paymentDetails.get("Cantidad de Personas");
                                 String imagen = (String) paymentDetails.get("Imagen");
                                 String roomName = (String) paymentDetails.get("RoomName");
+                                String bookingId = (String) paymentDetails.get("bookingId");
+                                BigDecimal totalCost = (BigDecimal) paymentDetails.get("bookingIdtotalCost");
+                                double totalDiscount = (double) paymentDetails.get("totalDiscount");
                                 BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
 
                                 BookingEmailDto bookingEmailDto = new BookingEmailDto(
@@ -725,8 +728,20 @@ public class PayMeService {
                                         checkIn, imagen, (int) duracionEstancia,
                                         "Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico Etapa III, Cercado de Lima 15593",
                                         cantidadPersonas);
+
+                                System.out.println("1Nombre de la habitación: " + bookingEmailDto.getRoomName());
+                                System.out.println("1Imagen: " + bookingEmailDto.getImgSrc());
+                                System.out.println("1Nombre del cliente: " + bookingEmailDto.getClientName());
+                                System.out.println("1Código: " + bookingEmailDto.getCode());
+                                System.out.println("1Fecha de check-in: " + bookingEmailDto.getDateCheckIn());
+                                System.out.println("1Fecha de check-out: " + bookingEmailDto.getDateCheckOut());
+                                System.out.println("1Hora de check-in: " + bookingEmailDto.getHourCheckIn());
+                                System.out.println("1Días: " + bookingEmailDto.getDays());
+                                System.out.println("1Ubicación: " + bookingEmailDto.getLocation());
+                                System.out.println("1Cantidad de personas: " + bookingEmailDto.getCantidadPersonas());
+
                                 ConfirmPaymentByBankTransferAndCardTemplateEmail confirmReserveBookingTemplateEmail = new ConfirmPaymentByBankTransferAndCardTemplateEmail(
-                                        roomName, bookingEmailDto);
+                                        bookingEmailDto, bookingId, totalCost, totalDiscount);
 
                                 baseEmailReserve.addEmailHandler(confirmReserveBookingTemplateEmail);
                                 return Tuples.of(baseEmailReserve.execute(), codigoReserva, nombres, userClientId);
