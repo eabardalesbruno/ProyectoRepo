@@ -9,6 +9,7 @@ import com.proriberaapp.ribera.Infraestructure.exception.QuoteAndOfferIsAlreadyR
 import com.proriberaapp.ribera.Infraestructure.repository.*;
 import com.proriberaapp.ribera.services.client.QuotationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QuotationServiceImpl implements QuotationService {
@@ -213,8 +215,10 @@ public class QuotationServiceImpl implements QuotationService {
                                                             .flatMap(roomOfferId -> roomOfferRepository
                                                                     .findById(roomOfferId)
                                                                     .flatMap(roomOffer -> {
+                                                                        /*
                                                                         roomOffer.setState(
                                                                                 2);
+                                                                        */
                                                                         return roomOfferRepository
                                                                                 .save(roomOffer);
                                                                     }))
