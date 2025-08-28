@@ -213,8 +213,10 @@ public class QuotationServiceImpl implements QuotationService {
                                                             .flatMap(roomOfferId -> roomOfferRepository
                                                                     .findById(roomOfferId)
                                                                     .flatMap(roomOffer -> {
+                                                                        /*
                                                                         roomOffer.setState(
                                                                                 2);
+                                                                         */
                                                                         return roomOfferRepository
                                                                                 .save(roomOffer);
                                                                     }))
