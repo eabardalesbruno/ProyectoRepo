@@ -48,7 +48,7 @@ public class NewChangeRoomBookingTemplateEmail implements EmailHandler {
                                                     <td colspan="2" style="padding: 4px 0; font-size: 14px; font-weight: 500; color: #666;">Titular de la reserva:</td>
                                                 </tr>
                                                 <tr>
-                                                    <td colspan="2" style="padding: 0 0 8px 0; font-size: 14px; font-weight: bold;">Omar Urteaga</td>
+                                                    <td colspan="2" style="padding: 0 0 8px 0; font-size: 14px; font-weight: bold;">%s</td>
                                                 </tr>
                                                 <tr>
                                                     <td colspan="2" style="padding: 4px 0; font-size: 14px; font-weight: 500; color: #666;">Código de reserva:</td>
@@ -105,7 +105,7 @@ public class NewChangeRoomBookingTemplateEmail implements EmailHandler {
                     </div>
                     <p style="margin-top: 40px; font-size: 14px; color: #6a6a6a;">Este correo es solo de carácter informativo, no es un comprobante de pago, en caso de no poder usar la reservación, por favor llamar con 2 días de anticipación.</p>
                     <p style="margin-top: 8px; font-size: 14px; color: #6a6a6a;">Muchas gracias.</p>
-                """, clientName, clientName, roomNameOld, imgUrlNew, roomNameNew, bookingId, checkIn, checkOut, approximateArrival, totalNights, totalPeople, location);
+                """, clientName, clientName, roomNameOld, imgUrlNew, roomNameNew,clientName, bookingId, checkIn, checkOut, approximateArrival, totalNights, totalPeople, location);
     }
 
     @Override
