@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 @Builder
 @Table("paymentvoucher")
 public class PaymentVoucherEntity {
+
     @Id
     @Column("voucherid")
     private Integer voucherId;
@@ -21,21 +22,27 @@ public class PaymentVoucherEntity {
     @Column("paymentbookid")
     private Integer paymentBookId;
 
-    @Column("currency")
-    private Integer currency;
+    @Column("paymenttypeid")
+    private Integer paymentTypeId;
 
-    @Column("operation")
-    private Integer operation;
+    @Column("paymentsubtypeid")
+    private Integer paymentSubTypeId;
 
-    @Column("codeoperation")
-    private String codeOperation;
+    @Column("currencytypeid")
+    private Integer currencyTypeId;
+
+    @Column("operationcode")
+    private String operationCode;
 
     @Column("note")
     private String note;
 
-    @Column("totalcost")
-    private BigDecimal totalCost;
+    @Column("amount")
+    private BigDecimal amount;
 
-    @Column("filename")
-    private String fileName;
+    @Column("imagevoucher")
+    private String imageVoucher;
+
+    @Column("usdrewardsinclub")
+    private Boolean usdRewardsInclub;
 }

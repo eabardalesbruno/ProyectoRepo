@@ -746,15 +746,15 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
                         paymentTypeRepository.findById(paymentBook.getPaymentTypeId())
                                 .map(Optional::ofNullable)
-                                .defaultIfEmpty(Optional.empty()),
-
-                        paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId())
-                                .map(Optional::ofNullable)
-                                .defaultIfEmpty(Optional.empty()),
-
-                        currencyTypeRepository.findById(paymentBook.getCurrencyTypeId())
-                                .map(Optional::ofNullable)
                                 .defaultIfEmpty(Optional.empty())
+
+//                        paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId())
+//                                .map(Optional::ofNullable)
+//                                .defaultIfEmpty(Optional.empty()),
+
+//                        currencyTypeRepository.findById(paymentBook.getCurrencyTypeId())
+//                                .map(Optional::ofNullable)
+//                                .defaultIfEmpty(Optional.empty())
                 )
                 .map(tuple -> {
                     UserClientEntity userClient = tuple.getT1().orElse(null);
@@ -762,8 +762,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                     PaymentMethodEntity paymentMethod = tuple.getT3().orElse(null);
                     PaymentStateEntity paymentState = tuple.getT4().orElse(null);
                     PaymentTypeEntity paymentType = tuple.getT5().orElse(null);
-                    PaymentSubtypeEntity paymentSubtype = tuple.getT6().orElse(null);
-                    CurrencyTypeEntity currencyType = tuple.getT7().orElse(null);
+//                    PaymentSubtypeEntity paymentSubtype = tuple.getT6().orElse(null);
+//                    CurrencyTypeEntity currencyType = tuple.getT7().orElse(null);
 
                     PaymentBookDetailsDTO.PaymentBookDetailsDTOBuilder builder = PaymentBookDetailsDTO.builder()
                             .paymentBookId(paymentBook.getPaymentBookId())
@@ -812,8 +812,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                     Optional.ofNullable(paymentMethod).ifPresent(pm -> builder.paymentMethod(pm.getDescription()));
                     Optional.ofNullable(paymentState).ifPresent(ps -> builder.paymentState(ps.getPaymentStateName()));
                     Optional.ofNullable(paymentType).ifPresent(pt -> builder.paymentType(pt.getPaymentTypeDesc()));
-                    Optional.ofNullable(paymentSubtype).ifPresent(pst -> builder.paymentSubtype(pst.getPaymentSubtypeDesc()));
-                    Optional.ofNullable(currencyType).ifPresent(ct -> builder.currencyType(ct.getCurrencyTypeDescription()));
+//                    Optional.ofNullable(paymentSubtype).ifPresent(pst -> builder.paymentSubtype(pst.getPaymentSubtypeDesc()));
+//                    Optional.ofNullable(currencyType).ifPresent(ct -> builder.currencyType(ct.getCurrencyTypeDescription()));
                     return builder.build();
                 });
     }

@@ -99,5 +99,6 @@ public class PaymentBookEntity {
     private Boolean usdRewardsInclub;
 
     @Transient
+    @Builder.Default
     private List<PaymentVoucherEntity> vouchers = new ArrayList<>();;
 }
