@@ -108,7 +108,7 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                             <h4>Pago con descuento de socio</h4>
                         </div>
                         <div>
-                          	<div class="align-right">S/154.33</div>
+                          	<div class="align-right">S/154.33</div>\
                           	<h4>30% Dscto: Socio de Ribera</h4>
                         </div>
                         <div>
