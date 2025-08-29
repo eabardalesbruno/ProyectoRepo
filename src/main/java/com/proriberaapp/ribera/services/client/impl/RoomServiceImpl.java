@@ -6,6 +6,8 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Api.controllers.client.dto.CompanionsDto;
 import com.proriberaapp.ribera.Domain.dto.PaymentDetailDTO;
+import com.proriberaapp.ribera.Domain.dto.PaymentVoucherDTO;
+import com.proriberaapp.ribera.Domain.dto.PaymentWithVoucherDetailDTO;
 import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.Infraestructure.repository.*;
@@ -222,8 +224,35 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public Mono<PaymentDetailDTO> findPaymentDetailByBookingId(Integer bookingid) {
-        return paymentBookRepository.getPaymentDetail(bookingid);
+    public Mono<PaymentWithVoucherDetailDTO> findPaymentDetailByBookingId(Integer bookingid) {
+        return paymentBookRepository.getPaymentDetail(bookingid)
+                .collectList()
+                .flatMap(rows -> {
+                    if (rows.isEmpty()) return Mono.empty();
+
+                    PaymentDetailDTO first = rows.get(0);
+
+                    return Mono.just(new PaymentWithVoucherDetailDTO(
+                                first.getPaymentbookid(),
+                                first.getPaymentdate(),
+                                first.getOperationcode(),
+                                first.getImagevoucher(),
+                                first.getMethodpayment(),
+                                first.getPaymenttypedesc(),
+                                first.getTotal(),
+                                rows.stream()
+                                        .map(r -> new PaymentVoucherDTO(
+                                                r.getVoucherAmount(),
+                                                r.getVoucherOperationcode(),
+                                                r.getVoucherImagevoucher(),
+                                                r.getVoucherNote(),
+                                                r.getVoucherCurrencyname(),
+                                                r.getVoucherPaymentsubtypename()
+                                        ))
+                                        .toList()
+                        )
+                    );
+                });
     }
 
     @Override
