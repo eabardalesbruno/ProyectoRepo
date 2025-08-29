@@ -34,7 +34,7 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public Mono<Void>  sendEmail(String to, String subject, String body) {
+    public Mono<Void> sendEmail(String to, String subject, String body) {
         return Mono.fromRunnable(() -> {
             try {
                 MimeMessage message = mailSender.createMimeMessage();
