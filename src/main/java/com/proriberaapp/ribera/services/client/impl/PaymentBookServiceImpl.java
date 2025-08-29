@@ -30,6 +30,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -748,13 +749,16 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                 .map(Optional::ofNullable)
                                 .defaultIfEmpty(Optional.empty()),
 
-                        paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId())
-                                .map(Optional::ofNullable)
-                                .defaultIfEmpty(Optional.empty()),
+                        paymentVoucherRepository.findAllByPaymentBookId(paymentBook.getPaymentBookId())
+                                .collectList()
 
-                        currencyTypeRepository.findById(paymentBook.getCurrencyTypeId())
-                                .map(Optional::ofNullable)
-                                .defaultIfEmpty(Optional.empty())
+//                        paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId())
+//                                .map(Optional::ofNullable)
+//                                .defaultIfEmpty(Optional.empty()),
+
+//                        currencyTypeRepository.findById(paymentBook.getCurrencyTypeId())
+//                                .map(Optional::ofNullable)
+//                                .defaultIfEmpty(Optional.empty())
                 )
                 .map(tuple -> {
                     UserClientEntity userClient = tuple.getT1().orElse(null);
@@ -762,8 +766,9 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                     PaymentMethodEntity paymentMethod = tuple.getT3().orElse(null);
                     PaymentStateEntity paymentState = tuple.getT4().orElse(null);
                     PaymentTypeEntity paymentType = tuple.getT5().orElse(null);
-                    PaymentSubtypeEntity paymentSubtype = tuple.getT6().orElse(null);
-                    CurrencyTypeEntity currencyType = tuple.getT7().orElse(null);
+                    List<PaymentVoucherEntity> voucherList = tuple.getT6();
+//                    PaymentSubtypeEntity paymentSubtype = tuple.getT6().orElse(null);
+//                    CurrencyTypeEntity currencyType = tuple.getT7().orElse(null);
 
                     PaymentBookDetailsDTO.PaymentBookDetailsDTOBuilder builder = PaymentBookDetailsDTO.builder()
                             .paymentBookId(paymentBook.getPaymentBookId())
@@ -792,7 +797,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                             .dayBookingEnd(paymentBook.getDayBookingEnd())
                             .dayBookingInit(paymentBook.getDayBookingInit())
                             .totalCostWithOutDiscount(paymentBook.getTotalCostWithOutDiscount())
-                            .usdrewardsinclub(paymentBook.getUsdRewardsInClub());
+                            .usdrewardsinclub(paymentBook.getUsdRewardsInClub())
+                            .vouchers(voucherList);
 
                     Optional.ofNullable(userClient).ifPresent(uc -> {
                         builder.userClientName(uc.getFirstName());
@@ -812,8 +818,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                     Optional.ofNullable(paymentMethod).ifPresent(pm -> builder.paymentMethod(pm.getDescription()));
                     Optional.ofNullable(paymentState).ifPresent(ps -> builder.paymentState(ps.getPaymentStateName()));
                     Optional.ofNullable(paymentType).ifPresent(pt -> builder.paymentType(pt.getPaymentTypeDesc()));
-                    Optional.ofNullable(paymentSubtype).ifPresent(pst -> builder.paymentSubtype(pst.getPaymentSubtypeDesc()));
-                    Optional.ofNullable(currencyType).ifPresent(ct -> builder.currencyType(ct.getCurrencyTypeDescription()));
+//                    Optional.ofNullable(paymentSubtype).ifPresent(pst -> builder.paymentSubtype(pst.getPaymentSubtypeDesc()));
+//                    Optional.ofNullable(currencyType).ifPresent(ct -> builder.currencyType(ct.getCurrencyTypeDescription()));
                     return builder.build();
                 });
     }
