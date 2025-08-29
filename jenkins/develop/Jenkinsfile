@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        PARENT_DIR_CICD_PATH='/home/eperez/intech/servicios'
+        PARENT_DIR_CICD_PATH='/home/elperez/deploy/apps'
         NAMESPACE = 'intech-world'
         IMG_REGISTRY_DOMAIN = 'registry.inclub.world'
         APP_IMAGE = 'pro-ribera-app'
@@ -14,8 +14,8 @@ pipeline {
         K8S_SECRET_REGISTRY = 'intech-registry-secret'
         DOMAIN = 'api-dev.cieneguillariberadelrio.com'
         REPO_URL = 'git@github.com:Inclub-Ribera/pro-ribera-app.git'
-        SSH_USER = 'eperez'
-        SSH_IP = '185.185.82.98'
+        SSH_USER = 'elperez'
+        SSH_IP = '212.56.44.91'
         BRANCH = 'develop'
     }
 
@@ -23,7 +23,7 @@ pipeline {
         stage('Define calculated variables') {
             steps{
                 script {
-                    env.REPO_BRANCH = scm.branches[0].name.replaceFirst("\\*/", "")
+                    env.REPO_BRANCH = scm.branches[0].name
                     env.PARENT_DIR_CICD_ENV_PATH = "${env.PARENT_DIR_CICD_PATH}/${env.BRANCH}"
                     env.REPO_DIR_PATH = "${env.PARENT_DIR_CICD_ENV_PATH}/repos/${env.APP_IMAGE}"
                     env.SECRETS_FILE_PATH = "${env.PARENT_DIR_CICD_ENV_PATH}/secrets/${env.APP_IMAGE}.env"
@@ -120,7 +120,7 @@ pipeline {
 
 def executeRemote(command) {
     def trimmedCmd = command.trim()
-    sshagent(['ssh-agent']) {
+    sshagent(['ssh-backoffice']) {
         def output = sh(
             script: """
                 ssh -o StrictHostKeyChecking=no ${env.SSH_USER}@${env.SSH_IP} 'bash -c "set -e; ${trimmedCmd}; echo _OK_" 2>&1'
