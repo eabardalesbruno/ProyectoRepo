@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDashboardDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Domain.dto.PaymentDetailDTO;
+import com.proriberaapp.ribera.Domain.dto.PaymentWithVoucherDetailDTO;
 import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.services.BaseService;
@@ -35,7 +36,7 @@ public interface RoomService extends BaseService<RoomEntity, RoomEntity> {
 
     Mono<ReservationReportDto> findDetailById(Integer bookingid);
 
-    Mono<PaymentDetailDTO> findPaymentDetailByBookingId(Integer bookingid);
+    Mono<PaymentWithVoucherDetailDTO> findPaymentDetailByBookingId(Integer bookingid);
 
     Flux<RoomDetailDto> findAllViewRoomsDetailActivities(String daybookinginit, String daybookingend, String roomnumber, Integer bookingstateid, Integer size, Integer page);
 

@@ -6,6 +6,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDashboardDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Domain.dto.PaymentDetailDTO;
+import com.proriberaapp.ribera.Domain.dto.PaymentWithVoucherDetailDTO;
 import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.services.client.RoomService;
@@ -53,7 +54,7 @@ public class ManagerRoomController extends BaseManagerController<RoomEntity, Roo
     }
 
     @GetMapping("/find/paymentDetailByBookingId")
-    public Mono<PaymentDetailDTO> findPaymentDetailByBookingId(@RequestParam Integer bookingid) {
+    public Mono<PaymentWithVoucherDetailDTO> findPaymentDetailByBookingId(@RequestParam Integer bookingid) {
         return roomService.findPaymentDetailByBookingId(bookingid);
     }
 
