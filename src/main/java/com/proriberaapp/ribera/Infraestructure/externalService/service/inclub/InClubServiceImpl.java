@@ -30,16 +30,19 @@ public class InClubServiceImpl implements IInClubService {
     private final ExternalApiClient adminClient;
     private final ExternalApiClient gatewayClient;
     private final ExternalApiClient accountClient;
+    private final ExternalApiClient walletClient;
 
     @Autowired
     public InClubServiceImpl(
             @Qualifier("adminPanelClientV2") ExternalApiClient adminClient,
             @Qualifier("inClubGatewayClientV2") ExternalApiClient gatewayClient,
-            @Qualifier("inClubAccountClientV2") ExternalApiClient accountClient
+            @Qualifier("inClubAccountClientV2") ExternalApiClient accountClient,
+            @Qualifier("riberaWalletClientV2") ExternalApiClient walletClient
     ) {
         this.adminClient = adminClient;
         this.gatewayClient = gatewayClient;
         this.accountClient = accountClient;
+        this.walletClient = walletClient;
     }
 
     public Mono<Boolean> verifiedCredentialsInClub(String username, String password){
@@ -48,15 +51,16 @@ public class InClubServiceImpl implements IInClubService {
         return accountClient.postDataContent("account/within/user",user ,new ParameterizedTypeReference<DataResponse<Boolean>>() {});
     }
 
-    private Mono<String> authenticateBackOffice(String username, String password){
-        return gatewayClient.postDataContent("/auth/login", Map.of("username", username, "password", password), new ParameterizedTypeReference<DataResponse<AuthDataResponse>>() {})
+    public Mono<String> authenticateBackOffice(String username, String password){
+        return gatewayClient.postDataContent("/auth/login", Map.of("username", username, "password", password),
+                        new ParameterizedTypeReference<DataResponse<AuthDataResponse>>() {})
                 .map(AuthDataResponse::getAccess_token)
                 .flatMap(Mono::just);
     }
 
-    private Mono<UserInClubResponse> getUserInClubByUsername(String username){
+    public Mono<UserInClubResponse> getUserInClubByUsername(String username){
 
-        return
+        return accountClient.getDataContent("account/within/user/"+ username,new ParameterizedTypeReference<DataResponse<UserInClubResponse>>() {});
     }
     // Ejemplo de uso
 //    public Mono<UserDto> findUser(String userId) {

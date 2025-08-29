@@ -25,7 +25,7 @@ public class WebClientConfig {
     private String inClubAccountBaseUrl;
 
     @Value("${ribera.wallet.base-url}")
-    private String walletBaseUrl;
+    private String riberaWalletBaseUrl;
 
     @Bean
     public ReactorClientHttpConnector insecureConnector() {
@@ -57,10 +57,11 @@ public class WebClientConfig {
     public WebClient inClubAccountWebClientV2(WebClient.Builder b, ReactorClientHttpConnector c) {
         return build(b, inClubAccountBaseUrl, c);
     }
-    // @Bean(name = "walletWebClient")
-    // public WebClient walletWebClient(WebClient.Builder b, ReactorClientHttpConnector c) {
-    //     return build(b, walletBaseUrl, c);
-    // }
+     @Bean(name = "riberaWalletWebClientV2")
+     @Lazy
+     public WebClient walletWebClientV2(WebClient.Builder b, ReactorClientHttpConnector c) {
+         return build(b, riberaWalletBaseUrl, c);
+     }
 
     // ---- ExternalApiClients
     @Bean(name = "adminPanelClientV2")
@@ -77,10 +78,10 @@ public class WebClientConfig {
     public ExternalApiClient inClubAccountClient(@Qualifier("inClubAccountWebClientV2") WebClient wc) {
         return new ExternalApiClient(wc);
     }
-    // @Bean(name = "walletClient")
-    // public ExternalApiClient walletClient(@Qualifier("walletWebClient") WebClient wc) {
-    //     return new ExternalApiClient(wc);
-    // }
+     @Bean(name = "riberaWalletClientV2")
+     public ExternalApiClient walletClient(@Qualifier("riberaWalletWebClientV2") WebClient wc) {
+         return new ExternalApiClient(wc);
+     }
 
 
 
