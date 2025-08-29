@@ -30,6 +30,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -746,7 +747,10 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
                         paymentTypeRepository.findById(paymentBook.getPaymentTypeId())
                                 .map(Optional::ofNullable)
-                                .defaultIfEmpty(Optional.empty())
+                                .defaultIfEmpty(Optional.empty()),
+
+                        paymentVoucherRepository.findAllByPaymentBookId(paymentBook.getPaymentBookId())
+                                .collectList()
 
 //                        paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId())
 //                                .map(Optional::ofNullable)
@@ -762,6 +766,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                     PaymentMethodEntity paymentMethod = tuple.getT3().orElse(null);
                     PaymentStateEntity paymentState = tuple.getT4().orElse(null);
                     PaymentTypeEntity paymentType = tuple.getT5().orElse(null);
+                    List<PaymentVoucherEntity> voucherList = tuple.getT6();
 //                    PaymentSubtypeEntity paymentSubtype = tuple.getT6().orElse(null);
 //                    CurrencyTypeEntity currencyType = tuple.getT7().orElse(null);
 
@@ -792,7 +797,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                             .dayBookingEnd(paymentBook.getDayBookingEnd())
                             .dayBookingInit(paymentBook.getDayBookingInit())
                             .totalCostWithOutDiscount(paymentBook.getTotalCostWithOutDiscount())
-                            .usdrewardsinclub(paymentBook.getUsdRewardsInClub());
+                            .usdrewardsinclub(paymentBook.getUsdRewardsInClub())
+                            .vouchers(voucherList);
 
                     Optional.ofNullable(userClient).ifPresent(uc -> {
                         builder.userClientName(uc.getFirstName());
