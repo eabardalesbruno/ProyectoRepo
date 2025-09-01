@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.admin.dto;
 
+import com.proriberaapp.ribera.Domain.dto.PaymentVoucherDTO;
 import com.proriberaapp.ribera.Domain.entities.PaymentVoucherEntity;
 import lombok.Builder;
 import lombok.Data;
@@ -112,7 +113,7 @@ public class PaymentBookDetailsDTO {
     @Column("usdrewardsinclub")
     private Boolean  usdrewardsinclub;
 
-    private List<PaymentVoucherEntity> vouchers;
+    private List<PaymentVoucherDTO> vouchers;
 
     @Override
     public String toString() {

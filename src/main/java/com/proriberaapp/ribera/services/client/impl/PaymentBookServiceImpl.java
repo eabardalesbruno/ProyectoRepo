@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Domain.dto.NotificationDto;
 import com.proriberaapp.ribera.Domain.dto.PaymentBookWithChannelDto;
+import com.proriberaapp.ribera.Domain.dto.PaymentVoucherDTO;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
@@ -766,7 +767,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                     PaymentMethodEntity paymentMethod = tuple.getT3().orElse(null);
                     PaymentStateEntity paymentState = tuple.getT4().orElse(null);
                     PaymentTypeEntity paymentType = tuple.getT5().orElse(null);
-                    List<PaymentVoucherEntity> voucherList = tuple.getT6();
+                    List<PaymentVoucherDTO> voucherList = tuple.getT6();
 //                    PaymentSubtypeEntity paymentSubtype = tuple.getT6().orElse(null);
 //                    CurrencyTypeEntity currencyType = tuple.getT7().orElse(null);
 
