@@ -1,10 +1,15 @@
 package com.proriberaapp.ribera.utils.emails;
 
+import java.math.BigDecimal;
+
 public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHandler {
     private EmailHandler nextHandler;
     private String clientName;
     private BookingEmailDto bookingEmailDto;
     private boolean isAlimentation;
+    private String bookingId;
+    private BigDecimal totalCost;
+    private double totalDiscount;
 
     public ConfirmPaymentByBankTransferAndCardTemplateEmail(String clientName, BookingEmailDto bookingEmailDto) {
         this.clientName = clientName;
@@ -13,10 +18,20 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
     }
 
     public ConfirmPaymentByBankTransferAndCardTemplateEmail(String clientName, BookingEmailDto bookingEmailDto,
-            boolean isAlimentation) {
+                                                            boolean isAlimentation, String bookingId, BigDecimal totalCost, double totalDiscount) {
         this.clientName = clientName;
         this.bookingEmailDto = bookingEmailDto;
         this.isAlimentation = isAlimentation;
+        this.bookingId = bookingId;
+        this.totalCost = totalCost;
+        this.totalDiscount = totalDiscount;
+    }
+
+    public ConfirmPaymentByBankTransferAndCardTemplateEmail(BookingEmailDto bookingEmailDto, String bookingId, BigDecimal totalCost, double totalDiscount) {
+        this.bookingEmailDto = bookingEmailDto;
+        this.bookingId = bookingId;
+        this.totalCost = totalCost;
+        this.totalDiscount = totalDiscount;
     }
 
     @Override
@@ -59,14 +74,14 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                                       <tr>
                                         <td style="vertical-align: top; padding-right: 15px;"> <p>
                                             Check-in:<br />
-                                            <b>%dayInit %monthInit</b>
+                                            <b>%dateCheckIn</b>
                                           </p>
                                         </td>
                                         <td style="vertical-align: top;">
                                           <hr style="border: 1px solid #bcbcbc; height: 3rem; width: 1px; margin: 0; display: block;" /> </td>
                                         <td style="vertical-align: top; padding-left: 15px;"> <p>
                                             Check-out:<br />
-                                            <b>%dayEnd %monthEnd</b>
+                                            <b>%dateCheckOut</b>
                                           </p>
                                         </td>
                                       </tr>
@@ -80,8 +95,8 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                                     Hora de llegada aproximada: <b>10:00 A.M</b><br />
                                     <span>(*) Recuerda que el check-in es las 3:00 P.M.</span>
                                   </p>
-                                  <p>Duración total de estancia: <b>%dayInterval noches</b></p>
-                                  <p>Cantidad de personas: <b>%totalPeoples</b></p>
+                                  <p>Duración total de estancia: <b>%days</b></p>
+                                  <p>Cantidad de personas: <b>%cantidadPersonas</b></p>
                                 </td>
                               </tr>
                             </tbody>
@@ -103,20 +118,9 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                       	<div>
                             <h3>Resumen de pago</h3> 
                         </div>
-                        <div>
-                            <div class="align-right">BCP</div>
-                            <h4>Pago con descuento de socio</h4>
-                        </div>
-                        <div>
-                          	<div class="align-right">S/154.33</div>
-                          	<h4>30% Dscto: Socio de Ribera</h4>
-                        </div>
-                        <div>
-                          	<div class="align-right">-S/44.15</div>
-                          	<h4>20% Alimentación</h4>
-                        </div>
+                        
                         <div class="total-container">
-                          	<div class="align-right"><h3>S/110.18</h3></div>
+                          	<div class="align-right"><h3>S/%totalCost</h3></div>
                       		<h3>Total a pagar pago</h3>
                         </div>
                         <div class="container-reservation-warning">
@@ -142,17 +146,35 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
                       </div>
                 </section>
                 """;
-        return body.replaceAll("%clientName", clientName)
+
+        System.out.println("Nombre de la habitación: " + bookingEmailDto.getRoomName());
+        System.out.println("Imagen: " + bookingEmailDto.getImgSrc());
+        System.out.println("Nombre del cliente: " + bookingEmailDto.getClientName());
+        System.out.println("Código: " + bookingEmailDto.getCode());
+        System.out.println("Fecha de check-in: " + bookingEmailDto.getDateCheckIn());
+        System.out.println("Fecha de check-out: " + bookingEmailDto.getDateCheckOut());
+        System.out.println("Hora de check-in: " + bookingEmailDto.getHourCheckIn());
+        System.out.println("Días: " + bookingEmailDto.getDays());
+        System.out.println("Ubicación: " + bookingEmailDto.getLocation());
+        System.out.println("Cantidad de personas: " + bookingEmailDto.getCantidadPersonas());
+
+        BigDecimal discountBD = BigDecimal.valueOf(totalDiscount);
+
+
+        return body.replaceAll("%clientName", bookingEmailDto.getClientName())
                 .replace("%roomName", bookingEmailDto.getRoomName())
                 .replace("%imgSrc", bookingEmailDto.getImgSrc())
                 .replace("%titular", bookingEmailDto.getClientName())
                 .replace("%code", bookingEmailDto.getCode())
                 .replace("%dateCheckIn", bookingEmailDto.getDateCheckIn())
                 .replace("%dateCheckOut", bookingEmailDto.getDateCheckOut())
-                .replace("%hourCheckIn", bookingEmailDto.getHourCheckIn())
+                .replace("%bookingId", bookingId)
                 .replace("%days", String.valueOf(bookingEmailDto.getDays()))
                 .replace("%location", bookingEmailDto.getLocation())
                 .replace("%cantidadPersonas", bookingEmailDto.getCantidadPersonas())
+                .replace("%totalCost", totalCost.toString())
+                .replace("%totalDiscount", String.valueOf(totalDiscount))
+                .replace("%amount", totalCost.subtract(discountBD).toString())
                 .replace("%alimentation",
                         isAlimentation
                                 ? "<tr><td><p class=\"no-margin    \"><strong>Con alimentación</strong></p></td></tr>"
