@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.admin.dto.PaymentBookDetailsDTO;
 import com.proriberaapp.ribera.Api.controllers.client.dto.PaginatedResponse;
 import com.proriberaapp.ribera.Domain.dto.NotificationDto;
 import com.proriberaapp.ribera.Domain.dto.PaymentBookWithChannelDto;
+import com.proriberaapp.ribera.Domain.dto.PaymentVoucherDTO;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
@@ -29,6 +30,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -291,6 +294,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     private final ProductSunatRepository productSunatRepository;
     private final BookingRepository bookingRepository;
     private final NotificationBookingService notificationBookingService;
+    private final PaymentVoucherRepository paymentVoucherRepository;
 
     @Autowired
     public PaymentBookServiceImpl(PaymentBookRepository paymentBookRepository,
@@ -304,7 +308,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                   CommissionService commissionService,
                                   InvoiceServiceI invoiceService, FullDayRepository fullDayRepository, ProductSunatRepository productSunatRepository,
                                   BookingRepository bookingRepository,
-                                  NotificationBookingService notificationBookingService) {
+                                  NotificationBookingService notificationBookingService,
+                                  PaymentVoucherRepository paymentVoucherRepository) {
         this.invoiceService = invoiceService;
         this.paymentBookRepository = paymentBookRepository;
         this.userClientRepository = userClientRepository;
@@ -325,6 +330,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
         this.bookingRepository= bookingRepository;
 
         this.notificationBookingService = notificationBookingService;
+        this.paymentVoucherRepository = paymentVoucherRepository;
     }
 
     @Override
@@ -353,17 +359,29 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
     @Override
     public Mono<PaymentBookEntity> createPaymentBookPay(PaymentBookEntity paymentBook) {
+
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
         Timestamp timestamp = Timestamp.valueOf(localDateTime);
         paymentBook.setPaymentDate(timestamp);
 
         return paymentBookRepository.save(paymentBook)
-                .flatMap(savedPaymentBook -> updateBookingStateIfRequired(savedPaymentBook.getBookingId())
-                        .then(bookingRepository.updateCostFinalByBookingId(paymentBook.getBookingId(), paymentBook.getTotalCost()))
-                        .then(userClientRepository.findById(savedPaymentBook.getUserClientId())
-                                .flatMap(userClient -> sendPaymentConfirmationEmail(savedPaymentBook,
-                                        userClient.getEmail(), userClient.getFirstName())))
-                        .thenReturn(savedPaymentBook));
+                .flatMap(savedPaymentBook -> {
+                    return Flux.fromIterable(
+                                    paymentBook.getVouchers() != null
+                                            ? paymentBook.getVouchers()
+                                            : Collections.emptyList()
+                            )
+                            .doOnNext(v -> v.setPaymentBookId(savedPaymentBook.getPaymentBookId()))
+                            .collectList()
+                            .flatMapMany(paymentVoucherRepository::saveAll)
+                            .then(updateBookingStateIfRequired(savedPaymentBook.getBookingId()))
+                            .then(bookingRepository.updateCostFinalByBookingId(
+                                    paymentBook.getBookingId(), paymentBook.getTotalCost()))
+                            .then(userClientRepository.findById(savedPaymentBook.getUserClientId())
+                                    .flatMap(userClient -> sendPaymentConfirmationEmail(
+                                            savedPaymentBook, userClient.getEmail(), userClient.getFirstName())))
+                            .thenReturn(savedPaymentBook);
+                });
     }
 
     @Override
@@ -732,13 +750,16 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                                 .map(Optional::ofNullable)
                                 .defaultIfEmpty(Optional.empty()),
 
-                        paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId())
-                                .map(Optional::ofNullable)
-                                .defaultIfEmpty(Optional.empty()),
+                        paymentVoucherRepository.findAllByPaymentBookId(paymentBook.getPaymentBookId())
+                                .collectList()
 
-                        currencyTypeRepository.findById(paymentBook.getCurrencyTypeId())
-                                .map(Optional::ofNullable)
-                                .defaultIfEmpty(Optional.empty())
+//                        paymentSubtypeRepository.findById(paymentBook.getPaymentSubTypeId())
+//                                .map(Optional::ofNullable)
+//                                .defaultIfEmpty(Optional.empty()),
+
+//                        currencyTypeRepository.findById(paymentBook.getCurrencyTypeId())
+//                                .map(Optional::ofNullable)
+//                                .defaultIfEmpty(Optional.empty())
                 )
                 .map(tuple -> {
                     UserClientEntity userClient = tuple.getT1().orElse(null);
@@ -746,8 +767,9 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                     PaymentMethodEntity paymentMethod = tuple.getT3().orElse(null);
                     PaymentStateEntity paymentState = tuple.getT4().orElse(null);
                     PaymentTypeEntity paymentType = tuple.getT5().orElse(null);
-                    PaymentSubtypeEntity paymentSubtype = tuple.getT6().orElse(null);
-                    CurrencyTypeEntity currencyType = tuple.getT7().orElse(null);
+                    List<PaymentVoucherDTO> voucherList = tuple.getT6();
+//                    PaymentSubtypeEntity paymentSubtype = tuple.getT6().orElse(null);
+//                    CurrencyTypeEntity currencyType = tuple.getT7().orElse(null);
 
                     PaymentBookDetailsDTO.PaymentBookDetailsDTOBuilder builder = PaymentBookDetailsDTO.builder()
                             .paymentBookId(paymentBook.getPaymentBookId())
@@ -776,7 +798,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                             .dayBookingEnd(paymentBook.getDayBookingEnd())
                             .dayBookingInit(paymentBook.getDayBookingInit())
                             .totalCostWithOutDiscount(paymentBook.getTotalCostWithOutDiscount())
-                            .usdrewardsinclub(paymentBook.getUsdRewardsInClub());
+                            .usdrewardsinclub(paymentBook.getUsdRewardsInClub())
+                            .vouchers(voucherList);
 
                     Optional.ofNullable(userClient).ifPresent(uc -> {
                         builder.userClientName(uc.getFirstName());
@@ -796,8 +819,8 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                     Optional.ofNullable(paymentMethod).ifPresent(pm -> builder.paymentMethod(pm.getDescription()));
                     Optional.ofNullable(paymentState).ifPresent(ps -> builder.paymentState(ps.getPaymentStateName()));
                     Optional.ofNullable(paymentType).ifPresent(pt -> builder.paymentType(pt.getPaymentTypeDesc()));
-                    Optional.ofNullable(paymentSubtype).ifPresent(pst -> builder.paymentSubtype(pst.getPaymentSubtypeDesc()));
-                    Optional.ofNullable(currencyType).ifPresent(ct -> builder.currencyType(ct.getCurrencyTypeDescription()));
+//                    Optional.ofNullable(paymentSubtype).ifPresent(pst -> builder.paymentSubtype(pst.getPaymentSubtypeDesc()));
+//                    Optional.ofNullable(currencyType).ifPresent(ct -> builder.currencyType(ct.getCurrencyTypeDescription()));
                     return builder.build();
                 });
     }

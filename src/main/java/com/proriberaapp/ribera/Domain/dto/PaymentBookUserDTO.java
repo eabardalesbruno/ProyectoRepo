@@ -29,7 +29,7 @@ public class PaymentBookUserDTO {
     private Integer roomnumber;
     private Integer paymentstateid;
     private String currencytypename;
-    private int currencytypeid;
+    private Integer currencytypeid;
     private double percentagediscount;
     private double totalcostwithoutdiscount;
     private String invoicedocumentnumber;
