@@ -10,6 +10,10 @@ public interface BeneficiaryService {
 
     Mono<BeneficiaryDto> updateBeneficiary(Integer id, BeneficiaryDto dto);
 
+    Mono<BeneficiaryDto> registrarVisita(Integer id);
+
+    Mono<BeneficiaryDto> registrarCheckin(Integer id);
+
     Mono<Void> deleteBeneficiary(Integer id);
 
     Mono<BeneficiaryDto> getBeneficiaryById(Integer id);

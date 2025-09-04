@@ -100,6 +100,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
         entity.setMembresia(dto.getMembresia());
         entity.setUsuario(dto.getUsuario());
         entity.setEstado(dto.getEstado());
+        entity.setUltimoCheckin(dto.getUltimoCheckin());
         return entity;
     }
 
@@ -116,6 +117,27 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                 .membresia(entity.getMembresia())
                 .usuario(entity.getUsuario())
                 .estado(entity.getEstado())
+                .ultimoCheckin(entity.getUltimoCheckin())
                 .build();
+    }
+
+    @Override
+    public Mono<BeneficiaryDto> registrarVisita(Integer id) {
+        return beneficiaryRepository.findById(id)
+                .flatMap(entity -> {
+                    entity.setVisitas(entity.getVisitas() == null ? 1 : entity.getVisitas() + 1);
+                    return beneficiaryRepository.save(entity);
+                })
+                .map(this::toDto);
+    }
+
+    @Override
+    public Mono<BeneficiaryDto> registrarCheckin(Integer id) {
+        return beneficiaryRepository.findById(id)
+                .flatMap(entity -> {
+                    entity.setUltimoCheckin(java.time.LocalDateTime.now());
+                    return beneficiaryRepository.save(entity);
+                })
+                .map(this::toDto);
     }
 }

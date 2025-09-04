@@ -31,4 +31,6 @@ public class BeneficiaryEntity {
     private String usuario;
     @Column("estado")
     private Integer estado;
+    @Column("ultimo_checkin")
+    private java.time.LocalDateTime ultimoCheckin;
 }

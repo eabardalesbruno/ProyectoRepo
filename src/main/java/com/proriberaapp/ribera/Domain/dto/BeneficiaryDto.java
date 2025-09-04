@@ -18,4 +18,5 @@ public class BeneficiaryDto {
     private String membresia;
     private String usuario;
     private Integer estado;
+    private java.time.LocalDateTime ultimoCheckin;
 }

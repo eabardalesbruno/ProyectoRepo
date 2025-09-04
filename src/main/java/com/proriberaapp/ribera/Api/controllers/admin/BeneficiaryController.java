@@ -39,6 +39,16 @@ public class BeneficiaryController {
         return beneficiaryService.updateBeneficiary(id, dto);
     }
 
+    @PostMapping("/{id}/visita")
+    public Mono<BeneficiaryDto> registrarVisita(@PathVariable Integer id) {
+        return beneficiaryService.registrarVisita(id);
+    }
+
+    @PostMapping("/{id}/checkin")
+    public Mono<BeneficiaryDto> registrarCheckin(@PathVariable Integer id) {
+        return beneficiaryService.registrarCheckin(id);
+    }
+
     @DeleteMapping("/{id}")
     public Mono<Void> deleteBeneficiary(@PathVariable Integer id) {
         return beneficiaryService.deleteBeneficiary(id);
