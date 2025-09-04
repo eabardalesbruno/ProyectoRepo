@@ -30,6 +30,11 @@ public class ValidateUserTypeResponse {
     private Boolean isUserInclub;
     
     /**
+     * Username del usuario
+     */
+    private String username;
+    
+    /**
      * Mensaje de respuesta
      */
     private String message;

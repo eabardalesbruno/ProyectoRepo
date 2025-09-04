@@ -1,6 +1,7 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.booking.response.UserDetailDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
 import org.springframework.data.r2dbc.repository.Query;
@@ -18,7 +19,6 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
     Mono<UserClientEntity> findByGoogleId(String googleId);
 
     @Query(value = "SELECT * FROM userclient u WHERE u.documentnumber = :documentNumber")
-
     Mono<UserClientEntity> findByDocumentNumber(@Param("documentNumber") String documentNumber);
 
     UserDataDTO save(UserDataDTO userDataDTO);
@@ -181,7 +181,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
                     UPPER(uc.email) LIKE UPPER(CONCAT('%', :filter, '%'))
                 ))
             """)
-    Mono<Long> countUserAllWithParams(Integer statusId, Integer userLevelId, String fechaInicio,String fechaFin,
+    Mono<Long> countUserAllWithParams(Integer statusId, Integer userLevelId, String fechaInicio, String fechaFin,
                                       String filter);
 
     @Query(value = """
@@ -229,11 +229,11 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
             LIMIT 10
             """)
     Flux<UserClientDto> getAllClientsWithParams(Integer indice, Integer statusId, Integer userLevelId,
-                                                String fechaInicio,String fechaFin, String filter);
+                                                String fechaInicio, String fechaFin, String filter);
 
     @Query("SELECT * FROM userclient WHERE userclientid <>:userClientId and (email = :email OR documentnumber = :documentNumber)  limit 1")
     Mono<UserClientEntity> findByEmailOrDocumentNumberAndIgnoreId(String email, String documentNumber,
-            Integer userClientId);
+                                                                  Integer userClientId);
     /*
     @Query("""
                         update userclient set  genderid = :#{#userClientDto.genderId},
@@ -255,7 +255,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
                 AND uc.email = :email
             LIMIT 1;
             """)
-    Mono<String> findByEmailAndUserClientIdIsNot(Integer userClientId,String email);
+    Mono<String> findByEmailAndUserClientIdIsNot(Integer userClientId, String email);
 
 
     @Query(value = """
@@ -268,7 +268,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
                 AND uc.documentnumber = :documentNumber
             LIMIT 1;
             """)
-    Mono<String> findByDocumentNumberAndUserClientIdIsNot(Integer userClientId,String documentNumber);
+    Mono<String> findByDocumentNumberAndUserClientIdIsNot(Integer userClientId, String documentNumber);
 
     @Query("""
             UPDATE userclient
@@ -288,23 +288,39 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
     @Query("""
             update userclient set password = :passwordEnconded
             where userclientid = :userClientId;
-                """)
+            """)
     Mono<Void> updatePassword(Integer userClientId, String passwordEnconded);
 
     @Query("SELECT * FROM userclient WHERE isuserinclub = false")
     Flux<UserClientEntity> findAllUsersNotInClub();
 
     @Query("""
-     SELECT * FROM userclient 
-      WHERE username = :input 
-        OR documentnumber = :input 
-        OR firstname ILIKE CONCAT('%', :input, '%') 
-        OR lastname ILIKE CONCAT('%', :input, '%') 
-        OR CONCAT(firstname, ' ', lastname) ILIKE CONCAT('%', :input, '%')
-     """)
+            SELECT * FROM userclient 
+             WHERE username = :input 
+               OR documentnumber = :input 
+               OR firstname ILIKE CONCAT('%', :input, '%') 
+               OR lastname ILIKE CONCAT('%', :input, '%') 
+               OR CONCAT(firstname, ' ', lastname) ILIKE CONCAT('%', :input, '%')
+            """)
     Mono<UserClientEntity> findByIdentifier(String input);
 
     // Método para buscar usuarios sin wallet (para retry en background)
     @Query("SELECT * FROM userclient WHERE walletid IS NULL")
     Flux<UserClientEntity> findByWalletIdIsNull();
+
+    @Query(value = """
+            SELECT
+                CONCAT(u.firstname, ' ', u.lastname) AS fullname,
+                u.email,
+                CONCAT(c.symbol, c.phonecode, ' ', u.cellnumber) AS fullcellnumber,
+                u.documenttypeid,
+                u.documentnumber
+            FROM
+                userclient u
+            INNER JOIN
+                country c ON c.countryid = u.countryid
+            WHERE
+                u.userclientid = :userClientId
+            """)
+    Mono<UserDetailDto> findUserDetailByUserClientId(Integer userClientId);
 }

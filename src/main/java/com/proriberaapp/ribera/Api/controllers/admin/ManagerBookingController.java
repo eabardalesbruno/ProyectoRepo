@@ -2,7 +2,9 @@ package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.CalendarDate;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.S3UploadResponse;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.booking.response.BookingDetailResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ViewBookingReturn;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.AvailabilityResponse;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.services.admin.BookingManagerService;
 import com.proriberaapp.ribera.services.client.BookingService;
@@ -46,5 +48,19 @@ public class ManagerBookingController extends BaseManagerController<BookingEntit
     @GetMapping("/{id}")
     public Mono<ViewBookingReturn> getBooking(@PathVariable("id") Integer bookingId) {
         return bookingManagerService.getBooking(bookingId);
+    }
+
+    @GetMapping("/room-offer/validate-availability")
+    public Mono<AvailabilityResponse>checkRoomOfferAvailability(
+            @RequestParam("roomOfferId") Integer roomOfferId,
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate
+    ){
+        return bookingService.checkRoomOfferAvailability(roomOfferId, startDate, endDate);
+    }
+
+    @GetMapping("/detail/{bookingId}")
+    public Mono<BookingDetailResponse>getBookingDetailById(@PathVariable Integer bookingId){
+        return bookingManagerService.getBookingDetailByBookingId(bookingId);
     }
 }

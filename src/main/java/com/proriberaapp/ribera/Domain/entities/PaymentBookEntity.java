@@ -1,18 +1,21 @@
 package com.proriberaapp.ribera.Domain.entities;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table("paymentbook")
 public class PaymentBookEntity {
     @Id
@@ -94,4 +97,8 @@ public class PaymentBookEntity {
 
     @Column("usdrewardsinclub")
     private Boolean usdRewardsInclub;
+
+    @Transient
+    @Builder.Default
+    private List<PaymentVoucherEntity> vouchers = new ArrayList<>();;
 }

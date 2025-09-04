@@ -141,6 +141,7 @@ public class AuthValidationController {
                             .id(request.getIdUser())
                             .userType(userType)
                             .isUserInclub(isUserInclub)
+                            .username(user.getUsername())
                             .message("Usuario validado exitosamente")
                             .build();
                     
@@ -152,6 +153,7 @@ public class AuthValidationController {
                                 .id(request.getIdUser())
                                 .userType("NOT_FOUND")
                                 .isUserInclub(false)
+                                .username(null)
                                 .message("Usuario no encontrado")
                                 .build()))
                 .onErrorResume(error -> {
@@ -161,6 +163,7 @@ public class AuthValidationController {
                                     .id(request.getIdUser())
                                     .userType("ERROR")
                                     .isUserInclub(false)
+                                    .username(null)
                                     .message("Error interno del servidor: " + error.getMessage())
                                     .build()));
                 });

@@ -5,6 +5,7 @@ import com.proriberaapp.ribera.Api.controllers.payme.dto.*;
 import com.proriberaapp.ribera.Api.controllers.payme.entity.PayMeAuthorization;
 import com.proriberaapp.ribera.Api.controllers.payme.entity.TokenizeEntity;
 import com.proriberaapp.ribera.Domain.dto.BookingAndRoomNameDto;
+import com.proriberaapp.ribera.Domain.dto.NotificationDto;
 import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import com.proriberaapp.ribera.Domain.entities.PaymentBookEntity;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
@@ -20,6 +21,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.Invoice.ProductSunatRe
 import com.proriberaapp.ribera.Infraestructure.repository.PaymentBookRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserClientRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.UserPromoterRepository;
+import com.proriberaapp.ribera.services.admin.NotificationBookingService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.RefusePaymentService;
 import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
@@ -42,6 +44,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -409,6 +412,7 @@ public class PayMeService {
         private final InvoiceServiceI invoiceService;
         private final RefusePaymentService refusePaymentService;
         private final ProductSunatRepository productSunatRepository;
+        private final NotificationBookingService notificationBookingService;
 
         @Value("${pay_me.client_id}")
         private String CLIENT_ID;
@@ -704,28 +708,67 @@ public class PayMeService {
         private Mono<Void> sendSuccessEmail(String email, int paymentBookId) {
                 System.out.println("Enviando correo de pago exitoso" + paymentBookId);
                 return this.refusePaymentService.getPaymentDetails(paymentBookId)
-                                .map(paymentDetails -> {
-                                        String nombres = (String) paymentDetails.get("Nombres");
-                                        Integer codigoReserva = (Integer) paymentDetails.get("Codigo Reserva");
-                                        String checkIn = (String) paymentDetails.get("Check In");
-                                        String checkOut = (String) paymentDetails.get("Check Out");
-                                        long duracionEstancia = (long) paymentDetails.get("Duración Estancia");
-                                        String cantidadPersonas = (String) paymentDetails.get("Cantidad de Personas");
-                                        String imagen = (String) paymentDetails.get("Imagen");
-                                        String roomName = (String) paymentDetails.get("RoomName");
-                                        BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
-                                        BookingEmailDto bookingEmailDto = new BookingEmailDto(
-                                                        roomName, nombres, codigoReserva.toString(), checkIn, checkOut,
-                                                        checkIn, imagen, (int) duracionEstancia,
-                                                        "Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico Etapa III, Cercado de Lima 15593",
-                                                        cantidadPersonas);
-                                        ConfirmPaymentByBankTransferAndCardTemplateEmail confirmReserveBookingTemplateEmail = new ConfirmPaymentByBankTransferAndCardTemplateEmail(
-                                                        nombres, bookingEmailDto);
-                                        baseEmailReserve.addEmailHandler(confirmReserveBookingTemplateEmail);
-                                        System.out.println("Email body: " + baseEmailReserve.execute());
-                                        return baseEmailReserve.execute();
+                        .map(paymentDetails -> {
+                                String nombres = (String) paymentDetails.get("Nombres");
+                                int userClientId = (int) paymentDetails.get("Id");
+                                Integer codigoReserva = (Integer) paymentDetails.get("Codigo Reserva");
+                                String checkIn = (String) paymentDetails.get("Check In");
+                                String checkOut = (String) paymentDetails.get("Check Out");
+                                long duracionEstancia = (long) paymentDetails.get("Duración Estancia");
+                                String cantidadPersonas = (String) paymentDetails.get("Cantidad de Personas");
+                                String imagen = (String) paymentDetails.get("Imagen");
+                                String roomName = (String) paymentDetails.get("RoomName");
+                                String bookingId = (String) paymentDetails.get("bookingId");
+                                BigDecimal totalCost = (BigDecimal) paymentDetails.get("bookingIdtotalCost");
+                                double totalDiscount = (double) paymentDetails.get("totalDiscount");
+                                BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
 
-                                }).flatMap(emailBody -> emailService.sendEmail(email, "Pago Exitoso", emailBody));
+                                BookingEmailDto bookingEmailDto = new BookingEmailDto(
+                                        roomName, nombres, codigoReserva.toString(), checkIn, checkOut,
+                                        checkIn, imagen, (int) duracionEstancia,
+                                        "Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico Etapa III, Cercado de Lima 15593",
+                                        cantidadPersonas);
+
+                                System.out.println("1Nombre de la habitación: " + bookingEmailDto.getRoomName());
+                                System.out.println("1Imagen: " + bookingEmailDto.getImgSrc());
+                                System.out.println("1Nombre del cliente: " + bookingEmailDto.getClientName());
+                                System.out.println("1Código: " + bookingEmailDto.getCode());
+                                System.out.println("1Fecha de check-in: " + bookingEmailDto.getDateCheckIn());
+                                System.out.println("1Fecha de check-out: " + bookingEmailDto.getDateCheckOut());
+                                System.out.println("1Hora de check-in: " + bookingEmailDto.getHourCheckIn());
+                                System.out.println("1Días: " + bookingEmailDto.getDays());
+                                System.out.println("1Ubicación: " + bookingEmailDto.getLocation());
+                                System.out.println("1Cantidad de personas: " + bookingEmailDto.getCantidadPersonas());
+
+                                ConfirmPaymentByBankTransferAndCardTemplateEmail confirmReserveBookingTemplateEmail = new ConfirmPaymentByBankTransferAndCardTemplateEmail(
+                                        bookingEmailDto, bookingId, totalCost, totalDiscount);
+
+                                baseEmailReserve.addEmailHandler(confirmReserveBookingTemplateEmail);
+                                return Tuples.of(baseEmailReserve.execute(), codigoReserva, nombres, userClientId);
+
+                        }).flatMap(tuple -> {
+                                String emailBody = tuple.getT1();
+                                Integer codigoReserva = tuple.getT2();
+                                String roomName = tuple.getT3();
+                                int userClientId = tuple.getT4();
+
+                                return emailService.sendEmail(email, "Pago Exitoso", emailBody)
+                                        .then(
+                                                notificationBookingService.save(
+                                                        NotificationDto.getTemplateNotificationPaymentConfirm(
+                                                                userClientId,
+                                                                roomName
+                                                        )
+                                                )
+                                        )
+                                        .flatMap(savedNotification ->
+                                                notificationBookingService.sendNotification(
+                                                        String.valueOf(userClientId),
+                                                        savedNotification
+                                                )
+                                        )
+                                        .then();
+                        });
         }
 
 

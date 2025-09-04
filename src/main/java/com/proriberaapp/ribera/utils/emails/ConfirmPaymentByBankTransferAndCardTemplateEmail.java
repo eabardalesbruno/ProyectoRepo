@@ -1,10 +1,15 @@
 package com.proriberaapp.ribera.utils.emails;
 
+import java.math.BigDecimal;
+
 public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHandler {
     private EmailHandler nextHandler;
     private String clientName;
     private BookingEmailDto bookingEmailDto;
     private boolean isAlimentation;
+    private String bookingId;
+    private BigDecimal totalCost;
+    private double totalDiscount;
 
     public ConfirmPaymentByBankTransferAndCardTemplateEmail(String clientName, BookingEmailDto bookingEmailDto) {
         this.clientName = clientName;
@@ -13,10 +18,20 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
     }
 
     public ConfirmPaymentByBankTransferAndCardTemplateEmail(String clientName, BookingEmailDto bookingEmailDto,
-            boolean isAlimentation) {
+                                                            boolean isAlimentation, String bookingId, BigDecimal totalCost, double totalDiscount) {
         this.clientName = clientName;
         this.bookingEmailDto = bookingEmailDto;
         this.isAlimentation = isAlimentation;
+        this.bookingId = bookingId;
+        this.totalCost = totalCost;
+        this.totalDiscount = totalDiscount;
+    }
+
+    public ConfirmPaymentByBankTransferAndCardTemplateEmail(BookingEmailDto bookingEmailDto, String bookingId, BigDecimal totalCost, double totalDiscount) {
+        this.bookingEmailDto = bookingEmailDto;
+        this.bookingId = bookingId;
+        this.totalCost = totalCost;
+        this.totalDiscount = totalDiscount;
     }
 
     @Override
@@ -27,142 +42,139 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
     @Override
     public String execute() {
         String body = """
-                        <p class="font"> Estimado(a), %clientName </p>
-                <p class="font">El presente es para informar que se completo exitosamente el registro de su pago para la reserva de:
-                <strong class="strong-text">%roomName</strong></p>
-                <div class="card">
-                    <table class="table-layout">
-                    <tbody>
-                         <tr>
-                            <td style="height: 320px;
-                    width: 433px;">
-                            <table style="height: 100%;">
+                <section class="container-body-email">
+                      <h3 class="title">
+                        ¡Gracias, %clientName! Tu reserva en Cieneguilla está confirmada.
+                      </h3>
+                      <p class="description">
+                        Hola, %clientName, nos complace informarle que el registro de su pago para la reserva del <strong class="strong-text"> %roomName</strong>, se ha completado exitosamente.
+                      </p>
+                      <div class="container-reservation">
+                        <h5>Datos de la reserva y pago</h5>
+                        <div class="container-reservation-info">
+                          <h4>%roomName</h4>
+                          <div class="container-titular-reserva">
+                            <p>
+                              Titular de la reserva:<br />
+                              <b>%clientName</b>
+                            </p>
+                            <p>
+                              Código de reserva:<br />
+                              <b>%bookingId</b>
+                            </p>
+                          </div>
+                          <hr />
+                          
+                          <table class="container-info-reserva" cellpadding="0" cellspacing="0" width="100%">
                             <tbody>
-                            <tr>
-                            <td>
-                            <img src="%imgSrc"  class="img" alt="calendario"/>
-                            </td>
-                            </tr>
+                              <tr>
+                                <td colspan="3">
+                                  <table class="container-check" cellpadding="0" cellspacing="0">
+                                    <tbody>
+                                      <tr>
+                                        <td style="vertical-align: top; padding-right: 15px;"> <p>
+                                            Check-in:<br />
+                                            <b>%dateCheckIn</b>
+                                          </p>
+                                        </td>
+                                        <td style="vertical-align: top;">
+                                          <hr style="border: 1px solid #bcbcbc; height: 3rem; width: 1px; margin: 0; display: block;" /> </td>
+                                        <td style="vertical-align: top; padding-left: 15px;"> <p>
+                                            Check-out:<br />
+                                            <b>%dateCheckOut</b>
+                                          </p>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td colspan="3">
+                                  <p>
+                                    Hora de llegada aproximada: <b>10:00 A.M</b><br />
+                                    <span>(*) Recuerda que el check-in es las 3:00 P.M.</span>
+                                  </p>
+                                  <p>Duración total de estancia: <b>%days</b></p>
+                                  <p>Cantidad de personas: <b>%cantidadPersonas</b></p>
+                                </td>
+                              </tr>
                             </tbody>
-                            </table>
-                            </td>
-                            <td width="16"></td>
+                          </table>
+                          <hr />
+                          <div class="container-location">
+                            <p>
+                              Ubicación:<br />
+                              <b
+                                >Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico
+                                Etapa III, Cercado de Lima 15593</b
+                              >
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="container-reservation-payment">
+                      	<div>
+                            <h3>Resumen de pago</h3> 
+                        </div>
+                        
+                        <div class="total-container">
+                          	<div class="align-right"><h3>S/%totalCost</h3></div>
+                      		<h3>Total a pagar pago</h3>
+                        </div>
+                        <div class="container-reservation-warning">
+                          <p><div class="icon-container">⚠️</div>
+                          <strong style="padding-left: 2px;">Condiciones de cancelación o cambio de reserva</strong></p>
+                          <p class="text-warning">Al realizar el pago de la reserva, dispone de <strong>15 días</strong> para solicitar un cambio de fecha; pasado este plazo no habrá reembolso por cancelación. El cambio de alojamiento se permitirá únicamente si el espacio reservado se encuentra en mantenimiento, si el cliente solicita modificar la fecha o si desea cambiar de habitación matrimonial a departamento (con cargo adicional). En caso de no presentarse, se aplicará el mismo cargo que por cancelación.</p>
+                          <p class="text-warning">Para más detalles, consulte nuestros <a class="link-warning" href="https://cieneguillariberadelrio.com/terms-and-conditions" target="_blank"><strong>Términos y condiciones.</strong></a></p>
+                        </div>
+                      </div>
+                      <div class="container-footer-info">
+                        <p>
+                          Si tienes alguna consulta o quieres agregar algún dato extra, envíanos tu
+                          consulta por correo o canal de whatsapp. Recuerde que el pago lo puede
+                          realizar mediante deposito en nuestra cuenta a través de agente BCP,
+                          agencias o cualquier método de pago dentro de la plataforma usando este
+                          enlace:
+                          <a
+                            href="https://www.cieneguillariberadelrio.com/payment-method/%bookingId"
+                            target="_blank"
+                            >www.riberadelrio/reservas.com</a
+                          >
+                        </p>
+                      </div>
+                </section>
+                """;
 
-                             <td class="container-data">
-                             <table width="100%" style="
-                box-sizing: border-box;">
-                                <tbody>
-                                <tr>
-                                <td>
-                                <p class="room-name" ><strong>%roomName</strong></p>
-                                </td>
-                                </tr>
-                                <tr>
-                                <td>
-                                <p class="no-margin">Titular de la reserva:</p>
-                                </td>
-                                </tr>
-                                <tr>
-                                <td>
-                                <p class="no-margin"><strong>%titular</strong></p>
-                                </td>
-                                </tr>
-                                <tr>
-                                <td>
-                                <p class="no-margin">Código de reserva:</p>
-                                </td>
-                                </tr>
-                                <tr>
-                                <td>
-                                <p class="no-margin"><strong>%code</strong></p>
-                                </td>
-                                </tr>
-                                <tr>
-                                <td>
-                                <hr class="hr"/>
-                                </td>
-                                </tr>
-                                <tr>
-                                <td>
-                                <table style="width:100%">
-                                <tbody>
-                                <tr>
-                                <td width="100">
-                                <p class="no-margin">Checkin:</p>
-                                <p class="no-margin"><strong>%dateCheckIn</strong></p>
-                                </td>
-                                <td width="200">
-                                </td>
-                                <td style="width: 100px;
-                text-align: end;">
-                                <p class="no-margin">Checkout:</p>
-                                <p class="no-margin"><strong>%dateCheckOut</strong></p>
-                                </td>
-                                </tr>
-                                </tbody>
-                                </table>
-                                </td>
-                                </tr>
-                                <tr>
-                                <td>
-                                <p class="no-margin">Hora de llegada aproximada: 15:00 P.M </p>
-                                <p class="check-in">(*) Recuerda que el check-in es las 3:00 P.M.</p>
-                                </td>
-                                </tr>
-                                <tr>
-                                <td>
-                                <p class="no-margin">Duración total de estancia:<strong> %days <strong>noches</p>
-                                </td>
-                                </tr>
-                                <tr>
-                                <td>
-                                <p class="no-margin">Cantidad de personas: <strong>%cantidadPersonas<strong></p>
-                                </td>
-                                    
-                                </tr>
-                                %alimentation
-                                <tr>
-                                <td>
-                                <hr class="hr"/>
-                                </td>
-                                </tr>
-                                <tr>
+        System.out.println("Nombre de la habitación: " + bookingEmailDto.getRoomName());
+        System.out.println("Imagen: " + bookingEmailDto.getImgSrc());
+        System.out.println("Nombre del cliente: " + bookingEmailDto.getClientName());
+        System.out.println("Código: " + bookingEmailDto.getCode());
+        System.out.println("Fecha de check-in: " + bookingEmailDto.getDateCheckIn());
+        System.out.println("Fecha de check-out: " + bookingEmailDto.getDateCheckOut());
+        System.out.println("Hora de check-in: " + bookingEmailDto.getHourCheckIn());
+        System.out.println("Días: " + bookingEmailDto.getDays());
+        System.out.println("Ubicación: " + bookingEmailDto.getLocation());
+        System.out.println("Cantidad de personas: " + bookingEmailDto.getCantidadPersonas());
 
-                                <td>
-                                <p class="no-margin">Ubicación:</p>
-                                <p class="no-margin"><strong>%location</strong></p>
-                                </td>
-                                </tr>
-
-                                </tbody>
-                             </table>
-                            </tr>
+        BigDecimal discountBD = BigDecimal.valueOf(totalDiscount);
 
 
-                    </tbody>
-
-
-                    </table>
-
-                </div>
-                   <p class="font">
-                    Este correo es solo de carácter informativo, no es un comprobante de pago, en caso de no poder usar la reservación, por favor <br> llamar con 2 días de anticipación.
-                    <br>
-                Muchas gracias.
-                    </p>
-
-                        """;
-        return body.replaceAll("%clientName", clientName)
+        return body.replaceAll("%clientName", bookingEmailDto.getClientName())
                 .replace("%roomName", bookingEmailDto.getRoomName())
                 .replace("%imgSrc", bookingEmailDto.getImgSrc())
                 .replace("%titular", bookingEmailDto.getClientName())
                 .replace("%code", bookingEmailDto.getCode())
                 .replace("%dateCheckIn", bookingEmailDto.getDateCheckIn())
                 .replace("%dateCheckOut", bookingEmailDto.getDateCheckOut())
-                .replace("%hourCheckIn", bookingEmailDto.getHourCheckIn())
+                .replace("%bookingId", bookingId)
                 .replace("%days", String.valueOf(bookingEmailDto.getDays()))
                 .replace("%location", bookingEmailDto.getLocation())
                 .replace("%cantidadPersonas", bookingEmailDto.getCantidadPersonas())
+                .replace("%totalCost", totalCost.toString())
+                .replace("%totalDiscount", String.valueOf(totalDiscount))
+                .replace("%amount", totalCost.subtract(discountBD).toString())
                 .replace("%alimentation",
                         isAlimentation
                                 ? "<tr><td><p class=\"no-margin    \"><strong>Con alimentación</strong></p></td></tr>"
@@ -172,55 +184,173 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
     @Override
     public String getStyles() {
         return """
-                .img{
-                width: 100% !important;
-                height: 100% !important;
-                    object-fit: cover;
+                .container-body-email .title {
+                  color: #1e1e1e;
+                  font-family: Poppins, Arial, sans-serif;
+                  font-weight: 600;
+                  font-size: 24px;
+                  max-width: 695px;
                 }
-                .check-in{
-                margin:0;font-size:12px;
-                color:#216D42;
-                font-weight: 400;
+                
+                .container-body-email .description {
+                  max-width: 695px;
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-weight: 400;
+                  font-size: 16px;
+                  color: #384860;
                 }
-                .room-name{
-                margin:0;font-size:20px
-
+                
+                .container-body-email .description .description-bold {
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-weight: 700;
+                  font-style: italic;
+                  font-size: 16px;
                 }
-                        p.no-margin{
-                        margin: 0;
-                        }
-                        .container-data{
-                            vertical-align: baseline;
-                            font-size:14px;
-                        }
-                            .container-img{
-                            width: 433px;
-                            padding-right: 16px;
-                            }
-                           .container-img .img{
-                                width: 433px;
-                            }
-                            .table-layout{
-                                font-family: 'Product Sans', sans-serif;
-                                width: 100%;
-                            }
-                            .hr{
-                                border: 1px solid #E1E1E1;
-                                margin:0;
-                            }
-                            .font {
-                             font-size: 16px;
-                                font-family: 'Product Sans', sans-serif;
-                             }
-                            .card{
-                            width: 900px;
-                            padding: 24px;
-                            }
-                            .strong-text {
-                            color:#384860;
-                            font-style:italic;
-                            }
-                                            """;
+                
+                .container-body-email .container-card p {
+                  margin: 0;
+                  font-family: Poppins, Arial, sans-serif;
+                  font-weight: 600;
+                  font-size: 16px;
+                  text-align: center;
+                  color: #1e1e1e;
+                }
+                
+                .container-body-email .container-card a {
+                  background: #025928;
+                  border-radius: 24px;
+                  padding: 8px 16px;
+                  color: #fff;
+                  text-decoration: none;
+                  font-size: 14px;
+                  display: inline-block;
+                }
+                
+                .container-body-email .container-reservation {
+                  margin-top: 2rem;
+                }
+                
+                .container-body-email .container-reservation h5 {
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-weight: 700;
+                  font-size: 16px;
+                  color: #384860;
+                }
+                
+                .container-body-email .container-reservation .container-reservation-info {
+                  border: 1px solid #bcbcbc;
+                  width: 695px;
+                  border-radius: 16px;
+                  padding: 24px;
+                  background: #fff;
+                }
+                
+                .container-body-email .container-reservation .container-reservation-info h4 {
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-weight: 700;
+                  font-size: 20px;
+                  color: #1e1e1e;
+                }
+                
+                .container-body-email .container-reservation .container-reservation-info .container-titular-reserva p {
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-weight: 400;
+                  font-size: 14px;
+                }
+                
+                .container-body-email .container-reservation .container-reservation-info .container-titular-reserva b {
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-weight: 700;
+                  font-size: 14px;
+                }
+                
+                .container-body-email .container-reservation .container-reservation-info .container-info-reserva .container-check hr {
+                  border: 1px solid #bcbcbc;
+                  height: 3rem;
+                  width: 1px;
+                  margin: 0;
+                  display: block;
+                }
+                
+                .container-body-email .container-reservation .container-reservation-info .container-info-reserva .container-check p {
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-weight: 400;
+                  font-size: 14px;
+                  color: #1e1e1e;
+                }
+                
+                .container-body-email .container-reservation .container-reservation-info .container-info-reserva .container-check p b {
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-weight: 700;
+                  font-size: 14px;
+                }
+                
+                .container-body-email .container-reservation .container-reservation-info .container-info-reserva p {
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-weight: 400;
+                  font-size: 14px;
+                  color: #1e1e1e;
+                }
+                
+                .container-body-email .container-reservation .container-reservation-info .container-info-reserva p span {
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-weight: 700;
+                  font-size: 14px;
+                  color: #025928;
+                }
+                
+                .container-body-email .container-reservation .container-reservation-info .container-location p {
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-weight: 400;
+                  font-size: 14px;
+                }
+                
+                .container-body-email .container-reservation .container-reservation-info .container-location p b {
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-weight: 700;
+                  font-size: 14px;
+                }
+                
+                .container-body-email .container-footer-info {
+                  margin-top: 2rem;
+                  max-width: 695px;
+                  color: #384860;
+                }
+                .container-reservation-warning {
+                  width: 715px;
+                  background-color: #FFFAF0;
+                  padding: 10px 15px;
+                  text-align: justify;
+                  border-radius: 15px;
+                  margin-top: 15px;
+                  font-family: 'Product Sans', Arial, sans-serif;
+                  font-size: 14px;
+                }
+                .icon-container {
+                  display: inline-block;
+                  color: #EFBD0C;
+                  font-size: 20px;
+                }
+                .text-warning{
+                  padding-left: 30px;
+                  padding-right: 15px;
+                }
+                .link-warning{
+                  color: black;
+                }
+                .container-reservation-payment{
+                  width: 715px;
+                  border-radius: 15px;
+                  background-color: #F9F9F9;
+                  padding: 15px 20px;
+                }
+                .align-right {
+                  float: right;
+                }
+                .total-container {
+                  border-top: 1px solid black;
+                }
+                """;
     }
 
 }

@@ -368,14 +368,31 @@ public interface PaymentBookRepository extends R2dbcRepository<PaymentBookEntity
         Mono<Void> setCancelForBookingId( Integer cancelreasonid,Integer bookingId);
 
         @Query("""
-            select pb.paymentbookid, pb.paymentdate, pb.operationcode, pb.imagevoucher, pm.description methodpayment, pt.paymenttypedesc, (i.totaligv+i.subtotal) total
+            select
+                pb.paymentbookid,
+                pb.paymentdate,
+                pb.operationcode,
+                pb.imagevoucher,
+                pm.description as methodpayment,
+                pt.paymenttypedesc,
+                (i.totaligv + i.subtotal) as total,
+        
+                pv.amount as voucher_amount,
+                pv.operationcode as voucher_operationcode,
+                pv.imagevoucher as voucher_imagevoucher,
+                pv.note as voucher_note,
+                ct.currencytypename as voucher_currencyname,
+                pst.paymentsubtypedesc as voucher_paymentsubtypename
             from paymentbook pb
             join paymentmethod pm on pb.paymentmethodid = pm.paymentmethodid
             join paymenttype pt on pt.paymenttypeid = pb.paymenttypeid
             join invoice i on i.idpaymentbook = pb.paymentbookid
+            left join paymentvoucher pv on pv.paymentbookid = pb.paymentbookid
+            left join currencytype ct on ct.currencytypeid = pv.currencytypeid
+            left join paymentsubtype pst on pst.paymentsubtypeid = pv.paymentsubtypeid
             where pb.bookingid = :bookingId
         """)
-        Mono<PaymentDetailDTO> getPaymentDetail(Integer bookingId);
+        Flux<PaymentDetailDTO> getPaymentDetail(Integer bookingId);
 
         @Query("""
                 SELECT fd.fulldaydetailid , fd.typeperson, fd.quantity ,fd.finalprice , f.type

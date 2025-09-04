@@ -1,10 +1,13 @@
 package com.proriberaapp.ribera.Api.controllers.admin.dto;
 
+import com.proriberaapp.ribera.Domain.dto.PaymentVoucherDTO;
+import com.proriberaapp.ribera.Domain.entities.PaymentVoucherEntity;
 import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 import org.springframework.data.relational.core.mapping.Column;
 
@@ -109,6 +112,8 @@ public class PaymentBookDetailsDTO {
     private Timestamp createdat;
     @Column("usdrewardsinclub")
     private Boolean  usdrewardsinclub;
+
+    private List<PaymentVoucherDTO> vouchers;
 
     @Override
     public String toString() {
