@@ -1,3 +1,4 @@
+
 package com.proriberaapp.ribera.services.admin;
 
 import com.proriberaapp.ribera.Domain.dto.BeneficiaryDto;
@@ -21,4 +22,6 @@ public interface BeneficiaryService {
     Flux<BeneficiaryDto> getAllBeneficiaries();
 
     Flux<BeneficiaryDto> filterBeneficiaries(String nombre, String membresia);
+
+    Mono<Void> sincronizarSociosDesdeInclub();
 }

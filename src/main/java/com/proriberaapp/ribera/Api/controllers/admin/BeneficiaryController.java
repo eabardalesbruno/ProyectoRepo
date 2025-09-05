@@ -1,3 +1,4 @@
+
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 import com.proriberaapp.ribera.Domain.dto.BeneficiaryDto;
@@ -12,6 +13,17 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class BeneficiaryController {
     private final BeneficiaryService beneficiaryService;
+
+    @GetMapping("/{id}/visitas")
+    public Mono<Integer> getVisitasBeneficiario(@PathVariable Integer id) {
+        return beneficiaryService.getBeneficiaryById(id)
+                .map(BeneficiaryDto::getVisitas);
+    }
+
+    @PostMapping("/sincronizar-inclub")
+    public Mono<Void> sincronizarSociosDesdeInclub() {
+        return beneficiaryService.sincronizarSociosDesdeInclub();
+    }
 
     @GetMapping
     public Flux<BeneficiaryDto> getAllBeneficiaries() {

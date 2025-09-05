@@ -1,4 +1,5 @@
 package com.proriberaapp.ribera.services.admin.impl;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import com.proriberaapp.ribera.Domain.dto.BeneficiaryDto;
 import com.proriberaapp.ribera.Domain.entities.BeneficiaryEntity;
@@ -11,6 +12,20 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class BeneficiaryServiceImpl implements BeneficiaryService {
+    private final WebClient webClient = WebClient.builder().build();
+    @Override
+    public Mono<Void> sincronizarSociosDesdeInclub() {
+        String url = "https://adminpanelapi-dev.inclub.world/api/user/getListUsersOfAdmin/search";
+        return webClient.get()
+                .uri(url)
+                .retrieve()
+                .bodyToFlux(BeneficiaryDto.class)
+                .flatMap(dto -> {
+                    BeneficiaryEntity entity = toEntity(dto);
+                    return beneficiaryRepository.save(entity).then();
+                })
+                .then();
+    }
     private final com.proriberaapp.ribera.Infraestructure.repository.BeneficiaryRepository beneficiaryRepository;
 
     public BeneficiaryServiceImpl(
