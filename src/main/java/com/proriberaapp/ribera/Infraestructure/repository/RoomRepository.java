@@ -69,8 +69,8 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
     FROM room r
     JOIN roomoffer ro ON r.roomid = ro.roomid
     JOIN booking b ON ro.roomofferid = b.roomofferid
-    JOIN paymentbook pb ON b.bookingid = pb.bookingid
-    JOIN paymentstate ps ON pb.paymentstateid = ps.paymentstateid
+    LEFT JOIN paymentbook pb ON b.bookingid = pb.bookingid
+    LEFT JOIN paymentstate ps ON pb.paymentstateid = ps.paymentstateid
     WHERE (:roomnumber IS NULL OR r.roomnumber = :roomnumber)
       AND (b.daybookingend::DATE >= CAST(:daybookingend AS DATE))
       AND (b.daybookinginit::DATE <= CAST(:daybookinginit AS DATE))
@@ -109,7 +109,7 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
         ORDER BY r.roomnumber
     """)
     Flux<RoomDto> findRoomByRoomNumberAndRoomTypeId(@Param("roomNumber") String roomNumber, @Param("roomtypeid") Integer roomtypeid);
-
+/*
     @Query("""
         SELECT *
         FROM (
@@ -135,8 +135,8 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
             FROM room r
             JOIN roomoffer ro ON r.roomid = ro.roomid
             JOIN booking b ON ro.roomofferid = b.roomofferid
-            JOIN paymentbook pb ON b.bookingid = pb.bookingid
-            JOIN paymentstate ps ON pb.paymentstateid = ps.paymentstateid
+            LEFT JOIN paymentbook pb ON b.bookingid = pb.bookingid
+            LEFT JOIN paymentstate ps ON pb.paymentstateid = ps.paymentstateid
             JOIN bookingstate bs ON bs.bookingstateid = b.bookingstateid
             WHERE (b.daybookingend::DATE >= CAST(:daybookingend AS DATE))
               AND (b.daybookinginit::DATE <= CAST(:daybookinginit AS DATE))
@@ -164,6 +164,7 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
                     b.bookingid,
                     CASE
                         WHEN ps.paymentstatename = 'ACEPTADO' AND bs.bookingstatename = 'ACEPTADO' THEN 'ACEPTADO'
+                        WHEN b.bookingid IS NOT NULL THEN bs.bookingstatename
                         WHEN ps.paymentstatename IS NOT NULL THEN ps.paymentstatename
                         ELSE NULL
                     END AS bookingstate
@@ -217,6 +218,159 @@ public interface RoomRepository extends R2dbcRepository<RoomEntity, Integer>{
             @Param("daybookinginit") String daybookinginit,
             @Param("daybookingend") String daybookingend
     );
+*/
+
+    @Query(value = """
+            WITH PrioritizedBookings AS (
+                SELECT
+                    b.bookingid,
+                    b.roomofferid,
+                    b.daybookinginit,
+                    b.daybookingend,
+                    b.bookingstateid,
+                    b.createdat,
+                    (b.numberadults + b.numberadultsmayor + b.numberadultsextra) AS numberadults,
+                    b.numberchildren,
+                    b.numberbabies,
+                    r.roomnumber,
+                    r.roomid,
+                    bs.bookingstatename,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY r.roomnumber
+                        ORDER BY
+                            CASE
+                                WHEN bs.bookingstatename = 'ACEPTADO' THEN 1
+                                WHEN bs.bookingstatename = 'PENDIENTE' THEN 2
+                                ELSE 3
+                            END,
+                            b.createdat DESC -- Opcional: para priorizar la reserva más reciente
+                    ) AS rn
+                FROM room r
+                JOIN roomoffer ro
+                    ON r.roomid = ro.roomid
+                JOIN booking b
+                    ON ro.roomofferid = b.roomofferid
+                JOIN bookingstate bs
+                    ON bs.bookingstateid = b.bookingstateid
+                WHERE (b.daybookingend::DATE >= CAST(:daybookingend AS DATE))
+                  AND (b.daybookinginit::DATE <= CAST(:daybookinginit AS DATE))
+                  AND (:roomnumber IS NULL OR r.roomnumber = :roomnumber)
+                  AND (:bookingstateid IS NULL OR b.bookingstateid = :bookingstateid)
+            )
+            SELECT
+                p.roomid,
+                p.roomnumber,
+                p.roomofferid,
+                ro.offername,
+                p.daybookinginit,
+                p.daybookingend,
+                p.bookingid,
+                (p.daybookingend::DATE - p.daybookinginit::DATE) AS numdays,
+                pb.paymentstateid,
+                CASE
+                    WHEN ps.paymentstatename = 'ACEPTADO' AND p.bookingstatename = 'ACEPTADO' THEN 'ACEPTADO'
+                    ELSE p.bookingstatename
+                END AS bookingstate,
+                p.createdat,
+                p.numberadults,
+                p.numberchildren,
+                p.numberbabies
+            FROM PrioritizedBookings p
+            LEFT JOIN roomoffer ro
+                ON p.roomofferid = ro.roomofferid
+            LEFT JOIN paymentbook pb
+                ON p.bookingid = pb.bookingid
+            LEFT JOIN paymentstate ps
+                ON pb.paymentstateid = ps.paymentstateid
+            WHERE p.rn = 1
+            ORDER BY p.bookingid
+            LIMIT :size OFFSET :page;
+            """)
+    Flux<RoomDetailDto> findAllViewRoomsDetailActivities(
+            @Param("daybookinginit") String daybookinginit,
+            @Param("daybookingend") String daybookingend,
+            @Param("roomnumber") String roomnumber,
+            @Param("bookingstateid") Integer bookingstateid,
+            @Param("size") Integer size,
+            @Param("page") Integer page);
+
+    @Query(value = """
+            WITH room_with_bookingstate AS (
+                SELECT
+                    r.roomnumber,
+                    ro.roomofferid,
+                    b.bookingid,
+                    CASE
+                        -- Prioridad 1: Estado de pago y reserva confirmados.
+                        WHEN ps.paymentstatename = 'ACEPTADO' AND bs.bookingstatename = 'ACEPTADO' THEN 'ACEPTADO'
+                        -- Prioridad 2: Si hay un booking id, usa el estado de la reserva.
+                        WHEN b.bookingid IS NOT NULL THEN bs.bookingstatename
+                        -- Prioridad 3: Si hay estado de pago pero no de reserva, usa el de pago.
+                        WHEN ps.paymentstatename IS NOT NULL THEN ps.paymentstatename
+                        -- Estado por defecto: Si no hay reserva ni pago, es NULL.
+                        ELSE NULL
+                    END AS bookingstate
+                FROM room r
+                LEFT JOIN roomoffer ro ON r.roomid = ro.roomid
+                LEFT JOIN booking b ON ro.roomofferid = b.roomofferid
+                    AND (b.daybookingend::DATE >= CAST(:daybookingend AS DATE))
+                    AND (b.daybookinginit::DATE <= CAST(:daybookinginit AS DATE))
+                LEFT JOIN paymentbook pb ON b.bookingid = pb.bookingid
+                LEFT JOIN paymentstate ps ON pb.paymentstateid = ps.paymentstateid
+                LEFT JOIN bookingstate bs ON bs.bookingstateid = b.bookingstateid
+            ),
+            
+            -- Clasificamos cada roomnumber según la prioridad de todos los estados.
+            -- Usamos MAX para elegir el estado de mayor prioridad si una habitación tiene múltiples reservas.
+            room_status_ranked AS (
+                SELECT
+                    roomnumber,
+                    MAX(
+                        CASE bookingstate
+                            WHEN 'ACEPTADO' THEN 6
+                            WHEN 'OCUPADO' THEN 5
+                            WHEN 'PENDIENTE' THEN 4
+                            WHEN 'LIMPIEZA' THEN 3
+                            WHEN 'FINALIZADO' THEN 2
+                            WHEN 'ANULADO' THEN 1
+                            WHEN 'RECHAZADO' THEN 0
+                            -- Si no tiene bookingstate, el rango es -1.
+                            ELSE -1
+                        END
+                    ) AS rank
+                FROM room_with_bookingstate
+                GROUP BY roomnumber
+            ),
+            
+            -- Traducimos los rangos a nombres de estado finales.
+            room_status_labeled AS (
+                SELECT
+                    roomnumber,
+                    CASE rank
+                        WHEN 6 THEN 'ACEPTADO'
+                        WHEN 5 THEN 'OCUPADO'
+                        WHEN 4 THEN 'PENDIENTE'
+                        WHEN 3 THEN 'LIMPIEZA'
+                        WHEN 2 THEN 'FINALIZADO'
+                        WHEN 1 THEN 'ANULADO'
+                        WHEN 0 THEN 'RECHAZADO'
+                        -- El rango -1 se convierte en LIBRE.
+                        ELSE 'LIBRE'
+                    END AS bookingstate
+                FROM room_status_ranked
+            )
+            
+            -- Contamos cuántas habitaciones están en cada estado.
+            SELECT
+                bookingstate,
+                COUNT(*) AS total,
+                ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) AS percentage
+            FROM room_status_labeled
+            GROUP BY bookingstate
+            ORDER BY bookingstate;
+            """)
+    Flux<BookingStateStatsDto> findBookingStateStats(
+            @Param("daybookinginit") String daybookinginit,@Param("daybookingend") String daybookingend);
 
     @Query("""
     select distinct roomnumber from room order by roomnumber
