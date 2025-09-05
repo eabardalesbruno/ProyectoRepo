@@ -4,6 +4,7 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.DetailBookInvoiceDto;
 import com.proriberaapp.ribera.Domain.dto.DetailEmailFulldayDto;
 import com.proriberaapp.ribera.Domain.dto.FullDayDetailDTO;
+import com.proriberaapp.ribera.Domain.dto.NotificationDto;
 import com.proriberaapp.ribera.Domain.dto.PaymentBookUserDTO;
 import com.proriberaapp.ribera.Domain.entities.*;
 import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
@@ -17,6 +18,7 @@ import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceItemRep
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceRepository;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceTypeRepsitory;
 import com.proriberaapp.ribera.Infraestructure.repository.Invoice.ProductSunatRepository;
+import com.proriberaapp.ribera.services.admin.NotificationBookingService;
 import com.proriberaapp.ribera.services.client.CommissionService;
 import com.proriberaapp.ribera.services.client.EmailService;
 import com.proriberaapp.ribera.services.client.RefusePaymentService;
@@ -94,6 +96,8 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
         private final InvoiceServiceI invoiceService;
         private final CommissionService commissionService;
         private final ProductSunatRepository productSunatRepository;
+        private final NotificationBookingService notificationBookingService;
+
         @Autowired
         private BookingFeedingRepository bookingFeedingRepository;
         private final FullDayRepository fullDayRepository;
@@ -108,7 +112,10 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                         InvoiceItemRepository invoiceItemRepository,
                                         InvoiceServiceI invoiceService,
                                         RoomOfferRepository roomOfferRepository,
-                                        RoomRepository roomRepository, CommissionService commissionService, ProductSunatRepository productSunatRepository, FullDayRepository fullDayRepository) {
+                                        RoomRepository roomRepository, CommissionService commissionService,
+                                        ProductSunatRepository productSunatRepository,
+                                        FullDayRepository fullDayRepository,
+                                        NotificationBookingService notificationBookingService) {
                 this.refusePaymentRepository = refusePaymentRepository;
                 this.paymentBookRepository = paymentBookRepository;
                 this.userClientRepository = userClientRepository;
@@ -117,9 +124,10 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                 this.invoiceService = invoiceService;
                 this.roomOfferRepository = roomOfferRepository;
                 this.roomRepository = roomRepository;
-            this.commissionService = commissionService;
-            this.productSunatRepository = productSunatRepository;
-            this.fullDayRepository = fullDayRepository;
+                this.commissionService = commissionService;
+                this.productSunatRepository = productSunatRepository;
+                this.fullDayRepository = fullDayRepository;
+                this.notificationBookingService = notificationBookingService;
         }
 
         @Override
@@ -139,34 +147,60 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
 
         @Override
         public Mono<RefusePaymentEntity> saveRefusePayment(RefusePaymentEntity refusePayment) {
-                return refusePaymentRepository.save(refusePayment)
-                                .flatMap(savedRefusePayment -> paymentBookRepository
-                                                .findById(savedRefusePayment.getPaymentBookId())
-                                                .flatMap(paymentBook -> {
-                                                        paymentBook.setRefuseReasonId(
-                                                                        savedRefusePayment.getRefuseReasonId());
-                                                        return bookingRepository
-                                                                        .findByBookingId(paymentBook.getBookingId())
-                                                                        .flatMap(booking -> {
-                                                                                booking.setBookingStateId(3);
-                                                                                return bookingRepository.save(booking);
-                                                                        })
-                                                                        .then(paymentBookRepository.save(paymentBook));
-                                                })
-                                                .then(paymentBookRepository
-                                                                .findUserClientIdByPaymentBookId(
-                                                                                savedRefusePayment.getPaymentBookId())
-                                                                .flatMap(userClientId -> userClientRepository
-                                                                                .findById(userClientId)
-                                                                                .flatMap(userClient -> generatePaymentRejectionEmailBody(
-                                                                                                userClient,
-                                                                                                savedRefusePayment)
-                                                                                                .flatMap(emailBody -> emailService
-                                                                                                                .sendEmail(userClient
-                                                                                                                                .getEmail(),
-                                                                                                                                "Pago rechazado para la reserva ",
-                                                                                                                                emailBody)
-                                                                                                                .thenReturn(savedRefusePayment))))));
+
+            return refusePaymentRepository.save(refusePayment)
+                    .flatMap(savedRefusePayment ->
+                            paymentBookRepository.findById(savedRefusePayment.getPaymentBookId())
+                                    .flatMap(paymentBook -> {
+                                        int bookingId = paymentBook.getBookingId();
+                                        paymentBook.setRefuseReasonId(savedRefusePayment.getRefuseReasonId());
+
+                                        return bookingRepository.findByBookingId(bookingId)
+                                                .flatMap(booking -> {
+                                                    booking.setBookingStateId(3);
+                                                    return bookingRepository.save(booking)
+                                                            .flatMap(savedBooking ->
+                                                                    paymentBookRepository.save(paymentBook)
+                                                                            .flatMap(savedPaymentBook ->
+                                                                                    paymentBookRepository.findUserClientIdByPaymentBookId(savedRefusePayment.getPaymentBookId())
+                                                                                            .flatMap(userClientId ->
+                                                                                                    userClientRepository.findById(userClientId)
+                                                                                                            .flatMap(userClient ->
+                                                                                                                    generatePaymentRejectionEmailBody(
+                                                                                                                            userClient,
+                                                                                                                            savedRefusePayment,
+                                                                                                                            savedBooking
+                                                                                                                    )
+                                                                                                                            .flatMap(emailBody ->
+                                                                                                                                    emailService.sendEmail(
+                                                                                                                                                    userClient.getEmail(),
+                                                                                                                                                    "Pago rechazado para la reserva ",
+                                                                                                                                                    emailBody
+                                                                                                                                            )
+                                                                                                                                            .then(
+                                                                                                                                                    notificationBookingService.save(
+                                                                                                                                                            NotificationDto.getTemplateNotificationReject(
+                                                                                                                                                                    userClientId,
+                                                                                                                                                                    userClient.getFirstName(),
+                                                                                                                                                                    savedBooking.getBookingId()
+                                                                                                                                                            )
+                                                                                                                                                    )
+                                                                                                                                            )
+                                                                                                                                            .flatMap(savedNotification ->
+                                                                                                                                                    notificationBookingService.sendNotification(
+                                                                                                                                                            String.valueOf(userClientId),
+                                                                                                                                                            savedNotification
+                                                                                                                                                    )
+                                                                                                                                            )
+                                                                                                                                            .thenReturn(savedRefusePayment)
+                                                                                                                            )
+                                                                                                            )
+                                                                                            )
+                                                                            )
+                                                            );
+                                                });
+                                    })
+                    );
         }
 
         @Override
@@ -174,89 +208,44 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                 return refusePaymentRepository.deleteById(id);
         }
 
-        private Mono<String> generatePaymentRejectionEmailBody(UserClientEntity userClient,
-                        RefusePaymentEntity refusePayment) {
+        private Mono<String> generatePaymentRejectionEmailBody(
+                UserClientEntity userClient,
+                RefusePaymentEntity refusePayment,
+                BookingEntity bookingEntity) {
+
                 return getPaymentDetails(refusePayment.getPaymentBookId())
-                                .map(paymentDetails -> {
-                                        // Extrae los valores del Map
-                                        String roomName = (String) paymentDetails.get("RoomName");
-                                        BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
-                                        RejectedPaymentTemplateEmail rejectedPaymentTemplateEmail = new RejectedPaymentTemplateEmail(
-                                                        userClient.getFirstName(), refusePayment.getDetail(), roomName);
-                                        baseEmailReserve.addEmailHandler(rejectedPaymentTemplateEmail);
-                                        return baseEmailReserve.execute();
-                                        /*
-                                         * return "<!DOCTYPE html>" +
-                                         * "<html lang=\"es\">" +
-                                         * "<head>" +
-                                         * "    <meta charset=\"UTF-8\">" +
-                                         * "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
-                                         * +
-                                         * "    <title>Bienvenido</title>" +
-                                         * "    <style>" +
-                                         * "        body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: black; background-color: #F6F7FB; }"
-                                         * +
-                                         * "        .header { width: 100%; position: relative; background-color: white; padding: 20px 0; }"
-                                         * +
-                                         * "        .logo-left { width: 50px; position: absolute; top: 10px; left: 10px; }"
-                                         * +
-                                         * "        .banner { width: 100%; display: block; margin: 0 auto; }" +
-                                         * "        .container { width: 100%; background-color: #FFFFFF; margin: 0px auto 0; padding: 0px 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center; }"
-                                         * +
-                                         * "        .content { text-align: left; padding: 20px; }" +
-                                         * "        .content h3 { margin: 10px 0; }" +
-                                         * "        .content p { margin: 10px 0; }" +
-                                         * "        .table-layout { width: 30%; margin-right: auto; border-collapse: collapse; table-layout: auto; }"
-                                         * +
-                                         * "        .table-layout td { vertical-align: top; padding-top: 0px; text-align: left; }"
-                                         * +
-                                         * "        .button { min-width: 40%; max-height: 18px; display: inline-block; padding: 10px; background-color: #025928; color: white; text-align: center; text-decoration: none; border-radius: 5px; }"
-                                         * +
-                                         * "        .footer { width: 100%; text-align: left; padding-top: 0px; padding-left: 40px; margin: 0px 0; color: #9D9D9D }"
-                                         * +
-                                         * "        .help-section { width: 100%; background-color: #FFFFFF; margin: 0px auto; padding: 5px 40px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: left; color: #384860; }"
-                                         * +
-                                         * "        .content-data { padding: 00px 0 0 0; background-color: #FFFFFF; }" +
-                                         * "        .content-data small{ font-weight : bold; }" +
-                                         * "        .content-data p{ color: #384860 !important }" +
-                                         * "        .button a { display: block; color: white; text-align: center; text-decoration: none; border-radius: 0; }"
-                                         * +
-                                         * "        .im { color: inherit }" +
-                                         * "    </style>" +
-                                         * "</head>" +
-                                         * "<body>" +
-                                         * "    <img class=\"banner\" src=\"https://i.postimg.cc/pX3JmW8X/Image.png\" alt=\"Bienvenido\">"
-                                         * +
-                                         * "    <div class=\"container\">" +
-                                         * "        <div class=\"content\">" +
-                                         * "            <div class=\"content-data\">" +
-                                         * "                <p>Hola," + userClient.getFirstName() +
-                                         * ": <br> Verificamos tu pago para la reserva del <small>"
-                                         * +roomName+"</small>. Lo sentimos, pero no hemos podido completar su pago en este momento. <br> Motivo de rechazo: <small>"
-                                         * + refusePayment.getDetail() +
-                                         * "</small>.<br> Por favor, inténtelo de nuevo. Gracias.</p>" +
-                                         * "                <p>Recuerde que puede realizar su nueva reserva haciendo clic en el botón o usando este enlace: <a href=\"www.riberadelrio/reservas.com\"> www.riberadelrio/reservas.com </a></p>"
-                                         * +
-                                         * "                <div class=\"button\">" +
-                                         * "                    <a href=\"https://cieneguillariberadelrio.online/bookings/disponibles\">Quiero reservar nuevamente</a>"
-                                         * +
-                                         * "                </div>" +
-                                         * "            </div>" +
-                                         * "        </div>" +
-                                         * "    </div>" +
-                                         * "    <div class=\"help-section\">" +
-                                         * "        <h3>¿Necesitas ayuda?</h3>" +
-                                         * "        <p>Envía tus comentarios e información de errores a <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">informesyreservas@cieneguilladelrio.com</a></p>"
-                                         * +
-                                         * "    </div>" +
-                                         * "    <div class=\"footer\">" +
-                                         * "        <p>Si prefiere no recibir este tipo de correo electrónico, ¿no quiere más correos electrónicos de Ribera? <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">Darse de baja</a>.<br> Valle Encantado S.A.C, Perú.<br> © 2023 Inclub</p>"
-                                         * +
-                                         * "    </div>" +
-                                         * "</body>" +
-                                         * "</html>";
-                                         */
-                                });
+                        .map(paymentDetails -> {
+                                // Extrae los valores del Map
+                                String roomName = (String) paymentDetails.get("RoomName");
+                                BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+
+                                long dayInterval = TransformDate.calculateDaysDifference(bookingEntity.getDayBookingInit(),bookingEntity.getDayBookingEnd());
+                                String monthInit = TransformDate.getAbbreviatedMonth(bookingEntity.getDayBookingInit());
+                                String monthEnd = TransformDate.getAbbreviatedMonth(bookingEntity.getDayBookingEnd());
+                                int dayInit = TransformDate.getDayNumber(bookingEntity.getDayBookingInit());
+                                int dayEnd = TransformDate.getDayNumber(bookingEntity.getDayBookingEnd());
+                                String totalPeoples = TransformDate.calculatePersons(
+                                        bookingEntity.getNumberAdults(),
+                                        bookingEntity.getNumberChildren(),
+                                        bookingEntity.getNumberBabies(),
+                                        bookingEntity.getNumberAdultsExtra(),
+                                        bookingEntity.getNumberAdultsMayor());
+
+                                RejectedPaymentTemplateEmail rejectedPaymentTemplateEmail = new RejectedPaymentTemplateEmail(
+                                        userClient.getFirstName(),
+                                        refusePayment.getDetail(),
+                                        roomName,
+                                        bookingEntity,
+                                        dayInterval,
+                                        monthInit,
+                                        monthEnd,
+                                        String.valueOf(dayInit),
+                                        String.valueOf(dayEnd),
+                                        totalPeoples
+                                        );
+                                baseEmailReserve.addEmailHandler(rejectedPaymentTemplateEmail);
+                                return baseEmailReserve.execute();
+                        });
         }
     /*
     @Override
@@ -412,9 +401,31 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
         if (paymentBook.getRoomname() != null) {
             return generatePaymentConfirmationEmailBody(paymentBookId)
                 .flatMap(emailBody -> invoiceService.save(invoiceDomain)
-                    .then(Mono.zip(
-                        paymentBookRepository.confirmPayment(paymentBookId),
-                        emailService.sendEmail(paymentBook.getUseremail(), "Confirmación de Pago Aceptado", emailBody)))
+                    .then(
+                        Mono.zip(
+                            paymentBookRepository.confirmPayment(paymentBookId),
+                            emailService.sendEmail(
+                                    paymentBook.getUseremail(),
+                                    "Confirmación de Pago Aceptado",
+                                    emailBody
+                            )
+                        )
+                    )
+                    .flatMap(tuple ->
+                        notificationBookingService.save(
+                            NotificationDto.getTemplateNotificationPaymentConfirm(
+                                paymentBook.getUserclientid(),
+                                paymentBook.getRoomname(),
+                                paymentBook.getBookingid()
+                            )
+                        )
+                        .flatMap(savedNotification ->
+                            notificationBookingService.sendNotification(
+                                String.valueOf(paymentBook.getUserclientid()),
+                                savedNotification
+                            )
+                        )
+                    )
                     .then());
         }
 
@@ -522,6 +533,7 @@ public class RefusePaymentServiceImpl implements RefusePaymentService {
                                         ConfirmPaymentByBankTransferAndCardTemplateEmail confirmReserveBookingTemplateEmail = new ConfirmPaymentByBankTransferAndCardTemplateEmail(
                                                         nombres, bookingEmailDto, bookingFeeding.size() > 0, bookingId, totalCost, totalDiscount);
                                         baseEmailReserve.addEmailHandler(confirmReserveBookingTemplateEmail);
+
                                         return baseEmailReserve.execute();
 
                                         /*
