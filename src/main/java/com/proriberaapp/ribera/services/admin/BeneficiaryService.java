@@ -23,5 +23,5 @@ public interface BeneficiaryService {
 
     Flux<BeneficiaryDto> filterBeneficiaries(String nombre, String membresia);
 
-    Mono<Void> sincronizarSociosDesdeInclub();
+    Flux<com.proriberaapp.ribera.Domain.dto.InclubUserDto> consultarSociosDesdeInclub(String username);
 }

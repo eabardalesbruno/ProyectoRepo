@@ -20,9 +20,14 @@ public class BeneficiaryController {
                 .map(BeneficiaryDto::getVisitas);
     }
 
-    @PostMapping("/sincronizar-inclub")
-    public Mono<Void> sincronizarSociosDesdeInclub() {
-        return beneficiaryService.sincronizarSociosDesdeInclub();
+    public static class SincronizarInclubRequest {
+        public String username;
+    }
+
+    @PostMapping("/consultar-inclub")
+    public Flux<com.proriberaapp.ribera.Domain.dto.InclubUserDto> consultarSociosDesdeInclub(
+            @RequestBody SincronizarInclubRequest request) {
+        return beneficiaryService.consultarSociosDesdeInclub(request.username);
     }
 
     @GetMapping
