@@ -1,4 +1,5 @@
 package com.proriberaapp.ribera.services.admin.impl;
+
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.proriberaapp.ribera.Domain.dto.BeneficiaryDto;
@@ -13,19 +14,25 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BeneficiaryServiceImpl implements BeneficiaryService {
     private final WebClient webClient = WebClient.builder().build();
+
     @Override
-    public Mono<Void> sincronizarSociosDesdeInclub() {
+    public Flux<com.proriberaapp.ribera.Domain.dto.InclubUserDto> consultarSociosDesdeInclub(String username) {
         String url = "https://adminpanelapi-dev.inclub.world/api/user/getListUsersOfAdmin/search";
-        return webClient.get()
+        String bodyJson = "{" +
+                "\"username\": \"" + username + "\"," +
+                "\"state\": -1," +
+                "\"familyPackage\": -1," +
+                "\"packageDetail\": -1," +
+                "\"typeUser\": 1" +
+                "}";
+        return webClient.post()
                 .uri(url)
+                .header("Content-Type", "application/json")
+                .bodyValue(bodyJson)
                 .retrieve()
-                .bodyToFlux(BeneficiaryDto.class)
-                .flatMap(dto -> {
-                    BeneficiaryEntity entity = toEntity(dto);
-                    return beneficiaryRepository.save(entity).then();
-                })
-                .then();
+                .bodyToFlux(com.proriberaapp.ribera.Domain.dto.InclubUserDto.class);
     }
+
     private final com.proriberaapp.ribera.Infraestructure.repository.BeneficiaryRepository beneficiaryRepository;
 
     public BeneficiaryServiceImpl(
