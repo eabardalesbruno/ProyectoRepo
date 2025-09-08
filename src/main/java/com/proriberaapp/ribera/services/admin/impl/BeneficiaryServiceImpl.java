@@ -1,3 +1,6 @@
+
+// Extrae el nombre de la membresía del JSON de la API externa
+// Extrae el nombre de la membresía del JSON de la API externa
 package com.proriberaapp.ribera.services.admin.impl;
 
 import org.springframework.web.reactive.function.client.WebClient;
@@ -15,6 +18,24 @@ import java.time.Period;
 @Service
 @Slf4j
 public class BeneficiaryServiceImpl implements BeneficiaryService {
+    // Extrae el nombre de la membresía del JSON de la API externa
+    private String extractMembershipName(String json) {
+        try {
+            int packIdx = json.indexOf("\"pack\"");
+            if (packIdx != -1) {
+                int nameIdx = json.indexOf("\"name\"", packIdx);
+                if (nameIdx != -1) {
+                    int colonIdx = json.indexOf(":", nameIdx);
+                    int commaIdx = json.indexOf(",", colonIdx);
+                    return json.substring(colonIdx + 2, commaIdx - 1);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo extraer el nombre de la membresía: {}", e.getMessage());
+        }
+        return null;
+    }
+
     private final WebClient webClient = WebClient.builder().build();
 
     @Override
@@ -91,18 +112,48 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
     }
 
     @Override
+    // Extrae el nombre de la membresía del JSON de la API externa
+    private String extractMembershipName(String json) {
+        try {
+            int packIdx = json.indexOf("\"pack\"");
+            if (packIdx != -1) {
+                int nameIdx = json.indexOf("\"name\"", packIdx);
+                if (nameIdx != -1) {
+                    int colonIdx = json.indexOf(":", nameIdx);
+                    int commaIdx = json.indexOf(",", colonIdx);
+                    return json.substring(colonIdx + 2, commaIdx - 1);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo extraer el nombre de la membresía: {}", e.getMessage());
+        }
+        return null;
+    }
+
     public Flux<BeneficiaryDto> filterBeneficiaries(String nombre, String membresia) {
         log.info("Filtrando beneficiarios por name: {} y idMembership: {}", nombre, membresia);
-        if (nombre != null && membresia != null) {
-            try {
-                Integer idMem = Integer.valueOf(membresia);
-                return beneficiaryRepository.findByNameContainingIgnoreCaseAndIdMembership(nombre, idMem)
-                        .map(this::toDto);
-            } catch (NumberFormatException ex) {
-                return Flux.empty();
-            }
-        } else if (nombre != null) {
-            return beneficiaryRepository.findByNameContainingIgnoreCase(nombre).map(this::toDto);
+        if (nombre != null) {
+            // 1. Consultar API de usuarios para obtener idUser
+            return consultarSociosDesdeInclub(nombre)
+                    .flatMap(userDto -> {
+                        Integer idUser = userDto.getUserId();
+                        // 2. Consultar API de membresía usando idUser
+                        String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
+                        return webClient.get()
+                                .uri(url)
+                                .retrieve()
+                                .bodyToMono(String.class)
+                                .map(json -> {
+                                    String membershipName = extractMembershipName(json);
+                                    return beneficiaryRepository.findByNameContainingIgnoreCase(nombre)
+                                            .map(entity -> {
+                                                BeneficiaryDto dto = toDto(entity);
+                                                dto.setMembershipName(membershipName);
+                                                return dto;
+                                            });
+                                })
+                                .flatMapMany(flux -> flux);
+                    });
         } else if (membresia != null) {
             try {
                 Integer idMem = Integer.valueOf(membresia);
