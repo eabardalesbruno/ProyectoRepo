@@ -17,7 +17,7 @@ public class BeneficiaryController {
     @GetMapping("/{id}/visitas")
     public Mono<Integer> getVisitasBeneficiario(@PathVariable Integer id) {
         return beneficiaryService.getBeneficiaryById(id)
-                .map(BeneficiaryDto::getVisitas);
+                .map(BeneficiaryDto::getVisits);
     }
 
     public static class SincronizarInclubRequest {
