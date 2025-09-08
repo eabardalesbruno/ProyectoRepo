@@ -7,10 +7,10 @@ import reactor.core.publisher.Flux;
 
 @Repository
 public interface BeneficiaryRepository extends R2dbcRepository<BeneficiaryEntity, Integer> {
-    Flux<BeneficiaryEntity> findByNombresContainingIgnoreCase(String nombres);
+    // Nuevos métodos acorde a los campos actuales
+    Flux<BeneficiaryEntity> findByNameContainingIgnoreCase(String name);
 
-    Flux<BeneficiaryEntity> findByMembresiaContainingIgnoreCase(String membresia);
+    Flux<BeneficiaryEntity> findByIdMembership(Integer idMembership);
 
-    Flux<BeneficiaryEntity> findByNombresContainingIgnoreCaseAndMembresiaContainingIgnoreCase(String nombres,
-            String membresia);
+    Flux<BeneficiaryEntity> findByNameContainingIgnoreCaseAndIdMembership(String name, Integer idMembership);
 }

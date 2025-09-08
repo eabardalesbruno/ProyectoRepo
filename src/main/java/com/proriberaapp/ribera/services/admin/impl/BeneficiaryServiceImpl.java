@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
+import java.time.Period;
 
 @Service
 @Slf4j
@@ -90,56 +92,69 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
 
     @Override
     public Flux<BeneficiaryDto> filterBeneficiaries(String nombre, String membresia) {
-        log.info("Filtrando beneficiarios por nombre: {} y membresía: {}", nombre, membresia);
+        log.info("Filtrando beneficiarios por name: {} y idMembership: {}", nombre, membresia);
         if (nombre != null && membresia != null) {
-            return beneficiaryRepository
-                    .findByNombresContainingIgnoreCaseAndMembresiaContainingIgnoreCase(nombre, membresia)
-                    .doOnError(error -> log.error("Error al filtrar beneficiarios", error))
-                    .map(this::toDto);
+            try {
+                Integer idMem = Integer.valueOf(membresia);
+                return beneficiaryRepository.findByNameContainingIgnoreCaseAndIdMembership(nombre, idMem)
+                        .map(this::toDto);
+            } catch (NumberFormatException ex) {
+                return Flux.empty();
+            }
         } else if (nombre != null) {
-            return beneficiaryRepository.findByNombresContainingIgnoreCase(nombre)
-                    .doOnError(error -> log.error("Error al filtrar beneficiarios", error))
-                    .map(this::toDto);
+            return beneficiaryRepository.findByNameContainingIgnoreCase(nombre).map(this::toDto);
         } else if (membresia != null) {
-            return beneficiaryRepository.findByMembresiaContainingIgnoreCase(membresia)
-                    .doOnError(error -> log.error("Error al filtrar beneficiarios", error))
-                    .map(this::toDto);
+            try {
+                Integer idMem = Integer.valueOf(membresia);
+                return beneficiaryRepository.findByIdMembership(idMem).map(this::toDto);
+            } catch (NumberFormatException ex) {
+                return Flux.empty();
+            }
         } else {
             return getAllBeneficiaries();
         }
     }
 
     private BeneficiaryEntity toEntity(BeneficiaryDto dto) {
-        BeneficiaryEntity entity = new BeneficiaryEntity();
-        entity.setId(dto.getId());
-        entity.setNombres(dto.getNombres());
-        entity.setApellidos(dto.getApellidos());
-        entity.setDocumento(dto.getDocumento());
-        entity.setFechaNacimiento(dto.getFechaNacimiento());
-        entity.setEdad(dto.getEdad());
-        entity.setCorreo(dto.getCorreo());
-        entity.setVisitas(dto.getVisitas());
-        entity.setMembresia(dto.getMembresia());
-        entity.setUsuario(dto.getUsuario());
-        entity.setEstado(dto.getEstado());
-        entity.setUltimoCheckin(dto.getUltimoCheckin());
-        return entity;
+        BeneficiaryEntity e = new BeneficiaryEntity();
+        e.setId(dto.getId());
+        e.setName(dto.getName());
+        e.setLastName(dto.getLastName());
+        e.setDocumentNumber(dto.getDocumentNumber());
+        e.setBirthDate(dto.getBirthDate());
+        e.setEmail(dto.getEmail());
+        e.setVisits(dto.getVisits());
+        e.setIdMembership(dto.getIdMembership());
+        e.setUsername(dto.getUsername());
+        e.setStatus(dto.getStatus());
+        e.setLastCheckin(dto.getLastCheckin());
+        e.setCreationDate(dto.getCreationDate());
+        return e;
     }
 
     private BeneficiaryDto toDto(BeneficiaryEntity entity) {
+        Integer age = null;
+        if (entity.getBirthDate() != null) {
+            try {
+                age = Period.between(entity.getBirthDate(), LocalDate.now()).getYears();
+            } catch (Exception ex) {
+                log.warn("No se pudo calcular la edad para birthDate {}: {}", entity.getBirthDate(), ex.getMessage());
+            }
+        }
         return BeneficiaryDto.builder()
                 .id(entity.getId())
-                .nombres(entity.getNombres())
-                .apellidos(entity.getApellidos())
-                .documento(entity.getDocumento())
-                .fechaNacimiento(entity.getFechaNacimiento())
-                .edad(entity.getEdad())
-                .correo(entity.getCorreo())
-                .visitas(entity.getVisitas())
-                .membresia(entity.getMembresia())
-                .usuario(entity.getUsuario())
-                .estado(entity.getEstado())
-                .ultimoCheckin(entity.getUltimoCheckin())
+                .name(entity.getName())
+                .lastName(entity.getLastName())
+                .documentNumber(entity.getDocumentNumber())
+                .birthDate(entity.getBirthDate())
+                .age(age)
+                .email(entity.getEmail())
+                .visits(entity.getVisits())
+                .idMembership(entity.getIdMembership())
+                .username(entity.getUsername())
+                .status(entity.getStatus())
+                .lastCheckin(entity.getLastCheckin())
+                .creationDate(entity.getCreationDate())
                 .build();
     }
 
@@ -147,7 +162,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
     public Mono<BeneficiaryDto> registrarVisita(Integer id) {
         return beneficiaryRepository.findById(id)
                 .flatMap(entity -> {
-                    entity.setVisitas(entity.getVisitas() == null ? 1 : entity.getVisitas() + 1);
+                    entity.setVisits(entity.getVisits() == null ? 1 : entity.getVisits() + 1);
                     return beneficiaryRepository.save(entity);
                 })
                 .map(this::toDto);
@@ -157,7 +172,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
     public Mono<BeneficiaryDto> registrarCheckin(Integer id) {
         return beneficiaryRepository.findById(id)
                 .flatMap(entity -> {
-                    entity.setUltimoCheckin(java.time.LocalDateTime.now());
+                    entity.setLastCheckin(java.time.LocalDateTime.now());
                     return beneficiaryRepository.save(entity);
                 })
                 .map(this::toDto);

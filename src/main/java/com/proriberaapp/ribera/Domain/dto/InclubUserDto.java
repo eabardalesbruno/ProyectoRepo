@@ -4,18 +4,19 @@ import lombok.Data;
 
 @Data
 public class InclubUserDto {
-    private Integer idUser;
-    private String username;
-    private int[] creationDate;
-    private String documentNumber;
+    private Integer idBeneficiary;
+    private Integer idSubscription;
+    private Integer userId;
+    private Integer documentTypeId;
+    private Integer residenceCountryId;
     private String name;
-    private String gender;
     private String lastName;
+    private String gender; // M / F
     private String email;
-    private String cellPhone;
-    private String documentName;
-    private Integer state;
-    private String sponsorName;
-    private String sponsorLastName;
-    private String sponsorEmail;
+    private Long nroDocument; // numérico largo
+    private String ageDate; // fecha en String (yyyy-MM-dd)
+    private Integer status; // estado
+    private String isAdult; // Y / N
+    private String creationDate; // "yyyy-MM-dd HH:mm:ss"
+    private String expirationDate; // "yyyy-MM-dd HH:mm:ss"
 }
