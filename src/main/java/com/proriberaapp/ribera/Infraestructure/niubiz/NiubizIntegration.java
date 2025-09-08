@@ -20,15 +20,16 @@ public class NiubizIntegration {
     @Value("${niubiz.api.maxmemorysize}")
     private int maxMemorySize;
 
-    @Bean
+    @Bean(name = "nibuizClient")
     public WebClient nibuizClient() {
         final int size = maxMemorySize * 1024 * 1024;
-        final ExchangeStrategies strategies = ExchangeStrategies.builder().codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(size)).build();
+        final ExchangeStrategies strategies = ExchangeStrategies.builder()
+                .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(size)).build();
         return WebClient.builder()
                 .exchangeStrategies(strategies)
                 .baseUrl(baseUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                //.defaultHeader(HttpHeaders.AUTHORIZATION, token)
+                // .defaultHeader(HttpHeaders.AUTHORIZATION, token)
                 .codecs(configurer -> {
                     ObjectMapper objectMapper = configurer.getReaders().stream()
                             .filter(reader -> reader instanceof Jackson2JsonDecoder)
