@@ -32,4 +32,7 @@ public class BeneficiaryDto {
     // Formato requerido dd/MM/yyyy HH:mm:ss
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     private LocalDateTime creationDate;
+
+    // Nombre de la membresía obtenida desde la API externa
+    private String membershipName;
 }
