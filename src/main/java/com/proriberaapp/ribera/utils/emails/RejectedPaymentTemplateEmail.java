@@ -1,16 +1,32 @@
 package com.proriberaapp.ribera.utils.emails;
 
+import com.proriberaapp.ribera.Domain.entities.BookingEntity;
+
 public class RejectedPaymentTemplateEmail implements EmailHandler {
     private EmailHandler nextHandler;
     private String clientName;
     private String roomName;
     private String reason;
+    private BookingEntity bookingEntity;
+    private long dayInterval;
+    private String totalPeoples;
+    private String monthInit;
+    private String monthEnd;
+    private String dayInit;
+    private String dayEnd;
 
-    public RejectedPaymentTemplateEmail(String clientName, String reason, String roomName) {
+    public RejectedPaymentTemplateEmail(String clientName, String reason, String roomName, BookingEntity bookingEntity, long dayInterval,
+                                        String monthInit, String monthEnd, String dayInit, String dayEnd, String totalPeoples) {
         this.clientName = clientName;
         this.reason = reason;
         this.roomName = roomName;
-
+        this.bookingEntity = bookingEntity;
+        this.dayInterval = dayInterval;
+        this.monthInit = monthInit;
+        this.monthEnd = monthEnd;
+        this.dayInit = dayInit;
+        this.dayEnd = dayEnd;
+        this.totalPeoples = totalPeoples;
     }
 
     @Override
@@ -126,8 +142,16 @@ public class RejectedPaymentTemplateEmail implements EmailHandler {
                     </div>
                 </section>
                 """;
-        return body.replaceAll("%clientName", clientName).replaceAll("%reason", reason).replaceAll("%roomName",
-                roomName);
+        return body.replaceAll("%clientName", clientName)
+                .replaceAll("%reason", reason)
+                .replaceAll("%roomName", roomName)
+                .replaceAll("%bookingId", String.valueOf(bookingEntity.getBookingId()))
+                .replace("%monthInit", monthInit)
+                .replace("%monthEnd", monthEnd)
+                .replace("%dayInit", dayInit)
+                .replace("%dayEnd", dayEnd)
+                .replaceAll("%dayInterval", String.valueOf(dayInterval))
+                .replaceAll("%totalPeoples", totalPeoples);
     }
 
     @Override
