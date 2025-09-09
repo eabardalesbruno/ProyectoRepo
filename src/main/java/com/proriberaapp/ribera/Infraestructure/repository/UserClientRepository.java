@@ -317,7 +317,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
                 u.documentnumber
             FROM
                 userclient u
-            INNER JOIN
+            LEFT JOIN
                 country c ON c.countryid = u.countryid
             WHERE
                 u.userclientid = :userClientId
