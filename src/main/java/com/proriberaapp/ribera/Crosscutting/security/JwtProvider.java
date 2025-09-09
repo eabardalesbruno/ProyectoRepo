@@ -76,7 +76,7 @@ public class JwtProvider {
                 .claim("id", subject.getUserClientId())
                 .claim("state", subject.getStatus())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 1)) // 1 hour
                 .signWith(getKey())
                 .compact();
     }

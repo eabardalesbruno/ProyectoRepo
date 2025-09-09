@@ -894,8 +894,7 @@ public class PaymentBookServiceImpl implements PaymentBookService {
                             notificationBookingService.save(
                                 NotificationDto.getTemplateNotificationPayment(
                                     paymentBook.getUserClientId(),
-                                    paymentBook.getTotalCost(),
-                                    roomName
+                                    paymentBook.getBookingId()
                                 )
                             )
                             .flatMap(savedNotification ->

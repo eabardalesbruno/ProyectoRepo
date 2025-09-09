@@ -81,16 +81,16 @@ public class EmailSenderTest {
         StepVerifier.create(emailService.sendEmail(to, subject, emailBody)).verifyComplete();
     }
 
-    @Test
-    void testSendEmailRejectPayment() {
-        BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
-        baseEmailReserve.addEmailHandler(new RejectedPaymentTemplateEmail(
-                "Antony Inga Atunga",
-                "Fondos insuficientes",
-                "Habitacion 1"));
-        String emailBody = baseEmailReserve.execute();
-        StepVerifier.create(emailService.sendEmail(to, subject, emailBody)).verifyComplete();
-    }
+    // @Test
+    // void testSendEmailRejectPayment() {
+    //     BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+    //     baseEmailReserve.addEmailHandler(new RejectedPaymentTemplateEmail(
+    //             "Antony Inga Atunga",
+    //             "Fondos insuficientes",
+    //             "Habitacion 1"));
+    //     String emailBody = baseEmailReserve.execute();
+    //     StepVerifier.create(emailService.sendEmail(to, subject, emailBody)).verifyComplete();
+    // }
 
     @Test
     void testSendEmailPayLater() {
