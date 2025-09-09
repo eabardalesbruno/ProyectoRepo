@@ -89,6 +89,9 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Value("${wallet.microservice.url}")
     private String walletMsUrl;
+    
+    @Value("${wallet.retry.enabled:false}")
+    private boolean walletRetryEnabled;
     private WebClient webClientWallet;
 
     @PostConstruct
@@ -904,14 +907,20 @@ public class UserClientServiceImpl implements UserClientService {
     /**
      * Servicio de retry en background para usuarios sin wallet
      * Se ejecuta cada 5 minutos para intentar crear wallets pendientes
+     * Controlado por la propiedad: wallet.retry.enabled
      */
     @Scheduled(fixedDelay = 300000) // 5 minutos = 300,000 ms
     public void retryPendingWallets() {
-        log.info("Iniciando retry de wallets pendientes...");
+        // Verificar si el retry está habilitado
+        if (!isWalletRetryEnabled()) {
+            return; // Salir silenciosamente si está deshabilitado
+        }
+        
+        log.debug("Iniciando retry de wallets pendientes...");
         
         userClientRepository.findByWalletIdIsNull()
                 .flatMap(user -> {
-                    log.info("Intentando crear wallet para usuario sin wallet: {}", user.getUserClientId());
+                    log.debug("Intentando crear wallet para usuario sin wallet: {}", user.getUserClientId());
                     
                     // Generar token temporal para el usuario
                     String tempToken = jwtUtil.generateToken(user);
@@ -926,7 +935,7 @@ public class UserClientServiceImpl implements UserClientService {
                                 // Éxito: Asociar wallet al usuario
                                 user.setWalletId(walletResponse.getWalletId());
                                 return userClientRepository.save(user)
-                                        .doOnSuccess(savedUser -> log.info("Wallet creada exitosamente en retry para usuario {}", savedUser.getUserClientId()));
+                                        .doOnSuccess(savedUser -> log.debug("Wallet creada exitosamente en retry para usuario {}", savedUser.getUserClientId()));
                             })
                             .onErrorResume(error -> {
                                 // Error: Log y continuar con el siguiente usuario
@@ -936,6 +945,14 @@ public class UserClientServiceImpl implements UserClientService {
                 })
                 .doOnComplete(() -> log.info("Retry de wallets pendientes completado"))
                 .subscribe(); // Ejecutar de forma asíncrona
+    }
+
+    /**
+     * Verifica si el retry de wallets está habilitado
+     * @return true si está habilitado, false en caso contrario
+     */
+    private boolean isWalletRetryEnabled() {
+        return walletRetryEnabled;
     }
 
 }
