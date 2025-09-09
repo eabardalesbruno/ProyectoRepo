@@ -19,22 +19,6 @@ import java.time.Period;
 @Slf4j
 public class BeneficiaryServiceImpl implements BeneficiaryService {
     // Extrae el nombre de la membresía del JSON de la API externa
-    private String extractMembershipName(String json) {
-        try {
-            int packIdx = json.indexOf("\"pack\"");
-            if (packIdx != -1) {
-                int nameIdx = json.indexOf("\"name\"", packIdx);
-                if (nameIdx != -1) {
-                    int colonIdx = json.indexOf(":", nameIdx);
-                    int commaIdx = json.indexOf(",", colonIdx);
-                    return json.substring(colonIdx + 2, commaIdx - 1);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("No se pudo extraer el nombre de la membresía: {}", e.getMessage());
-        }
-        return null;
-    }
 
     private final WebClient webClient = WebClient.builder().build();
 
@@ -108,10 +92,33 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
         log.info("Listando todos los beneficiarios");
         return beneficiaryRepository.findAll()
                 .doOnError(error -> log.error("Error al listar beneficiarios", error))
-                .map(this::toDto);
+                .flatMap(entity -> {
+                    BeneficiaryDto dto = toDto(entity);
+                    // Usar username para buscar idUser en la API de usuarios
+                    if (dto.getUsername() != null && !dto.getUsername().isEmpty()) {
+                        return consultarSociosDesdeInclub(dto.getUsername())
+                                .next()
+                                .flatMap(userDto -> {
+                                    Integer idUser = userDto.getUserId();
+                                    String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/"
+                                            + idUser;
+                                    return webClient.get()
+                                            .uri(url)
+                                            .retrieve()
+                                            .bodyToMono(String.class)
+                                            .map(json -> {
+                                                String membershipName = extractMembershipName(json);
+                                                dto.setMembershipName(membershipName);
+                                                return dto;
+                                            });
+                                })
+                                .switchIfEmpty(Mono.just(dto));
+                    } else {
+                        return Mono.just(dto);
+                    }
+                });
     }
 
-    @Override
     // Extrae el nombre de la membresía del JSON de la API externa
     private String extractMembershipName(String json) {
         try {
