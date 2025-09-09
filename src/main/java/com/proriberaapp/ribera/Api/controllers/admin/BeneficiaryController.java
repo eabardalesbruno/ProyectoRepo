@@ -12,6 +12,14 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1/beneficiaries")
 @RequiredArgsConstructor
 public class BeneficiaryController {
+    // Nuevo endpoint paginado y filtrado
+    @GetMapping("/page")
+    public Flux<BeneficiaryDto> getBeneficiariesPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String nombre) {
+        return beneficiaryService.getBeneficiariesPage(nombre, page, size);
+    }
     private final BeneficiaryService beneficiaryService;
 
     @GetMapping("/{id}/visitas")
