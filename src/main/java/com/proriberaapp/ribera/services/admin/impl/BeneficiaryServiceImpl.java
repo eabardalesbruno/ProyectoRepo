@@ -4,235 +4,239 @@
 package com.proriberaapp.ribera.services.admin.impl;
 
 import org.springframework.web.reactive.function.client.WebClient;
-
 import com.proriberaapp.ribera.Domain.dto.BeneficiaryDto;
-import com.proriberaapp.ribera.Domain.entities.BeneficiaryEntity;
+import com.proriberaapp.ribera.Domain.dto.InclubUserDto;
 import com.proriberaapp.ribera.services.admin.BeneficiaryService;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import lombok.extern.slf4j.Slf4j;
-import java.time.LocalDate;
-import java.time.Period;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import reactor.netty.http.client.HttpClient;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 @Service
 @Slf4j
 public class BeneficiaryServiceImpl implements BeneficiaryService {
-    // Extrae el nombre de la membresía del JSON de la API externa
-
-    private final WebClient webClient = WebClient.builder().build();
+    // Nuevo método para paginación y filtro
+    public Flux<BeneficiaryDto> getBeneficiariesPage(String nombre, int page, int size) {
+        Flux<InclubUserDto> usuarios = consultarSociosDesdeInclub(nombre);
+        int maxConcurrency = 10;
+        return usuarios
+            .skip(page * size)
+            .take(size)
+            .flatMap(userDto -> {
+                Integer idUser = userDto.getIdUser();
+                String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
+                return webClient.get()
+                        .uri(url)
+                        .retrieve()
+                        .bodyToFlux(com.proriberaapp.ribera.Domain.dto.MembershipResponse.class)
+                        .next()
+                        .timeout(java.time.Duration.ofSeconds(3))
+                        .onErrorResume(e -> {
+                            log.error("Error consultando membresía para idUser {}: {}", idUser, e.getMessage());
+                            return Mono.justOrEmpty((com.proriberaapp.ribera.Domain.dto.MembershipResponse) null);
+                        })
+                        .map(membership -> {
+                            String membershipName = (membership != null && membership.getPack() != null)
+                                    ? membership.getPack().getName()
+                                    : null;
+                            java.time.LocalDateTime creationDate = null;
+                            if (userDto.getCreationDate() != null && userDto.getCreationDate().size() >= 6) {
+                                creationDate = java.time.LocalDateTime.of(
+                                        userDto.getCreationDate().get(0),
+                                        userDto.getCreationDate().get(1),
+                                        userDto.getCreationDate().get(2),
+                                        userDto.getCreationDate().get(3),
+                                        userDto.getCreationDate().get(4),
+                                        userDto.getCreationDate().get(5));
+                            }
+                            return BeneficiaryDto.builder()
+                                    .id(userDto.getIdUser())
+                                    .name(userDto.getName())
+                                    .lastName(userDto.getLastName())
+                                    .documentNumber(userDto.getDocumentNumber())
+                                    .creationDate(creationDate)
+                                    .email(userDto.getEmail())
+                                    .membershipName(membershipName)
+                                    .build();
+                        });
+            }, maxConcurrency)
+            .doOnComplete(() -> log.info("Fin de beneficiarios paginados"));
+    }
+    // WebClient que ignora certificados SSL (solo para pruebas)
+    private final WebClient webClient = WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(
+                    HttpClient.create()
+                            .secure(spec -> spec.sslContext(
+                                    SslContextBuilder.forClient().trustManager(InsecureTrustManagerFactory.INSTANCE)))))
+            .build();
 
     @Override
-    public Flux<com.proriberaapp.ribera.Domain.dto.InclubUserDto> consultarSociosDesdeInclub(String username) {
+    public Flux<InclubUserDto> consultarSociosDesdeInclub(String username) {
         String url = "https://adminpanelapi-dev.inclub.world/api/user/getListUsersOfAdmin/search";
-        String bodyJson = "{" +
-                "\"username\": \"" + username + "\"," +
-                "\"state\": -1," +
-                "\"familyPackage\": -1," +
-                "\"packageDetail\": -1," +
-                "\"typeUser\": 1" +
-                "}";
+        String bodyJson;
+        if (username == null || username.trim().isEmpty()) {
+            bodyJson = "{" +
+                    "\"state\": -1," +
+                    "\"familyPackage\": -1," +
+                    "\"packageDetail\": -1," +
+                    "\"typeUser\": 1" +
+                    "}";
+        } else {
+            bodyJson = "{" +
+                    "\"username\": \"" + username + "\"," +
+                    "\"state\": -1," +
+                    "\"familyPackage\": -1," +
+                    "\"packageDetail\": -1," +
+                    "\"typeUser\": 1" +
+                    "}";
+        }
+        log.info("[consultarSociosDesdeInclub] URL: {}", url);
+        log.info("[consultarSociosDesdeInclub] Body: {}", bodyJson);
         return webClient.post()
                 .uri(url)
                 .header("Content-Type", "application/json")
                 .bodyValue(bodyJson)
                 .retrieve()
-                .bodyToFlux(com.proriberaapp.ribera.Domain.dto.InclubUserDto.class);
-    }
-
-    private final com.proriberaapp.ribera.Infraestructure.repository.BeneficiaryRepository beneficiaryRepository;
-
-    public BeneficiaryServiceImpl(
-            com.proriberaapp.ribera.Infraestructure.repository.BeneficiaryRepository beneficiaryRepository) {
-        this.beneficiaryRepository = beneficiaryRepository;
-    }
-
-    @Override
-    public Mono<BeneficiaryDto> createBeneficiary(BeneficiaryDto dto) {
-        BeneficiaryEntity entity = toEntity(dto);
-        log.info("Intentando guardar beneficiario: {}", entity);
-        return beneficiaryRepository.save(entity)
-                .doOnSuccess(saved -> log.info("Beneficiario guardado: {}", saved))
-                .doOnError(error -> log.error("Error al guardar beneficiario", error))
-                .map(this::toDto);
-    }
-
-    @Override
-    public Mono<BeneficiaryDto> updateBeneficiary(Integer id, BeneficiaryDto dto) {
-        return beneficiaryRepository.findById(id)
-                .flatMap(existing -> {
-                    BeneficiaryEntity updated = toEntity(dto);
-                    updated.setId(id);
-                    log.info("Actualizando beneficiario id {}: {}", id, updated);
-                    return beneficiaryRepository.save(updated)
-                            .doOnSuccess(saved -> log.info("Beneficiario actualizado: {}", saved))
-                            .doOnError(error -> log.error("Error al actualizar beneficiario", error));
+                .bodyToFlux(InclubUserDto.class)
+                .onErrorResume(e -> {
+                    log.error("Error consultando usuarios: {}", e.getMessage());
+                    return Flux.empty();
                 })
-                .map(this::toDto);
-    }
-
-    @Override
-    public Mono<Void> deleteBeneficiary(Integer id) {
-        log.info("Eliminando beneficiario id {}", id);
-        return beneficiaryRepository.deleteById(id)
-                .doOnSuccess(v -> log.info("Beneficiario eliminado id {}", id))
-                .doOnError(error -> log.error("Error al eliminar beneficiario", error));
-    }
-
-    @Override
-    public Mono<BeneficiaryDto> getBeneficiaryById(Integer id) {
-        log.info("Buscando beneficiario id {}", id);
-        return beneficiaryRepository.findById(id)
-                .doOnError(error -> log.error("Error al buscar beneficiario", error))
-                .map(this::toDto);
+                .doOnNext(user -> log.info("[consultarSociosDesdeInclub] Usuario recibido: {}", user))
+                .doOnComplete(() -> log.info("[consultarSociosDesdeInclub] Fin de usuarios recibidos"));
     }
 
     @Override
     public Flux<BeneficiaryDto> getAllBeneficiaries() {
-        log.info("Listando todos los beneficiarios");
-        return beneficiaryRepository.findAll()
-                .doOnError(error -> log.error("Error al listar beneficiarios", error))
-                .flatMap(entity -> {
-                    BeneficiaryDto dto = toDto(entity);
-                    // Usar username para buscar idUser en la API de usuarios
-                    if (dto.getUsername() != null && !dto.getUsername().isEmpty()) {
-                        return consultarSociosDesdeInclub(dto.getUsername())
-                                .next()
-                                .flatMap(userDto -> {
-                                    Integer idUser = userDto.getUserId();
-                                    String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/"
-                                            + idUser;
-                                    return webClient.get()
-                                            .uri(url)
-                                            .retrieve()
-                                            .bodyToMono(String.class)
-                                            .map(json -> {
-                                                String membershipName = extractMembershipName(json);
-                                                dto.setMembershipName(membershipName);
-                                                return dto;
-                                            });
-                                })
-                                .switchIfEmpty(Mono.just(dto));
-                    } else {
-                        return Mono.just(dto);
-                    }
-                });
+        log.info("Listando todos los beneficiarios desde API externa");
+        String usernameFiltro = "";
+        int maxConcurrency = 10;
+        return consultarSociosDesdeInclub(usernameFiltro)
+                .flatMap(userDto -> {
+                    Integer idUser = userDto.getIdUser();
+                    String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
+                    return webClient.get()
+                            .uri(url)
+                            .retrieve()
+                            .bodyToFlux(com.proriberaapp.ribera.Domain.dto.MembershipResponse.class)
+                            .next()
+                            .timeout(java.time.Duration.ofSeconds(3))
+                            .onErrorResume(e -> {
+                                log.error("Error consultando membresía para idUser {}: {}", idUser, e.getMessage());
+                                return Mono.justOrEmpty((com.proriberaapp.ribera.Domain.dto.MembershipResponse) null);
+                            })
+                            .map(membership -> {
+                                String membershipName = (membership != null && membership.getPack() != null)
+                                        ? membership.getPack().getName()
+                                        : null;
+                                java.time.LocalDateTime creationDate = null;
+                                if (userDto.getCreationDate() != null && userDto.getCreationDate().size() >= 6) {
+                                    creationDate = java.time.LocalDateTime.of(
+                                            userDto.getCreationDate().get(0),
+                                            userDto.getCreationDate().get(1),
+                                            userDto.getCreationDate().get(2),
+                                            userDto.getCreationDate().get(3),
+                                            userDto.getCreationDate().get(4),
+                                            userDto.getCreationDate().get(5));
+                                }
+                                return BeneficiaryDto.builder()
+                                        .id(userDto.getIdUser())
+                                        .name(userDto.getName())
+                                        .lastName(userDto.getLastName())
+                                        .documentNumber(userDto.getDocumentNumber())
+                                        .creationDate(creationDate)
+                                        .email(userDto.getEmail())
+                                        .membershipName(membershipName)
+                                        .build();
+                            });
+                }, maxConcurrency);
     }
 
-    // Extrae el nombre de la membresía del JSON de la API externa
-    private String extractMembershipName(String json) {
-        try {
-            int packIdx = json.indexOf("\"pack\"");
-            if (packIdx != -1) {
-                int nameIdx = json.indexOf("\"name\"", packIdx);
-                if (nameIdx != -1) {
-                    int colonIdx = json.indexOf(":", nameIdx);
-                    int commaIdx = json.indexOf(",", colonIdx);
-                    return json.substring(colonIdx + 2, commaIdx - 1);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("No se pudo extraer el nombre de la membresía: {}", e.getMessage());
-        }
-        return null;
+    @Override
+    public Mono<BeneficiaryDto> createBeneficiary(BeneficiaryDto dto) {
+        throw new UnsupportedOperationException("No soportado en fuente externa");
     }
 
+    @Override
+    public Mono<BeneficiaryDto> updateBeneficiary(Integer id, BeneficiaryDto dto) {
+        throw new UnsupportedOperationException("No soportado en fuente externa");
+    }
+
+    @Override
+    public Mono<Void> deleteBeneficiary(Integer id) {
+        throw new UnsupportedOperationException("No soportado en fuente externa");
+    }
+
+    @Override
+    public Mono<BeneficiaryDto> getBeneficiaryById(Integer id) {
+        return Mono.empty();
+    }
+
+    @Override
     public Flux<BeneficiaryDto> filterBeneficiaries(String nombre, String membresia) {
-        log.info("Filtrando beneficiarios por name: {} y idMembership: {}", nombre, membresia);
+        log.info("[filterBeneficiaries] Filtrando beneficiarios por name: {} y idMembership: {}", nombre, membresia);
         if (nombre != null) {
-            // 1. Consultar API de usuarios para obtener idUser
+            int maxConcurrency = 10;
             return consultarSociosDesdeInclub(nombre)
                     .flatMap(userDto -> {
-                        Integer idUser = userDto.getUserId();
-                        // 2. Consultar API de membresía usando idUser
+                        log.info("[filterBeneficiaries] Usuario recibido: {}", userDto);
+                        Integer idUser = userDto.getIdUser();
                         String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
+                        log.info("[filterBeneficiaries] Consultando membresía en URL: {} para idUser: {}", url, idUser);
                         return webClient.get()
                                 .uri(url)
                                 .retrieve()
-                                .bodyToMono(String.class)
-                                .map(json -> {
-                                    String membershipName = extractMembershipName(json);
-                                    return beneficiaryRepository.findByNameContainingIgnoreCase(nombre)
-                                            .map(entity -> {
-                                                BeneficiaryDto dto = toDto(entity);
-                                                dto.setMembershipName(membershipName);
-                                                return dto;
-                                            });
+                                .bodyToFlux(com.proriberaapp.ribera.Domain.dto.MembershipResponse.class)
+                                .next()
+                                .timeout(java.time.Duration.ofSeconds(3))
+                                .onErrorResume(e -> {
+                                    log.error("Error consultando membresía para idUser {}: {}", idUser, e.getMessage());
+                                    return Mono
+                                            .justOrEmpty((com.proriberaapp.ribera.Domain.dto.MembershipResponse) null);
                                 })
-                                .flatMapMany(flux -> flux);
-                    });
-        } else if (membresia != null) {
-            try {
-                Integer idMem = Integer.valueOf(membresia);
-                return beneficiaryRepository.findByIdMembership(idMem).map(this::toDto);
-            } catch (NumberFormatException ex) {
-                return Flux.empty();
-            }
-        } else {
-            return getAllBeneficiaries();
+                                .map(membership -> {
+                                    String membershipName = (membership != null && membership.getPack() != null)
+                                            ? membership.getPack().getName()
+                                            : null;
+                                    java.time.LocalDateTime creationDate = null;
+                                    if (userDto.getCreationDate() != null && userDto.getCreationDate().size() >= 6) {
+                                        creationDate = java.time.LocalDateTime.of(
+                                                userDto.getCreationDate().get(0),
+                                                userDto.getCreationDate().get(1),
+                                                userDto.getCreationDate().get(2),
+                                                userDto.getCreationDate().get(3),
+                                                userDto.getCreationDate().get(4),
+                                                userDto.getCreationDate().get(5));
+                                    }
+                                    BeneficiaryDto dto = BeneficiaryDto.builder()
+                                            .id(userDto.getIdUser())
+                                            .name(userDto.getName())
+                                            .lastName(userDto.getLastName())
+                                            .documentNumber(userDto.getDocumentNumber())
+                                            .creationDate(creationDate)
+                                            .email(userDto.getEmail())
+                                            .membershipName(membershipName)
+                                            .build();
+                                    log.info("[filterBeneficiaries] BeneficiaryDto construido: {}", dto);
+                                    return dto;
+                                });
+                    }, maxConcurrency)
+                    .doOnComplete(() -> log.info("[filterBeneficiaries] Fin de beneficiarios filtrados"));
         }
-    }
-
-    private BeneficiaryEntity toEntity(BeneficiaryDto dto) {
-        BeneficiaryEntity e = new BeneficiaryEntity();
-        e.setId(dto.getId());
-        e.setName(dto.getName());
-        e.setLastName(dto.getLastName());
-        e.setDocumentNumber(dto.getDocumentNumber());
-        e.setBirthDate(dto.getBirthDate());
-        e.setEmail(dto.getEmail());
-        e.setVisits(dto.getVisits());
-        e.setIdMembership(dto.getIdMembership());
-        e.setUsername(dto.getUsername());
-        e.setStatus(dto.getStatus());
-        e.setLastCheckin(dto.getLastCheckin());
-        e.setCreationDate(dto.getCreationDate());
-        return e;
-    }
-
-    private BeneficiaryDto toDto(BeneficiaryEntity entity) {
-        Integer age = null;
-        if (entity.getBirthDate() != null) {
-            try {
-                age = Period.between(entity.getBirthDate(), LocalDate.now()).getYears();
-            } catch (Exception ex) {
-                log.warn("No se pudo calcular la edad para birthDate {}: {}", entity.getBirthDate(), ex.getMessage());
-            }
-        }
-        return BeneficiaryDto.builder()
-                .id(entity.getId())
-                .name(entity.getName())
-                .lastName(entity.getLastName())
-                .documentNumber(entity.getDocumentNumber())
-                .birthDate(entity.getBirthDate())
-                .age(age)
-                .email(entity.getEmail())
-                .visits(entity.getVisits())
-                .idMembership(entity.getIdMembership())
-                .username(entity.getUsername())
-                .status(entity.getStatus())
-                .lastCheckin(entity.getLastCheckin())
-                .creationDate(entity.getCreationDate())
-                .build();
+        return Flux.empty();
     }
 
     @Override
     public Mono<BeneficiaryDto> registrarVisita(Integer id) {
-        return beneficiaryRepository.findById(id)
-                .flatMap(entity -> {
-                    entity.setVisits(entity.getVisits() == null ? 1 : entity.getVisits() + 1);
-                    return beneficiaryRepository.save(entity);
-                })
-                .map(this::toDto);
+        throw new UnsupportedOperationException("No soportado en fuente externa");
     }
 
     @Override
     public Mono<BeneficiaryDto> registrarCheckin(Integer id) {
-        return beneficiaryRepository.findById(id)
-                .flatMap(entity -> {
-                    entity.setLastCheckin(java.time.LocalDateTime.now());
-                    return beneficiaryRepository.save(entity);
-                })
-                .map(this::toDto);
+        throw new UnsupportedOperationException("No soportado en fuente externa");
     }
 }

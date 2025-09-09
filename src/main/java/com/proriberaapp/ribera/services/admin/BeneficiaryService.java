@@ -24,4 +24,7 @@ public interface BeneficiaryService {
     Flux<BeneficiaryDto> filterBeneficiaries(String nombre, String membresia);
 
     Flux<com.proriberaapp.ribera.Domain.dto.InclubUserDto> consultarSociosDesdeInclub(String username);
+
+    // BeneficiaryService.java
+    Flux<BeneficiaryDto> getBeneficiariesPage(String nombre, int page, int size);
 }
