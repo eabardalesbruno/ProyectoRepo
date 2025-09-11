@@ -1,7 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.client;
 
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.ValidateUserTypeRequest;
-import com.proriberaapp.ribera.Api.controllers.client.dto.response.AuthDataResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.ValidateUserTypeResponse;
 import com.proriberaapp.ribera.Crosscutting.security.JwtProvider;
 import com.proriberaapp.ribera.Domain.entities.UserClientEntity;
@@ -40,6 +39,18 @@ public class AuthValidationController {
             // Extraer el token del header "Bearer <token>"
             String actualToken = token.replace("Bearer ", "");
             log.debug("Token extraído: {}", actualToken);
+            
+            // Verificar si el token está expirado específicamente
+            if (jwtProvider.isTokenExpired(actualToken)) {
+                log.warn("Token expirado detectado: {}", actualToken);
+                Map<String, Object> expiredResponse = new HashMap<>();
+                expiredResponse.put("valid", false);
+                expiredResponse.put("expired", true);
+                expiredResponse.put("message", "Sesión expirada. Por favor, inicie sesión nuevamente.");
+                expiredResponse.put("code", "TOKEN_EXPIRED");
+                expiredResponse.put("timestamp", System.currentTimeMillis());
+                return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(expiredResponse));
+            }
             
             // Validar token usando el JwtProvider existente
             boolean isValid = jwtProvider.validateToken(actualToken);

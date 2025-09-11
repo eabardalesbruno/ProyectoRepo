@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.Api.controllers.advice;
 import com.proriberaapp.ribera.Api.controllers.exception.RequestException;
+import com.proriberaapp.ribera.Api.controllers.exception.TokenExpiredException;
 import com.proriberaapp.ribera.Domain.dto.response.ErrorFieldResponse;
 import com.proriberaapp.ribera.Domain.dto.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,20 @@ public class RequestExceptionHandler {
                 System.currentTimeMillis()
         );
         return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error));
+    }
+
+    @ExceptionHandler(TokenExpiredException.class)
+    public Mono<ResponseEntity<Map<String, Object>>> handleTokenExpiredException(TokenExpiredException ex) {
+        log.warn("Token expirado detectado: {}", ex.getMessage());
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("valid", false);
+        response.put("expired", true);
+        response.put("message", "Sesión expirada. Por favor, inicie sesión nuevamente.");
+        response.put("code", "TOKEN_EXPIRED");
+        response.put("timestamp", System.currentTimeMillis());
+        
+        return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
