@@ -1,6 +1,8 @@
 
 package com.proriberaapp.ribera.Api.controllers.admin;
 
+import com.proriberaapp.ribera.Domain.dto.InclubUserDto;
+
 import com.proriberaapp.ribera.Domain.dto.BeneficiaryDto;
 import com.proriberaapp.ribera.services.admin.BeneficiaryService;
 import lombok.RequiredArgsConstructor;
@@ -9,73 +11,102 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api/v1/beneficiaries")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class BeneficiaryController {
+    @GetMapping("/socios/{idUser}")
+    public Mono<InclubUserDto> getSocioById(@PathVariable Integer idUser) {
+        return beneficiaryService.consultarSociosDesdeInclub("")
+                .filter(socio -> socio.getIdUser() != null && socio.getIdUser().equals(idUser))
+                .next();
+    }
+
     // Nuevo endpoint paginado y filtrado
-    @GetMapping("/page")
-    public Flux<BeneficiaryDto> getBeneficiariesPage(
+    // Endpoint para obtener socios (con paginación y filtro)
+    @GetMapping("/socios/page")
+    public Flux<InclubUserDto> getSociosPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String nombre) {
-        return beneficiaryService.getBeneficiariesPage(nombre, page, size);
+        // Puedes implementar paginación real si lo necesitas
+        return beneficiaryService.consultarSociosDesdeInclub(nombre)
+                .skip(page * size)
+                .take(size);
     }
-    private final BeneficiaryService beneficiaryService;
 
-    @GetMapping("/{id}/visitas")
-    public Mono<Integer> getVisitasBeneficiario(@PathVariable Integer id) {
-        return beneficiaryService.getBeneficiaryById(id)
-                .map(BeneficiaryDto::getVisits);
-    }
+    private final BeneficiaryService beneficiaryService;
 
     public static class SincronizarInclubRequest {
         public String username;
     }
 
-    @PostMapping("/consultar-inclub")
-    public Flux<com.proriberaapp.ribera.Domain.dto.InclubUserDto> consultarSociosDesdeInclub(
-            @RequestBody SincronizarInclubRequest request) {
+    @PostMapping("/socios/search")
+    public Flux<InclubUserDto> consultarSociosDesdeInclub(@RequestBody SincronizarInclubRequest request) {
         return beneficiaryService.consultarSociosDesdeInclub(request.username);
     }
 
-    @GetMapping
-    public Flux<BeneficiaryDto> getAllBeneficiaries() {
-        return beneficiaryService.getAllBeneficiaries();
+    // Endpoint para obtener beneficiarios
+    @GetMapping("/socios")
+    public Flux<InclubUserDto> getAllSocios(@RequestParam(required = false) String nombre) {
+        Flux<InclubUserDto> socios = beneficiaryService.consultarSociosDesdeInclub(nombre == null ? "" : nombre);
+        return socios.doOnNext(socio -> System.out.println("[Controller] Socio recibido: " + socio))
+                .doOnComplete(() -> System.out.println("[Controller] Fin de socios recibidos"));
     }
 
-    @GetMapping("/filter")
-    public Flux<BeneficiaryDto> filterBeneficiaries(@RequestParam(required = false) String nombre,
-            @RequestParam(required = false) String membresia) {
-        return beneficiaryService.filterBeneficiaries(nombre, membresia);
+    @GetMapping("/socios/filter")
+    public Flux<InclubUserDto> filterSocios(@RequestParam(required = false) String nombre) {
+        return beneficiaryService.consultarSociosDesdeInclub(nombre);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/beneficiarios/{id}")
     public Mono<BeneficiaryDto> getBeneficiaryById(@PathVariable Integer id) {
         return beneficiaryService.getBeneficiaryById(id);
     }
 
-    @PostMapping
+    @PostMapping("/beneficiarios")
     public Mono<BeneficiaryDto> createBeneficiary(@RequestBody BeneficiaryDto dto) {
         return beneficiaryService.createBeneficiary(dto);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/beneficiarios/{id}")
     public Mono<BeneficiaryDto> updateBeneficiary(@PathVariable Integer id, @RequestBody BeneficiaryDto dto) {
         return beneficiaryService.updateBeneficiary(id, dto);
     }
 
-    @PostMapping("/{id}/visita")
-    public Mono<BeneficiaryDto> registrarVisita(@PathVariable Integer id) {
-        return beneficiaryService.registrarVisita(id);
-    }
-
-    @PostMapping("/{id}/checkin")
+    @PostMapping("/beneficiarios/{id}/checkin")
     public Mono<BeneficiaryDto> registrarCheckin(@PathVariable Integer id) {
         return beneficiaryService.registrarCheckin(id);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/beneficiarios/{id}")
     public Mono<Void> deleteBeneficiary(@PathVariable Integer id) {
         return beneficiaryService.deleteBeneficiary(id);
     }
+
+    // Endpoint para obtener beneficiarios por membresía
+    @GetMapping("/membresias/{id}/beneficiarios")
+    public Flux<BeneficiaryDto> getBeneficiariesByMembership(@PathVariable Integer id) {
+        return beneficiaryService.getBeneficiariesByMembership(id);
+    }
+
+    // Endpoint para obtener membresías por socio
+    @GetMapping("/socios/{idUser}/membresias")
+    public Flux<com.proriberaapp.ribera.Domain.dto.MembershipResponse> getMembresiasByUser(
+            @PathVariable Integer idUser) {
+        String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
+        return beneficiaryService.getMembershipsByUser(url);
+    }
+
+    // Sugerencia: Endpoint para autocomplete de socios (puede ir en otro
+    // controller)
+    // @GetMapping("/socios/search")
+    // public Flux<InclubUserDto> buscarSocios(@RequestParam String search) {
+    // return beneficiaryService.buscarSocios(search);
+    // }
+
+    // Sugerencia: Endpoint para membresías por socio (puede ir en otro controller)
+    // @GetMapping("/membresias/user/{idUser}")
+    // public Flux<MembresiaDto> getMembresiasByUser(@PathVariable Integer idUser) {
+    // return beneficiaryService.getMembresiasByUser(idUser);
+    // }
 }
