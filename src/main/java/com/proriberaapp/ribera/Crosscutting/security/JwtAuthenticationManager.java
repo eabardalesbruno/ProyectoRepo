@@ -1,5 +1,7 @@
 package com.proriberaapp.ribera.Crosscutting.security;
 
+import com.proriberaapp.ribera.Api.controllers.exception.TokenExpiredException;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,7 +29,14 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
     public Mono<Authentication> authenticate(Authentication authentication) {
         return Mono.just(authentication)
                 .map(auth -> jwtProvider.getClaimsFromToken(auth.getCredentials().toString()))
-                .onErrorResume(e -> Mono.error(new Throwable("bad token")))
+                .onErrorResume(e -> {
+                    // Si es un token expirado, lanzar TokenExpiredException específica
+                    if (e instanceof ExpiredJwtException) {
+                        return Mono.error(new TokenExpiredException("Token expirado"));
+                    }
+                    // Para otros errores, mantener el comportamiento original
+                    return Mono.error(new Throwable("bad token"));
+                })
                 .map(claims -> new UsernamePasswordAuthenticationToken(
                                 claims.getSubject(),
                                 null,
