@@ -87,36 +87,29 @@ public class BookingManagerServiceImpl implements BookingManagerService {
     @Override
     public Mono<BookingDetailResponse> getBookingDetailByBookingId(Integer bookingId) {
         log.info("Inicio de metodo getBookingDetailByBookingId con bookingId:{}", bookingId);
+
         return bookingRepository.findBookingDetailByBookingId(bookingId)
-                .flatMap(bookingDetailDto ->
-                        userClientRepository.findUserDetailByUserClientId(bookingDetailDto.getUserclientid())
-                                .map(userDetailDto -> {
-                                    BookingDetailDto detailDto = BookingDetailDto.builder()
-                                            .bookingid(bookingDetailDto.getBookingid())
-                                            .costfinal(bookingDetailDto.getCostfinal())
-                                            .daybookinginit(bookingDetailDto.getDaybookinginit())
-                                            .daybookingend(bookingDetailDto.getDaybookingend())
-                                            .roomofferid(bookingDetailDto.getRoomofferid())
-                                            .roomnumber(bookingDetailDto.getRoomnumber())
-                                            .roomname(bookingDetailDto.getRoomname())
-                                            .imgurl(bookingDetailDto.getImgurl())
-                                            .bookingstate(bookingDetailDto.getBookingstate())
-                                            .checkin(bookingDetailDto.getCheckin())
-                                            .checkout(bookingDetailDto.getCheckout())
-                                            .totalnights(bookingDetailDto.getTotalnights())
-                                            .totalpeople(bookingDetailDto.getTotalpeople())
-                                            .userclientid(bookingDetailDto.getUserclientid())
-                                            .user(userDetailDto)
-                                            .build();
-                                    return BookingDetailResponse.builder()
-                                            .data(detailDto)
-                                            .result(true)
-                                            .build();
-                                })
-                )
+                .flatMap(bookingDetailDto -> {
+                    if (bookingDetailDto.getUserclientid() == null) {
+                        log.info("El usuario para el reserva con id {} , es null",bookingId);
+                        return Mono.just(bookingDetailDto);
+                    }
+
+                    return userClientRepository.findUserDetailByUserClientId(bookingDetailDto.getUserclientid())
+                            .map(userDetailDto -> {
+                                bookingDetailDto.setUser(userDetailDto);
+                                return bookingDetailDto;
+                            })
+                            .switchIfEmpty(Mono.just(bookingDetailDto));
+                })
+                .map(finalBookingDetailDto -> BookingDetailResponse.builder()
+                        .data(finalBookingDetailDto)
+                        .result(true)
+                        .build())
                 .switchIfEmpty(Mono.just(BookingDetailResponse.builder().result(false).data(null).build()))
                 .onErrorResume(e -> {
-                    log.error("Error al obtener detalle de booking | bookingId: {} | Error: {}", bookingId, e.getMessage(), e);
+                    log.error("Error al obtener detalle de booking con bookingId: {} , Error: {}", bookingId,
+                            e.getMessage());
                     return Mono.just(BookingDetailResponse.builder().result(false).data(null).build());
                 })
                 .doOnSuccess(value -> log.info("Fin del método getBookingDetailByBookingId"));
