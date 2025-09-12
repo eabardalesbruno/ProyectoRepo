@@ -14,12 +14,12 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class BeneficiaryController {
-    @GetMapping("/socios/{idUser}")
-    public Mono<InclubUserDto> getSocioById(@PathVariable Integer idUser) {
-        return beneficiaryService.consultarSociosDesdeInclub("")
-                .filter(socio -> socio.getIdUser() != null && socio.getIdUser().equals(idUser))
-                .next();
-    }
+    // @GetMapping("/socios/{idUser}")
+    // public Mono<InclubUserDto> getSocioById(@PathVariable Integer idUser) {
+    //     return beneficiaryService.consultarSociosDesdeInclub("")
+    //             .filter(socio -> socio.getIdUser() != null && socio.getIdUser().equals(idUser))
+    //             .next();
+    // }
 
     // Nuevo endpoint paginado y filtrado
     // Endpoint para obtener socios (con paginación y filtro)
@@ -58,10 +58,10 @@ public class BeneficiaryController {
         return beneficiaryService.consultarSociosDesdeInclub(nombre);
     }
 
-    @GetMapping("/beneficiarios/{id}")
-    public Mono<BeneficiaryDto> getBeneficiaryById(@PathVariable Integer id) {
-        return beneficiaryService.getBeneficiaryById(id);
-    }
+    // @GetMapping("/beneficiarios/{id}")
+    // public Mono<BeneficiaryDto> getBeneficiaryById(@PathVariable Integer id) {
+    // return beneficiaryService.getBeneficiaryById(id);
+    // }
 
     @PostMapping("/beneficiarios")
     public Mono<BeneficiaryDto> createBeneficiary(@RequestBody BeneficiaryDto dto) {
