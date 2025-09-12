@@ -186,10 +186,10 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
         throw new UnsupportedOperationException("No soportado en fuente externa");
     }
 
-    @Override
-    public Mono<BeneficiaryDto> getBeneficiaryById(Integer id) {
-        return Mono.empty();
-    }
+    // @Override
+    // public Mono<BeneficiaryDto> getBeneficiaryById(Integer id) {
+    // return Mono.empty();
+    // }
 
     @Override
     public Flux<BeneficiaryDto> filterBeneficiaries(String nombre, String membresia) {

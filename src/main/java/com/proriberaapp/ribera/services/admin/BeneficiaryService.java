@@ -17,7 +17,7 @@ public interface BeneficiaryService {
 
     Mono<Void> deleteBeneficiary(Integer id);
 
-    Mono<BeneficiaryDto> getBeneficiaryById(Integer id);
+    // Mono<BeneficiaryDto> getBeneficiaryById(Integer id);
 
     Flux<BeneficiaryDto> getAllBeneficiaries();
 
