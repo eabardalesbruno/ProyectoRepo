@@ -15,10 +15,15 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import reactor.netty.http.client.HttpClient;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 @Slf4j
 public class BeneficiaryServiceImpl implements BeneficiaryService {
+    
+    @Value("${inclub.admin.base-url}")
+    private String inclubAdminBaseUrl;
+    
     // Nuevo método para paginación y filtro
     public Flux<BeneficiaryDto> getBeneficiariesPage(String nombre, int page, int size) {
         Flux<InclubUserDto> usuarios = consultarSociosDesdeInclub(nombre);
@@ -28,7 +33,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
             .take(size)
             .flatMap(userDto -> {
                 Integer idUser = userDto.getIdUser();
-                String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
+                String url = inclubAdminBaseUrl + "/suscription/view/user/" + idUser;
                 return webClient.get()
                         .uri(url)
                         .retrieve()
@@ -76,7 +81,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
 
     @Override
     public Flux<InclubUserDto> consultarSociosDesdeInclub(String username) {
-        String url = "https://adminpanelapi-dev.inclub.world/api/user/getListUsersOfAdmin/search";
+        String url = inclubAdminBaseUrl + "/user/getListUsersOfAdmin/search";
         String bodyJson;
         if (username == null || username.trim().isEmpty()) {
             bodyJson = "{" +
@@ -118,7 +123,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
         return consultarSociosDesdeInclub(usernameFiltro)
                 .flatMap(userDto -> {
                     Integer idUser = userDto.getIdUser();
-                    String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
+                    String url = inclubAdminBaseUrl + "/suscription/view/user/" + idUser;
                     return webClient.get()
                             .uri(url)
                             .retrieve()
@@ -185,7 +190,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                     .flatMap(userDto -> {
                         log.info("[filterBeneficiaries] Usuario recibido: {}", userDto);
                         Integer idUser = userDto.getIdUser();
-                        String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
+                        String url = inclubAdminBaseUrl + "/suscription/view/user/" + idUser;
                         log.info("[filterBeneficiaries] Consultando membresía en URL: {} para idUser: {}", url, idUser);
                         return webClient.get()
                                 .uri(url)

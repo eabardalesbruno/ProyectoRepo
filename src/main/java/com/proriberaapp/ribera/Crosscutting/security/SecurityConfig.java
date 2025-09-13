@@ -28,6 +28,16 @@ public class SecurityConfig {
                                 .authorizeExchange(auth -> auth
                                                 .pathMatchers(OPTIONS).permitAll()
 
+
+
+
+
+
+
+
+
+
+                                                
                                                 .pathMatchers("/api/v1/admin/login",
                                                                 "/api/v1/users/login",
                                                                 "/api/v1/users/check-email",
