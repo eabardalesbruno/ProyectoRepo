@@ -15,12 +15,18 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import reactor.netty.http.client.HttpClient;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDate;
 
 @Service
 @Slf4j
 public class BeneficiaryServiceImpl implements BeneficiaryService {
+    
+    @Value("${inclub.admin.base-url}")
+    private String inclubAdminBaseUrl;
+
+    
     @Override
     public Flux<com.proriberaapp.ribera.Domain.dto.MembershipResponse> getMembershipsByUser(String url) {
         return webClient.get()
@@ -38,47 +44,47 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
         Flux<InclubUserDto> usuarios = consultarSociosDesdeInclub(nombre);
         int maxConcurrency = 10;
         return usuarios
-                .skip(page * size)
-                .take(size)
-                .flatMap(userDto -> {
-                    Integer idUser = userDto.getIdUser();
-                    String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
-                    return webClient.get()
-                            .uri(url)
-                            .retrieve()
-                            .bodyToFlux(com.proriberaapp.ribera.Domain.dto.MembershipResponse.class)
-                            .next()
-                            .timeout(java.time.Duration.ofSeconds(3))
-                            .onErrorResume(e -> {
-                                log.error("Error consultando membresía para idUser {}: {}", idUser, e.getMessage());
-                                return Mono.justOrEmpty((com.proriberaapp.ribera.Domain.dto.MembershipResponse) null);
-                            })
-                            .map(membership -> {
-                                String membershipName = (membership != null && membership.getPack() != null)
-                                        ? membership.getPack().getName()
-                                        : null;
-                                String creationDate = null;
-                                if (userDto.getCreationDate() != null && userDto.getCreationDate().size() >= 6) {
-                                    creationDate = java.time.LocalDateTime.of(
-                                            userDto.getCreationDate().get(0),
-                                            userDto.getCreationDate().get(1),
-                                            userDto.getCreationDate().get(2),
-                                            userDto.getCreationDate().get(3),
-                                            userDto.getCreationDate().get(4),
-                                            userDto.getCreationDate().get(5)).toString();
-                                }
-                                return BeneficiaryDto.builder()
-                                        .id(userDto.getIdUser())
-                                        .name(userDto.getName())
-                                        .lastName(userDto.getLastName())
-                                        .documentNumber(userDto.getDocumentNumber())
-                                        .creationDate(creationDate)
-                                        .email(userDto.getEmail())
-                                        .membershipName(membershipName)
-                                        .build();
-                            });
-                }, maxConcurrency)
-                .doOnComplete(() -> log.info("Fin de beneficiarios paginados"));
+            .skip(page * size)
+            .take(size)
+            .flatMap(userDto -> {
+                Integer idUser = userDto.getIdUser();
+                String url = inclubAdminBaseUrl + "/suscription/view/user/" + idUser;
+                return webClient.get()
+                        .uri(url)
+                        .retrieve()
+                        .bodyToFlux(com.proriberaapp.ribera.Domain.dto.MembershipResponse.class)
+                        .next()
+                        .timeout(java.time.Duration.ofSeconds(3))
+                        .onErrorResume(e -> {
+                            log.error("Error consultando membresía para idUser {}: {}", idUser, e.getMessage());
+                            return Mono.justOrEmpty((com.proriberaapp.ribera.Domain.dto.MembershipResponse) null);
+                        })
+                        .map(membership -> {
+                            String membershipName = (membership != null && membership.getPack() != null)
+                                    ? membership.getPack().getName()
+                                    : null;
+                            java.time.LocalDateTime creationDate = null;
+                            if (userDto.getCreationDate() != null && userDto.getCreationDate().size() >= 6) {
+                                creationDate = java.time.LocalDateTime.of(
+                                        userDto.getCreationDate().get(0),
+                                        userDto.getCreationDate().get(1),
+                                        userDto.getCreationDate().get(2),
+                                        userDto.getCreationDate().get(3),
+                                        userDto.getCreationDate().get(4),
+                                        userDto.getCreationDate().get(5));
+                            }
+                            return BeneficiaryDto.builder()
+                                    .id(userDto.getIdUser())
+                                    .name(userDto.getName())
+                                    .lastName(userDto.getLastName())
+                                    .documentNumber(userDto.getDocumentNumber())
+                                    .creationDate(creationDate)
+                                    .email(userDto.getEmail())
+                                    .membershipName(membershipName)
+                                    .build();
+                        });
+            }, maxConcurrency)
+            .doOnComplete(() -> log.info("Fin de beneficiarios paginados"));
     }
 
     // WebClient que ignora certificados SSL (solo para pruebas)
@@ -91,7 +97,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
 
     @Override
     public Flux<InclubUserDto> consultarSociosDesdeInclub(String username) {
-        String url = "https://adminpanelapi-dev.inclub.world/api/user/getListUsersOfAdmin/search";
+        String url = inclubAdminBaseUrl + "/user/getListUsersOfAdmin/search";
         String bodyJson;
         if (username == null || username.trim().isEmpty()) {
             bodyJson = "{" +
@@ -133,7 +139,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
         return consultarSociosDesdeInclub(usernameFiltro)
                 .flatMap(userDto -> {
                     Integer idUser = userDto.getIdUser();
-                    String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
+                    String url = inclubAdminBaseUrl + "/suscription/view/user/" + idUser;
                     return webClient.get()
                             .uri(url)
                             .retrieve()
@@ -200,7 +206,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                     .flatMap(userDto -> {
                         log.info("[filterBeneficiaries] Usuario recibido: {}", userDto);
                         Integer idUser = userDto.getIdUser();
-                        String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
+                        String url = inclubAdminBaseUrl + "/suscription/view/user/" + idUser;
                         log.info("[filterBeneficiaries] Consultando membresía en URL: {} para idUser: {}", url, idUser);
                         return webClient.get()
                                 .uri(url)
