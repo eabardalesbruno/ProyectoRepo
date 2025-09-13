@@ -26,7 +26,6 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
     @Value("${inclub.admin.base-url}")
     private String inclubAdminBaseUrl;
 
-    @Value("${}")
     
     @Override
     public Flux<com.proriberaapp.ribera.Domain.dto.MembershipResponse> getMembershipsByUser(String url) {
