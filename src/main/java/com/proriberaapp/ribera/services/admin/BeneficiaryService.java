@@ -17,7 +17,7 @@ public interface BeneficiaryService {
 
     Mono<Void> deleteBeneficiary(Integer id);
 
-    Mono<BeneficiaryDto> getBeneficiaryById(Integer id);
+    // Mono<BeneficiaryDto> getBeneficiaryById(Integer id);
 
     Flux<BeneficiaryDto> getAllBeneficiaries();
 
@@ -27,4 +27,9 @@ public interface BeneficiaryService {
 
     // BeneficiaryService.java
     Flux<BeneficiaryDto> getBeneficiariesPage(String nombre, int page, int size);
+
+    Flux<BeneficiaryDto> getBeneficiariesByMembership(Integer idPackage);
+
+    // Consulta membresías por usuario
+    Flux<com.proriberaapp.ribera.Domain.dto.MembershipResponse> getMembershipsByUser(String url);
 }

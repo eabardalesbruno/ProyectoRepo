@@ -1,9 +1,11 @@
 package com.proriberaapp.ribera.Domain.dto;
 
 import lombok.Data;
+import lombok.Builder;
 import java.util.List;
 
 @Data
+@Builder
 public class InclubUserDto {
     private Integer idUser;
     private String username;

@@ -24,20 +24,8 @@ public class SecurityConfig {
                 return http
                                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                                 .cors(ServerHttpSecurity.CorsSpec::disable)
-
                                 .authorizeExchange(auth -> auth
                                                 .pathMatchers(OPTIONS).permitAll()
-
-
-
-
-
-
-
-
-
-
-                                                
                                                 .pathMatchers("/api/v1/admin/login",
                                                                 "/api/v1/users/login",
                                                                 "/api/v1/users/check-email",
@@ -105,8 +93,9 @@ public class SecurityConfig {
                                                                 "/api/v1/beneficiaries/**",
                                                                 "/api/v1/socios/**",
                                                                 "/api/v1/beneficiaries")
-                                                .permitAll()
 
+                                                .permitAll()
+                                                   
                                                 .pathMatchers("/api/v1/admin/**").hasRole("SUPER_ADMIN")
 
                                                 .pathMatchers("/api/v1/admin/manager/**").hasAnyRole("ADMIN")
@@ -118,13 +107,12 @@ public class SecurityConfig {
                                                 .hasAnyAuthority("DELETE")
 
                                                 .anyExchange().authenticated())
-
+                  
                                 .securityContextRepository(securityContextRepository)
-
+                  
                                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                                 .logout(ServerHttpSecurity.LogoutSpec::disable)
-
                                 .build();
         }
 

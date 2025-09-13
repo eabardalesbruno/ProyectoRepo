@@ -1,4 +1,4 @@
-
+// ...existing code...
 // Extrae el nombre de la membresía del JSON de la API externa
 // Extrae el nombre de la membresía del JSON de la API externa
 package com.proriberaapp.ribera.services.admin.impl;
@@ -16,6 +16,8 @@ import reactor.netty.http.client.HttpClient;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.time.LocalDate;
 
 @Service
 @Slf4j
@@ -23,7 +25,21 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
     
     @Value("${inclub.admin.base-url}")
     private String inclubAdminBaseUrl;
+
+    @Value("${}")
     
+    @Override
+    public Flux<com.proriberaapp.ribera.Domain.dto.MembershipResponse> getMembershipsByUser(String url) {
+        return webClient.get()
+                .uri(url)
+                .retrieve()
+                .bodyToFlux(com.proriberaapp.ribera.Domain.dto.MembershipResponse.class)
+                .onErrorResume(e -> {
+                    log.error("Error consultando membresías para url {}: {}", url, e.getMessage());
+                    return Flux.empty();
+                });
+    }
+
     // Nuevo método para paginación y filtro
     public Flux<BeneficiaryDto> getBeneficiariesPage(String nombre, int page, int size) {
         Flux<InclubUserDto> usuarios = consultarSociosDesdeInclub(nombre);
@@ -71,6 +87,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
             }, maxConcurrency)
             .doOnComplete(() -> log.info("Fin de beneficiarios paginados"));
     }
+
     // WebClient que ignora certificados SSL (solo para pruebas)
     private final WebClient webClient = WebClient.builder()
             .clientConnector(new ReactorClientHttpConnector(
@@ -138,7 +155,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                 String membershipName = (membership != null && membership.getPack() != null)
                                         ? membership.getPack().getName()
                                         : null;
-                                java.time.LocalDateTime creationDate = null;
+                                String creationDate = null;
                                 if (userDto.getCreationDate() != null && userDto.getCreationDate().size() >= 6) {
                                     creationDate = java.time.LocalDateTime.of(
                                             userDto.getCreationDate().get(0),
@@ -146,7 +163,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                             userDto.getCreationDate().get(2),
                                             userDto.getCreationDate().get(3),
                                             userDto.getCreationDate().get(4),
-                                            userDto.getCreationDate().get(5));
+                                            userDto.getCreationDate().get(5)).toString();
                                 }
                                 return BeneficiaryDto.builder()
                                         .id(userDto.getIdUser())
@@ -176,10 +193,10 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
         throw new UnsupportedOperationException("No soportado en fuente externa");
     }
 
-    @Override
-    public Mono<BeneficiaryDto> getBeneficiaryById(Integer id) {
-        return Mono.empty();
-    }
+    // @Override
+    // public Mono<BeneficiaryDto> getBeneficiaryById(Integer id) {
+    // return Mono.empty();
+    // }
 
     @Override
     public Flux<BeneficiaryDto> filterBeneficiaries(String nombre, String membresia) {
@@ -207,7 +224,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                     String membershipName = (membership != null && membership.getPack() != null)
                                             ? membership.getPack().getName()
                                             : null;
-                                    java.time.LocalDateTime creationDate = null;
+                                    String creationDate = null;
                                     if (userDto.getCreationDate() != null && userDto.getCreationDate().size() >= 6) {
                                         creationDate = java.time.LocalDateTime.of(
                                                 userDto.getCreationDate().get(0),
@@ -215,7 +232,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                 userDto.getCreationDate().get(2),
                                                 userDto.getCreationDate().get(3),
                                                 userDto.getCreationDate().get(4),
-                                                userDto.getCreationDate().get(5));
+                                                userDto.getCreationDate().get(5)).toString();
                                     }
                                     BeneficiaryDto dto = BeneficiaryDto.builder()
                                             .id(userDto.getIdUser())
@@ -243,5 +260,76 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
     @Override
     public Mono<BeneficiaryDto> registrarCheckin(Integer id) {
         throw new UnsupportedOperationException("No soportado en fuente externa");
+    }
+
+    @Override
+    public Flux<BeneficiaryDto> getBeneficiariesByMembership(Integer id) {
+        String url = "https://membershipapi-dev.inclub.world/api/v1/beneficiaries/subscription/" + id;
+        return webClient.get()
+                .uri(url)
+                .retrieve()
+                .bodyToMono(com.fasterxml.jackson.databind.JsonNode.class)
+                .flatMapMany(json -> {
+                    com.fasterxml.jackson.databind.JsonNode dataNode = json.get("data");
+                    if (dataNode != null && dataNode.isArray()) {
+                        return Flux.fromIterable(dataNode)
+                                .map(node -> BeneficiaryDto.builder()
+                                        .id(node.has("idBeneficiary") && !node.get("idBeneficiary").isNull()
+                                                ? node.get("idBeneficiary").asInt()
+                                                : null)
+                                        .idSubscription(
+                                                node.has("idSubscription") && !node.get("idSubscription").isNull()
+                                                        ? node.get("idSubscription").asInt()
+                                                        : null)
+                                        .userId(node.has("userId") && !node.get("userId").isNull()
+                                                ? node.get("userId").asInt()
+                                                : null)
+                                        .documentTypeId(
+                                                node.has("documentTypeId") && !node.get("documentTypeId").isNull()
+                                                        ? node.get("documentTypeId").asInt()
+                                                        : null)
+                                        .residenceCountryId(node.has("residenceCountryId")
+                                                && !node.get("residenceCountryId").isNull()
+                                                        ? node.get("residenceCountryId").asInt()
+                                                        : null)
+                                        .name(node.has("name") && !node.get("name").isNull() ? node.get("name").asText()
+                                                : null)
+                                        .lastName(node.has("lastName") && !node.get("lastName").isNull()
+                                                ? node.get("lastName").asText()
+                                                : null)
+                                        .gender(node.has("gender") && !node.get("gender").isNull()
+                                                ? node.get("gender").asText()
+                                                : null)
+                                        .email(node.has("email") && !node.get("email").isNull()
+                                                ? node.get("email").asText()
+                                                : null)
+                                        .documentNumber(node.has("nroDocument") && !node.get("nroDocument").isNull()
+                                                ? node.get("nroDocument").asText()
+                                                : null)
+                                        .birthDate(node.has("ageDate") && !node.get("ageDate").isNull()
+                                                ? node.get("ageDate").asText()
+                                                : null)
+                                        .status(node.has("status") && !node.get("status").isNull()
+                                                ? node.get("status").asInt()
+                                                : null)
+                                        .isAdult(node.has("isAdult") && !node.get("isAdult").isNull()
+                                                ? node.get("isAdult").asText()
+                                                : null)
+                                        .creationDate(node.has("creationDate") && !node.get("creationDate").isNull()
+                                                ? node.get("creationDate").asText()
+                                                : null)
+                                        .expirationDate(
+                                                node.has("expirationDate") && !node.get("expirationDate").isNull()
+                                                        ? node.get("expirationDate").asText()
+                                                        : null)
+                                        .build());
+                    } else {
+                        return Flux.empty();
+                    }
+                })
+                .onErrorResume(e -> {
+                    log.error("Error consultando beneficiarios por suscripción {}: {}", id, e.getMessage());
+                    return Flux.empty();
+                });
     }
 }
