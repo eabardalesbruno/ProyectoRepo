@@ -63,7 +63,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                             String membershipName = (membership != null && membership.getPack() != null)
                                     ? membership.getPack().getName()
                                     : null;
-                            java.time.LocalDateTime creationDate = null;
+                            String creationDate = null;
                             if (userDto.getCreationDate() != null && userDto.getCreationDate().size() >= 6) {
                                 creationDate = java.time.LocalDateTime.of(
                                         userDto.getCreationDate().get(0),
@@ -71,7 +71,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                         userDto.getCreationDate().get(2),
                                         userDto.getCreationDate().get(3),
                                         userDto.getCreationDate().get(4),
-                                        userDto.getCreationDate().get(5));
+                                        userDto.getCreationDate().get(5)).toString();
                             }
                             return BeneficiaryDto.builder()
                                     .id(userDto.getIdUser())

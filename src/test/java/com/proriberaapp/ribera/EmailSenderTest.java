@@ -76,7 +76,7 @@ public class EmailSenderTest {
                 "2 niños");
         baseEmailReserve.addEmailHandler(new ConfirmPaymentByBankTransferAndCardTemplateEmail(
                 "Antony Inga Atunga",
-                bookingEmailDto));
+                bookingEmailDto,"123",BigDecimal.ZERO));
         String emailBody = baseEmailReserve.execute();
         StepVerifier.create(emailService.sendEmail(to, subject, emailBody)).verifyComplete();
     }
