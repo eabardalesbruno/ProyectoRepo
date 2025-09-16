@@ -33,7 +33,7 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
                         true).data(
                                 ActivityDashboardResponseDTO.ActivityDataDTO.builder()
                                         .summary(tuple.getT1())
-                                        .rooms(tuple.getT2())
+                                        .rooms(tuple.getT2().rooms())
                                         .pagination(tuple.getT2().pagination())
                                         .build())
                         .timestamp(LocalDateTime.now())
@@ -58,7 +58,7 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
                                 .build());
     }
 
-    private Mono<RoomDetailDTO> getRoomDetails(LocalDateTime date, int page, int size) {
+    private Mono<RoomDetailResult> getRoomDetails(LocalDateTime date, int page, int size) {
         return activityDashboardRepository.findAllRooms(date, size, page)
                 .map(this::mapToRoomDetailDTO)
                 .collectList()
