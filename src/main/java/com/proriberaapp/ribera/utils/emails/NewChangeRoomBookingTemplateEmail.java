@@ -105,7 +105,7 @@ public class NewChangeRoomBookingTemplateEmail implements EmailHandler {
                     </div>
                     <p style="margin-top: 40px; font-size: 14px; color: #6a6a6a;">Este correo es solo de carácter informativo, no es un comprobante de pago, en caso de no poder usar la reservación, por favor llamar con 2 días de anticipación.</p>
                     <p style="margin-top: 8px; font-size: 14px; color: #6a6a6a;">Muchas gracias.</p>
-                """, clientName, clientName, roomNameOld, imgUrlNew, roomNameNew, clientName, bookingId, checkIn, checkOut, approximateArrival, totalNights, totalPeople, location);
+                """, clientName, clientName, roomNameOld, imgUrlNew, roomNameNew,clientName, bookingId, checkIn, checkOut, approximateArrival, totalNights, totalPeople, location);
     }
 
     @Override

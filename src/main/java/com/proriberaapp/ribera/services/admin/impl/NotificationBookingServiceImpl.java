@@ -4,11 +4,13 @@ import com.proriberaapp.ribera.Domain.dto.NotificationDto;
 import com.proriberaapp.ribera.Domain.mapper.NotificationBookingMapper;
 import com.proriberaapp.ribera.Infraestructure.repository.NotificationBookingRepository;
 import com.proriberaapp.ribera.services.admin.NotificationBookingService;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,5 +74,10 @@ public class NotificationBookingServiceImpl implements NotificationBookingServic
                 sink.tryEmitNext(message);
         }
         return Mono.empty();
+    }
+
+    @Scheduled(cron = "0 0 3 * * ?")
+    public void deleteOldNotifications() {
+        notificationBookingRepository.deleteAll();
     }
 }

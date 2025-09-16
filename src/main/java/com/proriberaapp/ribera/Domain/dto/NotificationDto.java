@@ -31,27 +31,39 @@ public class NotificationDto {
                 .build();
     }
 
-    public static NotificationDto getTemplateNotificationPayment(int userClientId, BigDecimal totalCost, String roomName) {
+    public static NotificationDto getTemplateNotificationPayment(int userClientId, int bookingId) {
         return NotificationDto.builder()
                 .createdAt(LocalDateTime.now())
-                .notificationTitle("Confirmación de pago")
-                .notificationMessage("Tu reserva "+roomName+",ha sido confirmada (Total pagado: "+totalCost.toString()+").")
+                .notificationTitle("Validaremos el pago de tu reserva")
+                .notificationMessage("Tu reserva #"+bookingId+", será validada en un plazo máximo de 48 horas, te notificaremos cuando esté revisada.")
                 .notificationType("BOOKING_PAYMENT")
                 .notificationIsRead(false)
                 .userClientId(userClientId)
-                .bookingId(0)
+                .bookingId(bookingId)
                 .build();
     }
 
-    public static NotificationDto getTemplateNotificationPaymentConfirm(int userClientId, String roomName) {
+    public static NotificationDto getTemplateNotificationPaymentConfirm(int userClientId, String roomName, int bookingId) {
         return NotificationDto.builder()
                 .createdAt(LocalDateTime.now())
-                .notificationTitle("Confirmación de pago")
-                .notificationMessage("Tu reserva "+roomName+",el pago ha sido confirmado.")
+                .notificationTitle(roomName+" confirmada")
+                .notificationMessage("Reserva #"+bookingId+" confirmada. ¡Que lo disfrutes!")
                 .notificationType("BOOKING_CONFIRM_PAYMENT")
                 .notificationIsRead(false)
                 .userClientId(userClientId)
-                .bookingId(0)
+                .bookingId(bookingId)
+                .build();
+    }
+
+    public static NotificationDto getTemplateNotificationReject(int userClientId, String userClientName, int bookingId) {
+        return NotificationDto.builder()
+                .createdAt(LocalDateTime.now())
+                .notificationTitle("¡Lo sentimos, "+userClientName+"! Rechazamos tu pago")
+                .notificationMessage("Tienes hasta 48 horas para completar el pago y asegurar tu reserva en Ribera.")
+                .notificationType("BOOKING_REJECT_PAYMENT")
+                .notificationIsRead(false)
+                .userClientId(userClientId)
+                .bookingId(bookingId)
                 .build();
     }
 }

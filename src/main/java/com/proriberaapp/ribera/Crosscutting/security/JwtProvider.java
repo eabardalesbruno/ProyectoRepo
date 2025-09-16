@@ -8,6 +8,7 @@ import com.proriberaapp.ribera.Domain.enums.Permission;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.security.Key;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Component
+@Slf4j
 public class JwtProvider {
 
     @Value("${jwt.secret}")
@@ -76,7 +78,7 @@ public class JwtProvider {
                 .claim("id", subject.getUserClientId())
                 .claim("state", subject.getStatus())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 1)) // 1 hour
                 .signWith(getKey())
                 .compact();
     }
@@ -90,17 +92,18 @@ public class JwtProvider {
             return claimsJws.getSubject();
         }
         throw new RequestException("The token is invalid.");
-
     }
 
     public String getDocumentFromToken(String token) {
         return getClaimsFromToken(token.substring(7)).get("document", String.class);
     }
 
+    @SuppressWarnings("unchecked")
     public List<Permission> getPermissionsFromToken(String token) {
         return getClaimsFromToken(token.substring(7)).get("permissions", List.class);
     }
 
+    @SuppressWarnings("unchecked")
     public String getAuthorityFromToken(String token) {
         Claims claims = getClaimsFromToken(token.substring(7));
         List<Map<String, String>> roles = claims.get("roles", List.class);
@@ -122,6 +125,20 @@ public class JwtProvider {
     public boolean validateToken(String authToken) {
         try {
             Jwts.parserBuilder().setSigningKey(getKey()).build().parseClaimsJws(authToken);
+            return true;
+        } catch (ExpiredJwtException ex) {
+            // Token expirado - esto se manejará específicamente
+            return false;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+    
+    public boolean isTokenExpired(String authToken) {
+        try {
+            Jwts.parserBuilder().setSigningKey(getKey()).build().parseClaimsJws(authToken);
+            return false;
+        } catch (ExpiredJwtException ex) {
             return true;
         } catch (Exception ex) {
             return false;
