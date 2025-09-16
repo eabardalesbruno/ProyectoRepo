@@ -30,12 +30,8 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
     public Mono<ActivityDashboardResponseDTO> getActivityDashboard(LocalDateTime date, int page, int size) {
         return Mono.zip(getActivitySummary(date), getRoomDetails(date, page, size))
                 .map(tuple -> ActivityDashboardResponseDTO.builder().success(
-                        true).data(
-                                ActivityDashboardResponseDTO.ActivityDataDTO.builder()
-                                        .summary(tuple.getT1())
-                                        .rooms(tuple.getT2().rooms())
-                                        .pagination(tuple.getT2().pagination())
-                                        .build())
+                        true)
+                        .data(tuple.getT1())
                         .timestamp(LocalDateTime.now())
                         .build());
     }
@@ -87,7 +83,7 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
     private ReservationDetailDTO mapToReservationDetail(ActivityRoomProjection projection) {
         return ReservationDetailDTO.builder()
                 .bookingId(projection.getBookingId())
-                .checkIn(projection.getDayBookingEnd())
+                .checkIn(projection.getDayBookingInit())
                 .checkOut(projection.getDayBookingEnd())
                 .guest(GuestInfoDTO.builder()
                         .name(projection.getFirstName() + " " + projection.getLastName())
@@ -95,7 +91,7 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
                         .build())
                 .capacity(RoomCapacityDTO.builder()
                         .adults(projection.getNumberAdults())
-                        .children(projection.getNumberAdults())
+                        .children(projection.getNumberChildren())
                         .babies(projection.getNumberBabies())
                         .adultsExtra(projection.getNumberAdultsExtra())
                         .adultsMayor(projection.getNumberAdultsMayor())
