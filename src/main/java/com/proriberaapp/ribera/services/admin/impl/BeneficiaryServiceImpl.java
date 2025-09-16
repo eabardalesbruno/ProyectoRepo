@@ -8,6 +8,7 @@ import com.proriberaapp.ribera.Domain.dto.BeneficiaryDto;
 import com.proriberaapp.ribera.Domain.dto.InclubUserDto;
 import com.proriberaapp.ribera.services.admin.BeneficiaryService;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import lombok.extern.slf4j.Slf4j;
@@ -15,12 +16,14 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import reactor.netty.http.client.HttpClient;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
-import com.fasterxml.jackson.databind.JsonNode;
-import java.time.LocalDate;
+// ...existing code...
 
 @Service
 @Slf4j
 public class BeneficiaryServiceImpl implements BeneficiaryService {
+        @Value("${inclub.api.url.admin}")
+        private String inclubApiUrl;
+
         @Override
         public Flux<com.proriberaapp.ribera.Domain.dto.MembershipResponse> getMembershipsByUser(String url) {
                 return webClient.get()
@@ -42,8 +45,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                 .take(size)
                                 .flatMap(userDto -> {
                                         Integer idUser = userDto.getIdUser();
-                                        String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/"
-                                                        + idUser;
+                                        String url = inclubApiUrl + "/suscription/view/user/" + idUser;
                                         return webClient.get()
                                                         .uri(url)
                                                         .retrieve()
@@ -98,13 +100,33 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
         }
 
         // WebClient que ignora certificados SSL (solo para pruebas)
-        private final WebClient webClient = WebClient.builder()
-                        .clientConnector(new ReactorClientHttpConnector(
-                                        HttpClient.create()
-                                                        .secure(spec -> spec.sslContext(
-                                                                        SslContextBuilder.forClient().trustManager(
-                                                                                        InsecureTrustManagerFactory.INSTANCE)))))
-                        .build();
+        private final WebClient webClient;
+
+        {
+                WebClient tempClient;
+                try {
+                        tempClient = WebClient.builder()
+                                        .clientConnector(new ReactorClientHttpConnector(
+                                                        HttpClient.create()
+                                                                        .secure(spec -> {
+                                                                                try {
+                                                                                        spec.sslContext(
+                                                                                                        SslContextBuilder
+                                                                                                                        .forClient()
+                                                                                                                        .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                                                                                                                        .build());
+                                                                                } catch (javax.net.ssl.SSLException e) {
+                                                                                        log.error("Error creando contexto SSL: {}",
+                                                                                                        e.getMessage());
+                                                                                }
+                                                                        })))
+                                        .build();
+                } catch (Exception e) {
+                        log.error("Error inicializando WebClient: {}", e.getMessage());
+                        tempClient = WebClient.create();
+                }
+                webClient = tempClient;
+        }
 
         @Override
         public Flux<InclubUserDto> consultarSociosDesdeInclub(String username) {
@@ -150,8 +172,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                 return consultarSociosDesdeInclub(usernameFiltro)
                                 .flatMap(userDto -> {
                                         Integer idUser = userDto.getIdUser();
-                                        String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/"
-                                                        + idUser;
+                                        String url = inclubApiUrl + "/suscription/view/user/" + idUser;
                                         return webClient.get()
                                                         .uri(url)
                                                         .retrieve()
@@ -234,8 +255,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                         .flatMap(userDto -> {
                                                 log.info("[filterBeneficiaries] Usuario recibido: {}", userDto);
                                                 Integer idUser = userDto.getIdUser();
-                                                String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/"
-                                                                + idUser;
+                                                String url = inclubApiUrl + "/suscription/view/user/" + idUser;
                                                 log.info("[filterBeneficiaries] Consultando membresía en URL: {} para idUser: {}",
                                                                 url, idUser);
                                                 return webClient.get()
@@ -247,8 +267,8 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                                 .onErrorResume(e -> {
                                                                         log.error("Error consultando membresía para idUser {}: {}",
                                                                                         idUser, e.getMessage());
-                                                                        return Mono
-                                                                                        .justOrEmpty((com.proriberaapp.ribera.Domain.dto.MembershipResponse) null);
+                                                                        return Mono.justOrEmpty(
+                                                                                        (com.proriberaapp.ribera.Domain.dto.MembershipResponse) null);
                                                                 })
                                                                 .map(membership -> {
                                                                         String membershipName = (membership != null
@@ -260,7 +280,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                                         if (userDto.getCreationDate() != null
                                                                                         && userDto.getCreationDate()
                                                                                                         .size() >= 6) {
-                                                                                creationDate = java.time.LocalDateTime
+                                                                                java.time.LocalDateTime ldt = java.time.LocalDateTime
                                                                                                 .of(
                                                                                                                 userDto.getCreationDate()
                                                                                                                                 .get(0),
@@ -273,8 +293,9 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                                                                                 userDto.getCreationDate()
                                                                                                                                 .get(4),
                                                                                                                 userDto.getCreationDate()
-                                                                                                                                .get(5))
-                                                                                                .toString();
+                                                                                                                                .get(5));
+                                                                                creationDate = ldt.format(
+                                                                                                java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                                                                         }
                                                                         BeneficiaryDto dto = BeneficiaryDto.builder()
                                                                                         .id(userDto.getIdUser())
@@ -309,7 +330,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
 
         @Override
         public Flux<BeneficiaryDto> getBeneficiariesByMembership(Integer id) {
-                String url = "https://membershipapi-dev.inclub.world/api/v1/beneficiaries/subscription/" + id;
+                String url = inclubApiUrl + "/v1/beneficiaries/subscription/" + id;
                 return webClient.get()
                                 .uri(url)
                                 .retrieve()
