@@ -19,6 +19,7 @@ public class BeneficiaryCheckin {
     @org.springframework.data.relational.core.mapping.Column("membership")
     private String membership;
     @org.springframework.data.relational.core.mapping.Column("document_number")
+    @com.fasterxml.jackson.annotation.JsonProperty("document_number")
     private String documentNumber;
     @org.springframework.data.relational.core.mapping.Column("checkin_at")
     private LocalDateTime checkinAt;
