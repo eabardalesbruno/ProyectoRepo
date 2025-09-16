@@ -78,7 +78,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                                                     LocalDate offerTimeEnd,
                                                     Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
                                                     Integer adultExtraCapacity, Integer infantCapacity, List<Integer> feedingsSelected,
-                                                    boolean isFirstState) {
+                                                    boolean isFirstState,String roomNumber) {
         int totalCapacityWithOutInfant = kidCapacity + adultCapacity + adultMayorCapacity + adultExtraCapacity;
         Flux<FeedingItemsGrouped> feedingsGrouped = Flux.defer(() -> {
             if (!feedingsSelected.isEmpty()) {
@@ -102,7 +102,7 @@ public class RoomOfferServiceImpl implements RoomOfferService {
                         roomTypeId,
                         categoryName, offerTimeInit, offerTimeEnd,
                         kidCapacity, adultCapacity, adultMayorCapacity, adultExtraCapacity,
-                        infantCapacity)
+                        infantCapacity,roomNumber)
                 .filterWhen(roomOffer -> bookingRepository.findConflictingBookings(
                                 roomOffer.getRoomOfferId(), offerTimeInit, offerTimeEnd)
                         .hasElements()

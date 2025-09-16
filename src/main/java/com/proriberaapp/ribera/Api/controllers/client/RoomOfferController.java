@@ -68,10 +68,11 @@ public class RoomOfferController {
             @RequestParam(required = false) Integer adultMayorCapacity,
             @RequestParam(required = false) Integer adultExtra,
             @RequestParam(required = false) Boolean isFirstState,
-            @RequestParam(required = false) List<Integer> feedings) {
+            @RequestParam(required = false) List<Integer> feedings,
+            @RequestParam(required = false) String roomNumber) {
         return roomOfferService.findFilteredV2(roomTypeId,
                 categoryName, offerTimeInit, offerTimeEnd, kidCapacity, adultCapacity,
-                adultMayorCapacity, adultExtra, infantCapacity, feedings, isFirstState);
+                adultMayorCapacity, adultExtra, infantCapacity, feedings, isFirstState,roomNumber);
 
     }
 

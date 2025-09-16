@@ -69,55 +69,59 @@ public interface RoomOfferRepository extends R2dbcRepository<RoomOfferEntity, In
      * """)
      */
     @Query("""
-                   SELECT v.*,r.offertypeid,case
-                   when :isFirstState  then true
-                   when  v.categoryname='DEPARTAMENTO' and  (:adultCapacity+:adultMayorCapacity+:adultExtra+:kidCapacity)>=v.mincapacity then true
-                   when v.categoryname='MATRIMONIAL' and  (:adultCapacity+:adultMayorCapacity+:adultExtra+:kidCapacity)>=v.mincapacity and v.adultextra+v.adultcapacity+v.adultmayorcapacity>=(:adultCapacity+:adultMayorCapacity+:adultExtra) and v.infantcapacity+v.kidcapacity>=(:infantCapacity+:kidCapacity) then true
-                   when v.categoryname='DOBLE' and  (:adultCapacity+:adultMayorCapacity+:adultExtra+:kidCapacity)>=v.mincapacity and v.adultextra+v.adultcapacity+v.adultmayorcapacity>=(:adultCapacity+:adultMayorCapacity+:adultExtra) and v.infantcapacity+v.kidcapacity>=(:infantCapacity+:kidCapacity) then true
-                   else false
-                           end as isbooking,
-                                   calculate_nights(:offerTimeInit,:offerTimeEnd) as numberofnights
-                         FROM viewroomofferreturn v
-                 join roomoffer r on r.roomofferid=v.room_offer_id and r.state = 1
-                   WHERE
-                    	:categoryName is  null or 	 v.categoryname=:categoryName
-            		 and (
-            ('DEPARTAMENTO'=v.categoryname	 and
-
-            v.adultcapacity+v.adultextra+v.adultmayorcapacity+v.infantcapacity+v.kidcapacity>=(:adultCapacity+:kidCapacity+:infantCapacity+:adultMayorCapacity+:adultExtra))
-
-            or
-
-            ( 'DOBLE'=v.categoryname
-            and v.adultcapacity+v.adultextra+v.adultmayorcapacity>=(:adultCapacity+:adultMayorCapacity+:adultExtra)
-            and v.infantcapacity+v.kidcapacity>=(:infantCapacity+:kidCapacity))
-            or
-            ( 'MATRIMONIAL'=v.categoryname
-            and v.adultextra+v.adultcapacity+v.adultmayorcapacity>=(:adultCapacity+:adultMayorCapacity+:adultExtra) and v.infantcapacity+v.kidcapacity>=(:infantCapacity+:kidCapacity)
-
-            ))
-                     and (
-                           (:offerTimeInit IS NULL AND :offerTimeEnd IS NULL) OR
-                           (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NULL AND
-                            DATE(:offerTimeInit) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend)
-                           ) OR
-                           (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NOT NULL AND
-                            (
-                               DATE(v.offertimeend) BETWEEN DATE(:offerTimeInit) AND DATE(:offerTimeEnd) OR
-                               DATE(:offerTimeInit) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend) OR
-                               DATE(:offerTimeEnd) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend)
-                            )
-                           )
-                         )
-
-            and (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId)
-                 """)
+            SELECT
+                v.*,
+                r.offertypeid,
+                CASE
+                    WHEN :isFirstState THEN true
+                    WHEN v.categoryname = 'DEPARTAMENTO' AND (:adultCapacity + :adultMayorCapacity + :adultExtra + :kidCapacity) >= v.mincapacity THEN true
+                    WHEN v.categoryname = 'MATRIMONIAL' AND (:adultCapacity + :adultMayorCapacity + :adultExtra + :kidCapacity) >= v.mincapacity
+                        AND v.adultextra + v.adultcapacity + v.adultmayorcapacity >= (:adultCapacity + :adultMayorCapacity + :adultExtra)
+                        AND v.infantcapacity + v.kidcapacity >= (:infantCapacity + :kidCapacity) THEN true
+                    WHEN v.categoryname = 'DOBLE' AND (:adultCapacity + :adultMayorCapacity + :adultExtra + :kidCapacity) >= v.mincapacity
+                        AND v.adultextra + v.adultcapacity + v.adultmayorcapacity >= (:adultCapacity + :adultMayorCapacity + :adultExtra)
+                        AND v.infantcapacity + v.kidcapacity >= (:infantCapacity + :kidCapacity) THEN true
+                    ELSE false
+                END AS isbooking,
+                calculate_nights(:offerTimeInit, :offerTimeEnd) AS numberofnights
+            FROM viewroomofferreturn v
+            JOIN roomoffer r
+                ON r.roomofferid = v.room_offer_id
+                AND r.state = 1
+            WHERE
+                (:categoryName IS NULL OR v.categoryname = :categoryName)
+                AND (
+                    ('DEPARTAMENTO' = v.categoryname
+                        AND v.adultcapacity + v.adultextra + v.adultmayorcapacity + v.infantcapacity + v.kidcapacity
+                            >= (:adultCapacity + :kidCapacity + :infantCapacity + :adultMayorCapacity + :adultExtra))
+                    OR ('DOBLE' = v.categoryname
+                        AND v.adultcapacity + v.adultextra + v.adultmayorcapacity >= (:adultCapacity + :adultMayorCapacity + :adultExtra)
+                        AND v.infantcapacity + v.kidcapacity >= (:infantCapacity + :kidCapacity))
+                    OR ('MATRIMONIAL' = v.categoryname
+                        AND v.adultextra + v.adultcapacity + v.adultmayorcapacity >= (:adultCapacity + :adultMayorCapacity + :adultExtra)
+                        AND v.infantcapacity + v.kidcapacity >= (:infantCapacity + :kidCapacity))
+                )
+                AND (
+                    (:offerTimeInit IS NULL AND :offerTimeEnd IS NULL)
+                    OR (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NULL
+                        AND DATE(:offerTimeInit) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend))
+                    OR (:offerTimeInit IS NOT NULL AND :offerTimeEnd IS NOT NULL
+                        AND (
+                            DATE(v.offertimeend) BETWEEN DATE(:offerTimeInit) AND DATE(:offerTimeEnd)
+                            OR DATE(:offerTimeInit) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend)
+                            OR DATE(:offerTimeEnd) BETWEEN DATE(v.offertimeinit) AND DATE(v.offertimeend)
+                        )
+                    )
+                )
+                AND (:roomTypeId IS NULL OR v.roomtypeid = :roomTypeId)
+                AND (:roomNumber IS NULL OR v.numberroom = :roomNumber)
+            """)
     Flux<ViewRoomOfferReturn> findFilteredV2(
             Boolean isFirstState, Integer roomTypeId, String categoryName,
             LocalDate offerTimeInit,
             LocalDate offerTimeEnd,
             Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity, Integer adultExtra,
-            Integer infantCapacity);
+            Integer infantCapacity,String roomNumber);
 
     @Query("""
             SELECT v.*, r.state, r.numberdays
