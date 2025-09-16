@@ -11,10 +11,13 @@ public class ConfirmPaymentByBankTransferAndCardTemplateEmail implements EmailHa
     private BigDecimal totalCost;
     private double totalDiscount;
 
-    public ConfirmPaymentByBankTransferAndCardTemplateEmail(String clientName, BookingEmailDto bookingEmailDto) {
+    public ConfirmPaymentByBankTransferAndCardTemplateEmail(String clientName, BookingEmailDto bookingEmailDto,
+                                                            String bookingId,BigDecimal totalCost) {
         this.clientName = clientName;
         this.bookingEmailDto = bookingEmailDto;
         this.isAlimentation = false;
+        this.bookingId = bookingId;
+        this.totalCost = totalCost;
     }
 
     public ConfirmPaymentByBankTransferAndCardTemplateEmail(String clientName, BookingEmailDto bookingEmailDto,
