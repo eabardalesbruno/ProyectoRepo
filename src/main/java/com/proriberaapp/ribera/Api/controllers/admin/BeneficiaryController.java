@@ -16,9 +16,10 @@ import reactor.core.publisher.Mono;
 public class BeneficiaryController {
     // @GetMapping("/socios/{idUser}")
     // public Mono<InclubUserDto> getSocioById(@PathVariable Integer idUser) {
-    //     return beneficiaryService.consultarSociosDesdeInclub("")
-    //             .filter(socio -> socio.getIdUser() != null && socio.getIdUser().equals(idUser))
-    //             .next();
+    // return beneficiaryService.consultarSociosDesdeInclub("")
+    // .filter(socio -> socio.getIdUser() != null &&
+    // socio.getIdUser().equals(idUser))
+    // .next();
     // }
 
     // Nuevo endpoint paginado y filtrado
@@ -96,17 +97,4 @@ public class BeneficiaryController {
         String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
         return beneficiaryService.getMembershipsByUser(url);
     }
-
-    // Sugerencia: Endpoint para autocomplete de socios (puede ir en otro
-    // controller)
-    // @GetMapping("/socios/search")
-    // public Flux<InclubUserDto> buscarSocios(@RequestParam String search) {
-    // return beneficiaryService.buscarSocios(search);
-    // }
-
-    // Sugerencia: Endpoint para membresías por socio (puede ir en otro controller)
-    // @GetMapping("/membresias/user/{idUser}")
-    // public Flux<MembresiaDto> getMembresiasByUser(@PathVariable Integer idUser) {
-    // return beneficiaryService.getMembresiasByUser(idUser);
-    // }
 }
