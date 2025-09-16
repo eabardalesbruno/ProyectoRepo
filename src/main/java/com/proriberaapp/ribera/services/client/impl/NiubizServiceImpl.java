@@ -414,7 +414,7 @@ public class NiubizServiceImpl implements NiubizService {
                                 .imageVoucher("Pago con Tarjeta")
                                 .totalPoints(0)
                                 .paymentComplete(true)
-                                .pendingpay(0)
+                                .pendingpay(1)//SE COLOCA ESTADO 1 PARA QUE PASE DIRECTO A ESTADO PAGADO Y ACEPTADO
                                 .totalDiscount(totalDiscount)
                                 .percentageDiscount(percentageDiscount)
                                 .totalCostWithOutDiscount(totalCostWithOutDiscount)
@@ -790,6 +790,8 @@ public class NiubizServiceImpl implements NiubizService {
                     String cantidadPersonas = (String) paymentDetails.get("Cantidad de Personas");
                     String imagen = (String) paymentDetails.get("Imagen");
                     String roomName = (String) paymentDetails.get("RoomName");
+                    String bookingIdStr = (String)paymentDetails.get("bookingId");
+                    BigDecimal totalCost = (BigDecimal) paymentDetails.get("totalCost");
                     BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
                     BookingEmailDto bookingEmailDto = new BookingEmailDto(
                             roomName, nombres, codigoReserva.toString(), checkIn, checkOut,
@@ -797,7 +799,7 @@ public class NiubizServiceImpl implements NiubizService {
                             "Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico Etapa III, Cercado de Lima 15593",
                             cantidadPersonas);
                     ConfirmPaymentByBankTransferAndCardTemplateEmail confirmReserveBookingTemplateEmail = new ConfirmPaymentByBankTransferAndCardTemplateEmail(
-                            nombres, bookingEmailDto);
+                            nombres, bookingEmailDto,bookingIdStr,totalCost);
                     baseEmailReserve.addEmailHandler(confirmReserveBookingTemplateEmail);
                     System.out.println("Email body: " + baseEmailReserve.execute());
                     return baseEmailReserve.execute();

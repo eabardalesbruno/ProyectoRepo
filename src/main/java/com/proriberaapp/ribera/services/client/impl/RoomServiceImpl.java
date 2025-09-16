@@ -126,7 +126,6 @@ public class RoomServiceImpl implements RoomService {
     public Flux<RoomEntity> getAllRooms() {
         return roomRepository.findAll();
     }
-
     @Override
     public Mono<RoomEntity> getRoomById(Integer roomId) {
         return roomRepository.findById(roomId);

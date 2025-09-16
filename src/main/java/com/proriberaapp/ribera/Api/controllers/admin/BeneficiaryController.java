@@ -7,6 +7,7 @@ import com.proriberaapp.ribera.Domain.dto.BeneficiaryDto;
 import com.proriberaapp.ribera.services.admin.BeneficiaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -14,11 +15,14 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class BeneficiaryController {
+    @Value("${inclub.api.url.admin}")
+    private String inclubApiUrl;
     // @GetMapping("/socios/{idUser}")
     // public Mono<InclubUserDto> getSocioById(@PathVariable Integer idUser) {
-    //     return beneficiaryService.consultarSociosDesdeInclub("")
-    //             .filter(socio -> socio.getIdUser() != null && socio.getIdUser().equals(idUser))
-    //             .next();
+    // return beneficiaryService.consultarSociosDesdeInclub("")
+    // .filter(socio -> socio.getIdUser() != null &&
+    // socio.getIdUser().equals(idUser))
+    // .next();
     // }
 
     // Nuevo endpoint paginado y filtrado
@@ -93,20 +97,7 @@ public class BeneficiaryController {
     @GetMapping("/socios/{idUser}/membresias")
     public Flux<com.proriberaapp.ribera.Domain.dto.MembershipResponse> getMembresiasByUser(
             @PathVariable Integer idUser) {
-        String url = "https://adminpanelapi-dev.inclub.world/api/suscription/view/user/" + idUser;
+        String url = inclubApiUrl + "/suscription/view/user/" + idUser;
         return beneficiaryService.getMembershipsByUser(url);
     }
-
-    // Sugerencia: Endpoint para autocomplete de socios (puede ir en otro
-    // controller)
-    // @GetMapping("/socios/search")
-    // public Flux<InclubUserDto> buscarSocios(@RequestParam String search) {
-    // return beneficiaryService.buscarSocios(search);
-    // }
-
-    // Sugerencia: Endpoint para membresías por socio (puede ir en otro controller)
-    // @GetMapping("/membresias/user/{idUser}")
-    // public Flux<MembresiaDto> getMembresiasByUser(@PathVariable Integer idUser) {
-    // return beneficiaryService.getMembresiasByUser(idUser);
-    // }
 }
