@@ -26,14 +26,14 @@ public interface ActivityDshboardRepository extends R2dbcRepository<BookingEntit
     @Query("""
             SELECT COUNT(DISTINCT b.bookingid)
             FROM booking b
-            WHERE DATE(b.bookinginit) = :date
+            WHERE DATE(b.daybookinginit) = :date
             """)
     Mono<Integer> countTotalCheckIn(@Param("date") LocalDateTime date);
 
     @Query("""
             SELECT COUNT(DISTINCT b.bookingid)
             FROM booking b
-            WHERE DATE(b.bookingend) = :date
+            WHERE DATE(b.daybookingend) = :date
             """)
     Mono<Integer> countTotalCheckOut(@Param("date") LocalDateTime date);
 
@@ -49,7 +49,7 @@ public interface ActivityDshboardRepository extends R2dbcRepository<BookingEntit
     @Query("""
             SELECT COUNT(DISTINCT b.bookingid)
             FROM booking b
-            where b.bookingstateid = 1
+            WHERE b.bookingstateid = 1
             AND DATE(b.daybookinginit) <= :date
             AND DATE(b.daybookingend) >= :date
                 """)
@@ -58,24 +58,25 @@ public interface ActivityDshboardRepository extends R2dbcRepository<BookingEntit
     @Query("""
             SELECT COUNT(DISTINCT r.roomid)
             FROM room r
-            WHERE r.roomid NOT IN(SELECT DISTINCT ro.roomid
-            FROM roomoffer ro
-            JOIN booking b
-            ON b.roomofferid = ro.roomofferid
-            WHERE DATE(b.daybookinginit) <= :date
-            AND DATE(b.daybookingend) >= :date
+            WHERE r.roomid NOT IN(
+                SELECT DISTINCT ro.roomid
+                FROM roomoffer ro
+                JOIN booking b
+                ON b.roomofferid = ro.roomofferid
+                WHERE DATE(b.daybookinginit) <= :date
+                AND DATE(b.daybookingend) >= :date
             """)
 
     Mono<Integer> countTotalAvailables(@Param("date") LocalDateTime date);
 
     @Query("""
             SELECT
-                r.roomid
+                r.roomid,
                 r.roomnumber,
                 r.roomname,
                 rt.roomtypename,
                 rt.categoryname,
-                b.bookingid
+                b.bookingid,
                 b.daybookinginit,
                 b.daybookingend,
                 b.numberadults,
@@ -94,7 +95,7 @@ public interface ActivityDshboardRepository extends R2dbcRepository<BookingEntit
                     WHEN pb.paymentstateid = 2 THEN 'PAGADO'
                     ELSE 'OTRO'
                 END as status,
-                pb.paymentstateid
+                pb.paymentstateid,
                 pm.description as payment_method,
                 bf.bookingfeedingid IS NOT NULL as has_feeding
             FROM room r
