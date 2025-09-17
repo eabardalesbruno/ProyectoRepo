@@ -45,7 +45,8 @@ public class FullDayRateController {
     }
 
     @DeleteMapping("/{id}")
-    public Mono<ResponseEntity<Void>> deleteFullDayRateurn fullDayRateService.deleteById(id)
+    public Mono<ResponseEntity<Void>> deleteFullDayRate(@PathVariable Integer id) {
+        return fullDayRateService.deleteById(id)
                 .map(deleted -> deleted
                         ? ResponseEntity.noContent().build()
                         : ResponseEntity.notFound().build()
