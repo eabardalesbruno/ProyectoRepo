@@ -29,11 +29,11 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
         @Override
         public Mono<ActivityDashboardResponseDTO> getActivityDashboard(LocalDateTime date, int page, int size) {
                 int offset = page * size;
-                Mono<List<RoomDetailDTO>> roomsMono = activityDashboardRepository.findAllRooms(date, date, size, offset)
+                Mono<List<RoomDetailDTO>> roomsMono = activityDashboardRepository.findAllRoomsPaginated(date, date, size, offset)
                                 .map(this::mapToRoomDetailDTO)
                                 .collectList();
 
-                Mono<Long> countRoomsMono = activityDashboardRepository.countAllRooms(date, date);
+                Mono<Long> countRoomsMono = activityDashboardRepository.countAllRoomsFiltered(date, date);
                 Mono<ActivitySummaryDTO> summaryMono = getActivitySummary(date);
 
                 return Mono.zip(roomsMono, countRoomsMono, summaryMono)
