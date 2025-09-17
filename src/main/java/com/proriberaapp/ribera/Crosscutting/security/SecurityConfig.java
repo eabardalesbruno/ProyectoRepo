@@ -92,12 +92,12 @@ public class SecurityConfig {
                                                                 "/api/v1/notification/**",
                                                                 "/api/v1/beneficiaries/**",
                                                                 "/api/v1/socios/**",
-                                                                "/api/v1/beneficiaries",
+                                                                // "/api/v1/beneficiaries",
                                                                 "/api/v1/membresias/**",
                                                                 "/api/v1/checkin/**")
 
                                                 .permitAll()
-                                                   
+
                                                 .pathMatchers("/api/v1/admin/**").hasRole("SUPER_ADMIN")
 
                                                 .pathMatchers("/api/v1/admin/manager/**").hasAnyRole("ADMIN")
@@ -109,9 +109,9 @@ public class SecurityConfig {
                                                 .hasAnyAuthority("DELETE")
 
                                                 .anyExchange().authenticated())
-                  
+
                                 .securityContextRepository(securityContextRepository)
-                  
+
                                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                                 .logout(ServerHttpSecurity.LogoutSpec::disable)
