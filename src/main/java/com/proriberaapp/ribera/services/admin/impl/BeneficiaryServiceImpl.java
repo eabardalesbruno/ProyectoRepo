@@ -21,7 +21,7 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 @Service
 @Slf4j
 public class BeneficiaryServiceImpl implements BeneficiaryService {
-        @Value("${inclub.api.url.admin}")
+        @Value("${inclub.api.url.membership}")
         private String inclubApiUrl;
 
         @Override
@@ -330,11 +330,14 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
 
         @Override
         public Flux<BeneficiaryDto> getBeneficiariesByMembership(Integer id) {
-                String url = inclubApiUrl + "/v1/beneficiaries/subscription/" + id;
+                String url = inclubApiUrl + "/beneficiaries/subscription/" + id;
+                log.info("[getBeneficiariesByMembership] URL externa: {}", url);
                 return webClient.get()
                                 .uri(url)
                                 .retrieve()
                                 .bodyToMono(com.fasterxml.jackson.databind.JsonNode.class)
+                                .doOnNext(json -> log.info("[getBeneficiariesByMembership] Respuesta externa: {}",
+                                                json))
                                 .flatMapMany(json -> {
                                         com.fasterxml.jackson.databind.JsonNode dataNode = json.get("data");
                                         if (dataNode != null && dataNode.isArray()) {
@@ -342,35 +345,36 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                                 .map(node -> BeneficiaryDto.builder()
                                                                                 .id(node.has("idBeneficiary") && !node
                                                                                                 .get("idBeneficiary")
-                                                                                                .isNull()
-                                                                                                                ? node.get("idBeneficiary")
-                                                                                                                                .asInt()
+                                                                                                .isNull() ? node.get(
+                                                                                                                "idBeneficiary")
+                                                                                                                .asInt()
                                                                                                                 : null)
-                                                                                .idSubscription(
-                                                                                                node.has("idSubscription")
-                                                                                                                && !node.get("idSubscription")
-                                                                                                                                .isNull()
-                                                                                                                                                ? node.get("idSubscription")
-                                                                                                                                                                .asInt()
-                                                                                                                                                : null)
-                                                                                .userId(node.has("userId") && !node
-                                                                                                .get("userId").isNull()
-                                                                                                                ? node.get("userId")
+                                                                                .idSubscription(node
+                                                                                                .has("idSubscription")
+                                                                                                && !node.get("idSubscription")
+                                                                                                                .isNull() ? node.get(
+                                                                                                                                "idSubscription")
                                                                                                                                 .asInt()
+                                                                                                                                : null)
+                                                                                .userId(node.has("userId") && !node.get(
+                                                                                                "userId")
+                                                                                                .isNull() ? node.get(
+                                                                                                                "userId")
+                                                                                                                .asInt()
                                                                                                                 : null)
-                                                                                .documentTypeId(
-                                                                                                node.has("documentTypeId")
-                                                                                                                && !node.get("documentTypeId")
-                                                                                                                                .isNull()
-                                                                                                                                                ? node.get("documentTypeId")
-                                                                                                                                                                .asInt()
-                                                                                                                                                : null)
+                                                                                .documentTypeId(node
+                                                                                                .has("documentTypeId")
+                                                                                                && !node.get("documentTypeId")
+                                                                                                                .isNull() ? node.get(
+                                                                                                                                "documentTypeId")
+                                                                                                                                .asInt()
+                                                                                                                                : null)
                                                                                 .residenceCountryId(node.has(
                                                                                                 "residenceCountryId")
                                                                                                 && !node.get("residenceCountryId")
-                                                                                                                .isNull()
-                                                                                                                                ? node.get("residenceCountryId")
-                                                                                                                                                .asInt()
+                                                                                                                .isNull() ? node.get(
+                                                                                                                                "residenceCountryId")
+                                                                                                                                .asInt()
                                                                                                                                 : null)
                                                                                 .name(node.has("name") && !node.get(
                                                                                                 "name")
@@ -380,38 +384,39 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                                                                                 : null)
                                                                                 .lastName(node.has("lastName") && !node
                                                                                                 .get("lastName")
-                                                                                                .isNull()
-                                                                                                                ? node.get("lastName")
-                                                                                                                                .asText()
+                                                                                                .isNull() ? node.get(
+                                                                                                                "lastName")
+                                                                                                                .asText()
                                                                                                                 : null)
-                                                                                .gender(node.has("gender") && !node
-                                                                                                .get("gender").isNull()
-                                                                                                                ? node.get("gender")
-                                                                                                                                .asText()
+                                                                                .gender(node.has("gender") && !node.get(
+                                                                                                "gender")
+                                                                                                .isNull() ? node.get(
+                                                                                                                "gender")
+                                                                                                                .asText()
                                                                                                                 : null)
-                                                                                .email(node.has("email") && !node
-                                                                                                .get("email").isNull()
-                                                                                                                ? node.get("email")
-                                                                                                                                .asText()
+                                                                                .email(node.has("email") && !node.get(
+                                                                                                "email")
+                                                                                                .isNull() ? node.get(
+                                                                                                                "email")
+                                                                                                                .asText()
                                                                                                                 : null)
-                                                                                // Mapeo correcto: 'nroDocument' del
-                                                                                // JSON se asigna a 'documentNumber' en
-                                                                                // el DTO
-                                                                                .documentNumber(node.has("nroDocument")
+                                                                                .documentNumber(node
+                                                                                                .has("nroDocument")
                                                                                                 && !node.get("nroDocument")
-                                                                                                                .isNull()
-                                                                                                                                ? node.get("nroDocument")
-                                                                                                                                                .asText()
+                                                                                                                .isNull() ? node.get(
+                                                                                                                                "nroDocument")
+                                                                                                                                .asText()
                                                                                                                                 : null)
                                                                                 .birthDate(node.has("ageDate") && !node
                                                                                                 .get("ageDate").isNull()
                                                                                                                 ? node.get("ageDate")
                                                                                                                                 .asText()
                                                                                                                 : null)
-                                                                                .status(node.has("status") && !node
-                                                                                                .get("status").isNull()
-                                                                                                                ? node.get("status")
-                                                                                                                                .asInt()
+                                                                                .status(node.has("status") && !node.get(
+                                                                                                "status")
+                                                                                                .isNull() ? node.get(
+                                                                                                                "status")
+                                                                                                                .asInt()
                                                                                                                 : null)
                                                                                 .isAdult(node.has("isAdult") && !node
                                                                                                 .get("isAdult").isNull()
@@ -420,19 +425,21 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                                                                                 : null)
                                                                                 .creationDate(node.has("creationDate")
                                                                                                 && !node.get("creationDate")
-                                                                                                                .isNull()
-                                                                                                                                ? node.get("creationDate")
-                                                                                                                                                .asText()
+                                                                                                                .isNull() ? node.get(
+                                                                                                                                "creationDate")
+                                                                                                                                .asText()
                                                                                                                                 : null)
-                                                                                .expirationDate(
-                                                                                                node.has("expirationDate")
-                                                                                                                && !node.get("expirationDate")
-                                                                                                                                .isNull()
-                                                                                                                                                ? node.get("expirationDate")
-                                                                                                                                                                .asText()
-                                                                                                                                                : null)
+                                                                                .expirationDate(node
+                                                                                                .has("expirationDate")
+                                                                                                && !node.get("expirationDate")
+                                                                                                                .isNull() ? node.get(
+                                                                                                                                "expirationDate")
+                                                                                                                                .asText()
+                                                                                                                                : null)
                                                                                 .build());
                                         } else {
+                                                log.warn("[getBeneficiariesByMembership] No se encontró el nodo 'data' o no es un array. Respuesta: {}",
+                                                                json);
                                                 return Flux.empty();
                                         }
                                 })
