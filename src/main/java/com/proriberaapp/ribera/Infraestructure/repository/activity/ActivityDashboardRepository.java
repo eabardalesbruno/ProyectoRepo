@@ -65,6 +65,7 @@ public interface ActivityDashboardRepository extends R2dbcRepository<BookingEnti
                             ON b.roomofferid = ro.roomofferid
                             WHERE DATE(b.daybookinginit) <= :date
                             AND DATE(b.daybookingend) >= :date
+                            )
                         """)
 
         Mono<Integer> countTotalAvailables(@Param("date") LocalDateTime date);
@@ -109,7 +110,7 @@ public interface ActivityDashboardRepository extends R2dbcRepository<BookingEnti
                         LEFT JOIN paymentmethod pm ON pm.paymentmethodid = pb.paymentmethodid
                         LEFT JOIN booking_feeding bf ON bf.bookingid = b.bookingid
                         ORDER BY r.roomnumber
-                        LIMIT $2 OFFSET $3
+                        LIMIT :size OFFSET :offset
                         """)
         Flux<ActivityRoomProjection> findAllRooms(
                         @Param("dateStart") LocalDateTime dateStart,
