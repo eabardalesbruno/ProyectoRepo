@@ -20,15 +20,22 @@ import lombok.NoArgsConstructor;
 public class ActivityDashboardResponseDTO {
     private Boolean success;
     private ActivitySummaryDTO data;
+    private List<RoomDetailDTO> rooms;
+    private PaginationDTO pagination;
     private LocalDateTime timestamp;
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ActivityDataDTO {
-        private ActivitySummaryDTO summary;
-        private List<RoomDetailDTO> rooms;
-        private PaginationDTO pagination;
-    }
+    /*
+     * @Data
+     * 
+     * @Builder
+     * 
+     * @NoArgsConstructor
+     * 
+     * @AllArgsConstructor
+     * public static class ActivityDataDTO {
+     * private ActivitySummaryDTO summary;
+     * private List<RoomDetailDTO> rooms;
+     * private PaginationDTO pagination;
+     * }
+     */
 }

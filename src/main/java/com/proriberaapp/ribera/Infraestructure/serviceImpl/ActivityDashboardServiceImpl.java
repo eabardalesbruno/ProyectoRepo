@@ -76,27 +76,6 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
                                                                 .build());
         }
 
-        private Mono<RoomDetailResult> getRoomDetails(LocalDateTime date, int page, int size) {
-                int offset = page * size;
-
-                Mono<List<RoomDetailDTO>> roomsMono = activityDashboardRepository.findAllRooms(date, size, offset)
-                                .map(this::mapToRoomDetailDTO).collectList();
-                Mono<Long> countMono = activityDashboardRepository.countAllRooms(date);
-
-                return Mono.zip(roomsMono, countMono)
-                                .map(tuple -> {
-                                        List<RoomDetailDTO> rooms = tuple.getT1();
-                                        long totalElements = tuple.getT2();
-                                        int totalPages = (int) Math.ceil((double) totalElements / size);
-                                        return new RoomDetailResult(rooms, PaginationDTO.builder()
-                                                        .currentPage(page)
-                                                        .size(size)
-                                                        .totalElements(totalElements)
-                                                        .totalPages(totalPages)
-                                                        .build());
-                                });
-        }
-
         private RoomDetailDTO mapToRoomDetailDTO(ActivityRoomProjection projection) {
                 return RoomDetailDTO.builder()
                                 .roomId(projection.getRoomId())
