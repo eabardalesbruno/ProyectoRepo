@@ -15,6 +15,8 @@ public class WebConfig {
         config.addAllowedOrigin("http://localhost:8777"); // Swagger UI local
         config.addAllowedOrigin("https://panel-dev.cieneguillariberadelrio.com"); // entorno dev
         config.addAllowedOrigin("https://panel.cieneguillariberadelrio.com"); // producción
+        config.addAllowedOrigin("https://cieneguillariberadelrio.com"); // producción client
+        config.addAllowedOrigin("https://dev.cieneguillariberadelrio.com"); // producción client 2.0
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true);
