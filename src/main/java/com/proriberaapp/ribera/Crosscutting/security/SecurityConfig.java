@@ -92,7 +92,8 @@ public class SecurityConfig {
                                                                 "/api/v1/notification/**",
                                                                 "/api/v1/beneficiaries/**",
                                                                 "/api/v1/socios/**",
-                                                                "/api/v1/beneficiaries")
+                                                                "/api/v1/beneficiaries",
+                                                                "/api/v1/fullday-rates")
 
                                                 .permitAll()
                                                    
