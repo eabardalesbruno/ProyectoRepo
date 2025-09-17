@@ -125,7 +125,7 @@ public interface ActivityDashboardRepository extends R2dbcRepository<BookingEnti
                                 AND DATE(b.daybookinginit) <= :date
                                 AND DATE(b.daybookingend) >= :date
                         LEFT JOIN userclient uc ON uc.userclientid = b.userclientid
-                        LEFT JOIN paymentbook pb ON bookingid = b.bookingid
+                        LEFT JOIN paymentbook pb ON pb.bookingid = b.bookingid
                         LEFT JOIN paymentmethod pm ON pm.paymentmethodid = pb.paymentmethodid
                         LEFT JOIN booking_feeding bf ON bf.bookingid = b.bookingid
                                 """)
