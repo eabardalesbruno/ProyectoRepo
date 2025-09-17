@@ -102,17 +102,18 @@ public interface ActivityDashboardRepository extends R2dbcRepository<BookingEnti
                         LEFT JOIN roomtype rt ON rt.roomtypeid = r.roomtypeid
                         LEFT JOIN roomoffer ro ON ro.roomid = r.roomid
                         LEFT JOIN booking b ON b.roomofferid = ro.roomofferid
-                            AND DATE(b.daybookinginit) <= :date
-                            AND DATE(b.daybookingend) >= :date
+                            AND DATE(b.daybookinginit) <= :dateStart
+                            AND DATE(b.daybookingend) >= :dateEnd
                         LEFT JOIN userclient uc ON uc.userclientid = b.userclientid
                         LEFT JOIN paymentbook pb ON pb.bookingid = b.bookingid
                         LEFT JOIN paymentmethod pm ON pm.paymentmethodid = pb.paymentmethodid
                         LEFT JOIN booking_feeding bf ON bf.bookingid = b.bookingid
                         ORDER BY r.roomnumber
-                        LIMIT :size OFFSET :offset
+                        LIMIT $2 OFFSET $3
                         """)
         Flux<ActivityRoomProjection> findAllRooms(
-                        @Param("date") LocalDateTime date,
+                        @Param("dateStart") LocalDateTime dateStart,
+                        @Param("dateEnd") LocalDateTime dateEnd,
                         @Param("size") int size,
                         @Param("offset") int offset);
 
@@ -122,12 +123,13 @@ public interface ActivityDashboardRepository extends R2dbcRepository<BookingEnti
                         LEFT JOIN roomtype rt ON rt.roomtypeid = r.roomtypeid
                         LEFT JOIN roomoffer ro ON ro.roomid = r.roomid
                         LEFT JOIN booking b ON b.roomofferid = ro.roomofferid
-                                AND DATE(b.daybookinginit) <= :date
-                                AND DATE(b.daybookingend) >= :date
+                                AND DATE(b.daybookinginit) <= :dateStart
+                                AND DATE(b.daybookingend) >= :dateEnd
                         LEFT JOIN userclient uc ON uc.userclientid = b.userclientid
                         LEFT JOIN paymentbook pb ON pb.bookingid = b.bookingid
                         LEFT JOIN paymentmethod pm ON pm.paymentmethodid = pb.paymentmethodid
                         LEFT JOIN booking_feeding bf ON bf.bookingid = b.bookingid
                                 """)
-        Mono<Long> countAllRooms(@Param("date") LocalDateTime date);
+        Mono<Long> countAllRooms(@Param("dateStart") LocalDateTime dateStart,
+                        @Param("dateEnd") LocalDateTime dateEnd);
 }

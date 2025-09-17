@@ -23,7 +23,7 @@ public class ActivityDashboardController {
 
     @GetMapping
     public Mono<ActivityDashboardResponseDTO> getActivityDashboard(
-            @RequestParam @DateTimeFormat(pattern = "YYYY-MM-DD") String date,
+            @RequestParam @DateTimeFormat(pattern = "yyy-MM-dd") String date,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         LocalDateTime dateTime = LocalDate.parse(date).atStartOfDay();

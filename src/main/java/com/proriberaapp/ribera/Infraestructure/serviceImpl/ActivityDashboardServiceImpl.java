@@ -28,12 +28,34 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
 
         @Override
         public Mono<ActivityDashboardResponseDTO> getActivityDashboard(LocalDateTime date, int page, int size) {
-                return Mono.zip(getActivitySummary(date), getRoomDetails(date, page, size))
-                                .map(tuple -> ActivityDashboardResponseDTO.builder().success(
-                                                true)
-                                                .data(tuple.getT1())
-                                                .timestamp(LocalDateTime.now())
-                                                .build());
+                int offset = page * size;
+                Mono<List<RoomDetailDTO>> roomsMono = activityDashboardRepository.findAllRooms(date, date, size, offset)
+                                .map(this::mapToRoomDetailDTO)
+                                .collectList();
+
+                Mono<Long> countRoomsMono = activityDashboardRepository.countAllRooms(date, date);
+                Mono<ActivitySummaryDTO> summaryMono = getActivitySummary(date);
+
+                return Mono.zip(roomsMono, countRoomsMono, summaryMono)
+                                .map(tuple -> {
+                                        List<RoomDetailDTO> rooms = tuple.getT1();
+                                        long totalRooms = tuple.getT2();
+                                        ActivitySummaryDTO summary = tuple.getT3();
+                                        int totalPages = (int) Math.ceil((double) totalRooms / size);
+                                        PaginationDTO pagination = PaginationDTO.builder()
+                                                        .currentPage(page)
+                                                        .size(size)
+                                                        .totalElements(totalRooms)
+                                                        .totalPages(totalPages)
+                                                        .build();
+                                        return ActivityDashboardResponseDTO.builder()
+                                                        .success(true)
+                                                        .data(summary)
+                                                        .rooms(rooms)
+                                                        .pagination(pagination)
+                                                        .timestamp(LocalDateTime.now())
+                                                        .build();
+                                });
         }
 
         private Mono<ActivitySummaryDTO> getActivitySummary(LocalDateTime date) {
