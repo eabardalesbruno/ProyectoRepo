@@ -155,7 +155,7 @@ public class NiubizServiceImpl implements NiubizService {
         } else if (type == 2) {
             urlWeb += urlClientFrontEnd + "/promotor/dashboard/reservas";
         } else if (type == 3) {
-            urlWeb += urlClientFrontEnd + "/bookings/reservados";
+            urlWeb += urlClientFrontEnd + "/payment-method/" + purchaseNumber;
         } else if (type == 4) {
             urlWeb += urlAdminFrontEnd + "/manager/booking-fullday-manager";
         }
