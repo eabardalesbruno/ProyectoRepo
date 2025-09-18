@@ -5,27 +5,22 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.proriberaapp.ribera.Infraestructure.serviceImpl.ActivityDashboardCustomRepositoryImpl;
 import com.proriberaapp.ribera.Domain.dto.activity.ActivitySummaryDTO;
-import com.proriberaapp.ribera.Domain.dto.activity.GuestInfoDTO;
 import com.proriberaapp.ribera.Domain.dto.activity.PaginationDTO;
-import com.proriberaapp.ribera.Domain.dto.activity.PaymentInfoDTO;
-import com.proriberaapp.ribera.Domain.dto.activity.ReservationDetailDTO;
-import com.proriberaapp.ribera.Domain.dto.activity.RoomCapacityDTO;
 import com.proriberaapp.ribera.Domain.dto.activity.RoomDetailDTO;
 import com.proriberaapp.ribera.Domain.dto.activity.response.ActivityDashboardResponseDTO;
 import com.proriberaapp.ribera.Infraestructure.repository.activity.ActivityDashboardRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.activity.ActivityDashboardCustomRepository;
 import com.proriberaapp.ribera.application.service.ActivityDashboardService;
 
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
-import reactor.tools.shaded.net.bytebuddy.asm.Advice.Local;
 
 @Service
 @RequiredArgsConstructor
 public class ActivityDashboardServiceImpl implements ActivityDashboardService {
         private final ActivityDashboardRepository activityDashboardRepository;
-        private final ActivityDashboardCustomRepositoryImpl activityDashboardCustomRepository;
+        private final ActivityDashboardCustomRepository activityDashboardCustomRepository;
 
         @Override
         public Mono<ActivityDashboardResponseDTO> getActivityDashboard(
@@ -47,7 +42,8 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
                                     return start < end ? list.subList(start, end) : List.of();
                                 });
 
-                Mono<Long> countRoomsMono = activityDashboardCustomRepository.countAllRoomsFiltered(date, date);
+                Mono<Long> countRoomsMono = activityDashboardCustomRepository.countAllRoomsFiltered(
+                    date, date, search, clientType, paymentType, roomType, status);
                 Mono<ActivitySummaryDTO> summaryMono = getActivitySummary(date);
 
                 return Mono.zip(roomsMono, countRoomsMono, summaryMono)

@@ -12,5 +12,12 @@ public interface ActivityDashboardCustomRepository {
             String roomType,
             String status);
 
-    Mono<Long> countAllRoomsFiltered(LocalDateTime dateStart, LocalDateTime dateEnd);
+    Mono<Long> countAllRoomsFiltered(
+        LocalDateTime dateStart,
+        LocalDateTime dateEnd,
+        String search,
+        String clientType,
+        String paymentType,
+        String roomType,
+        String status);
 }
