@@ -55,7 +55,7 @@ public class NiubizController {
         return niubizService.tofinalize(niubizEntity, token, purchaseNumber, amount, 3, userId)
                 .flatMap(redirect -> {
                     return Mono.just(ResponseEntity
-                            .status(HttpStatus.TEMPORARY_REDIRECT)
+                            .status(HttpStatus.FOUND)  // Cambiar de TEMPORARY_REDIRECT a FOUND
                             .header(HttpHeaders.LOCATION, redirect)
                             .build());
                 });

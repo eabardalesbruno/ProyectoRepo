@@ -22,7 +22,7 @@ public interface RoomOfferService extends BaseService<RoomOfferEntity, RoomOffer
                         LocalDate offerTimeEnd,
                         Integer kidCapacity, Integer adultCapacity, Integer adultMayorCapacity,
                         Integer adultExtraCapacity, Integer infantCapacity, List<Integer> feedingsSelected,
-                        boolean isFirstState);
+                        boolean isFirstState,String roomNumber);
 
         Flux<ViewRoomOfferReturn> findFiltered(Integer roomTypeId, LocalDate offerTimeInit,
                         LocalDate offerTimeEnd,
