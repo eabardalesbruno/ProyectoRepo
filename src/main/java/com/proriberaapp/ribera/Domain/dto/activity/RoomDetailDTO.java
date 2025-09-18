@@ -18,4 +18,5 @@ public class RoomDetailDTO {
     private String status;
     private ReservationDetailDTO reservation;
     private PaymentInfoDTO payment;
+    private StandbyInfoDTO standby;
 }

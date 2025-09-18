@@ -1,5 +1,6 @@
 package com.proriberaapp.ribera.controllers.admin;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,9 +23,16 @@ public class ActivityDashboardController {
 
     @GetMapping
     public Mono<ActivityDashboardResponseDTO> getActivityDashboard(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") String date,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return activityDashboardService.getActivityDashboard(date, page, size);
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String clientType,
+            @RequestParam(required = false) String paymentType,
+            @RequestParam(required = false) String roomType,
+            @RequestParam(required = false) String status) {
+        LocalDateTime dateTime = LocalDate.parse(date).atStartOfDay();
+        return activityDashboardService.getActivityDashboard(
+            dateTime, page, size, search, clientType, paymentType, roomType, status);
     }
 }
