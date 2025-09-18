@@ -71,7 +71,7 @@ public class ActivityDashboardCustomRepositoryImpl implements ActivityDashboardC
                 .bind("offset", offset)
                 .map((row, meta) -> {
                     return RoomDetailDTO.builder()
-                            .roomId(row.get("rowid", Integer.class))
+                            .roomId(row.get("roomid", Integer.class))
                             .roomNumber(row.get("roomnumber", String.class))
                             .roomName(row.get("roomname", String.class))
                             .roomType(row.get("categoryname", String.class))

@@ -9,7 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface ActivityDashboardCustomRepository {
-    Flux<ActivityRoomProjection> findAllRoomsPaginated(LocalDateTime dateStart, LocalDateTime dateEnd, int size,
+    Flux<RoomDetailDTO> findAllRoomsPaginated(LocalDateTime dateStart, LocalDateTime dateEnd, int size,
             int offset);
 
     Mono<Long> countAllRoomsFiltered(LocalDateTime dateStart, LocalDateTime dateEnd);

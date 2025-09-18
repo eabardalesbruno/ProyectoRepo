@@ -30,7 +30,7 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
         public Mono<ActivityDashboardResponseDTO> getActivityDashboard(LocalDateTime date, int page, int size) {
                 int offset = page * size;
                 Mono<List<RoomDetailDTO>> roomsMono = activityDashboardRepository.findAllRoomsPaginated(date, date, size, offset)
-                                .map(this::mapToRoomDetailDTO)
+                                //.map(this::mapToRoomDetailDTO)
                                 .collectList();
 
                 Mono<Long> countRoomsMono = activityDashboardRepository.countAllRoomsFiltered(date, date);
@@ -107,7 +107,7 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
                                                 .total(projection.getNumberAdults() + projection.getNumberChildren()
                                                                 + projection.getNumberBabies()
                                                                 + projection.getNumberAdultsExtra() +
-                                                                projection.getNumberAdultsMayor())
+                                                                 projection.getNumberAdultsMayor())
                                                 .build())
                                 .build();
         }
