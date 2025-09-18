@@ -20,15 +20,13 @@ public class ActivityDashboardCustomRepositoryImpl implements ActivityDashboardC
     }
 
     @Override
-    public Flux<RoomDetailDTO> findAllRoomsPaginated(LocalDateTime dateStart, LocalDateTime dateEnd, int size,
-            int offset) {
+    public Flux<RoomDetailDTO> findAllRoomsPaginated(LocalDateTime dateStart, LocalDateTime dateEnd) {
         String sql = """
                  SELECT
                     r.roomid,
                     r.roomnumber,
                     r.roomname,
                     rt.roomtypename,
-                    rt.categoryname,
                     b.bookingid,
                     b.daybookinginit,
                     b.daybookingend,
@@ -62,19 +60,16 @@ public class ActivityDashboardCustomRepositoryImpl implements ActivityDashboardC
                 LEFT JOIN paymentmethod pm ON pm.paymentmethodid = pb.paymentmethodid
                 LEFT JOIN booking_feeding bf ON bf.bookingid = b.bookingid
                 ORDER BY r.roomnumber
-                LIMIT :size OFFSET :offset
                 """;
         return databaseClient.sql(sql)
                 .bind("dateStart", dateStart)
                 .bind("dateEnd", dateEnd)
-                .bind("size", size)
-                .bind("offset", offset)
                 .map((row, meta) -> {
                     return RoomDetailDTO.builder()
                             .roomId(row.get("roomid", Integer.class))
                             .roomNumber(row.get("roomnumber", String.class))
                             .roomName(row.get("roomname", String.class))
-                            .roomType(row.get("categoryname", String.class))
+                            .roomType(row.get("roomtypename", String.class))
                             .status(row.get("status", String.class))
                             .build();
                 }).all();
@@ -83,22 +78,25 @@ public class ActivityDashboardCustomRepositoryImpl implements ActivityDashboardC
     @Override
     public Mono<Long> countAllRoomsFiltered(LocalDateTime dateStart, LocalDateTime dateEnd) {
         String sql = """
-                 SELECT COUNT(DISTINCT r.roomid)
-                        FROM room r
-                        LEFT JOIN roomtype rt ON rt.roomtypeid = r.roomtypeid
-                        LEFT JOIN roomoffer ro ON ro.roomid = r.roomid
-                        LEFT JOIN booking b ON b.roomofferid = ro.roomofferid
-                                AND DATE(b.daybookinginit) <= :dateStart
-                                AND DATE(b.daybookingend) >= :dateEnd
-                        LEFT JOIN userclient uc ON uc.userclientid = b.userclientid
-                        LEFT JOIN paymentbook pb ON pb.bookingid = b.bookingid
-                        LEFT JOIN paymentmethod pm ON pm.paymentmethodid = pb.paymentmethodid
-                        LEFT JOIN booking_feeding bf ON bf.bookingid = b.bookingid
+                 SELECT COUNT(1) as total
+                 FROM (
+                    SELECT DISTINCT r.roomid
+                    FROM room r
+                    LEFT JOIN roomtype rt ON rt.roomtypeid = r.roomtypeid
+                    LEFT JOIN roomoffer ro ON ro.roomid = r.roomid
+                    LEFT JOIN booking b ON b.roomofferid = ro.roomofferid
+                        AND b.daybookinginit <= :dateStart
+                        AND b.daybookingend >= :dateEnd
+                    LEFT JOIN userclient uc ON uc.userclientid = b.userclientid
+                    LEFT JOIN paymentbook pb ON pb.bookingid = b.bookingid
+                    LEFT JOIN paymentmethod pm ON pm.paymentmethodid = pb.paymentmethodid
+                    LEFT JOIN booking_feeding bf ON bf.bookingid = b.bookingid
+                 ) t
                 """;
         return databaseClient.sql(sql)
                 .bind("dateStart", dateStart)
                 .bind("dateEnd", dateEnd)
-                .map((row, meta) -> row.get(0, Long.class))
+                .map((row, meta) -> row.get("total", Long.class))
                 .one();
     }
 }

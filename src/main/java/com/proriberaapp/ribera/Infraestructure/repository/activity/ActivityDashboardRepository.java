@@ -12,7 +12,7 @@ import com.proriberaapp.ribera.Domain.entities.BookingEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-public interface ActivityDashboardRepository extends R2dbcRepository<BookingEntity, Integer>, ActivityDashboardCustomRepository {
+public interface ActivityDashboardRepository extends R2dbcRepository<BookingEntity, Integer> {
         @Query("""
                         SELECT COUNT(DISTINCT b.bookingid)
                         FROM booking b

@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.proriberaapp.ribera.Domain.Interfaces.ActivityRoomProjection;
+import com.proriberaapp.ribera.Infraestructure.serviceImpl.ActivityDashboardCustomRepositoryImpl;
 import com.proriberaapp.ribera.Domain.dto.activity.ActivitySummaryDTO;
 import com.proriberaapp.ribera.Domain.dto.activity.GuestInfoDTO;
 import com.proriberaapp.ribera.Domain.dto.activity.PaginationDTO;
@@ -25,15 +25,20 @@ import reactor.tools.shaded.net.bytebuddy.asm.Advice.Local;
 @RequiredArgsConstructor
 public class ActivityDashboardServiceImpl implements ActivityDashboardService {
         private final ActivityDashboardRepository activityDashboardRepository;
+        private final ActivityDashboardCustomRepositoryImpl activityDashboardCustomRepository;
 
         @Override
         public Mono<ActivityDashboardResponseDTO> getActivityDashboard(LocalDateTime date, int page, int size) {
                 int offset = page * size;
-                Mono<List<RoomDetailDTO>> roomsMono = activityDashboardRepository.findAllRoomsPaginated(date, date, size, offset)
-                                //.map(this::mapToRoomDetailDTO)
-                                .collectList();
+                Mono<List<RoomDetailDTO>> roomsMono = activityDashboardCustomRepository.findAllRoomsPaginated(date, date)
+                                .collectList()
+                                .map(list -> {
+                                    int start = offset;
+                                    int end = Math.min(offset + size, list.size());
+                                    return start < end ? list.subList(start, end) : List.of();
+                                });
 
-                Mono<Long> countRoomsMono = activityDashboardRepository.countAllRoomsFiltered(date, date);
+                Mono<Long> countRoomsMono = activityDashboardCustomRepository.countAllRoomsFiltered(date, date);
                 Mono<ActivitySummaryDTO> summaryMono = getActivitySummary(date);
 
                 return Mono.zip(roomsMono, countRoomsMono, summaryMono)
@@ -76,50 +81,50 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
                                                                 .build());
         }
 
-        private RoomDetailDTO mapToRoomDetailDTO(ActivityRoomProjection projection) {
-                return RoomDetailDTO.builder()
-                                .roomId(projection.getRoomId())
-                                .roomNumber(projection.getRoomNumber())
-                                .roomName(projection.getRoomName())
-                                .roomType(projection.getCategoryName())
-                                .status(projection.getStatus())
-                                .reservation(projection.getBookingId() != null ? mapToReservationDetail(projection)
-                                                : null)
-                                .payment(projection.getPaymentMethod() != null ? mapToPaymentInfo(projection) : null)
-                                .build();
-        }
+        // private RoomDetailDTO mapToRoomDetailDTO(ActivityRoomProjection projection) {
+        //         return RoomDetailDTO.builder()
+        //                         .roomId(projection.getRoomId())
+        //                         .roomNumber(projection.getRoomNumber())
+        //                         .roomName(projection.getRoomName())
+        //                         .roomType(projection.getCategoryName())
+        //                         .status(projection.getStatus())
+        //                         .reservation(projection.getBookingId() != null ? mapToReservationDetail(projection)
+        //                                         : null)
+        //                         .payment(projection.getPaymentMethod() != null ? mapToPaymentInfo(projection) : null)
+        //                         .build();
+        // }
 
-        private ReservationDetailDTO mapToReservationDetail(ActivityRoomProjection projection) {
-                return ReservationDetailDTO.builder()
-                                .bookingId(projection.getBookingId())
-                                .checkIn(projection.getDayBookingInit())
-                                .checkOut(projection.getDayBookingEnd())
-                                .guest(GuestInfoDTO.builder()
-                                                .name(projection.getFirstName() + " " + projection.getLastName())
-                                                .type(projection.getIsUserInClub() ? "Socio" : "Externo")
-                                                .build())
-                                .capacity(RoomCapacityDTO.builder()
-                                                .adults(projection.getNumberAdults())
-                                                .children(projection.getNumberChildren())
-                                                .babies(projection.getNumberBabies())
-                                                .adultsExtra(projection.getNumberAdultsExtra())
-                                                .adultsMayor(projection.getNumberAdultsMayor())
-                                                .total(projection.getNumberAdults() + projection.getNumberChildren()
-                                                                + projection.getNumberBabies()
-                                                                + projection.getNumberAdultsExtra() +
-                                                                 projection.getNumberAdultsMayor())
-                                                .build())
-                                .build();
-        }
+        // private ReservationDetailDTO mapToReservationDetail(ActivityRoomProjection projection) {
+        //         return ReservationDetailDTO.builder()
+        //                         .bookingId(projection.getBookingId())
+        //                         .checkIn(projection.getDayBookingInit())
+        //                         .checkOut(projection.getDayBookingEnd())
+        //                         .guest(GuestInfoDTO.builder()
+        //                                         .name(projection.getFirstName() + " " + projection.getLastName())
+        //                                         .type(projection.getIsUserInClub() ? "Socio" : "Externo")
+        //                                         .build())
+        //                         .capacity(RoomCapacityDTO.builder()
+        //                                         .adults(projection.getNumberAdults())
+        //                                         .children(projection.getNumberChildren())
+        //                                         .babies(projection.getNumberBabies())
+        //                                         .adultsExtra(projection.getNumberAdultsExtra())
+        //                                         .adultsMayor(projection.getNumberAdultsMayor())
+        //                                         .total(projection.getNumberAdults() + projection.getNumberChildren()
+        //                                                         + projection.getNumberBabies()
+        //                                                         + projection.getNumberAdultsExtra() +
+        //                                                          projection.getNumberAdultsMayor())
+        //                                         .build())
+        //                         .build();
+        // }
 
-        private PaymentInfoDTO mapToPaymentInfo(ActivityRoomProjection projection) {
-                return PaymentInfoDTO.builder()
-                                .method(projection.getPaymentMethod())
-                                .hasFeeding(projection.getHasFeeding())
-                                .build();
-        }
+        // private PaymentInfoDTO mapToPaymentInfo(ActivityRoomProjection projection) {
+        //         return PaymentInfoDTO.builder()
+        //                         .method(projection.getPaymentMethod())
+        //                         .hasFeeding(projection.getHasFeeding())
+        //                         .build();
+        // }
 
-        private record RoomDetailResult(
-                        List<RoomDetailDTO> rooms, PaginationDTO pagination) {
-        }
+        // private record RoomDetailResult(
+        //                 List<RoomDetailDTO> rooms, PaginationDTO pagination) {
+        // }
 }
