@@ -7,5 +7,13 @@ import com.proriberaapp.ribera.Domain.dto.activity.response.ActivityDashboardRes
 import reactor.core.publisher.Mono;
 
 public interface ActivityDashboardService {
-    Mono<ActivityDashboardResponseDTO> getActivityDashboard(LocalDateTime date, int page, int size);
+    Mono<ActivityDashboardResponseDTO> getActivityDashboard(
+        LocalDateTime date, 
+        int page, 
+        int size,
+        String search,
+        String clientType,
+        String paymentType,
+        String roomType,
+        String status);
 }

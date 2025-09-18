@@ -22,7 +22,7 @@ public class ActivityDashboardResponseDTO {
     private ActivitySummaryDTO data;
     private List<RoomDetailDTO> rooms;
     private PaginationDTO pagination;
-    private LocalDateTime timestamp;
+    private String timestamp;
 
     /*
      * @Data

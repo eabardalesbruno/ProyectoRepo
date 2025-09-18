@@ -6,6 +6,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface ActivityDashboardCustomRepository {
-    Flux<RoomDetailDTO> findAllRoomsPaginated(LocalDateTime dateStart, LocalDateTime dateEnd);
+    Flux<RoomDetailDTO> findAllRoomsPaginated(LocalDateTime dateStart, LocalDateTime dateEnd, String search,
+            String clientType,
+            String paymentType,
+            String roomType,
+            String status);
+
     Mono<Long> countAllRoomsFiltered(LocalDateTime dateStart, LocalDateTime dateEnd);
 }

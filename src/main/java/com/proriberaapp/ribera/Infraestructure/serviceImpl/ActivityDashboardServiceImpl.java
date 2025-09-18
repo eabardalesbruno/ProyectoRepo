@@ -28,9 +28,18 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
         private final ActivityDashboardCustomRepositoryImpl activityDashboardCustomRepository;
 
         @Override
-        public Mono<ActivityDashboardResponseDTO> getActivityDashboard(LocalDateTime date, int page, int size) {
+        public Mono<ActivityDashboardResponseDTO> getActivityDashboard(
+                LocalDateTime date, 
+                int page, 
+                int size,
+                String search,
+                String clientType,
+                String paymentType,
+                String roomType,
+                String status) {
                 int offset = page * size;
-                Mono<List<RoomDetailDTO>> roomsMono = activityDashboardCustomRepository.findAllRoomsPaginated(date, date)
+                Mono<List<RoomDetailDTO>> roomsMono = activityDashboardCustomRepository.findAllRoomsPaginated(
+                        date, date, search, clientType, paymentType, roomType, status)
                                 .collectList()
                                 .map(list -> {
                                     int start = offset;
@@ -58,7 +67,7 @@ public class ActivityDashboardServiceImpl implements ActivityDashboardService {
                                                         .data(summary)
                                                         .rooms(rooms)
                                                         .pagination(pagination)
-                                                        .timestamp(LocalDateTime.now())
+                                                        .timestamp(LocalDateTime.now().toString())
                                                         .build();
                                 });
         }

@@ -23,10 +23,16 @@ public class ActivityDashboardController {
 
     @GetMapping
     public Mono<ActivityDashboardResponseDTO> getActivityDashboard(
-            @RequestParam @DateTimeFormat(pattern = "yyy-MM-dd") String date,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") String date,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String clientType,
+            @RequestParam(required = false) String paymentType,
+            @RequestParam(required = false) String roomType,
+            @RequestParam(required = false) String status) {
         LocalDateTime dateTime = LocalDate.parse(date).atStartOfDay();
-        return activityDashboardService.getActivityDashboard(dateTime, page, size);
+        return activityDashboardService.getActivityDashboard(
+            dateTime, page, size, search, clientType, paymentType, roomType, status);
     }
 }

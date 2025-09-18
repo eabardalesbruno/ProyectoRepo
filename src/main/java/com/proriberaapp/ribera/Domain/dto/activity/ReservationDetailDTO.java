@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 
 public class ReservationDetailDTO {
     private Integer bookingId;
-    private LocalDateTime checkIn;
-    private LocalDateTime checkOut;
+    private String checkIn;
+    private String checkOut;
     private GuestInfoDTO guest;
     private RoomCapacityDTO capacity;
 }
