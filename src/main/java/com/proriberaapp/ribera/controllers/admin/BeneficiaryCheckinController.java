@@ -20,11 +20,11 @@ public class BeneficiaryCheckinController {
             @RequestBody BeneficiaryCheckin body) {
         body.setIdBeneficiary(idBeneficiary);
         return service.registerCheckin(body)
-            .map(saved -> ResponseEntity.ok(saved))
-            .onErrorResume(e -> {
-                e.printStackTrace();
-                return Mono.just(ResponseEntity.status(500).body(null));
-            });
+                .map(saved -> ResponseEntity.ok(saved))
+                .onErrorResume(e -> {
+                    e.printStackTrace();
+                    return Mono.just(ResponseEntity.status(500).body(null));
+                });
     }
 
     // Consultar historial y visitas

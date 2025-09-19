@@ -22,4 +22,5 @@ public class BeneficiaryDto {
     private String creationDate;
     private String expirationDate;
     private String membershipName;
+    private Integer visits; // número de visitas acumuladas
 }
