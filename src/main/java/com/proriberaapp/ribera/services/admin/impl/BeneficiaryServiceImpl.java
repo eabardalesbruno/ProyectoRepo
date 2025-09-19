@@ -4,6 +4,7 @@
 package com.proriberaapp.ribera.services.admin.impl;
 
 import org.springframework.web.reactive.function.client.WebClient;
+import com.proriberaapp.ribera.repositories.admin.BeneficiaryCheckinRepository;
 import com.proriberaapp.ribera.Domain.dto.BeneficiaryDto;
 import com.proriberaapp.ribera.Domain.dto.InclubUserDto;
 import com.proriberaapp.ribera.services.admin.BeneficiaryService;
@@ -21,6 +22,12 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 @Service
 @Slf4j
 public class BeneficiaryServiceImpl implements BeneficiaryService {
+        private final BeneficiaryCheckinRepository checkinRepository;
+
+        public BeneficiaryServiceImpl(BeneficiaryCheckinRepository checkinRepository) {
+                this.checkinRepository = checkinRepository;
+        }
+
         @Value("${inclub.api.url.membership}")
         private String inclubApiUrl;
 
@@ -46,6 +53,8 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                 .flatMap(userDto -> {
                                         Integer idUser = userDto.getIdUser();
                                         String url = inclubApiUrl + "/suscription/view/user/" + idUser;
+                                        Mono<Long> visitasMono = checkinRepository
+                                                        .findByIdBeneficiary(String.valueOf(idUser)).count();
                                         return webClient.get()
                                                         .uri(url)
                                                         .retrieve()
@@ -58,7 +67,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                                 return Mono.justOrEmpty(
                                                                                 (com.proriberaapp.ribera.Domain.dto.MembershipResponse) null);
                                                         })
-                                                        .map(membership -> {
+                                                        .flatMap(membership -> visitasMono.map(visitas -> {
                                                                 String membershipName = (membership != null
                                                                                 && membership.getPack() != null)
                                                                                                 ? membership.getPack()
@@ -93,8 +102,9 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                                                 .creationDate(creationDate)
                                                                                 .email(userDto.getEmail())
                                                                                 .membershipName(membershipName)
+                                                                                .visits(visitas.intValue())
                                                                                 .build();
-                                                        });
+                                                        }));
                                 }, maxConcurrency)
                                 .doOnComplete(() -> log.info("Fin de beneficiarios paginados"));
         }
@@ -173,6 +183,8 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                 .flatMap(userDto -> {
                                         Integer idUser = userDto.getIdUser();
                                         String url = inclubApiUrl + "/suscription/view/user/" + idUser;
+                                        Mono<Long> visitasMono = checkinRepository
+                                                        .findByIdBeneficiary(String.valueOf(idUser)).count();
                                         return webClient.get()
                                                         .uri(url)
                                                         .retrieve()
@@ -185,7 +197,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                                 return Mono.justOrEmpty(
                                                                                 (com.proriberaapp.ribera.Domain.dto.MembershipResponse) null);
                                                         })
-                                                        .map(membership -> {
+                                                        .flatMap(membership -> visitasMono.map(visitas -> {
                                                                 String membershipName = (membership != null
                                                                                 && membership.getPack() != null)
                                                                                                 ? membership.getPack()
@@ -220,8 +232,9 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                                                 .creationDate(creationDate)
                                                                                 .email(userDto.getEmail())
                                                                                 .membershipName(membershipName)
+                                                                                .visits(visitas.intValue())
                                                                                 .build();
-                                                        });
+                                                        }));
                                 }, maxConcurrency);
         }
 
@@ -258,6 +271,8 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                 String url = inclubApiUrl + "/suscription/view/user/" + idUser;
                                                 log.info("[filterBeneficiaries] Consultando membresía en URL: {} para idUser: {}",
                                                                 url, idUser);
+                                                Mono<Long> visitasMono = checkinRepository
+                                                                .findByIdBeneficiary(String.valueOf(idUser)).count();
                                                 return webClient.get()
                                                                 .uri(url)
                                                                 .retrieve()
@@ -270,7 +285,7 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                                         return Mono.justOrEmpty(
                                                                                         (com.proriberaapp.ribera.Domain.dto.MembershipResponse) null);
                                                                 })
-                                                                .map(membership -> {
+                                                                .flatMap(membership -> visitasMono.map(visitas -> {
                                                                         String membershipName = (membership != null
                                                                                         && membership.getPack() != null)
                                                                                                         ? membership.getPack()
@@ -306,11 +321,12 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
                                                                                         .creationDate(creationDate)
                                                                                         .email(userDto.getEmail())
                                                                                         .membershipName(membershipName)
+                                                                                        .visits(visitas.intValue())
                                                                                         .build();
                                                                         log.info("[filterBeneficiaries] BeneficiaryDto construido: {}",
                                                                                         dto);
                                                                         return dto;
-                                                                });
+                                                                }));
                                         }, maxConcurrency)
                                         .doOnComplete(() -> log
                                                         .info("[filterBeneficiaries] Fin de beneficiarios filtrados"));
