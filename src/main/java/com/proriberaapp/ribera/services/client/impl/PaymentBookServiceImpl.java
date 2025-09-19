@@ -335,15 +335,19 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
     @Override
     public Mono<PaymentBookEntity> createPaymentBook(PaymentBookEntity paymentBook) {
-        // Validación de montos - NO permitir pagos con 0 o nulos
-        if (paymentBook.getAmount() == null || 
-            paymentBook.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            return Mono.error(new IllegalArgumentException("El monto del pago no coincide"));
-        }
-        
-        if (paymentBook.getTotalCost() == null || 
-            paymentBook.getTotalCost().compareTo(BigDecimal.ZERO) <= 0) {
-            return Mono.error(new IllegalArgumentException("El costo total no coincide"));
+        // Validación condicional según tipo de pago
+        if (paymentBook.getPaymentTypeId() != null && paymentBook.getPaymentTypeId().equals(3)) {
+            // Para pagos con tarjeta (tipo 3): validar amount
+            if (paymentBook.getAmount() == null || 
+                paymentBook.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                return Mono.error(new IllegalArgumentException("El monto del pago con tarjeta debe ser mayor a cero"));
+            }
+        } else {
+            // Para otros tipos de pago: validar totalCost
+            if (paymentBook.getTotalCost() == null || 
+                paymentBook.getTotalCost().compareTo(BigDecimal.ZERO) <= 0) {
+                return Mono.error(new IllegalArgumentException("El costo total debe ser mayor a cero"));
+            }
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -370,15 +374,19 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
     @Override
     public Mono<PaymentBookEntity> createPaymentBookPay(PaymentBookEntity paymentBook) {
-        // Validación de montos - NO permitir pagos con 0 o nulos
-        if (paymentBook.getAmount() == null || 
-            paymentBook.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            return Mono.error(new IllegalArgumentException("El monto del pago no coincide"));
-        }
-        
-        if (paymentBook.getTotalCost() == null || 
-            paymentBook.getTotalCost().compareTo(BigDecimal.ZERO) <= 0) {
-            return Mono.error(new IllegalArgumentException("El costo total no coincide"));
+        // Validación condicional según tipo de pago
+        if (paymentBook.getPaymentTypeId() != null && paymentBook.getPaymentTypeId().equals(3)) {
+            // Para pagos con tarjeta (tipo 3): validar amount
+            if (paymentBook.getAmount() == null || 
+                paymentBook.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                return Mono.error(new IllegalArgumentException("El monto del pago con tarjeta debe ser mayor a cero"));
+            }
+        } else {
+            // Para otros tipos de pago: validar totalCost
+            if (paymentBook.getTotalCost() == null || 
+                paymentBook.getTotalCost().compareTo(BigDecimal.ZERO) <= 0) {
+                return Mono.error(new IllegalArgumentException("El costo total debe ser mayor a cero"));
+            }
         }
 
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
@@ -407,15 +415,19 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
     @Override
     public Mono<PaymentBookEntity> createPaymentForFullDay(PaymentBookEntity paymentBook) {
-        // Validación de montos - NO permitir pagos con 0 o nulos
-        if (paymentBook.getAmount() == null || 
-            paymentBook.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            return Mono.error(new IllegalArgumentException("El monto del pago no coincide"));
-        }
-        
-        if (paymentBook.getTotalCost() == null || 
-            paymentBook.getTotalCost().compareTo(BigDecimal.ZERO) <= 0) {
-            return Mono.error(new IllegalArgumentException("El costo total no coincide"));
+        // Validación condicional según tipo de pago
+        if (paymentBook.getPaymentTypeId() != null && paymentBook.getPaymentTypeId().equals(3)) {
+            // Para pagos con tarjeta (tipo 3): validar amount
+            if (paymentBook.getAmount() == null || 
+                paymentBook.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                return Mono.error(new IllegalArgumentException("El monto del pago con tarjeta debe ser mayor a cero"));
+            }
+        } else {
+            // Para otros tipos de pago: validar totalCost
+            if (paymentBook.getTotalCost() == null || 
+                paymentBook.getTotalCost().compareTo(BigDecimal.ZERO) <= 0) {
+                return Mono.error(new IllegalArgumentException("El costo total debe ser mayor a cero"));
+            }
         }
 
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
@@ -1032,15 +1044,19 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     @Override
     public Mono<PaymentBookEntity> createPaymentBookAndCalculateCommission(PaymentBookEntity paymentBook,
             Integer caseType) {
-        // Validación de montos - NO permitir pagos con 0 o nulos
-        if (paymentBook.getAmount() == null || 
-            paymentBook.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
-            return Mono.error(new IllegalArgumentException("El monto del pago no coincide"));
-        }
-        
-        if (paymentBook.getTotalCost() == null || 
-            paymentBook.getTotalCost().compareTo(BigDecimal.ZERO) <= 0) {
-            return Mono.error(new IllegalArgumentException("El costo total no coincide"));
+        // Validación condicional según tipo de pago
+        if (paymentBook.getPaymentTypeId() != null && paymentBook.getPaymentTypeId().equals(3)) {
+            // Para pagos con tarjeta (tipo 3): validar amount
+            if (paymentBook.getAmount() == null || 
+                paymentBook.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                return Mono.error(new IllegalArgumentException("El monto del pago con tarjeta debe ser mayor a cero"));
+            }
+        } else {
+            // Para otros tipos de pago: validar totalCost
+            if (paymentBook.getTotalCost() == null || 
+                paymentBook.getTotalCost().compareTo(BigDecimal.ZERO) <= 0) {
+                return Mono.error(new IllegalArgumentException("El costo total debe ser mayor a cero"));
+            }
         }
 
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
