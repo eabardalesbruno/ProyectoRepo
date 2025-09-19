@@ -335,6 +335,17 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
     @Override
     public Mono<PaymentBookEntity> createPaymentBook(PaymentBookEntity paymentBook) {
+        // Validación de montos - NO permitir pagos con 0 o nulos
+        if (paymentBook.getAmount() == null || 
+            paymentBook.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            return Mono.error(new IllegalArgumentException("El monto del pago no coincide"));
+        }
+        
+        if (paymentBook.getTotalCost() == null || 
+            paymentBook.getTotalCost().compareTo(BigDecimal.ZERO) <= 0) {
+            return Mono.error(new IllegalArgumentException("El costo total no coincide"));
+        }
+
         LocalDateTime now = LocalDateTime.now();
         Timestamp timestamp = Timestamp.valueOf(now);
         paymentBook.setPaymentDate(timestamp);
@@ -359,6 +370,16 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
     @Override
     public Mono<PaymentBookEntity> createPaymentBookPay(PaymentBookEntity paymentBook) {
+        // Validación de montos - NO permitir pagos con 0 o nulos
+        if (paymentBook.getAmount() == null || 
+            paymentBook.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            return Mono.error(new IllegalArgumentException("El monto del pago no coincide"));
+        }
+        
+        if (paymentBook.getTotalCost() == null || 
+            paymentBook.getTotalCost().compareTo(BigDecimal.ZERO) <= 0) {
+            return Mono.error(new IllegalArgumentException("El costo total no coincide"));
+        }
 
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
         Timestamp timestamp = Timestamp.valueOf(localDateTime);
@@ -386,6 +407,17 @@ public class PaymentBookServiceImpl implements PaymentBookService {
 
     @Override
     public Mono<PaymentBookEntity> createPaymentForFullDay(PaymentBookEntity paymentBook) {
+        // Validación de montos - NO permitir pagos con 0 o nulos
+        if (paymentBook.getAmount() == null || 
+            paymentBook.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            return Mono.error(new IllegalArgumentException("El monto del pago no coincide"));
+        }
+        
+        if (paymentBook.getTotalCost() == null || 
+            paymentBook.getTotalCost().compareTo(BigDecimal.ZERO) <= 0) {
+            return Mono.error(new IllegalArgumentException("El costo total no coincide"));
+        }
+
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
         Timestamp timestamp = Timestamp.valueOf(localDateTime);
         paymentBook.setPaymentDate(timestamp);
@@ -1000,6 +1032,17 @@ public class PaymentBookServiceImpl implements PaymentBookService {
     @Override
     public Mono<PaymentBookEntity> createPaymentBookAndCalculateCommission(PaymentBookEntity paymentBook,
             Integer caseType) {
+        // Validación de montos - NO permitir pagos con 0 o nulos
+        if (paymentBook.getAmount() == null || 
+            paymentBook.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            return Mono.error(new IllegalArgumentException("El monto del pago no coincide"));
+        }
+        
+        if (paymentBook.getTotalCost() == null || 
+            paymentBook.getTotalCost().compareTo(BigDecimal.ZERO) <= 0) {
+            return Mono.error(new IllegalArgumentException("El costo total no coincide"));
+        }
+
         LocalDateTime localDateTime = LocalDateTime.now(ZoneId.of("America/Lima"));
         Timestamp timestamp = Timestamp.valueOf(localDateTime);
         paymentBook.setPaymentDate(timestamp);
