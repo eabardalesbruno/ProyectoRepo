@@ -307,10 +307,6 @@ public class NiubizServiceImpl implements NiubizService {
     public Mono<Object> savePayNiubiz(Integer bookingId, String invoiceType, String invoiceDocumentNumber,
             Double totalDiscount, Double percentageDiscount, Double totalCostWithOutDiscount, Double amount,
             String transactionId) {
-        // Validación de monto - NO permitir pagos con 0 o nulos
-        if (amount == null || amount <= 0) {
-            return Mono.error(new IllegalArgumentException("El monto del pago no coincide"));
-        }
 
         return bookingRepository.findByBookingId(bookingId)
                 .flatMap(booking -> {
