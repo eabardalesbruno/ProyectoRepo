@@ -33,19 +33,36 @@ public class PaymentBookController {
 
         return paymentBookService.createPaymentBook(paymentBook)
                 .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook))
-                .onErrorResume(error -> Mono.error(new RuntimeException("Error al cargar la imagen al servidor S3.")));
+                .onErrorResume(error -> {
+                    if (error instanceof IllegalArgumentException) {
+                        return Mono.error(new RuntimeException(error.getMessage()));
+                    }
+                    return Mono.error(new RuntimeException("Error al cargar la imagen al servidor S3."));
+                });
     }
 
     @PostMapping("/booking-pay")
     public Mono<ResponseEntity<PaymentBookEntity>> createPaymentBookPay(@RequestBody PaymentBookEntity paymentBook) {
         return paymentBookService.createPaymentBookPay(paymentBook)
-                .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook));
+                .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook))
+                .onErrorResume(error -> {
+                    if (error instanceof IllegalArgumentException) {
+                        return Mono.error(new RuntimeException(error.getMessage()));
+                    }
+                    return Mono.error(error);
+                });
     }
 
     @PostMapping("/full-day-pay")
     public Mono<ResponseEntity<PaymentBookEntity>> createPaymentForFullDay(@RequestBody PaymentBookEntity paymentBook) {
         return paymentBookService.createPaymentForFullDay(paymentBook)
-                .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook));
+                .map(savedPaymentBook -> ResponseEntity.status(HttpStatus.CREATED).body(savedPaymentBook))
+                .onErrorResume(error -> {
+                    if (error instanceof IllegalArgumentException) {
+                        return Mono.error(new RuntimeException(error.getMessage()));
+                    }
+                    return Mono.error(error);
+                });
     }
 
     @PutMapping("/{id}")
