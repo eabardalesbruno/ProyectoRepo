@@ -1,0 +1,861 @@
+package com.proriberaapp.ribera.services.client.impl;
+
+import com.proriberaapp.ribera.Api.controllers.client.dto.BookingFeedingDto;
+import com.proriberaapp.ribera.Api.controllers.client.dto.DetailBookInvoiceDto;
+import com.proriberaapp.ribera.Domain.dto.DetailEmailFulldayDto;
+import com.proriberaapp.ribera.Domain.dto.FullDayDetailDTO;
+import com.proriberaapp.ribera.Domain.dto.NotificationDto;
+import com.proriberaapp.ribera.Domain.dto.PaymentBookUserDTO;
+import com.proriberaapp.ribera.Domain.entities.*;
+import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceCurrency;
+import com.proriberaapp.ribera.Domain.enums.invoice.InvoiceType;
+import com.proriberaapp.ribera.Domain.invoice.InvoiceClientDomain;
+import com.proriberaapp.ribera.Domain.invoice.InvoiceDomain;
+import com.proriberaapp.ribera.Domain.invoice.InvoiceItemDomain;
+import com.proriberaapp.ribera.Domain.invoice.ProductSunatDomain;
+import com.proriberaapp.ribera.Infraestructure.repository.*;
+import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceItemRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceRepository;
+import com.proriberaapp.ribera.Infraestructure.repository.Invoice.InvoiceTypeRepsitory;
+import com.proriberaapp.ribera.Infraestructure.repository.Invoice.ProductSunatRepository;
+import com.proriberaapp.ribera.services.admin.NotificationBookingService;
+import com.proriberaapp.ribera.services.client.CommissionService;
+import com.proriberaapp.ribera.services.client.EmailService;
+import com.proriberaapp.ribera.services.client.RefusePaymentService;
+import com.proriberaapp.ribera.services.invoice.InvoiceServiceI;
+import com.proriberaapp.ribera.utils.TransformDate;
+import com.proriberaapp.ribera.utils.emails.*;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.*;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
+
+@Slf4j
+@Service
+public class RefusePaymentServiceImpl implements RefusePaymentService {
+        /*
+         * private final RefusePaymentRepository refusePaymentRepository;
+         * private final PaymentBookRepository paymentBookRepository;
+         * 
+         * public RefusePaymentServiceImpl(RefusePaymentRepository
+         * refusePaymentRepository, PaymentBookRepository paymentBookRepository) {
+         * this.refusePaymentRepository = refusePaymentRepository;
+         * this.paymentBookRepository = paymentBookRepository;
+         * }
+         * 
+         * @Override
+         * public Flux<RefusePaymentEntity> getAllRefusePayments() {
+         * return refusePaymentRepository.findAll();
+         * }
+         * 
+         * @Override
+         * public Flux<RefuseEntity> getAllRefuseReason() {
+         * return refusePaymentRepository.findAllWhereRefuseReasonIdNotEqualToOne();
+         * }
+         * 
+         * @Override
+         * public Mono<RefusePaymentEntity> getRefusePaymentById(Integer id) {
+         * return refusePaymentRepository.findById(id);
+         * }
+         * 
+         * @Override
+         * public Mono<RefusePaymentEntity> saveRefusePayment(RefusePaymentEntity
+         * refusePayment) {
+         * return refusePaymentRepository.save(refusePayment)
+         * .flatMap(savedRefusePayment -> {
+         * return paymentBookRepository.findById(savedRefusePayment.getPaymentBookId())
+         * .flatMap(paymentBook -> {
+         * paymentBook.setRefuseReasonId(savedRefusePayment.getRefuseReasonId());
+         * return paymentBookRepository.save(paymentBook);
+         * })
+         * .then(Mono.just(savedRefusePayment));
+         * });
+         * }
+         * 
+         * @Override
+         * public Mono<Void> deleteRefusePayment(Integer id) {
+         * return refusePaymentRepository.deleteById(id);
+         * }
+         */
+        private final RefusePaymentRepository refusePaymentRepository;
+        private final PaymentBookRepository paymentBookRepository;
+        private final UserClientRepository userClientRepository;
+        private final RoomOfferRepository roomOfferRepository;
+        private final RoomRepository roomRepository;
+        private final BookingRepository bookingRepository;
+        private final EmailService emailService;
+        private final InvoiceServiceI invoiceService;
+        private final CommissionService commissionService;
+        private final ProductSunatRepository productSunatRepository;
+        private final NotificationBookingService notificationBookingService;
+
+        @Autowired
+        private BookingFeedingRepository bookingFeedingRepository;
+        private final FullDayRepository fullDayRepository;
+
+        public RefusePaymentServiceImpl(RefusePaymentRepository refusePaymentRepository,
+                                        PaymentBookRepository paymentBookRepository,
+                                        UserClientRepository userClientRepository,
+                                        BookingRepository bookingRepository, EmailService emailService,
+                                        InvoiceTypeRepsitory invoiceTypeRepsitory,
+                                        InvoiceRepository invoiceRepsitory,
+                                        CurrencyTypeRepository currencyTypeRepository,
+                                        InvoiceItemRepository invoiceItemRepository,
+                                        InvoiceServiceI invoiceService,
+                                        RoomOfferRepository roomOfferRepository,
+                                        RoomRepository roomRepository, CommissionService commissionService,
+                                        ProductSunatRepository productSunatRepository,
+                                        FullDayRepository fullDayRepository,
+                                        NotificationBookingService notificationBookingService) {
+                this.refusePaymentRepository = refusePaymentRepository;
+                this.paymentBookRepository = paymentBookRepository;
+                this.userClientRepository = userClientRepository;
+                this.bookingRepository = bookingRepository;
+                this.emailService = emailService;
+                this.invoiceService = invoiceService;
+                this.roomOfferRepository = roomOfferRepository;
+                this.roomRepository = roomRepository;
+                this.commissionService = commissionService;
+                this.productSunatRepository = productSunatRepository;
+                this.fullDayRepository = fullDayRepository;
+                this.notificationBookingService = notificationBookingService;
+        }
+
+        @Override
+        public Flux<RefusePaymentEntity> getAllRefusePayments() {
+                return refusePaymentRepository.findAll();
+        }
+
+        @Override
+        public Flux<RefuseEntity> getAllRefuseReason() {
+                return refusePaymentRepository.findAllWhereRefuseReasonIdNotEqualToOne();
+        }
+
+        @Override
+        public Mono<RefusePaymentEntity> getRefusePaymentById(Integer id) {
+                return refusePaymentRepository.findById(id);
+        }
+
+        @Override
+        public Mono<RefusePaymentEntity> saveRefusePayment(RefusePaymentEntity refusePayment) {
+
+            return refusePaymentRepository.save(refusePayment)
+                    .flatMap(savedRefusePayment ->
+                            paymentBookRepository.findById(savedRefusePayment.getPaymentBookId())
+                                    .flatMap(paymentBook -> {
+                                        int bookingId = paymentBook.getBookingId();
+                                        paymentBook.setRefuseReasonId(savedRefusePayment.getRefuseReasonId());
+
+                                        return bookingRepository.findByBookingId(bookingId)
+                                                .flatMap(booking -> {
+                                                    booking.setBookingStateId(3);
+                                                    return bookingRepository.save(booking)
+                                                            .flatMap(savedBooking ->
+                                                                    paymentBookRepository.save(paymentBook)
+                                                                            .flatMap(savedPaymentBook ->
+                                                                                    paymentBookRepository.findUserClientIdByPaymentBookId(savedRefusePayment.getPaymentBookId())
+                                                                                            .flatMap(userClientId ->
+                                                                                                    userClientRepository.findById(userClientId)
+                                                                                                            .flatMap(userClient ->
+                                                                                                                    generatePaymentRejectionEmailBody(
+                                                                                                                            userClient,
+                                                                                                                            savedRefusePayment,
+                                                                                                                            savedBooking
+                                                                                                                    )
+                                                                                                                            .flatMap(emailBody ->
+                                                                                                                                    emailService.sendEmail(
+                                                                                                                                                    userClient.getEmail(),
+                                                                                                                                                    "Pago rechazado para la reserva ",
+                                                                                                                                                    emailBody
+                                                                                                                                            )
+                                                                                                                                            .then(
+                                                                                                                                                    notificationBookingService.save(
+                                                                                                                                                            NotificationDto.getTemplateNotificationReject(
+                                                                                                                                                                    userClientId,
+                                                                                                                                                                    userClient.getFirstName(),
+                                                                                                                                                                    savedBooking.getBookingId()
+                                                                                                                                                            )
+                                                                                                                                                    )
+                                                                                                                                            )
+                                                                                                                                            .flatMap(savedNotification ->
+                                                                                                                                                    notificationBookingService.sendNotification(
+                                                                                                                                                            String.valueOf(userClientId),
+                                                                                                                                                            savedNotification
+                                                                                                                                                    )
+                                                                                                                                            )
+                                                                                                                                            .thenReturn(savedRefusePayment)
+                                                                                                                            )
+                                                                                                            )
+                                                                                            )
+                                                                            )
+                                                            );
+                                                });
+                                    })
+                    );
+        }
+
+        @Override
+        public Mono<Void> deleteRefusePayment(Integer id) {
+                return refusePaymentRepository.deleteById(id);
+        }
+
+        private Mono<String> generatePaymentRejectionEmailBody(
+                UserClientEntity userClient,
+                RefusePaymentEntity refusePayment,
+                BookingEntity bookingEntity) {
+
+                return getPaymentDetails(refusePayment.getPaymentBookId())
+                        .map(paymentDetails -> {
+                                // Extrae los valores del Map
+                                String roomName = (String) paymentDetails.get("RoomName");
+                                BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+
+                                long dayInterval = TransformDate.calculateDaysDifference(bookingEntity.getDayBookingInit(),bookingEntity.getDayBookingEnd());
+                                String monthInit = TransformDate.getAbbreviatedMonth(bookingEntity.getDayBookingInit());
+                                String monthEnd = TransformDate.getAbbreviatedMonth(bookingEntity.getDayBookingEnd());
+                                int dayInit = TransformDate.getDayNumber(bookingEntity.getDayBookingInit());
+                                int dayEnd = TransformDate.getDayNumber(bookingEntity.getDayBookingEnd());
+                                String totalPeoples = TransformDate.calculatePersons(
+                                        bookingEntity.getNumberAdults(),
+                                        bookingEntity.getNumberChildren(),
+                                        bookingEntity.getNumberBabies(),
+                                        bookingEntity.getNumberAdultsExtra(),
+                                        bookingEntity.getNumberAdultsMayor());
+
+                                RejectedPaymentTemplateEmail rejectedPaymentTemplateEmail = new RejectedPaymentTemplateEmail(
+                                        userClient.getFirstName(),
+                                        refusePayment.getDetail(),
+                                        roomName,
+                                        bookingEntity,
+                                        dayInterval,
+                                        monthInit,
+                                        monthEnd,
+                                        String.valueOf(dayInit),
+                                        String.valueOf(dayEnd),
+                                        totalPeoples
+                                        );
+                                baseEmailReserve.addEmailHandler(rejectedPaymentTemplateEmail);
+                                return baseEmailReserve.execute();
+                        });
+        }
+    /*
+    @Override
+    public Mono<Void> updatePendingPayAndSendConfirmation(Integer paymentBookId) {
+        return paymentBookRepository.loadUserDataAndBookingData(paymentBookId)
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("Payment ID does not exist")))
+            .flatMap(paymentBook -> {
+                if (paymentBook.getPendingpay() != 0) {
+                    return Mono.empty(); // Payment already processed
+                }
+                updatePaymentBookState(paymentBook);
+                Mono<BookingEntity> bookingEntityMono = bookingRepository.findByBookingId(paymentBook.getBookingid());
+                Mono<DetailBookInvoiceDto> detailInvoiceMono = bookingRepository.getDetailBookInvoice(paymentBook.getBookingid());
+                Mono<List<FullDayDetailDTO>> fullDayDetailsMono = paymentBookRepository.findByFullDayId(paymentBook.getFulldayid()).collectList();
+                String roomOrType = Optional.ofNullable(paymentBook.getRoomname()).orElse(paymentBook.getType());
+                String normalizedRoomOrType = normalizeText(roomOrType);
+                Mono<String> codSunatMono = productSunatRepository.findAll()
+                    .filter(product -> normalizeText(product.getDescription()).equals(normalizedRoomOrType))
+                    .map(ProductSunatDomain::getCodSunat)
+                    .defaultIfEmpty("631210")
+                    .next();
+
+                return Mono.zip(codSunatMono, fullDayDetailsMono, bookingEntityMono, detailInvoiceMono)
+                    .flatMap(tuple -> {
+                        String codSunat = tuple.getT1();
+                        List<FullDayDetailDTO> fullDayDetails = tuple.getT2();
+                        BookingEntity booking = tuple.getT3();
+                        DetailBookInvoiceDto detailInvoice = tuple.getT4();
+
+                        InvoiceDomain invoiceDomain = buildInvoiceDomain(paymentBook, codSunat, fullDayDetails);
+                        List<String> invoiceNotes = generateInvoiceNotes(booking, detailInvoice);
+                        invoiceDomain.setInvoice_notes(invoiceNotes);
+
+                        return handleInvoiceFlow(paymentBook, invoiceDomain, paymentBookId);
+                    });
+            });
+    }
+
+    private void updatePaymentBookState(PaymentBookUserDTO paymentBook) {
+        paymentBook.setPaymentstateid(2);
+        paymentBook.setPendingpay(1);
+    }
+    */
+
+    @Override
+    public Mono<Void> updatePendingPayAndSendConfirmation(Integer paymentBookId) {
+        return paymentBookRepository.loadUserDataAndBookingData(paymentBookId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Payment ID does not exist")))
+                .flatMap(paymentBook -> {
+                    if (paymentBook.getPendingpay() != 0) {
+                        return Mono.empty(); // Pago ya procesado
+                    }
+                    // Encadenar la actualización antes de continuar
+                    return updatePaymentBookState(paymentBook)
+                            .then(Mono.defer(() -> {
+                                // El resto de las operaciones después de la actualización
+                                Mono<BookingEntity> bookingEntityMono = bookingRepository.findByBookingId(paymentBook.getBookingid());
+                                Mono<DetailBookInvoiceDto> detailInvoiceMono = bookingRepository.getDetailBookInvoice(paymentBook.getBookingid());
+                                Mono<List<FullDayDetailDTO>> fullDayDetailsMono = paymentBookRepository.findByFullDayId(paymentBook.getFulldayid()).collectList();
+                                String roomOrType = Optional.ofNullable(paymentBook.getRoomname()).orElse(paymentBook.getType());
+                                String normalizedRoomOrType = normalizeText(roomOrType);
+                                Mono<String> codSunatMono = productSunatRepository.findAll()
+                                        .filter(product -> normalizeText(product.getDescription()).equals(normalizedRoomOrType))
+                                        .map(ProductSunatDomain::getCodSunat)
+                                        .defaultIfEmpty("631210")
+                                        .next();
+
+                                return Mono.zip(codSunatMono, fullDayDetailsMono, bookingEntityMono, detailInvoiceMono)
+                                        .flatMap(tuple -> {
+                                            String codSunat = tuple.getT1();
+                                            List<FullDayDetailDTO> fullDayDetails = tuple.getT2();
+                                            BookingEntity booking = tuple.getT3();
+                                            DetailBookInvoiceDto detailInvoice = tuple.getT4();
+
+                                            InvoiceDomain invoiceDomain = buildInvoiceDomain(paymentBook, codSunat, fullDayDetails);
+                                            List<String> invoiceNotes = generateInvoiceNotes(booking, detailInvoice);
+                                            invoiceDomain.setInvoice_notes(invoiceNotes);
+
+                                            return handleInvoiceFlow(paymentBook, invoiceDomain, paymentBookId);
+                                        });
+                            }));
+                })
+                .then(); // Asegura que el flujo retorne Mono<Void>
+    }
+    /*
+    private Mono<Void> updatePaymentBookState(PaymentBookUserDTO paymentBook) {
+        log.info("Actualizando estado del paymentbook con id: {}", paymentBook.getPaymentbookid());
+        return paymentBookRepository.updateStatusAndPendingPayInPaymentBookById(paymentBook.getPaymentbookid());
+    }
+    */
+
+    private Mono<Void> updatePaymentBookState(PaymentBookUserDTO paymentBook) {
+        return paymentBookRepository.findById(paymentBook.getPaymentbookid())
+                .flatMap(entity -> {
+                    entity.setPaymentStateId(2);
+                    entity.setPendingpay(1);
+                    return paymentBookRepository.save(entity);
+                })
+                .then();
+    }
+
+    private InvoiceDomain buildInvoiceDomain(PaymentBookUserDTO paymentBook, String codSunat, List<FullDayDetailDTO> fullDayDetails) {
+        InvoiceClientDomain client = new InvoiceClientDomain(
+            paymentBook.getUsername(),
+            paymentBook.getInvoicedocumentnumber(),
+            paymentBook.getUseraddress(),
+            paymentBook.getUserphone(),
+            paymentBook.getUseremail(),
+            paymentBook.getUserclientid()
+        );
+
+        InvoiceCurrency currency = InvoiceCurrency.getInvoiceCurrencyByCurrency(paymentBook.getCurrencytypename());
+        InvoiceType invoiceType = InvoiceType.getInvoiceTypeByName(paymentBook.getInvoicetype().toUpperCase());
+        InvoiceDomain invoice = new InvoiceDomain(client,
+            paymentBook.getPaymentbookid(),
+            10,
+            currency,
+            invoiceType,
+            paymentBook.getPercentagediscount());
+        invoice.setOperationCode(paymentBook.getOperationcode());
+        List<InvoiceItemDomain> items = new ArrayList<>();
+        if (paymentBook.getRoomname() != null) {
+            items.add(new InvoiceItemDomain(
+                paymentBook.getRoomname(),
+                codSunat,
+                paymentBook.getRoomname(),
+                1,
+                BigDecimal.valueOf(paymentBook.getTotalcostwithoutdiscount()),
+                ""
+            ));
+        } else {
+            for (FullDayDetailDTO detail : fullDayDetails) {
+                String sunatCode = getSunatCode(paymentBook.getType(), detail.getTypePerson());
+                String description = getItemDescription(paymentBook.getType(), detail.getTypePerson());
+                items.add(new InvoiceItemDomain(description, sunatCode, description, detail.getQuantity(), detail.getFinalPrice(), ""));
+            }
+        }
+        invoice.addItemsWithIncludedIgv(items);
+        invoice.calculatedTotals();
+        return invoice;
+    }
+
+    private List<String> generateInvoiceNotes(BookingEntity booking, DetailBookInvoiceDto detailInvoice) {
+        List<String> notes = new ArrayList<>();
+        int totalAdults = booking.getNumberAdults() + booking.getNumberAdultsMayor() + booking.getNumberAdultsExtra();
+        notes.add("ALOJAMIENTO: " + totalAdults + " ADULTOS + " + booking.getNumberChildren() + " NIÑOS");
+        notes.add(detailInvoice.getCheckin() + " " + detailInvoice.getCheckout());
+        notes.add("INCLUYE DESAYUNO");
+        return notes;
+    }
+
+    private Mono<Void> handleInvoiceFlow(PaymentBookUserDTO paymentBook, InvoiceDomain invoiceDomain, Integer paymentBookId) {
+        if (paymentBook.getRoomname() != null) {
+            return generatePaymentConfirmationEmailBody(paymentBookId)
+                .flatMap(emailBody -> invoiceService.save(invoiceDomain)
+                    .then(
+                        Mono.zip(
+                            paymentBookRepository.confirmPayment(paymentBookId),
+                            emailService.sendEmail(
+                                    paymentBook.getUseremail(),
+                                    "Confirmación de Pago Aceptado",
+                                    emailBody
+                            )
+                        )
+                    )
+                    .flatMap(tuple ->
+                        notificationBookingService.save(
+                            NotificationDto.getTemplateNotificationPaymentConfirm(
+                                paymentBook.getUserclientid(),
+                                paymentBook.getRoomname(),
+                                paymentBook.getBookingid()
+                            )
+                        )
+                        .flatMap(savedNotification ->
+                            notificationBookingService.sendNotification(
+                                String.valueOf(paymentBook.getUserclientid()),
+                                savedNotification
+                            )
+                        )
+                    )
+                    .then());
+        }
+
+        return invoiceService.save(invoiceDomain)
+            .then(paymentBookRepository.confirmPayment(paymentBookId))
+            .then(fetchPaymentDetails(paymentBookId)
+                .flatMap(paymentDetails -> {
+                    String emailBody = EmailTemplateFullday.getAcceptanceTemplate(
+                        paymentDetails.getName(),
+                        paymentDetails.getTypefullday(),
+                        paymentDetails.getFulldayid(),
+                        paymentDetails.getCheckinEntry(),
+                        paymentDetails.getAdults(),
+                        paymentDetails.getChildren()
+                    );
+                    return emailService.sendEmail(paymentBook.getUseremail(), "Confirmación de Pago Aceptado", emailBody);
+                }))
+            .then();
+    }
+
+    private String normalizeText(String text) {
+        if (text == null) return "";
+        return text.trim().replaceAll("\\s+", " ");
+    }
+
+    private String getSunatCode(String fullDayType, String typePerson) {
+        if (fullDayType.equalsIgnoreCase("Full Day Normal")) {
+            switch (typePerson) {
+                case "ADULTO":
+                    return "631230";
+                case "ADULTO_MAYOR":
+                    return "631229";
+                case "NINO":
+                    return "631231";
+                default:
+                    return "631230";
+            }
+        } else if (fullDayType.equalsIgnoreCase("Full Day Todo Completo")) {
+            switch (typePerson) {
+                case "ADULTO":
+                    return "631226";
+                case "ADULTO_MAYOR":
+                    return "631228";
+                case "NINO":
+                    return "631227";
+                default:
+                    return "631226";
+            }
+        }
+        return "631226";
+    }
+
+    private String getItemDescription(String fullDayType, String typePerson) {
+        if (fullDayType.equalsIgnoreCase("Full Day Normal")) {
+            switch (typePerson) {
+                case "ADULTO":
+                    return "Full day - Solo Entrada - Adulto";
+                case "ADULTO_MAYOR":
+                    return "Full day - Solo Entrada - Adulto Mayor";
+                case "NINO":
+                    return "Full day - Solo Entrada - Niño";
+                default:
+                    return "Full day - Solo Entrada - Adulto";
+            }
+        } else if (fullDayType.equalsIgnoreCase("Full Day Todo Completo")) {
+            switch (typePerson) {
+                case "ADULTO":
+                    return "Full day - Todo Incluido - Adulto";
+                case "ADULTO_MAYOR":
+                    return "Full day - Todo Incluido - Adulto Mayor";
+                case "NINO":
+                    return "Full day - Todo Incluido - Niño";
+                default:
+                    return "Full day - Todo Incluido - Adulto";
+            }
+        }
+        return "Full day - Todo Incluido - Adulto";
+    }
+
+    private Mono<String> generatePaymentConfirmationEmailBody(Integer paymentBookId) {
+
+                // Obtén los datos de `getPaymentDetails`
+                return getPaymentDetails(paymentBookId)
+                                .map(paymentDetails -> {
+                                        // Extrae los valores del Map
+                                        String nombres = (String) paymentDetails.get("Nombres");
+                                        Integer codigoReserva = (Integer) paymentDetails.get("Codigo Reserva");
+                                        String checkIn = (String) paymentDetails.get("Check In");
+                                        String checkOut = (String) paymentDetails.get("Check Out");
+                                        long duracionEstancia = (long) paymentDetails.get("Duración Estancia");
+                                        String cantidadPersonas = (String) paymentDetails.get("Cantidad de Personas");
+                                        String imagen = (String) paymentDetails.get("Imagen");
+                                        String roomName = (String) paymentDetails.get("RoomName");
+                                        String bookingId = (String) paymentDetails.get("bookingId");
+                                        BigDecimal totalCost = (BigDecimal) paymentDetails.get("totalCost");
+                                        double totalDiscount = (double) paymentDetails.get("totalDiscount");
+                                        List<BookingFeedingDto> bookingFeeding = (List<BookingFeedingDto>) paymentDetails.get("BookingFeeding");
+                                        BaseEmailReserve baseEmailReserve = new BaseEmailReserve();
+
+                                        BookingEmailDto bookingEmailDto = new BookingEmailDto(
+                                                        roomName, nombres, codigoReserva.toString(), checkIn, checkOut,
+                                                        checkIn, imagen, (int) duracionEstancia,
+                                                        "Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rustico Etapa III, Cercado de Lima 15593",
+                                                        cantidadPersonas);
+                                        ConfirmPaymentByBankTransferAndCardTemplateEmail confirmReserveBookingTemplateEmail = new ConfirmPaymentByBankTransferAndCardTemplateEmail(
+                                                        nombres, bookingEmailDto, bookingFeeding.size() > 0, bookingId, totalCost, totalDiscount);
+                                        baseEmailReserve.addEmailHandler(confirmReserveBookingTemplateEmail);
+
+                                        return baseEmailReserve.execute();
+
+                                        /*
+                                         * return "<!DOCTYPE html>" +
+                                         * "<html lang=\"es\">" +
+                                         * "<head>" +
+                                         * "    <meta charset=\"UTF-8\">" +
+                                         * "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">"
+                                         * +
+                                         * "    <title>Bienvenido</title>" +
+                                         * "    <style>" +
+                                         * "        .header { width: 100%; position: relative; background-color: white; padding: 20px 0; }"
+                                         * +
+                                         * "        .logo-left { width: 50px; position: absolute; top: 10px; left: 10px; }"
+                                         * +
+                                         * "        .banner { width: 100%; display: block; margin: 0 auto; }"
+                                         * +
+                                         * "        body { font-family: Arial, sans-serif; margin: 0; padding: 0; color: black; background-color: #F6F7FB; }"
+                                         * +
+                                         * "        .container { width: 100%; max-width: 100%; background-color: #FFFFFF; margin: 0px auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }"
+                                         * +
+                                         * "        .details-table { width: 100%; border-collapse: collapse; }"
+                                         * +
+                                         * "        .details-table td { vertical-align: top; padding: 5px; }"
+                                         * +
+                                         * "        .header img { width: 100%; height: auto; border-radius: 10px; }"
+                                         * +
+                                         * "        .title { font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; color: #384860 !important }"
+                                         * +
+                                         * "        .section-title { font-weight: bold; margin-top: 10px; }"
+                                         * +
+                                         * "        .highlight { color: #025928; font-weight: bold; }" +
+                                         * "        .info { font-size: 0.9rem; color: #025928 !important; }"
+                                         * +
+                                         * "        .help-section { max-width: 100%; background-color: #FFFFFF; margin: 20px auto; padding: 10px 40px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: left; color: #384860; }"
+                                         * +
+                                         * "    </style>" +
+                                         * "</head>" +
+                                         * "<body>" +
+                                         * "<div class=\"header\">" +
+                                         * "</div>" +
+                                         * "<img class=\"banner\" src=\"https://i.postimg.cc/pX3JmW8X/Image.png\" alt=\"Bienvenido\">"
+                                         * +
+                                         * "<div class=\"container\">" +
+                                         * "            <p style=\"padding: 0px 10px; color: #384860 !important\">Estimado(a), "
+                                         * + nombres + " <br><br>" +
+                                         * "                El presente es para informar que se completó exitosamente el registro de su pago para la reserva de: Departamento estándar vista piscina.</p>"
+                                         * +
+                                         * "    <table class=\"details-table\">" +
+                                         * "        <tr>" +
+                                         * "            <td style=\"width: 40%;\">" +
+                                         * "                <div class=\"header\">" +
+                                         * "                    <img src=\"" + imagen
+                                         * + "\" alt=\"Departamento Estándar\">" +
+                                         * "                </div>" +
+                                         * "            </td>" +
+                                         * "            <td style=\"width: 60%;\">" +
+                                         * "                <div class=\"details\">" +
+                                         * "                    <p class=\"title\">" + roomName + "</p>" +
+                                         * "                    <table>" +
+                                         * "                        <tr><td><span class=\"section-title\">Titular de la reserva:</span></td><td>"
+                                         * + nombres + "</td></tr>" +
+                                         * "                        <tr><td><span class=\"section-title\">Código de reserva:</span></td><td>"
+                                         * + codigoReserva + "</td></tr>" +
+                                         * "                        <tr><td><span class=\"section-title\">Check-in:</span></td><td><span class=\"highlight\">"
+                                         * + checkIn + "</span></td></tr>" +
+                                         * "                        <tr><td><span class=\"section-title\">Check-out:</span></td><td><span class=\"highlight\">"
+                                         * + checkOut + "</span></td></tr>" +
+                                         * "                        <tr><td colspan=\"2\"><span class=\"info\">Hora de llegada aproximada: 10:00 A.M <br> (*) Recuerda que el check-in es las 3:00 P.M.</span></td></tr>"
+                                         * +
+                                         * "                        <tr><td><span class=\"section-title\">Duración total de estancia:</span></td><td>"
+                                         * + duracionEstancia + "</td></tr>" +
+                                         * "                        <tr><td><span class=\"section-title\">Cantidad de personas:</span></td><td>"
+                                         * + cantidadPersonas + "</td></tr>" +
+                                         * "                        <tr><td colspan=\"2\"><span class=\"section-title\">Ubicación:</span> Km 29.5 Carretera Cieneguilla Mz B. Lt. 72 OTR. Predio Rústico Etapa III, Cercado de Lima 15593</td></tr>"
+                                         * +
+                                         * "                    </table>" +
+                                         * "                </div>" +
+                                         * "            </td>" +
+                                         * "        </tr>" +
+                                         * "    </table>" +
+                                         * "    <p style=\"padding: 0px 10px; color: #384860 !important\">Este correo es solo de caracter informativo, no es un comprobante de pago. En caso de no poder usar la reservacion, por favor llamar con 2 días de anticipacion. Muchas gracias.</p>"
+                                         * +
+                                         * "</div>" +
+                                         * "<div class=\"help-section\">" +
+                                         * "    <h3>¿Necesitas ayuda?</h3>" +
+                                         * "    <p>Envia tus comentarios e información de errores a <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">informesyreservas@cieneguilladelrio.com</a></p>"
+                                         * +
+                                         * "</div>" +
+                                         * "<div class=\"\" style=\"max-width: 100%; padding: 5px 40px; color: #9D9D9D; margin: 0 auto;\">"
+                                         * +
+                                         * "    <p>Si prefiere no recibir este tipo de correo electrónico, ¿no quiere más correos electrónicos de Ribera? <a href=\"mailto:informesyreservas@cieneguilladelrio.com\">Darse de baja.</a> <br> Valle Encantado S.A.C, Perú.<br> © 2023 Inclub</p>"
+                                         * +
+                                         * "</div>" +
+                                         * "</body>" +
+                                         * "</html>";
+                                         */
+                                });
+        }
+
+        /*
+         * public static long calculateDaysDifference(Timestamp dayBookingInit,
+         * Timestamp dayBookingEnd) {
+         * if (dayBookingInit == null || dayBookingEnd == null) {
+         * throw new IllegalArgumentException("Both Timestamps must be non-null");
+         * }
+         * 
+         * // Convertir los Timestamp a LocalDate
+         * LocalDate startDate = dayBookingInit.toInstant()
+         * .atZone(ZoneId.systemDefault())
+         * .toLocalDate();
+         * 
+         * LocalDate endDate = dayBookingEnd.toInstant()
+         * .atZone(ZoneId.systemDefault())
+         * .toLocalDate();
+         * 
+         * // Calcular la diferencia de días
+         * return ChronoUnit.DAYS.between(startDate, endDate);
+         * }
+         */
+
+        /*
+         * public static String getMonthDayOfWeekAndNumber(Timestamp timestamp) {
+         * // Formateador para el mes, día de la semana abreviados y número de día
+         * SimpleDateFormat formatter = new SimpleDateFormat("EE, d MMM", new
+         * Locale("es", "ES"));
+         * // Convertir el Timestamp a Date y formatearlo
+         * return formatter.format(timestamp);
+         * }
+         */
+        @Override
+        public Mono<Map<String, Object>> getPaymentDetails(Integer paymentBookId) {
+                return paymentBookRepository.findByPaymentBookId(paymentBookId)
+                                .flatMap(paymentBook -> {
+                                        // Obtener bookingId desde paymentBook
+                                        Integer bookingId = paymentBook.getBookingId();
+
+                                        // Código de reserva
+                                        Integer codigoReserva = paymentBook.getBookingId();
+                                        BigDecimal totalCost = paymentBook.getTotalCost();
+                                        double totalDiscount = paymentBook.getTotalDiscount();
+
+                                        // Obtener datos relacionados desde bookingId
+                                        return bookingRepository.findById(bookingId)
+                                                        .flatMap(booking -> {
+                                                                Integer userClientId = booking.getUserClientId();
+                                                                Integer roomOfferId = booking.getRoomOfferId();
+
+                                                                // Check-in y check-out
+                                                                Timestamp checkIn = booking.getDayBookingInit();
+                                                                Timestamp checkOut = booking.getDayBookingEnd();
+
+                                                                // Métodos personalizados para calcular duración de
+                                                                // estancia y cantidad de personas
+                                                                long duracionEstancia = TransformDate
+                                                                                .calculateDaysDifference(
+                                                                                                checkIn,
+                                                                                                checkOut);
+
+                                                                String cantidadPersonas = TransformDate
+                                                                                .calculatePersons(
+                                                                                                booking.getNumberAdults(),
+                                                                                                booking.getNumberChildren(),
+                                                                                                booking.getNumberBabies(),
+                                                                                                booking.getNumberAdultsExtra(),
+                                                                                                booking.getNumberAdultsMayor());
+
+                                                                Mono<Tuple2<Integer, String>> clienteInfo = userClientRepository
+                                                                    .findById(Integer.parseInt(userClientId.toString()))
+                                                                    .map(u -> Tuples.of(
+                                                                            u.getUserClientId(),
+                                                                            u.getFirstName().concat(" ").concat(u.getLastName())
+                                                                    ));
+
+                                                                // Obtener nombre del cliente
+//                                                                Mono<String> nombreCliente = userClientRepository
+//                                                                                .findById(Integer.parseInt(userClientId
+//                                                                                                .toString()))
+//                                                                                .map(u -> u.getFirstName().concat(" ")
+//                                                                                                .concat(u.getLastName()));
+
+                                                                // Obtener imagen del cuarto
+                                                                Mono<String> imagenCuarto = roomOfferRepository
+                                                                                .findById(roomOfferId)
+                                                                                .flatMap(roomOffer -> roomRepository
+                                                                                                .findById(roomOffer
+                                                                                                                .getRoomId()))
+                                                                                .map(room -> room.getImage() != null
+                                                                                                ? room.getImage()
+                                                                                                : "");
+
+                                                                // Obtener descripcion del cuarto
+                                                                Mono<String> descCuarto = roomOfferRepository
+                                                                                .findById(roomOfferId)
+                                                                                .flatMap(roomOffer -> roomRepository
+                                                                                                .findById(roomOffer
+                                                                                                                .getRoomId()))
+                                                                                .map(RoomEntity::getRoomName);
+
+                                                                Mono<List<BookingFeedingDto>> bookingFeedingMono = this.bookingFeedingRepository
+                                                                                .listBookingFeedingByBookingId(
+                                                                                                bookingId)
+                                                                                .collectList();
+
+                                                                // Unir los datos en un mapa
+                                                                return Mono.zip(clienteInfo, imagenCuarto, descCuarto, bookingFeedingMono)
+                                                                                .map(tuple -> {
+                                                                                        Tuple2<Integer, String> clienteTuple = tuple.getT1();
+                                                                                        String imagen = tuple.getT2();
+                                                                                        String roomName = tuple.getT3();
+                                                                                        List<BookingFeedingDto> bookingFeeding = tuple.getT4();
+                                                                                        System.out.println("asdkfhaskdjhfkashdfkjhasdfasdkfhaskdjhfkashdfkjhasdf");
+                                                                                        System.out.println(bookingId.toString());
+                                                                                        System.out.println("asdkfhaskdjhfkashdfkjhasdfasdkfhaskdjhfkashdfkjhasdf");
+
+                                                                                        Integer idCliente = clienteTuple.getT1();
+                                                                                        String nombreCliente = clienteTuple.getT2();
+
+                                                                                        Map<String, Object> response = new HashMap<>();
+                                                                                        response.put("Nombres", nombreCliente);
+                                                                                        response.put("Id", idCliente);
+                                                                                        response.put("Codigo Reserva", codigoReserva);
+                                                                                        response.put("bookingId", bookingId.toString());
+                                                                                        response.put("Check In",
+                                                                                                        TransformDate.getMonthDayOfWeekAndNumber(
+                                                                                                                        checkIn,
+                                                                                                                        "EE, d MMM"));
+                                                                                        response.put("Check Out",
+                                                                                                        TransformDate.getMonthDayOfWeekAndNumber(
+                                                                                                                        checkOut,
+                                                                                                                        "EE, d MMM"));
+                                                                                        response.put("Duración Estancia",
+                                                                                                        duracionEstancia);
+                                                                                        response.put("Cantidad de Personas",
+                                                                                                        cantidadPersonas);
+                                                                                        response.put("Imagen", imagen);
+                                                                                        response.put("RoomName",
+                                                                                                        roomName);
+                                                                                        response.put("BookingFeeding",
+                                                                                                        bookingFeeding);
+
+                                                                                        response.put("totalCost", totalCost);
+                                                                                        response.put("totalDiscount", totalDiscount);
+
+                                                                                        return response;
+                                                                                });
+                                                        });
+                                });
+        }
+
+    @Override
+    public Mono<Void> refusePaymentFullday(Integer paymentBookId, Integer refuseReasonId, String refuseReason) {
+        return paymentBookRepository.findById(paymentBookId)
+                .flatMap(paymentBook -> {
+                    paymentBook.setPaymentStateId(3);
+                    paymentBook.setPendingpay(0);
+
+                    return paymentBookRepository.save(paymentBook)
+                            .then(Mono.defer(() -> {
+                                RefusePaymentEntity refusePayment = new RefusePaymentEntity();
+                                refusePayment.setPaymentBookId(paymentBookId);
+                                refusePayment.setRefuseReasonId(refuseReasonId);
+                                refusePayment.setDetail(refuseReason);
+                                return refusePaymentRepository.save(refusePayment);
+                            }))
+                            .then(fullDayRepository.findById(paymentBook.getFullDayId())
+                                    .flatMap(fullDay -> {
+                                        fullDay.setBookingstateid(3);
+                                        return fullDayRepository.save(fullDay)
+                                                .then(userClientRepository.findById(fullDay.getUserClientId())
+                                                        .flatMap(userClient -> {
+                                                            String recipientName = userClient.getFirstName();
+                                                            String email = userClient.getEmail();
+                                                            String type = fullDay.getType();
+
+                                                            String body = EmailTemplateFullday.getRefuseTemplate(recipientName, type, refuseReason);
+                                                            return emailService.sendEmail(email, "Pago Rechazado para la Reserva", body);
+                                                        })
+                                                );
+                                    })
+                            );
+                }).then();
+    }
+
+        // Métodos de cálculo personalizados
+        private int calculateDuration(int... values) {
+                return Arrays.stream(values).sum();
+        }
+
+        /*
+         * private String calculatePersons(int numberAdults, int numberChildren, int
+         * numberBabies, int numberAdultsExtra,
+         * int numberAdultsMayor) {
+         * StringBuilder result = new StringBuilder();
+         * 
+         * if (numberAdults > 0) {
+         * result.append(numberAdults).append(" adulto").append(numberAdults > 1 ? "s" :
+         * "").append(" ");
+         * }
+         * if (numberChildren > 0) {
+         * result.append(numberChildren).append(" niño").append(numberChildren > 1 ? "s"
+         * : "").append(" ");
+         * }
+         * if (numberBabies > 0) {
+         * result.append(numberBabies).append(" bebé").append(numberBabies > 1 ? "s" :
+         * "").append(" ");
+         * }
+         * if (numberAdultsExtra > 0) {
+         * result.append(numberAdultsExtra).append(" adulto extra")
+         * .append(numberAdultsExtra > 1 ? "s" : "").append(" ");
+         * }
+         * if (numberAdultsMayor > 0) {
+         * result.append(numberAdultsMayor).append(" adulto mayor")
+         * .append(numberAdultsMayor > 1 ? "es" : "").append(" ");
+         * }
+         * 
+         * // Elimina espacios extra al final
+         * return result.toString().trim();
+         * }
+         */
+
+    public Mono<DetailEmailFulldayDto> fetchPaymentDetails(Integer paymentBookId) {
+        return paymentBookRepository.getPaymentDetails(paymentBookId);
+    }
+}
