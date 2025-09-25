@@ -53,6 +53,12 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
 
 
 
+
+
+
+
+
+
     @Query("SELECT * FROM userclient WHERE email = :email OR documentnumber = :document")
     Mono<UserClientEntity> findByEmailOrDocument(@Param("email") String email, @Param("document") String document);
 
