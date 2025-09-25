@@ -82,8 +82,8 @@ public interface UserClientService {
     UserClientResponseDTO mapToDTO(UserClientEntity user);
 
 
-    List<ClientResponseDto> getAllClients();
-    List<ClientCountResponseDto> getCountClientsByType();
+    Flux<ClientResponseDto> getAllClients();
+    Flux<ClientCountResponseDto> getCountClientsByType();
 
 
 

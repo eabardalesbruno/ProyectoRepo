@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -20,13 +21,13 @@ public class ManagerClientController {
 
     @GetMapping("/clients/list")
     @ResponseStatus(HttpStatus.OK)
-    public List<ClientResponseDto> getAllClients() {
+    public Flux<ClientResponseDto> getAllClients() {
         return userClientService.getAllClients();
     }
 
     @GetMapping("/clients/stats/count-by-type")
     @ResponseStatus(HttpStatus.OK)
-    public List<ClientCountResponseDto> getClientCountByType() {
+    public Flux<ClientCountResponseDto> getClientCountByType() {
         return userClientService.getCountClientsByType();
     }
 }

@@ -26,7 +26,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
                uc.documentnumber AS dni
         FROM userclient uc
         """)
-    List<ClientResponseDto> findAllClients();
+    Flux<ClientResponseDto> findAllClients();
 
     // Consulta 2: cantidad de clientes por tipo
     @Query("""
@@ -36,7 +36,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
         GROUP BY uc.registertypeid
         ORDER BY uc.registertypeid
         """)
-    List <ClientCountResponseDto> countClientsByType();
+    Flux <ClientCountResponseDto> countClientsByType();
 
 
 

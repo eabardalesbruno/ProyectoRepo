@@ -420,12 +420,12 @@ public class UserClientServiceImpl implements UserClientService {
 
 
     @Override
-    public List<ClientResponseDto> getAllClients() {
+    public Flux<ClientResponseDto> getAllClients() {
         return userClientRepository.findAllClients();
     }
 
     @Override
-    public List<ClientCountResponseDto> getCountClientsByType() {
+    public Flux<ClientCountResponseDto> getCountClientsByType() {
         return userClientRepository.countClientsByType();
     }
 

@@ -173,16 +173,6 @@ public class UserController {
      * 
      */
 
-    @GetMapping("/clients")
-    public List<ClientResponseDto> getAllClients() {
-        return userClientService.getAllClients();
-    }
-
-    @GetMapping("/clients/count")
-    public List<ClientCountResponseDto> getCountClientsByType() {
-        return userClientService.getCountClientsByType();
-    }
-
 
     @GetMapping("/consult-ruc/{ruc}")
     public Mono<CompanyDataDto> getMethodName(@PathVariable String ruc) {
