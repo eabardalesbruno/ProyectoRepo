@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 
 public class ClientCountResponseDto {
-    private String tipoCliente;
+    private Integer tipoCliente;
     private Long cantidadClientes;
 }

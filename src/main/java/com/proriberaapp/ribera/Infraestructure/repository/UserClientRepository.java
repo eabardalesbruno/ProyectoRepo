@@ -1,5 +1,7 @@
 package com.proriberaapp.ribera.Infraestructure.repository;
 
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ClientCountResponseDto;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ClientResponseDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.booking.response.UserDetailDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
@@ -24,7 +26,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
                uc.documentnumber AS dni
         FROM userclient uc
         """)
-    List<Object[]> findAllClients();
+    List<ClientResponseDto> findAllClients();
 
     // Consulta 2: cantidad de clientes por tipo
     @Query("""
@@ -34,7 +36,7 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
         GROUP BY uc.registertypeid
         ORDER BY uc.registertypeid
         """)
-    List<Object[]> countClientsByType();
+    List <ClientCountResponseDto> countClientsByType();
 
 
 

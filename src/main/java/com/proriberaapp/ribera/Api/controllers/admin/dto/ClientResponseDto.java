@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 public class ClientResponseDto {
 
-        private String tipoCliente;
+        private Integer  tipoCliente;
         private String nombres;
         private String apellidos;
         private String dni;

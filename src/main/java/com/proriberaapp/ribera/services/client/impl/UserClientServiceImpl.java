@@ -421,24 +421,12 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Override
     public List<ClientResponseDto> getAllClients() {
-        return userClientRepository.findAllClients().stream()
-                .map(result -> new ClientResponseDto(
-                        (String) result[0],  // tipo_cliente
-                        (String) result[1],  // nombres
-                        (String) result[2],  // apellidos
-                        (String) result[3]   // dni
-                ))
-                .collect(Collectors.toList());
+        return userClientRepository.findAllClients();
     }
 
     @Override
     public List<ClientCountResponseDto> getCountClientsByType() {
-        return userClientRepository.countClientsByType().stream()
-                .map(result -> new ClientCountResponseDto(
-                        (String) result[0],                // tipo_cliente
-                        ((Number) result[1]).longValue()   // cantidad_clientes
-                ))
-                .collect(Collectors.toList());
+        return userClientRepository.countClientsByType();
     }
 
     @Override
