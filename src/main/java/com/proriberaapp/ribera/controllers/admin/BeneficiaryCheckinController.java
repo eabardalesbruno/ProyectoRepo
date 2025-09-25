@@ -32,4 +32,10 @@ public class BeneficiaryCheckinController {
     public Mono<BeneficiaryCheckinHistoryDTO> getCheckinHistory(@PathVariable String idBeneficiary) {
         return service.getCheckinHistory(idBeneficiary);
     }
+
+
+
+
+
+
 }

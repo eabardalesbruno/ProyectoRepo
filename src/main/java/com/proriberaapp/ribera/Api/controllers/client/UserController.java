@@ -3,6 +3,8 @@ package com.proriberaapp.ribera.Api.controllers.client;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.request.PasswordValidationRequest;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ClientCountResponseDto;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ClientResponseDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.PasswordValidationResponse;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserClientResponseDTO;
 import com.proriberaapp.ribera.Api.controllers.exception.TokenInvalidException;
@@ -21,6 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 import static com.proriberaapp.ribera.utils.GeneralMethods.generatePassword;
 
@@ -168,6 +172,18 @@ public class UserController {
      * }
      * 
      */
+
+    @GetMapping("/clients")
+    public List<ClientResponseDto> getAllClients() {
+        return userClientService.getAllClients();
+    }
+
+    @GetMapping("/clients/count")
+    public List<ClientCountResponseDto> getCountClientsByType() {
+        return userClientService.getCountClientsByType();
+    }
+
+
     @GetMapping("/consult-ruc/{ruc}")
     public Mono<CompanyDataDto> getMethodName(@PathVariable String ruc) {
         return this.userClientService.loadDataRuc(ruc);

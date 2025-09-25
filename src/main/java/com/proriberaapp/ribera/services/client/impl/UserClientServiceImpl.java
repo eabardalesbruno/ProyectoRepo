@@ -1,9 +1,8 @@
 package com.proriberaapp.ribera.services.client.impl;
 
-import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserClientResponseDTO;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
+import com.proriberaapp.ribera.Api.controllers.client.dto.response.*;
 import com.proriberaapp.ribera.Domain.dto.DiscountDto;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalUsersDTO;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.EventContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
@@ -30,7 +29,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -38,22 +36,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import jakarta.annotation.PostConstruct;
 import org.springframework.scheduling.annotation.Scheduled;
-import java.util.concurrent.TimeUnit;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.proriberaapp.ribera.utils.constants.DiscountTypeCode.DISCOUNT_MEMBER;
-import static com.proriberaapp.ribera.utils.constants.DiscountTypeCode.USD_REWARD;
-
-import com.proriberaapp.ribera.Api.controllers.admin.dto.UserDto;
-import com.proriberaapp.ribera.Api.controllers.client.dto.response.AuthDataResponse;
-import com.proriberaapp.ribera.Api.controllers.client.dto.response.WalletCreationResponse;
-import com.proriberaapp.ribera.Api.controllers.exception.CredentialsInvalidException;
-import com.proriberaapp.ribera.Domain.entities.WalletEntity;
-import com.proriberaapp.ribera.Domain.enums.Permission;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -89,7 +77,7 @@ public class UserClientServiceImpl implements UserClientService {
 
     @Value("${wallet.microservice.url}")
     private String walletMsUrl;
-    
+
     @Value("${wallet.retry.enabled:false}")
     private boolean walletRetryEnabled;
     private WebClient webClientWallet;
@@ -276,36 +264,36 @@ public class UserClientServiceImpl implements UserClientService {
                 .flatMap(savedUser -> {
                     // Generar token temporal para el usuario recién creado
                     String tempToken = jwtUtil.generateToken(savedUser);
-                    
+
                     // Intentar creación de la wallet en el microservicio con fallback graceful
                     return webClientWallet.post()
-                        .uri("/api/v1/wallet/create-complete")
-                        .header("Authorization", "Bearer " + tempToken)
-                        .retrieve()
-                        .bodyToMono(WalletCreationResponse.class)
-                        .flatMap(walletResponse -> {
-                            // Éxito: Asociar wallet al usuario
-                            savedUser.setWalletId(walletResponse.getWalletId());
-                            return userClientRepository.save(savedUser);
-                        })
-                        .flatMap(userWithWallet -> {
-                            // Enviar correo de confirmación después de crear la wallet
-                            String emailBody = generateUserRegistrationEmailBody(userWithWallet, randomPassword);
-                            return emailService.sendEmail(userWithWallet.getEmail(), "Confirmación de Registro", emailBody)
-                                    .thenReturn(userWithWallet);
-                        })
-                        .doOnSuccess(user -> log.info("Usuario registrado exitosamente con wallet en MS: {}", user.getUserClientId()))
-                        .onErrorResume(error -> {
-                            // Fallback graceful: Continuar sin wallet
-                            log.warn("Error creando wallet en MS para usuario {}, continuando sin wallet: {}", 
-                                    savedUser.getUserClientId(), error.getMessage());
-                            
-                            // El usuario ya está guardado, solo enviamos el correo
-                            String emailBody = generateUserRegistrationEmailBody(savedUser, randomPassword);
-                            return emailService.sendEmail(savedUser.getEmail(), "Confirmación de Registro", emailBody)
-                                    .thenReturn(savedUser)
-                                    .doOnSuccess(user -> log.info("Usuario registrado exitosamente sin wallet (se reintentará más tarde): {}", user.getUserClientId()));
-                        });
+                            .uri("/api/v1/wallet/create-complete")
+                            .header("Authorization", "Bearer " + tempToken)
+                            .retrieve()
+                            .bodyToMono(WalletCreationResponse.class)
+                            .flatMap(walletResponse -> {
+                                // Éxito: Asociar wallet al usuario
+                                savedUser.setWalletId(walletResponse.getWalletId());
+                                return userClientRepository.save(savedUser);
+                            })
+                            .flatMap(userWithWallet -> {
+                                // Enviar correo de confirmación después de crear la wallet
+                                String emailBody = generateUserRegistrationEmailBody(userWithWallet, randomPassword);
+                                return emailService.sendEmail(userWithWallet.getEmail(), "Confirmación de Registro", emailBody)
+                                        .thenReturn(userWithWallet);
+                            })
+                            .doOnSuccess(user -> log.info("Usuario registrado exitosamente con wallet en MS: {}", user.getUserClientId()))
+                            .onErrorResume(error -> {
+                                // Fallback graceful: Continuar sin wallet
+                                log.warn("Error creando wallet en MS para usuario {}, continuando sin wallet: {}",
+                                        savedUser.getUserClientId(), error.getMessage());
+
+                                // El usuario ya está guardado, solo enviamos el correo
+                                String emailBody = generateUserRegistrationEmailBody(savedUser, randomPassword);
+                                return emailService.sendEmail(savedUser.getEmail(), "Confirmación de Registro", emailBody)
+                                        .thenReturn(savedUser)
+                                        .doOnSuccess(user -> log.info("Usuario registrado exitosamente sin wallet (se reintentará más tarde): {}", user.getUserClientId()));
+                            });
                 });
     }
 
@@ -429,6 +417,30 @@ public class UserClientServiceImpl implements UserClientService {
         return body;
     }
 
+
+
+    @Override
+    public List<ClientResponseDto> getAllClients() {
+        return userClientRepository.findAllClients().stream()
+                .map(result -> new ClientResponseDto(
+                        (String) result[0],  // tipo_cliente
+                        (String) result[1],  // nombres
+                        (String) result[2],  // apellidos
+                        (String) result[3]   // dni
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ClientCountResponseDto> getCountClientsByType() {
+        return userClientRepository.countClientsByType().stream()
+                .map(result -> new ClientCountResponseDto(
+                        (String) result[0],                // tipo_cliente
+                        ((Number) result[1]).longValue()   // cantidad_clientes
+                ))
+                .collect(Collectors.toList());
+    }
+
     @Override
     public Flux<UserClientEntity> findAll() {
         return userClientRepository.findAll();
@@ -490,7 +502,7 @@ public class UserClientServiceImpl implements UserClientService {
                     if (passwordEncoder.matches(password, user.getPassword())) {
                         // Generar token temporal para el usuario
                         String tempToken = jwtUtil.generateToken(user);
-                        
+
                         // Siempre intentar crear/verificar wallet en el microservicio con fallback graceful
                         return webClientWallet.post()
                                 .uri("/api/v1/wallet/create-complete")
@@ -510,7 +522,7 @@ public class UserClientServiceImpl implements UserClientService {
                                 .doOnSuccess(token -> log.info("Wallet verificada/creada en MS durante login para usuario {}", user.getUserClientId()))
                                 .onErrorResume(error -> {
                                     // Fallback graceful: Continuar sin wallet
-                                    log.warn("Error verificando/creando wallet en MS durante login para usuario {}, continuando sin wallet: {}", 
+                                    log.warn("Error verificando/creando wallet en MS durante login para usuario {}, continuando sin wallet: {}",
                                             user.getUserClientId(), error.getMessage());
                                     return Mono.just(jwtUtil.generateToken(user));
                                 });
@@ -544,7 +556,7 @@ public class UserClientServiceImpl implements UserClientService {
                 .flatMap(user -> {
                     // Generar token temporal para el usuario
                     String tempToken = jwtUtil.generateToken(user);
-                    
+
                     // Siempre intentar crear/verificar wallet en el microservicio con fallback graceful
                     return webClientWallet.post()
                             .uri("/api/v1/wallet/create-complete")
@@ -564,7 +576,7 @@ public class UserClientServiceImpl implements UserClientService {
                             .doOnSuccess(token -> log.info("Wallet verificada/creada en MS durante login con Google para usuario {}", user.getUserClientId()))
                             .onErrorResume(error -> {
                                 // Fallback graceful: Continuar sin wallet
-                                log.warn("Error verificando/creando wallet en MS durante login con Google para usuario {}, continuando sin wallet: {}", 
+                                log.warn("Error verificando/creando wallet en MS durante login con Google para usuario {}, continuando sin wallet: {}",
                                         user.getUserClientId(), error.getMessage());
                                 return Mono.just(jwtUtil.generateToken(user));
                             });
@@ -666,48 +678,48 @@ public class UserClientServiceImpl implements UserClientService {
             case USD_REWARD ->Mono.zip( walletPointRepository.findByUserId(userId),
                             this.bookingService.findById(bookingId),
                             this.bookingService.getTotalFeedingAmount(bookingId).switchIfEmpty(Mono.just(0F))
-                            )
-                            .flatMap(data-> {
-                                WalletPointEntity walletPoint = data.getT1();
-                                BookingEntity booking = data.getT2();
-                                float totalAmountFeeding = data.getT3();
-                                float costFinal = booking.getCostFinal().floatValue();
-                                float discount1 = (costFinal - totalAmountFeeding) * 0.7f;
+                    )
+                    .flatMap(data-> {
+                        WalletPointEntity walletPoint = data.getT1();
+                        BookingEntity booking = data.getT2();
+                        float totalAmountFeeding = data.getT3();
+                        float costFinal = booking.getCostFinal().floatValue();
+                        float discount1 = (costFinal - totalAmountFeeding) * 0.7f;
 
-                                List<DiscountDto> discounts = new ArrayList<>();
-                                discounts.add(
-                                        DiscountDto.builder()
-                                                .amount(discount1)
-                                                .applyToReservation(true)
-                                                .name(Constants.USD_REWARDS)
-                                                .percentage(70f)
-                                                .build()
-                                );
+                        List<DiscountDto> discounts = new ArrayList<>();
+                        discounts.add(
+                                DiscountDto.builder()
+                                        .amount(discount1)
+                                        .applyToReservation(true)
+                                        .name(Constants.USD_REWARDS)
+                                        .percentage(70f)
+                                        .build()
+                        );
 
-                                float discount2 = 0f;
-                                if (totalAmountFeeding > 0) {
-                                    discount2 = totalAmountFeeding * 0.2f;
-                                    discounts.add(
-                                            DiscountDto.builder()
-                                                    .amount(discount2)
-                                                    .applyToReservation(true)
-                                                    .name(Constants.DESCUENTO_ALIMENTACION)
-                                                    .percentage(20f)
-                                                    .build()
-                                    );
-                                }
+                        float discount2 = 0f;
+                        if (totalAmountFeeding > 0) {
+                            discount2 = totalAmountFeeding * 0.2f;
+                            discounts.add(
+                                    DiscountDto.builder()
+                                            .amount(discount2)
+                                            .applyToReservation(true)
+                                            .name(Constants.DESCUENTO_ALIMENTACION)
+                                            .percentage(20f)
+                                            .build()
+                            );
+                        }
 
-                                float totalDiscount = discount1 + discount2;
-                                float overallPercentage = (totalDiscount / costFinal) * 100f;
+                        float totalDiscount = discount1 + discount2;
+                        float overallPercentage = (totalDiscount / costFinal) * 100f;
 
-                                return Mono.just(
-                                        UserNameAndDiscountDto.builder()
-                                                .percentage(overallPercentage) // porcentaje global del descuento
-                                                .discounts(discounts)
-                                                .build()
-                                );
+                        return Mono.just(
+                                UserNameAndDiscountDto.builder()
+                                        .percentage(overallPercentage) // porcentaje global del descuento
+                                        .discounts(discounts)
+                                        .build()
+                        );
 
-                            })
+                    })
             ;
             case DISCOUNT_COUPON -> DiscountUtil.calculateCouponDiscount(userId);
             default -> Mono.error(new IllegalArgumentException("Tipo de descuento no válido"));
@@ -915,16 +927,16 @@ public class UserClientServiceImpl implements UserClientService {
         if (!isWalletRetryEnabled()) {
             return; // Salir silenciosamente si está deshabilitado
         }
-        
+
         log.debug("Iniciando retry de wallets pendientes...");
-        
+
         userClientRepository.findByWalletIdIsNull()
                 .flatMap(user -> {
                     log.debug("Intentando crear wallet para usuario sin wallet: {}", user.getUserClientId());
-                    
+
                     // Generar token temporal para el usuario
                     String tempToken = jwtUtil.generateToken(user);
-                    
+
                     // Intentar crear wallet en el microservicio
                     return webClientWallet.post()
                             .uri("/api/v1/wallet/create/{idUser}", user.getUserClientId())

@@ -1,6 +1,5 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
-import com.proriberaapp.ribera.Domain.dto.ReportCommissionDto;
 import com.proriberaapp.ribera.services.admin.ReportManagerService;
 import com.proriberaapp.ribera.services.admin.impl.ExcelServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -53,4 +51,6 @@ public class ExcelController {
                         .body(data));
     }
 
+    public static class ManagerClientController {
+    }
 }

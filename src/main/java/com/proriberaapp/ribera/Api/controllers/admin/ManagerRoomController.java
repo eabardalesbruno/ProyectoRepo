@@ -1,17 +1,17 @@
 package com.proriberaapp.ribera.Api.controllers.admin;
 
 
-import com.proriberaapp.ribera.Api.controllers.admin.dto.BookingStateStatsDto;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDashboardDto;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.RoomDetailDto;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.views.ViewRoomReturn;
 import com.proriberaapp.ribera.Domain.dto.PaymentDetailDTO;
 import com.proriberaapp.ribera.Domain.dto.PaymentWithVoucherDetailDTO;
 import com.proriberaapp.ribera.Domain.dto.ReservationReportDto;
 import com.proriberaapp.ribera.Domain.entities.RoomEntity;
 import com.proriberaapp.ribera.services.client.RoomService;
+import com.proriberaapp.ribera.services.client.UserClientService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -25,6 +25,7 @@ import java.util.List;
 public class ManagerRoomController extends BaseManagerController<RoomEntity, RoomEntity>{
 
     private final RoomService roomService;
+
 
     @GetMapping("/find/all/view")
     public Flux<ViewRoomReturn> findAllViewRoomReturn() {

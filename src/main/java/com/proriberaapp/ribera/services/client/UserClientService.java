@@ -6,6 +6,8 @@ import com.proriberaapp.ribera.Api.controllers.client.dto.ContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.EventContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ClientCountResponseDto;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.ClientResponseDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserClientResponseDTO;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
@@ -14,7 +16,7 @@ import com.proriberaapp.ribera.utils.constants.DiscountTypeCode;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.nio.channels.FileChannel;
+import java.util.List;
 
 public interface UserClientService {
     Mono<UserClientEntity> registerUser(UserClientEntity user, String randomPassword);
@@ -78,4 +80,11 @@ public interface UserClientService {
     Flux<UserClientResponseDTO> listAllUsersExcludingCurrent(Integer currentUserId);
 
     UserClientResponseDTO mapToDTO(UserClientEntity user);
+
+
+    List<ClientResponseDto> getAllClients();
+    List<ClientCountResponseDto> getCountClientsByType();
+
+
+
 }

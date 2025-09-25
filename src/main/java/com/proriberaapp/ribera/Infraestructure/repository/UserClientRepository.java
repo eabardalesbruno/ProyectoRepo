@@ -10,8 +10,34 @@ import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface UserClientRepository extends R2dbcRepository<UserClientEntity, Integer> {
     Mono<UserClientEntity> findByEmail(String email);
+
+
+    // Consulta 1: lista de clientes
+    @Query("""
+        SELECT uc.registertypeid AS tipo_cliente,
+               uc.firstname      AS nombres,
+               uc.lastname       AS apellidos,
+               uc.documentnumber AS dni
+        FROM userclient uc
+        """)
+    List<Object[]> findAllClients();
+
+    // Consulta 2: cantidad de clientes por tipo
+    @Query("""
+        SELECT uc.registertypeid AS tipo_cliente,
+               COUNT(*) AS cantidad_clientes
+        FROM userclient uc
+        GROUP BY uc.registertypeid
+        ORDER BY uc.registertypeid
+        """)
+    List<Object[]> countClientsByType();
+
+
+
 
     @Query("SELECT * FROM userclient WHERE email = :email OR documentnumber = :document")
     Mono<UserClientEntity> findByEmailOrDocument(@Param("email") String email, @Param("document") String document);
@@ -307,6 +333,13 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
     // Método para buscar usuarios sin wallet (para retry en background)
     @Query("SELECT * FROM userclient WHERE walletid IS NULL")
     Flux<UserClientEntity> findByWalletIdIsNull();
+
+
+
+
+
+
+
 
     @Query(value = """
             SELECT
