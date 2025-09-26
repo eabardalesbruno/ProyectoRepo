@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OccupancyManagerCountDto {
-    private Integer clientType;
-    private Long clientCount;
+    private Boolean  isuserinclub;
+
+    private Long totalBookings;
 }
 
 

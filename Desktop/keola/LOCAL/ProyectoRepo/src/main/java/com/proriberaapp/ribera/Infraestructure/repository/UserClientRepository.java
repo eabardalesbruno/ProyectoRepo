@@ -41,8 +41,8 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
 
      // CONSULTA 3 : CONTADOR TIPO DE ROOM filtrando por bookingIds
     @Query("""
-        SELECT u.isuserinclub AS clientType,
-               COUNT(b.bookingid) AS clientCount
+        SELECT u.isuserinclub ,
+               COUNT(b.bookingid) AS total_bookings
         FROM booking b
         INNER JOIN userclient u ON b.userclientid = u.userclientid
         WHERE b.bookingid IN (:bookingIds)
