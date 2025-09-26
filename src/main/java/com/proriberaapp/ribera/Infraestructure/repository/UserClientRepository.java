@@ -2,6 +2,7 @@ package com.proriberaapp.ribera.Infraestructure.repository;
 
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ClientCountResponseDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.ClientResponseDto;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.OccupancyManagerCountDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
 import com.proriberaapp.ribera.Api.controllers.admin.dto.booking.response.UserDetailDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
@@ -37,6 +38,23 @@ public interface UserClientRepository extends R2dbcRepository<UserClientEntity, 
         ORDER BY uc.registertypeid
         """)
     Flux <ClientCountResponseDto> countClientsByType();
+
+     // CONSULTA 3 : CONTADOR TIPO DE ROOM filtrando por bookingIds
+    @Query("""
+        SELECT u.isuserinclub ,
+               COUNT(b.bookingid) AS total_bookings
+        FROM booking b
+        INNER JOIN userclient u ON b.userclientid = u.userclientid
+        WHERE b.bookingid IN (:bookingIds)
+        GROUP BY u.isuserinclub
+        ORDER BY u.isuserinclub
+        """)
+    Flux<OccupancyManagerCountDto> countOccupancyManagersByBookingIds(@Param("bookingIds") List<Integer> bookingIds);
+
+
+
+
+
 
 
 

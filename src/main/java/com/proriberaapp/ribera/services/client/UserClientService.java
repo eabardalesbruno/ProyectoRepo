@@ -1,13 +1,10 @@
 package com.proriberaapp.ribera.services.client;
 
-import com.proriberaapp.ribera.Api.controllers.admin.dto.TotalUsersDTO;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.UserClientDto;
+import com.proriberaapp.ribera.Api.controllers.admin.dto.*;
 import com.proriberaapp.ribera.Api.controllers.client.dto.ContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.EventContactInfo;
 import com.proriberaapp.ribera.Api.controllers.client.dto.TokenResult;
 import com.proriberaapp.ribera.Api.controllers.client.dto.UserDataDTO;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.ClientCountResponseDto;
-import com.proriberaapp.ribera.Api.controllers.admin.dto.ClientResponseDto;
 import com.proriberaapp.ribera.Api.controllers.client.dto.response.UserClientResponseDTO;
 import com.proriberaapp.ribera.Domain.dto.CompanyDataDto;
 import com.proriberaapp.ribera.Domain.dto.UserNameAndDiscountDto;
@@ -84,6 +81,7 @@ public interface UserClientService {
 
     Flux<ClientResponseDto> getAllClients();
     Flux<ClientCountResponseDto> getCountClientsByType();
+    Flux<OccupancyManagerCountDto> getOccupancyManagerCountByBookingIds(List<Integer> bookingIds);
 
 
 

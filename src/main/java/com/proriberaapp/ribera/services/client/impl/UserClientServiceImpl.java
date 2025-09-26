@@ -429,6 +429,14 @@ public class UserClientServiceImpl implements UserClientService {
         return userClientRepository.countClientsByType();
     }
 
+
+    @Override
+    public Flux<OccupancyManagerCountDto> getOccupancyManagerCountByBookingIds(List<Integer> bookingIds) {
+        return userClientRepository.countOccupancyManagersByBookingIds(bookingIds);
+    }
+
+
+
     @Override
     public Flux<UserClientEntity> findAll() {
         return userClientRepository.findAll();
